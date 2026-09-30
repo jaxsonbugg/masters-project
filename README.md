@@ -3,9 +3,13 @@
 > This project will investigate how effectively knowledge from a large frontier language model can be distilled into much smaller, domain-specialized language models for statistics and R programming. The goal is to quantify the tradeoff between model size, domain-specific performance, and computational efficiency to determine how small a specialized model can become while still retaining useful capability.
 
 **Author:** Jaxson Bugg (buggjm@miamioh.edu)
+
 **Advisor:** Dr. Donghyung Lee
+
 **Institution:** Miami University
+
 **Duration:** Two semesters
+
 **Status:** Planning (README created 2026-09-29)
 
 This file is the living guide for the project. Update it as decisions are made, and keep the checklists current. The dated change history is in `docs/progress_update.md`.

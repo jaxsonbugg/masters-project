@@ -75,3 +75,6 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - First commit "Initial project setup" pushed to the new **private** repository `jaxsonbugg/masters-project`. Verified the files appear on GitHub.
 - Practiced the status, diff, add, commit, push loop on the README changes. Needed `gh auth setup-git` once so `git push` could use the GitHub login.
 - README changes: Section 7 notes the new working copy; Section 12 has a Git rule. Added `docs/github_notes.md` as a personal command cheat sheet.
+
+### README header spacing (Git practice change)
+- Added blank lines between the Author, Advisor, Institution, Duration, and Status lines at the top of the README so each shows on its own line when rendered. Used as a second practice run of the status, diff, add, commit, push loop.
