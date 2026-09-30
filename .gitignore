@@ -1,0 +1,43 @@
+# Large files: models and checkpoints (keep in C:\masters_project_large\)
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.gguf
+models/
+checkpoints/
+
+# Environments and caches
+envs/
+.venv/
+venv/
+env/
+cache/
+.cache/
+logs/
+*.log
+
+# Secrets and API keys
+.env
+.env.*
+*.key
+*.pem
+secrets*
+*credentials*
+
+# Python / Jupyter temp files
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# R temp files
+.Rhistory
+.RData
+.Rproj.user/
+
+# Editor, OS, and OneDrive files
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store
