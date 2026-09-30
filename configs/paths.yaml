@@ -1,5 +1,5 @@
 # Paths for the masters project. All code should read paths from this file.
-# Large, non-backed-up items live outside OneDrive. See recovery/ for rebuild instructions.
+# Large, non-backed-up items live outside the repository. See recovery/ for rebuild instructions.
 large_root: C:\masters_project_large
 models_pythia: C:\masters_project_large\models\pythia
 models_finetuned: C:\masters_project_large\models\finetuned

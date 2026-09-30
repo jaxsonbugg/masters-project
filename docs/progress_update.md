@@ -78,3 +78,8 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 
 ### README header spacing (Git practice change)
 - Added blank lines between the Author, Advisor, Institution, Duration, and Status lines at the top of the README so each shows on its own line when rendered. Used as a second practice run of the status, diff, add, commit, push loop.
+
+### Old OneDrive folder verified and removed
+- Compared every file in `C:\Users\Buggb\OneDrive\Desktop\Masters Project` against `C:\dev\masters-project` by SHA-256 hash. `configs/paths.yaml`, `docs/teacher_selection.md`, and `recovery/_TEMPLATE.md` were identical. The old `README.md` differed only in one outdated heading line, and the old `docs/progress_update.md` had no lines missing from the repo. All 11 empty folders exist in the repo, each kept by a `.gitkeep` file. Nothing in the old folder was missing from the repo.
+- Committed and pushed everything to GitHub first, then moved the old OneDrive folder to the Windows Recycle Bin.
+- README Section 7 and Section 12 and the comment in `configs/paths.yaml` now describe only the current layout: the project repository at `C:\dev\masters-project` (backed up on GitHub) and large items outside the repository in `C:\masters_project_large\`.

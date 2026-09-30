@@ -179,16 +179,14 @@ Planned approach (refine with Dr. Lee's input):
 
 ## 7. Storage Layout
 
-Storage is split in two. **Small, important items live in OneDrive** so they are backed up. **Large items live outside OneDrive** so they do not consume sync space; because they are not backed up, each one must be reproducible from a recovery doc kept in OneDrive (see Section 12).
+Storage is split in two. **Small, important items live in the project repository** at `C:\dev\masters-project`, the main working copy, which is backed up to the private GitHub repository `jaxsonbugg/masters-project`. **Large items live outside the repository** so they stay out of Git; because they are not backed up, each one must be reproducible from a recovery doc kept in the repository (see Section 12).
 
-**Main working copy:** as of 2026-09-30 the project is a Git repository at `C:\dev\masters-project`, backed up to the private GitHub repository `jaxsonbugg/masters-project`. Work in that folder. The OneDrive folder below is the earlier location and is no longer updated.
-
-### 7.1 In OneDrive: `C:\Users\Buggb\OneDrive\Desktop\Masters Project\` (earlier location; backed up)
+### 7.1 Project repository: `C:\dev\masters-project\` (backed up on GitHub)
 
 ```
-Masters Project/
+masters-project/
 ├── README.md
-├── recovery/               # one md per off-OneDrive item; _TEMPLATE.md
+├── recovery/               # one md per item stored outside the repository; _TEMPLATE.md
 ├── docs/
 ├── benchmark/
 ├── data/
@@ -208,7 +206,7 @@ Masters Project/
 
 | Folder | Purpose |
 |---|---|
-| `recovery/` | Rebuild instructions for everything stored outside OneDrive, one md file per item, written from `_TEMPLATE.md` |
+| `recovery/` | Rebuild instructions for everything stored outside the repository, one md file per item, written from `_TEMPLATE.md` |
 | `docs/` | Notes, advisor meeting notes, decision details, report drafts |
 | `benchmark/` | Frozen ~1k question benchmark, its checksum, and grading scripts |
 | `data/prompts/` | Generated domain prompts used to query the teacher |
@@ -223,11 +221,11 @@ Masters Project/
 | `results/` | Metrics, tables, figures, and small logs |
 | `report/` | Final paper and slides |
 
-### 7.2 Outside OneDrive: `C:\masters_project_large\` (NOT backed up)
+### 7.2 Outside the repository: `C:\masters_project_large\` (NOT backed up)
 
 ```
 masters_project_large/
-├── WHERE_TO_RECOVER.txt    # points back to OneDrive recovery/
+├── WHERE_TO_RECOVER.txt    # points back to recovery/ in the repository
 ├── models/
 │   ├── pythia/
 │   └── finetuned/
@@ -311,7 +309,7 @@ The dated history of all project changes and decisions lives in `docs/progress_u
 - Keep procedures identical across student sizes unless a deviation is logged.
 - Log all model versions, seeds, hyperparameters, and job IDs in `results/` so runs are reproducible.
 - Flag any deviation from the plan or any surprising result rather than silently working around it.
-- **Recovery docs:** any step or artifact stored outside OneDrive (models, datasets, caches, environments, large logs) must have an md file in `recovery/` that says how to recreate it if it is lost or removed. Write it from `recovery/_TEMPLATE.md` when the step is done, and update it if the procedure changes. Include the source, exact commands, versions, seeds, expected size and checksum, and what to do if it is lost. Do not create these docs before the corresponding step exists.
+- **Recovery docs:** any step or artifact stored outside the repository (models, datasets, caches, environments, large logs) must have an md file in `recovery/` that says how to recreate it if it is lost or removed. Write it from `recovery/_TEMPLATE.md` when the step is done, and update it if the procedure changes. Include the source, exact commands, versions, seeds, expected size and checksum, and what to do if it is lost. Do not create these docs before the corresponding step exists.
 - Teacher outputs cost API money and are not deterministic, so their recovery doc should note this and suggest keeping a compressed backup of the verified 50k set.
 - Read all storage locations from `configs/paths.yaml`; never hardcode paths in code.
 - **Git:** commit every change with a clear message and push it to GitHub. Never commit secrets or API keys, model weights, or anything from `C:\masters_project_large\`. Command notes are in `docs/github_notes.md`.
