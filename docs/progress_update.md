@@ -68,3 +68,10 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - Revisit trigger: switch to Opus 5.5 if teacher accuracy on the frozen benchmark in Phase 5 is below 80%, or the Phase 7 verifier pass rate is poor.
 - Still open: total API budget for teacher generation.
 - README changes: Phase 2 teacher item checked; Section 2 teacher row updated; removed the teacher item from Open Decisions.
+
+### Git and GitHub set up
+- Installed Git 2.55.0 and GitHub CLI 2.102.0; Git identity set to Jaxson Bugg (buggjm@miamioh.edu); logged in to GitHub as `jaxsonbugg`.
+- Created `C:\dev\masters-project` as the main working copy (copied from the OneDrive folder, which is left in place and no longer updated), added a `.gitignore` for model files, environments, caches, logs, and secrets, and `.gitkeep` files so empty folders are kept.
+- First commit "Initial project setup" pushed to the new **private** repository `jaxsonbugg/masters-project`. Verified the files appear on GitHub.
+- Practiced the status, diff, add, commit, push loop on the README changes. Needed `gh auth setup-git` once so `git push` could use the GitHub login.
+- README changes: Section 7 notes the new working copy; Section 12 has a Git rule. Added `docs/github_notes.md` as a personal command cheat sheet.
