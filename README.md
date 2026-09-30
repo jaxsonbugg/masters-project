@@ -177,7 +177,9 @@ Planned approach (refine with Dr. Lee's input):
 
 Storage is split in two. **Small, important items live in OneDrive** so they are backed up. **Large items live outside OneDrive** so they do not consume sync space; because they are not backed up, each one must be reproducible from a recovery doc kept in OneDrive (see Section 12).
 
-### 7.1 In OneDrive: `C:\Users\Buggb\OneDrive\Desktop\Masters Project\` (backed up)
+**Main working copy:** as of 2026-09-30 the project is a Git repository at `C:\dev\masters-project`, backed up to the private GitHub repository `jaxsonbugg/masters-project`. Work in that folder. The OneDrive folder below is the earlier location and is no longer updated.
+
+### 7.1 In OneDrive: `C:\Users\Buggb\OneDrive\Desktop\Masters Project\` (earlier location; backed up)
 
 ```
 Masters Project/
@@ -308,3 +310,4 @@ The dated history of all project changes and decisions lives in `docs/progress_u
 - **Recovery docs:** any step or artifact stored outside OneDrive (models, datasets, caches, environments, large logs) must have an md file in `recovery/` that says how to recreate it if it is lost or removed. Write it from `recovery/_TEMPLATE.md` when the step is done, and update it if the procedure changes. Include the source, exact commands, versions, seeds, expected size and checksum, and what to do if it is lost. Do not create these docs before the corresponding step exists.
 - Teacher outputs cost API money and are not deterministic, so their recovery doc should note this and suggest keeping a compressed backup of the verified 50k set.
 - Read all storage locations from `configs/paths.yaml`; never hardcode paths in code.
+- **Git:** commit every change with a clear message and push it to GitHub. Never commit secrets or API keys, model weights, or anything from `C:\masters_project_large\`. Command notes are in `docs/github_notes.md`.
