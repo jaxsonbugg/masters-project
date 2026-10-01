@@ -44,14 +44,14 @@ This file is the living guide for the project. Update it as decisions are made, 
 | Factor | Levels |
 |---|---|
 | Teacher | Claude Sonnet 5.5 (fallback: Opus 5.5); see `docs/teacher_selection.md` |
-| Student size | Pythia 70M, 160M, 410M, 1B |
+| Student size | Pythia 70M, 160M, 410M, 1B (deduped variants, final `step143000` checkpoints; see `docs/model_versions.md`) |
 | Distillation set size | 1k, 10k, 50k, 100k, 200k (stretch); **50k is the fallback single size** |
 | Verifier | A different frontier model (high-effort ChatGPT model) |
 | Benchmark | Frozen held-out set, ~1k statistics/R questions |
 
 **Conditions per student:** untrained baseline plus one fine-tuned model per training-set size. The full grid is 4 sizes x up to 5 data sizes = 20 fine-tuned models, plus 4 baselines and the teacher. If compute is limited, run all 4 sizes at 50k first, then expand the data-size axis.
 
-**Why Pythia:** All Pythia sizes are trained on the same data in the same order and are designed for controlled scaling experiments, so differences between students are attributable to size rather than to training-data differences.
+**Why Pythia:** All Pythia sizes are trained on the same data in the same order and are designed for controlled scaling experiments, so differences between students are attributable to size rather than to training-data differences. This project uses the deduped variants only (all four sizes saw the same globally deduplicated Pile in the same order), never the standard variants.
 
 **Design principles**
 - Same benchmark, same training data, same hyperparameter recipe across all student sizes.
@@ -69,8 +69,8 @@ This file is the living guide for the project. Update it as decisions are made, 
 
 ### Phase 2: Choose teacher and student models
 - [x] Teacher: Claude Sonnet 5.5 selected from desk research (Opus 5.5 is the fallback if the Phase 5 teacher accuracy is below 80% or the Phase 7 pass rate is poor); see `docs/teacher_selection.md`
-- [x] Students: Pythia 70M, 160M, 410M, 1B
-- [ ] Record exact model checkpoints/revisions used
+- [x] Students: Pythia 70M, 160M, 410M, 1B (deduped variants only)
+- [x] Record exact model checkpoints/revisions used: deduped, final `step143000` checkpoints pinned by commit SHA; see `docs/model_versions.md`
 
 ### Phase 3: Pilot at small scale
 - [ ] Confirm cluster access
@@ -239,7 +239,7 @@ masters_project_large/
 
 | Folder | Purpose |
 |---|---|
-| `models/pythia/` | Downloaded base checkpoints (70M, 160M, 410M, 1B) |
+| `models/pythia/` | Downloaded base checkpoints (70M, 160M, 410M, 1B deduped, `step143000`), one folder per model; files kept exactly as distributed |
 | `models/finetuned/` | Specialized student checkpoints, by size and data size |
 | `data/teacher_outputs/` | Raw teacher generations |
 | `data/verified/` | Verified training sets (1k to 200k) |
@@ -292,6 +292,9 @@ Dates are placeholders; replace with real deadlines from the program.
 - [ ] Efficiency measurement protocol for the 10x criterion (cost per query, latency), to be set in the pilot
 - [ ] Which data sizes to run beyond 50k, based on pilot cost estimates
 - [ ] Cluster specifics (scheduler, GPU type, allocation limits)
+- [ ] Which cluster to use: Redhawk (V100 16 GB GPUs) or Talon (H100 GPUs), and whether the account has access
+- [ ] Cluster policy: outbound internet from login/compute nodes, home and scratch quotas, available Python/PyTorch/CUDA modules (ask rescomp@miamioh.edu; see `docs/model_versions.md`)
+- [ ] Phase 8 training precision recipe (AMP/mixed precision, gradient and optimizer-state precision, BF16 or FP16), to be decided and documented once the GPU environment is known
 
 ---
 
@@ -305,6 +308,16 @@ The dated history of all project changes and decisions lives in `docs/progress_u
 
 - Treat this README as the source of truth for project scope; update the checklists when work is completed or decisions change.
 - **Progress log:** every change added to the project (decisions, completed steps, new or moved files, threshold or plan changes, deviations) must be recorded in `docs/progress_update.md` with the date and information about what was done and why. Add the entry in the same session as the change. Do not keep change history in this README.
+- **Dated outputs:** every batch of teacher outputs (generation, verification, or re-generation) must be recorded with the UTC date and time it was generated, the exact API model ID, effort level, thinking mode, temperature/sampling settings, and the file(s) it produced. Put the date in the output file or folder name (for example `teacher_outputs/2026-10-15_sonnet-5-5_batch01/`) and also in the log entry. Never overwrite a dated batch; start a new dated one. The same applies to verifier runs, with the verifier model name and settings recorded.
+- **Current Pythia labels only:** use the current names 70M, 160M, 410M, 1B. Never use the old names (19M, 125M, 350M, 800M) for the students, except in the table below or in a quotation of an old source. Repo ids always end in `-deduped`.
+
+  | Use (current) | Never use (old) |
+  |---|---|
+  | 70M | 19M |
+  | 160M | 125M |
+  | 410M | 350M |
+  | 1B | 800M |
+- **Model precision:** keep three things separate: (1) checkpoint storage dtype, how the original files are serialized, observed and never changed; (2) runtime load dtype, `torch.float16` for all four students, passed explicitly in every load call and not taken from `config.json`; (3) training precision recipe, decided in Phase 8. Rule: preserve the original pinned checkpoints exactly as distributed; standardize all four student models to FP16 model weights when loaded for baseline experiments; verify the actual loaded dtype and parameter count; and document the final mixed-precision training recipe separately once the training environment is finalized.
 - Never use benchmark questions in any training, prompting, or tuning step.
 - Keep procedures identical across student sizes unless a deviation is logged.
 - Log all model versions, seeds, hyperparameters, and job IDs in `results/` so runs are reproducible.
