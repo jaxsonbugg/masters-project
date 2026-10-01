@@ -73,7 +73,7 @@ This file is the living guide for the project. Update it as decisions are made, 
 - [x] Record exact model checkpoints/revisions used: deduped, final `step143000` checkpoints pinned by commit SHA; see `docs/model_versions.md`
 
 ### Phase 3: Pilot at small scale
-- [ ] Confirm cluster access
+- [x] Confirm cluster access: Redhawk login works (password + Duo), confirmed 2026-10-01; the `redhawk` command logs in; cluster choice analysis in `docs/cluster_selection.md`
 - [ ] Run a few test jobs (environment, GPU allocation, job scheduler)
 - [ ] Do a short training run on a tiny dataset to validate the full pipeline end to end
 - [ ] Estimate time and cost per training run to plan the full grid
@@ -292,7 +292,8 @@ Dates are placeholders; replace with real deadlines from the program.
 - [ ] Efficiency measurement protocol for the 10x criterion (cost per query, latency), to be set in the pilot
 - [ ] Which data sizes to run beyond 50k, based on pilot cost estimates
 - [ ] Cluster specifics (scheduler, GPU type, allocation limits)
-- [ ] Which cluster to use: Redhawk (V100 16 GB GPUs) or Talon (H100 GPUs), and whether the account has access
+- [ ] Talon (H100 GPUs) access request, as the fallback for the 1B student if the pilot memory measurement shows Redhawk's 16 GB V100s are too small
+- [ ] Pilot measurement of actual peak GPU memory for all four sizes, to decide how to train 1B (sharding, gradient checkpointing, 8-bit optimizer, LoRA, or a larger GPU)
 - [ ] Cluster policy: outbound internet from login/compute nodes, home and scratch quotas, available Python/PyTorch/CUDA modules (ask rescomp@miamioh.edu; see `docs/model_versions.md`)
 - [ ] Phase 8 training precision recipe (AMP/mixed precision, gradient and optimizer-state precision, BF16 or FP16), to be decided and documented once the GPU environment is known
 

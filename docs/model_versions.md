@@ -88,7 +88,7 @@ For each of the four sizes, in order:
 7. Re-run the SHA-256 check to confirm the files are unchanged.
 8. Fill in the environment table below.
 
-Status: not done (Python is not installed yet).
+Status: not done. Python 3.11.9 and pip 24.0 are installed locally (`C:\Users\Buggb\AppData\Local\Programs\Python\Python311\`), but PyTorch, Transformers, safetensors and huggingface_hub are not. This PC has no NVIDIA GPU, so the load check is better run on Redhawk or as a CPU check of the smallest models. (An earlier version of this file said Python was not installed; the Windows Store alias had hidden the real install.)
 
 ## 4. Files and hashes
 
@@ -140,7 +140,7 @@ Filled in the first time the check in section 3 is run.
 
 | Component | Version |
 |---|---|
-| Python | not yet installed |
+| Python | 3.11.9 on this PC (pip 24.0); cluster version not yet checked |
 | PyTorch | not yet installed |
 | Transformers | not yet installed |
 | Hugging Face Hub | not yet installed |
