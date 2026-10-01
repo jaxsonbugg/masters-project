@@ -88,4 +88,8 @@ To be filled in after the login probe (host name of the login node, storage and 
 - **Login confirmed (2026-10-01):** Jaxson ran `ssh redhawk` from this PC (host `redhawk.hpc.muohio.edu`, user `buggjm`) and logged in with password + Duo. The command output itself was not captured, so the login node name is not recorded yet.
 - **Shortcut:** typing `redhawk` in a new terminal runs `ssh redhawk` (config in `~/.ssh/config`, command in `C:\Users\Buggb\bin\redhawk.cmd`); see `recovery/redhawk_ssh_access.md`.
 - **Duo on every login:** still required. Whether Research Computing can relax this is a question for rescomp@miamioh.edu.
-- **Not yet probed:** login node name, storage and quota, partitions and GPU types (`sinfo`), modules (Python, PyTorch, CUDA), outbound internet from the login node, and GPU type actually delivered by Slurm. Command and results will be added here.
+- **First probe (2026-10-01, partial output pasted by Jaxson, not a full capture):**
+  - Login node: `mualhplp02.hpc.miamioh.edu`.
+  - Home storage: `muanasp05-4001.mcs.miamioh.edu:p05_nfs_oel_rh3_home` mounted at `/home`, an NFS share of 63 TB with 51 TB used and 12 TB free (81% full). It is shared across users; no per-user quota figure was shown.
+  - The probe printed `Stale file handle` before the host name. That is an NFS error (a handle to a file or directory that the server no longer recognizes), not a login failure; the login itself worked. Cause unknown. If it repeats, report it to Research Computing, since jobs that read data or code from `/home` could fail the same way.
+- **Not yet seen:** quota, partitions and GPU types (`sinfo`), modules (Python, PyTorch, CUDA), outbound internet from the login node, user/group (`id`), and the GPU type actually delivered by Slurm. Those parts of the probe printed nothing in the pasted output. Non-interactive `ssh host "command"` sessions often lack the `module` command, so those are to be re-run inside an interactive session.

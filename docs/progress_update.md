@@ -102,4 +102,7 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - Created an SSH config entry (`Host redhawk`) and `C:\Users\Buggb\bin\redhawk.cmd` (on the user PATH) so typing `redhawk` logs in. Rebuild steps: `recovery/redhawk_ssh_access.md`. No SSH key yet; Duo is still required on every login, and any exemption is a question for Research Computing.
 - Correction: Python 3.11.9 (pip 24.0) is installed on this PC. An earlier note (progress and `docs/model_versions.md`) said Python was not installed; the Windows Store alias had hidden it. PyTorch, Transformers, safetensors and huggingface_hub are not installed.
 - README changes: Phase 3 "Confirm cluster access" ticked; Section 10 drops the resolved "which cluster" item and adds the Talon request and the pilot memory measurement.
-- Still open: login probe (storage and quota, partitions and GPU types, modules, outbound internet), Talon access, email to rescomp@miamioh.edu.
+- Still open: rest of the login probe (quota, partitions and GPU types, modules, outbound internet), Talon access.
+
+### Redhawk probe, first partial result
+- Login node `mualhplp02.hpc.miamioh.edu`; `/home` is an NFS share (63 TB total, 51 TB used, 12 TB free, 81% full). A `Stale file handle` NFS error appeared at the start of the probe; the login worked. Recorded in `docs/cluster_selection.md` section 7.
