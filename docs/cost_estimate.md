@@ -1,6 +1,6 @@
 # Cost estimate
 
-Date: 2026-10-01. Status: desk estimate, to be replaced by measured token counts in the Phase 3 pilot.
+Date: 2026-10-01. Status: desk estimate, to be replaced by measured token counts in the Phase 4 pilot. Actual spend is recorded in `cost_log.md`.
 
 ## 1. Summary
 
@@ -53,6 +53,6 @@ The low end of each range assumes no thinking tokens (Base: 300 in / 600 out per
 
 ## 6. Limits of this estimate
 
-- Token counts per example are assumptions. The pilot (Phase 3) should generate about 1k examples, record `usage` from the API responses, and update this file.
+- Token counts per example are assumptions. The pilot (Phase 4) should generate about 1k examples, record `usage` from the API responses, and update this file.
 - Prices change. Re-check the pricing page before the large run.
 - The verifier cost depends on a model and plan not yet chosen.

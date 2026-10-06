@@ -32,7 +32,7 @@ This file is the living guide for the project. Update it as decisions are made, 
 1. **Retained accuracy.** Ratio = student accuracy / teacher accuracy on the frozen benchmark. The lower bound of the bootstrap 95% CI of the ratio must reach the tier: **Useful >= 70%**, **Strong >= 85%**, **Near-parity >= 95%**. Accuracy is macro-averaged across benchmark categories, and R code items are graded by execution. Results are reported at all three tiers.
    - *Weak-teacher safeguard:* always report teacher and student absolute accuracies with CIs next to every ratio. A student must also reach an **absolute accuracy floor of 60%** to earn any tier. A teacher below **80%** on the benchmark is a red flag: pause and review benchmark difficulty and teacher choice (using the dev set, not the frozen benchmark) before distillation.
 2. **Real gain over own baseline.** Significantly better than the same student untrained (McNemar's test, Holm correction across model pairs).
-3. **Usable output.** Minimum share of well-formed, parseable responses and minimum share of R code that runs. Starting value 90% each; confirm in the Phase 3 pilot and log any change before Phase 5 results.
+3. **Usable output.** Minimum share of well-formed, parseable responses and minimum share of R code that runs. Starting value 90% each; confirm in the Phase 4 pilot and log any change before Phase 5 results.
 4. **At least 10x cheaper/smaller than the teacher.** Compared on measured inference cost per query and latency (the teacher is API-only, so parameter count and memory are not directly comparable). Also report training GPU-hours, memory, and throughput. The exact measurement protocol is fixed in the pilot. At these student sizes this criterion is a guard more than a differentiator; the accuracy tiers carry the analysis.
 
 **Answer to the primary question:** the smallest (size, data size) pair that reaches each tier. The Phase 12 knee analysis shows where accuracy falls off below it. No general-purpose small-model comparator is used unless an open-weight model matching the Pythia sizes in parameter count and purpose is found.
@@ -72,17 +72,26 @@ This file is the living guide for the project. Update it as decisions are made, 
 - [x] Students: Pythia 70M, 160M, 410M, 1B (deduped variants only)
 - [x] Record exact model checkpoints/revisions used: deduped, final `step143000` checkpoints pinned by commit SHA; see `docs/model_versions.md`
 
-### Phase 3: Pilot at small scale
-- [x] Confirm cluster access: Redhawk login works (password + Duo), confirmed 2026-10-01; the `redhawk` command logs in; cluster choice analysis in `docs/cluster_selection.md`
-- [ ] Run a few test jobs (environment, GPU allocation, job scheduler)
-- [ ] Do a short training run on a tiny dataset to validate the full pipeline end to end
-- [ ] Estimate time and cost per training run to plan the full grid
-
-### Phase 4: Create the evaluation benchmark
-- [ ] Build a held-out set of about 1k statistics/R questions
+### Phase 3: Create the evaluation benchmark
+This phase now comes first because the pilot (Phase 4) needs a frozen benchmark to score against. The benchmark is generated with the Claude API (Sonnet 5.5, Batch API) and is the real, full-size benchmark for the whole project, not a throwaway pilot version. Plain-language walkthrough: `docs/pilot_plan.md`.
+- [ ] Build a held-out set of about 1k statistics/R questions with the Claude API, using prompts kept separate from the training-data prompts
 - [ ] Cover a balanced mix (see Benchmark Design)
+- [ ] Make every answer key checkable, strongest check first (the "independence ladder", see Section 9): (1) run R code and recompute numeric answers; (2) have a fresh, separate API call solve each question without seeing the key and send disagreements to manual review; (3) have a different-family model (ChatGPT) check a sample of keys; (4) hand spot-check a sample yourself
 - [ ] **Freeze** the benchmark (hash it, store read-only) before any training
 - [ ] Guarantee these exact questions, and near-duplicates, are never used in distillation data
+- [ ] Record every API call's tokens and cost in `docs/cost_log.md`
+
+### Phase 4: Pilot (1k examples, Pythia 70M, end to end)
+Goal: prove the whole pipeline works on the Miami cluster and the Claude API at small scale, and measure real cost and time before committing to the full project. Plain-language walkthrough: `docs/pilot_plan.md`.
+- [x] Confirm cluster access: Redhawk login works (password + Duo), confirmed 2026-10-01; the `redhawk` command logs in; cluster choice analysis in `docs/cluster_selection.md`
+- [ ] Run a few test jobs on Redhawk (environment, GPU allocation, job scheduler)
+- [ ] Generate about 1k training questions and teacher answers with the Claude API, with no overlap with the frozen benchmark (n-gram/embedding decontamination check)
+- [ ] Light verification of the 1k set: run the R code, hand spot-check a sample (the full verifier stays in Phase 7)
+- [ ] Fine-tune Pythia 70M on the 1k set on Redhawk
+- [ ] Evaluate the untrained 70M and the fine-tuned 70M on the frozen benchmark; run the teacher on the benchmark once so the retained-accuracy ratio can be computed
+- [ ] Record measured tokens per example, dollars (`docs/cost_log.md`), GPU time, queue wait, and peak GPU memory; replace the desk estimates in `docs/cost_estimate.md`
+- [ ] Go/no-go review: does the pipeline run end to end, is the projected cost of 50k to 200k acceptable, are the validity thresholds sensible
+- Reuse rule: if the pilot 1k set passes verification it becomes the 1k subset of the nested sets in Phase 6, so those examples are not paid for twice (log the reuse)
 
 ### Phase 5: Measure baseline performance
 - [ ] Evaluate each pretrained student before specialization
@@ -255,8 +264,8 @@ Adjust as the project evolves.
 
 | Period | Focus |
 |---|---|
-| Semester 1, early | Finalize design, choose teacher, cluster access, Phase 3 pilot |
-| Semester 1, mid | Build and freeze benchmark; baselines for students and teacher |
+| Semester 1, early | Finalize design, choose teacher, cluster access, build and freeze benchmark (Phase 3), run the 1k / 70M pilot (Phase 4) |
+| Semester 1, mid | Baselines for all students and the teacher; go/no-go on scaling up |
 | Semester 1, late | Generate and verify distillation data (50k first) |
 | Semester 2, early | Fine-tune all students; re-evaluate; expand data-size axis if feasible |
 | Semester 2, mid | Efficiency measurements, statistical analysis, tradeoff analysis |
@@ -275,6 +284,7 @@ Dates are placeholders; replace with real deadlines from the program.
 | Pythia models are base (not instruction-tuned) and have a 2048-token context | Use a consistent prompt/answer format in fine-tuning; keep teacher responses within length limits |
 | Very small models may score near zero, hiding differences | Include easier items and partial-credit / validity metrics |
 | Benchmark contamination | Strict decontamination, checksum freeze, separate dev set |
+| Benchmark and training data are both written by the same teacher (Claude), so teacher accuracy on its own benchmark is likely optimistic and answer keys may share its mistakes | A fresh API call has no memory of writing an item, which removes anchoring but not shared blind spots (same model, same weights). Use an independence ladder: (1) execute R code and recompute numbers, which is independent of any model; (2) blind re-solve by a separate call, disagreements reviewed by hand; (3) different-family verifier (ChatGPT) on a sample in the pilot and the full set in Phase 7; (4) hand spot-check; (5) separate prompt sets for benchmark and training. Report teacher accuracy with the caveat |
 | Verifier (ChatGPT) errors or shared blind spots with the teacher | Execute R code, spot-check by hand, review flagged disagreements manually |
 | Teacher-as-judge bias | Benchmark grading uses objective answers and code execution wherever possible |
 | Confounded comparisons across sizes | Identical recipe, data, seeds, and evaluation for all students |
@@ -310,6 +320,8 @@ The dated history of all project changes and decisions lives in `docs/progress_u
 - Treat this README as the source of truth for project scope; update the checklists when work is completed or decisions change.
 - **Progress log:** every change added to the project (decisions, completed steps, new or moved files, threshold or plan changes, deviations) must be recorded in `docs/progress_update.md` with the date and information about what was done and why. Add the entry in the same session as the change. Do not keep change history in this README.
 - **Dated outputs:** every batch of teacher outputs (generation, verification, or re-generation) must be recorded with the UTC date and time it was generated, the exact API model ID, effort level, thinking mode, temperature/sampling settings, and the file(s) it produced. Put the date in the output file or folder name (for example `teacher_outputs/2026-10-15_sonnet-5-5_batch01/`) and also in the log entry. Never overwrite a dated batch; start a new dated one. The same applies to verifier runs, with the verifier model name and settings recorded.
+- **Explain everything:** the project owner must understand every step, so any document, README section, pipeline-script comment, or chat summary that describes a process must explain it in plain language, not just list steps or results. For each process say what it is, why it is done, how it works step by step, what every term and number means, a small worked example, what could go wrong, and what the result tells us. Define jargon the first time it appears (distillation, fine-tuning, tokens, thinking tokens, Batch API, decontamination, bootstrap CI, and so on). Prefer short explanatory paragraphs plus an example over bare tables or bullet lists. The same rule is in `CLAUDE.md` so it loads automatically in every session.
+- **Record every cost:** every Claude API call batch (benchmark, training data, re-solve checks, teacher evaluation, verification, any test call) must be added to `docs/cost_log.md` in the same session, with the UTC time, model ID, effort, Batch or standard, input/output/thinking tokens, dollars, and the running total. State the expected cost before a paid run, and compare actual to expected afterward. Free steps (cluster training, local runs) are recorded as $0 where they are part of a measured pilot step.
 - **Current Pythia labels only:** use the current names 70M, 160M, 410M, 1B. Never use the old names (19M, 125M, 350M, 800M) for the students, except in the table below or in a quotation of an old source. Repo ids always end in `-deduped`.
 
   | Use (current) | Never use (old) |

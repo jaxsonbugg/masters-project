@@ -1,11 +1,11 @@
-# Cluster Selection (Phase 3)
+# Cluster Selection (Phase 4 pilot)
 
 Prepared 2026-10-01. Which compute resource should run the project's computational work (baseline evaluation, teacher-output handling, and fine-tuning of the Pythia deduped students)? Everything below is from public pages or arithmetic, plus what you confirmed about your own access. A "Pending login findings" section at the end is filled in after the login probe.
 
 ## Recommendation (preliminary)
 
-1. **Use Redhawk now.** It is the only option with confirmed access, and it is enough for the Phase 3 pilot and for evaluation of all four students.
-2. **Treat 1B full fine-tuning on Redhawk as undetermined until measured.** A standard full-fine-tuning recipe for 1B is likely too tight for a single 16 GB V100, but that is an estimate, not a result. The Phase 3 pilot must measure actual peak memory for all four sizes, at the real sequence length and batch size, before deciding between sharding, gradient checkpointing, an 8-bit optimizer, LoRA, or a larger GPU.
+1. **Use Redhawk now.** It is the only option with confirmed access, and it is enough for the Phase 4 pilot and for evaluation of all four students.
+2. **Treat 1B full fine-tuning on Redhawk as undetermined until measured.** A standard full-fine-tuning recipe for 1B is likely too tight for a single 16 GB V100, but that is an estimate, not a result. The Phase 4 pilot must measure actual peak memory for all four sizes, at the real sequence length and batch size, before deciding between sharding, gradient checkpointing, an 8-bit optimizer, LoRA, or a larger GPU.
 3. **Ask for Talon access in parallel.** Talon (H100 GPUs) is the natural fallback for the 1B student, and its access time is unknown, so the request should start now rather than after the pilot.
 4. OSC and local runs are not recommended (reasons below).
 

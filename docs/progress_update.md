@@ -106,3 +106,22 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 
 ### Redhawk probe, first partial result
 - Login node `mualhplp02.hpc.miamioh.edu`; `/home` is an NFS share (63 TB total, 51 TB used, 12 TB free, 81% full). A `Stale file handle` NFS error appeared at the start of the probe; the login worked. Recorded in `docs/cluster_selection.md` section 7.
+
+## 2026-10-06
+
+### Workflow restructured around a 1k / 70M end-to-end pilot
+- **Decision:** the next step is a small pilot of both the Claude API and the Miami cluster before committing to the full project. The pilot builds the full ~1k benchmark with the Claude API and freezes it, generates about 1k training examples with the Claude API (kept separate from the benchmark), fine-tunes Pythia 70M on Redhawk, then evaluates the untrained and fine-tuned 70M on the benchmark. The teacher is also run once on the benchmark. Plain-language walkthrough: `docs/pilot_plan.md`.
+- **Why:** it finds problems and gives real token, cost, GPU-time and queue-time numbers for tens of dollars instead of thousands, and it replaces the desk estimates in `docs/cost_estimate.md`.
+- **Phase renumbering:** old Phase 4 (benchmark) is now Phase 3 and runs first, because the pilot needs a frozen benchmark. The old Phase 3 (pilot) is now Phase 4 and is redefined as the end-to-end 1k / 70M run with a go/no-go review. Phases 5 to 13 keep their numbers. **Entries above this one use the old meaning of "Phase 3" (the pilot) and are left unchanged as history.** Updated pilot references in README Section 1, Section 8 and `docs/cost_estimate.md`, `docs/cluster_selection.md`, `docs/teacher_subscription_feasibility.md`.
+- **Benchmark size in the pilot:** the full ~1k questions, so it is the real frozen benchmark and is not rebuilt later. Risk noted: a flawed benchmark would be frozen, so the answer-key checks below must be done before freezing.
+- **Same-teacher risk and the independence ladder (README Section 9, Phase 3):** the benchmark and training data are both written by Claude, so teacher accuracy on its own benchmark is likely optimistic and answer keys may share its mistakes. A fresh API call has no memory of writing an item (removes anchoring) but is the same model with the same blind spots. Answer keys are checked in layers: run R code and recompute numbers; blind re-solve by a separate call with disagreements reviewed by hand; a different-family model (ChatGPT) on a sample; hand spot-check. Teacher accuracy is reported with the caveat.
+- **Reuse rule:** if the pilot 1k training set passes verification it becomes the 1k subset of the nested sets in Phase 6, so it is not paid for twice.
+
+### Rules and cost tracking
+- Created `CLAUDE.md` (loaded automatically every session) with the **explain-everything** rule: any document or summary describing a process must explain it in plain language (what, why, how, terms, worked example, what could go wrong). Mirrored in README Section 12.
+- Added the **record-every-cost** rule (README Section 12 and `CLAUDE.md`) and created `docs/cost_log.md`, the ledger of every API call with tokens, dollars and a running total, plus a pilot expected-versus-actual table. Expected pilot cost is about $13 to $57 (four runs of 1k items at $3 to $13, plus up to about $3 for replacements).
+- **Cost to date: $0.00.** No API calls have been made and no subscription seats bought; teacher selection and the cost estimates were desk research.
+
+### Other work logged for the record (2026-10-04 to 2026-10-06)
+- Added `docs/teacher_subscription_feasibility.md`: desk analysis of running teacher generation on a Claude Team subscription (Standard $20 vs Premium $100 seats) instead of the API. Conclusion: feasible as a one-shot throttled run but depends on unpublished limits and a paused policy change, so the API stays the default and the pilot measures real numbers first.
+- Looked up Miami funding. The Graduate Student Research Support Award is up to $300 for master's students (deadlines Nov 1 and Mar 1, one-time, advisor endorsement). Internal faculty programs and the new Miami Center for AI list no API or computing credits. Nothing applied for yet.
