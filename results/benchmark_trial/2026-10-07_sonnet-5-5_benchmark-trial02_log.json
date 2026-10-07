@@ -1,0 +1,233 @@
+{
+  "run_kind": "trial",
+  "started_utc": "2026-10-07T14:28:28+00:00",
+  "items_requested": 20,
+  "model_id": "claude-sonnet-5-5",
+  "effort": "medium",
+  "thinking_mode": "adaptive (API default; cannot be disabled on this model)",
+  "sampling": "API defaults (temperature/top_p cannot be set on this model)",
+  "max_tokens": 5000,
+  "prompt_file": "data\\prompts\\benchmark_generation_v2.md",
+  "prompt_version": "v2",
+  "prompt_sha256": "f6021c8d1c4a1ea29fc5f520386b48b63441c506ceaa5bc8e1801d7bdbbba0b3",
+  "prices_usd_per_mtok": {
+    "input": 2.0,
+    "output": 10.0,
+    "batch_factor": 0.5
+  },
+  "cap_usd": 1.5,
+  "finished_utc": "2026-10-07T14:30:24+00:00",
+  "calls": [
+    {
+      "item_id": "BM0001",
+      "request_id": "req_011Cfo2xehM6EdsP7xX1mtkr",
+      "stop_reason": "end_turn",
+      "input_tokens": 1767,
+      "output_tokens": 297,
+      "cost_usd": 0.006504,
+      "seconds": 5.6,
+      "problems": []
+    },
+    {
+      "item_id": "BM0002",
+      "request_id": "req_011Cfo2y3eUp8omXsuT4yYuq",
+      "stop_reason": "end_turn",
+      "input_tokens": 1743,
+      "output_tokens": 411,
+      "cost_usd": 0.007596,
+      "seconds": 7.7,
+      "problems": []
+    },
+    {
+      "item_id": "BM0003",
+      "request_id": "req_011Cfo2ycm2uZLUAcxjWemLr",
+      "stop_reason": "end_turn",
+      "input_tokens": 1809,
+      "output_tokens": 328,
+      "cost_usd": 0.006898,
+      "seconds": 3.7,
+      "problems": []
+    },
+    {
+      "item_id": "BM0004",
+      "request_id": "req_011Cfo2ytPe5FKUJv97GnQDC",
+      "stop_reason": "end_turn",
+      "input_tokens": 1765,
+      "output_tokens": 531,
+      "cost_usd": 0.00884,
+      "seconds": 5.5,
+      "problems": []
+    },
+    {
+      "item_id": "BM0005",
+      "request_id": "req_011Cfo2zHyxGWeprd6QPrFch",
+      "stop_reason": "end_turn",
+      "input_tokens": 1786,
+      "output_tokens": 816,
+      "cost_usd": 0.011732,
+      "seconds": 7.6,
+      "problems": []
+    },
+    {
+      "item_id": "BM0006",
+      "request_id": "req_011Cfo2zrVoc6EQhAh4e6eas",
+      "stop_reason": "end_turn",
+      "input_tokens": 1752,
+      "output_tokens": 461,
+      "cost_usd": 0.008114,
+      "seconds": 5.1,
+      "problems": []
+    },
+    {
+      "item_id": "BM0007",
+      "request_id": "req_011Cfo31EWtJFM2M9R6KREy6",
+      "stop_reason": "end_turn",
+      "input_tokens": 1808,
+      "output_tokens": 393,
+      "cost_usd": 0.007546,
+      "seconds": 4.5,
+      "problems": []
+    },
+    {
+      "item_id": "BM0008",
+      "request_id": "req_011Cfo31ZZ77YDiFAUeuUT7N",
+      "stop_reason": "end_turn",
+      "input_tokens": 1816,
+      "output_tokens": 1348,
+      "cost_usd": 0.017112,
+      "seconds": 10.8,
+      "problems": []
+    },
+    {
+      "item_id": "BM0009",
+      "request_id": "req_011Cfo32Me2YU3wZdaDQDyzV",
+      "stop_reason": "end_turn",
+      "input_tokens": 1822,
+      "output_tokens": 501,
+      "cost_usd": 0.008654,
+      "seconds": 5.5,
+      "problems": []
+    },
+    {
+      "item_id": "BM0010",
+      "request_id": "req_011Cfo32mAPoZ6gYJmoyVXjZ",
+      "stop_reason": "end_turn",
+      "input_tokens": 1774,
+      "output_tokens": 527,
+      "cost_usd": 0.008818,
+      "seconds": 5.6,
+      "problems": []
+    },
+    {
+      "item_id": "BM0011",
+      "request_id": "req_011Cfo33BKhKfAte1xVBrZCU",
+      "stop_reason": "end_turn",
+      "input_tokens": 1772,
+      "output_tokens": 579,
+      "cost_usd": 0.009334,
+      "seconds": 7.5,
+      "problems": []
+    },
+    {
+      "item_id": "BM0012",
+      "request_id": "req_011Cfo33jP257Q6C34rWC8Jv",
+      "stop_reason": "end_turn",
+      "input_tokens": 1775,
+      "output_tokens": 240,
+      "cost_usd": 0.00595,
+      "seconds": 2.9,
+      "problems": []
+    },
+    {
+      "item_id": "BM0013",
+      "request_id": "req_011Cfo33wgS5Ekf95TX2zmgg",
+      "stop_reason": "end_turn",
+      "input_tokens": 1794,
+      "output_tokens": 406,
+      "cost_usd": 0.007648,
+      "seconds": 4.9,
+      "problems": []
+    },
+    {
+      "item_id": "BM0014",
+      "request_id": "req_011Cfo34Jb32xitH9oa31Qaq",
+      "stop_reason": "end_turn",
+      "input_tokens": 1815,
+      "output_tokens": 360,
+      "cost_usd": 0.00723,
+      "seconds": 4.5,
+      "problems": []
+    },
+    {
+      "item_id": "BM0015",
+      "request_id": "req_011Cfo34dsu3B5oZXeRQN7YW",
+      "stop_reason": "end_turn",
+      "input_tokens": 1778,
+      "output_tokens": 347,
+      "cost_usd": 0.007026,
+      "seconds": 4.1,
+      "problems": []
+    },
+    {
+      "item_id": "BM0016",
+      "request_id": "req_011Cfo34wRLSHdLertv9vqkT",
+      "stop_reason": "end_turn",
+      "input_tokens": 1754,
+      "output_tokens": 531,
+      "cost_usd": 0.008818,
+      "seconds": 5.6,
+      "problems": []
+    },
+    {
+      "item_id": "BM0017",
+      "request_id": "req_011Cfo35MM1A92PR3q69dYFF",
+      "stop_reason": "end_turn",
+      "input_tokens": 1792,
+      "output_tokens": 692,
+      "cost_usd": 0.010504,
+      "seconds": 5.9,
+      "problems": []
+    },
+    {
+      "item_id": "BM0018",
+      "request_id": "req_011Cfo35npSEivQaxzs3iKCF",
+      "stop_reason": "end_turn",
+      "input_tokens": 1846,
+      "output_tokens": 491,
+      "cost_usd": 0.008602,
+      "seconds": 6.3,
+      "problems": []
+    },
+    {
+      "item_id": "BM0019",
+      "request_id": "req_011Cfo36FWJqK4NeXWE43pz1",
+      "stop_reason": "end_turn",
+      "input_tokens": 1795,
+      "output_tokens": 306,
+      "cost_usd": 0.00665,
+      "seconds": 3.5,
+      "problems": []
+    },
+    {
+      "item_id": "BM0020",
+      "request_id": "req_011Cfo36WKHAY9TLV7TwMGhq",
+      "stop_reason": "end_turn",
+      "input_tokens": 1804,
+      "output_tokens": 927,
+      "cost_usd": 0.012878,
+      "seconds": 9.0,
+      "problems": [
+        "key 0.29 differs from the last number in the explanation (0.553)"
+      ]
+    }
+  ],
+  "workspace_ids_seen": [
+    "wrkspc_01SnSeWc7TvEtPNw4KUucwhH"
+  ],
+  "stopped_early_reason": null,
+  "total_input_tokens": 35767,
+  "total_output_tokens": 10492,
+  "total_cost_usd": 0.176454,
+  "items_parsed": 20,
+  "items_with_problems": 1
+}

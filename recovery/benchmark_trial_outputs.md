@@ -13,6 +13,8 @@
    ```
    It writes a new dated folder and never overwrites an old one.
 
+**Trial 2 (prompt v2, 2026-10-07):** same layout in `...benchmark-trial02\`, 20 items, cost $0.1765, review copies in `results/benchmark_trial/` including `..._items_verified.jsonl` (R check results). Regenerate with the same command (v2 is the default prompt); verify with `python code\generation\generate_benchmark.py verify --items <items.jsonl>`. `verify` needs R: R 4.3.1 lives at `C:\R-4.3.1` (outside the repository; reinstall from CRAN if lost) and its path is `rscript` in `configs/paths.yaml`.
+
 ## Versions, seeds, and settings
 - Source / model revision / API model + version: `claude-sonnet-5-5` (a pinned snapshot), effort `medium`, adaptive thinking (API default), `max_tokens` 5000, structured JSON output. Sampling settings cannot be set on this model.
 - Random seeds: none for the model. The question slots are deterministic (seeded shuffle inside the script).

@@ -38,6 +38,7 @@ This script never prints or stores your API key. It reads ANTHROPIC_API_KEY from
 EXAMPLES (run with the project's virtual environment Python)
   python generate_benchmark.py plan --n 20
   python generate_benchmark.py check --items <path to items.jsonl>          (free automatic checks)
+  python generate_benchmark.py verify --items <path to items.jsonl>         (free: runs R to test the keys)
   python generate_benchmark.py trial --n 20 --cap-usd 3.00 --dry-run     (no API call, no cost)
   python generate_benchmark.py trial --n 20 --cap-usd 3.00               (real calls)
   python generate_benchmark.py submit --n 1000 --cap-usd 30              (later: Batch API)
@@ -51,7 +52,9 @@ import math
 import os
 import re
 import shutil
+import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -73,10 +76,17 @@ PRICE_IN_PER_MTOK = 2.00             # standard price, USD per million input tok
 PRICE_OUT_PER_MTOK = 10.00           # standard price, USD per million output tokens
 BATCH_FACTOR = 0.5                   # the Batch API charges half
 TYPICAL_IN, TYPICAL_OUT = 1200, 1500 # rough guess of tokens per question, only for the "expected" line
-PROMPT_VERSION = "v1"
+PROMPT_VERSION = "v2"                # which prompt file is used; change with --prompt (see set_prompt)
 
 REPO = Path(__file__).resolve().parents[2]
-PROMPT_FILE = REPO / "data" / "prompts" / "benchmark_generation_v1.md"
+PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{PROMPT_VERSION}.md"
+
+
+def set_prompt(version):
+    """Choose the prompt file (v1 or v2). Trial, submit and fetch all read the same global, so they cannot drift."""
+    global PROMPT_VERSION, PROMPT_FILE
+    PROMPT_VERSION = version
+    PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{version}.md"
 
 # ---------------------------------------------------------------------------------------------
 # The blueprint: which kinds of questions, in which proportions.
@@ -140,12 +150,17 @@ SUBTOPICS = {
 }
 
 # The strict JSON shape every question must come back in (the "output schema").
+# The ORDER of the fields matters: the model writes them top to bottom, so `working` (the calculation)
+# and `r_solution` (R code that recomputes it) come BEFORE `canonical_answer`. The key is therefore
+# written after the work, not before it. (Prompt v1 had no `working` or `r_solution`.)
 ITEM_SCHEMA = {
     "type": "object",
     "properties": {
         "question": {"type": "string"},
         "answer_type": {"type": "string", "enum": ["number", "multiple_choice", "r_expression", "short_text"]},
         "choices": {"type": "array", "items": {"type": "string"}},
+        "working": {"type": "string"},
+        "r_solution": {"type": "string"},
         "canonical_answer": {"type": "string"},
         "answer_tolerance": {"type": "number"},
         "r_check": {"type": "string"},
@@ -154,10 +169,12 @@ ITEM_SCHEMA = {
         "category": {"type": "string", "enum": ["numerical", "conceptual", "r_generation", "r_interpretation", "output_interpretation"]},
         "subtopic": {"type": "string"},
     },
-    "required": ["question", "answer_type", "choices", "canonical_answer", "answer_tolerance", "r_check",
-                 "explanation", "difficulty", "category", "subtopic"],
+    "required": ["question", "answer_type", "choices", "working", "r_solution", "canonical_answer",
+                 "answer_tolerance", "r_check", "explanation", "difficulty", "category", "subtopic"],
     "additionalProperties": False,
 }
+# Fields that exist in prompt-v1 items (the first trial), so old files can still be checked.
+V1_REQUIRED = [k for k in ITEM_SCHEMA["required"] if k not in ("working", "r_solution")]
 
 
 def utc_now():
@@ -261,9 +278,10 @@ def worst_case(params, batch=False):
 def check_item(item, slot, stop_reason):
     """Return a list of problems (empty list = the item looks fine)."""
     problems = []
+    legacy = "working" not in item  # an item written by prompt v1
     if stop_reason == "max_tokens":
         problems.append("cut off at max_tokens")
-    for k in ITEM_SCHEMA["required"]:
+    for k in (V1_REQUIRED if legacy else ITEM_SCHEMA["required"]):
         if k not in item:
             problems.append(f"missing field {k}")
     if problems:
@@ -295,6 +313,9 @@ def check_item(item, slot, stop_reason):
     # (Found in the first trial: one check re-tested the answer key itself and would pass for any answer.)
     if item["r_check"].strip() and "candidate" not in item["r_check"]:
         problems.append("r_check never uses the variable candidate, so it would pass for any answer")
+    # Prompt v2 items: a number answer must come with R code that recomputes it (verify runs that code).
+    if not legacy and item["answer_type"] == "number" and not item["r_solution"].strip():
+        problems.append("number answer without r_solution (no R code to recompute the key)")
     # Cheap consistency test for number answers: the key should equal the last number in the model's own
     # worked explanation. (Found in the first trial: two keys contradicted their own working.)
     if item["answer_type"] == "number":
@@ -553,9 +574,136 @@ def cmd_check(args):
           "the answer keys still need to be verified by running R or recomputing (see README Phase 3).")
 
 
+# ---------------------------------------------------------------------------------------------
+# verify: use R to test the answer keys (free, no API call)
+#
+# WHY: in the first trial 3 of 8 numerical keys were wrong, and in one case the model's own written
+# explanation had the arithmetic slip, so asking the same model to re-read it would not help. R does
+# not share the model's blind spots in arithmetic, so we let R produce the number and compare it with
+# the key. The code R runs was written by the model, so it is run in a throwaway folder with a time
+# limit, and code that touches files, the network or the operating system is refused.
+# ---------------------------------------------------------------------------------------------
+# R functions we never run (model-written code executes on this PC).
+UNSAFE_R = re.compile(
+    r"\b(system2?|shell|shell\.exec|unlink|file\.remove|file\.rename|file\.create|file\.copy|dir\.create|"
+    r"download\.file|url|socketConnection|setwd|Sys\.setenv|Sys\.setlocale|source|sys\.source|readline|readLines|"
+    r"writeLines|readRDS|saveRDS|write|write\.csv|read\.csv|sink|install\.packages|library|require|"
+    r"loadNamespace|dyn\.load|quit|q)\s*\(")
+R_NUMBER = re.compile(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?")
+KEY_TOL = 0.0006  # keys are rounded to 3 decimals, so a correct key is within 0.0005 of R's value
+
+
+def rscript_path():
+    paths = yaml.safe_load((REPO / "configs" / "paths.yaml").read_text())
+    p = Path(paths["rscript"])
+    if not p.exists():
+        sys.exit(f"Rscript not found at {p}. Install R or fix `rscript` in configs/paths.yaml.")
+    return str(p)
+
+
+def run_r(code, rscript):
+    """Run R code in a temporary folder. Returns (ok, stdout_or_error_text)."""
+    if UNSAFE_R.search(code):
+        return False, "refused: code uses a function that is not allowed (" + UNSAFE_R.search(code).group(1) + ")"
+    with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "code.R").write_text(code, encoding="utf-8")
+        try:
+            r = subprocess.run([rscript, "--vanilla", "code.R"], cwd=tmp, capture_output=True, text=True,
+                               timeout=20, encoding="utf-8", errors="replace")
+        except subprocess.TimeoutExpired:
+            return False, "R timed out after 20 s"
+    if r.returncode != 0:
+        return False, "R error: " + (r.stderr.strip().splitlines() or ["?"])[-1]
+    return True, r.stdout
+
+
+def r_string(s):
+    """Write a Python string as an R string literal."""
+    return json.dumps(s)  # JSON escapes (\" \\ \n \uXXXX) are valid R escapes
+
+
+def r_check_result(item, candidate, rscript):
+    """Run the item's r_check with `candidate` as the student's answer. Returns True, False or an error text."""
+    code = (f"candidate <- {r_string(candidate)}\n"
+            f".res <- withVisible({{\n{item['r_check']}\n}})$value\n"
+            f"cat('RESULT:', isTRUE(.res), '\\n')\n")
+    ok, out = run_r(code, rscript)
+    if not ok:
+        return out if out.startswith("refused") else False  # an R error on a wrong answer counts as "not TRUE"
+    return "RESULT: TRUE" in out
+
+
+def verify_item(item, rscript):
+    """Return (status, issues, r_value). status is one of: ok, FLAGGED, not_machine_checkable."""
+    issues, r_value, checked = [], None, False
+    # 1. Number keys: let R recompute the number from the model's r_solution and compare.
+    if item["answer_type"] == "number":
+        sol = (item.get("r_solution") or "").strip()
+        if not sol:
+            issues.append("no r_solution, so R cannot recompute this key")
+        else:
+            checked = True
+            ok, out = run_r("options(digits = 15)\n" + sol, rscript)
+            if not ok:
+                issues.append(f"r_solution failed: {out}")
+            else:
+                nums = R_NUMBER.findall(re.sub(r"\[\d+\]", " ", out))
+                if len(nums) != 1:
+                    issues.append(f"r_solution printed {len(nums)} numbers (expected exactly 1): {out.strip()[:80]!r}")
+                else:
+                    r_value = float(nums[0])
+                    try:
+                        key = float(item["canonical_answer"].replace(",", ""))
+                        if abs(r_value - key) > KEY_TOL:
+                            issues.append(f"KEY MISMATCH: key {key:g} but R computes {r_value:.6g}")
+                    except ValueError:
+                        issues.append("key is not a plain number")
+    # 2. Items with an r_check: the key must pass it, and wrong answers must fail it.
+    if (item.get("r_check") or "").strip():
+        checked = True
+        res_key = r_check_result(item, item["canonical_answer"], rscript)
+        if res_key is not True:
+            issues.append("r_check does not accept the key" + (f" ({res_key})" if isinstance(res_key, str) else ""))
+        for wrong in ("NULL", "-999999", "'zzz'"):
+            res_wrong = r_check_result(item, wrong, rscript)
+            if res_wrong is True:
+                issues.append(f"r_check is vacuous: it accepts the wrong answer {wrong}")
+                break
+    if issues:
+        return "FLAGGED", issues, r_value
+    return ("ok" if checked else "not_machine_checkable"), issues, r_value
+
+
+def cmd_verify(args):
+    """Run R on every item in an items.jsonl. Free: no API call. Writes <name>_verified.jsonl beside it."""
+    rscript = rscript_path()
+    path = Path(args.items)
+    out_rows, counts = [], {}
+    for line in open(path, encoding="utf-8"):
+        item = json.loads(line)
+        status, issues, r_value = verify_item(item, rscript)
+        counts[status] = counts.get(status, 0) + 1
+        out_rows.append({**item, "verify_status": status, "verify_issues": issues, "r_value": r_value})
+        if status == "FLAGGED":
+            print(f"{item['item_id']} [{item['category']}]: " + "; ".join(issues))
+        elif status == "not_machine_checkable":
+            print(f"{item['item_id']} [{item['category']}]: not machine-checkable (needs a blind re-solve / other-family check)")
+    dest = path.with_name(path.stem + "_verified.jsonl")
+    with open(dest, "w", encoding="utf-8") as f:
+        for row in out_rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    print(f"\nSummary: {counts}   (wrote {dest})")
+    print("ok = R agreed with the key; FLAGGED = R disagreed or the check is broken; not_machine_checkable = no "
+          "code to run (multiple-choice and conceptual items), these need the other checks in README Phase 3.")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--prompt", default=PROMPT_VERSION, choices=["v1", "v2"], help="which prompt file to use (default v2)")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("verify", help="run R to test the answer keys of an items.jsonl file (free)")
+    p.add_argument("--items", required=True)
+    p.set_defaults(fn=cmd_verify)
     p = sub.add_parser("check", help="re-run the automatic checks on an items.jsonl file (free)")
     p.add_argument("--items", required=True)
     p.set_defaults(fn=cmd_check)
@@ -577,6 +725,7 @@ def main():
     p.add_argument("--manifest", required=True)
     p.set_defaults(fn=cmd_fetch)
     args = ap.parse_args()
+    set_prompt(args.prompt)
     args.fn(args)
 
 
