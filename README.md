@@ -82,6 +82,10 @@ This phase now comes first because the pilot (Phase 4) needs a frozen benchmark 
 - [ ] **Freeze** the benchmark (hash it, store read-only) before any training
 - [ ] Guarantee these exact questions, and near-duplicates, are never used in distillation data
 - [ ] Record every API call's tokens and cost in `docs/cost_log.md`
+- [x] Prompt trial, 2026-10-07: `code/generation/generate_benchmark.py` with `data/prompts/benchmark_generation_v1.md` wrote 20 questions with Claude Sonnet 5.5 for **$0.13** (hard cap was $3). All 20 parsed, short, balanced and not cut off, but **3 of the 8 numerical answer keys were wrong** and one R check never tested the student's answer. Details: `docs/cost_log.md`, `docs/pilot_plan.md` Step 1, `docs/progress_update.md`
+- [ ] Prompt v2: put the worked calculation before the answer key, require every R check to use `candidate`, and require number items to also include R code that recomputes the answer; rerun the 20-item trial (about $0.13)
+- [ ] Install R (free) so answer keys and `r_check` snippets can be run, which is rung 1 of the independence ladder
+- [ ] Console setup before the big run: dedicated workspace with a spend limit (`docs/api_console_guide.md`)
 
 ### Phase 4: Pilot (1k examples, Pythia 70M, end to end)
 Goal: prove the whole pipeline works on the Miami cluster and the Claude API at small scale, and measure real cost and time before committing to the full project. Plain-language walkthrough: `docs/pilot_plan.md`.
@@ -295,6 +299,7 @@ Dates are placeholders; replace with real deadlines from the program.
 
 ## 10. Open Decisions
 
+- [ ] Benchmark blueprint (proposal in `code/generation/generate_benchmark.py`, to confirm with Dr. Lee): categories numerical 30%, conceptual 20%, R code generation 20%, R code interpretation 15%, interpretation of statistical output 15%; difficulty intro 40%, intermediate 35%, graduate 25%; answer types number, multiple choice, R expression, short text
 - [ ] Training-data template and answer length (proposed from the Pythia probe: one fixed `Question:`/`Answer:` template, short answers with a marked final answer, end-of-text id 0 on every example, loss on the answer and end token only); confirm in the Phase 4 pilot and with Dr. Lee
 - [ ] Evaluation protocol for all students and baselines (prompt format, stop rule such as first blank line or `Question:`, max new tokens, greedy decoding); declare it before any results
 - [ ] Whether to add a multiple-choice slice to the benchmark scored by answer likelihood (works for base models without generation, reported separately from generation accuracy)

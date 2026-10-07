@@ -14,7 +14,7 @@
    ```powershell
    $p = "C:\masters_project_large\envs\probe\Scripts\python.exe"
    & $p -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
-   & $p -m pip install transformers==5.19.0 safetensors==0.8.0 PyYAML==6.0.3 psutil==7.2.2
+   & $p -m pip install transformers==5.19.0 safetensors==0.8.0 PyYAML==6.0.3 psutil==7.2.2 anthropic==1.11.0
    ```
 3. Run the probe:
    ```powershell
@@ -22,7 +22,7 @@
    ```
 
 ## Versions, seeds, and settings
-- Source / model revision / API model + version: the probe loads the pinned Pythia checkpoints from `C:\masters_project_large\models\pythia` (see `recovery/pythia_base_models.md`); no API is used.
+- Source / model revision / API model + version: the probe loads the pinned Pythia checkpoints from `C:\masters_project_large\models\pythia` (see `recovery/pythia_base_models.md`); it uses no API. The `anthropic` package (added 2026-10-07) is used by `code/generation/generate_benchmark.py`, which calls the Claude API model `claude-sonnet-5-5`; the API key comes from the `ANTHROPIC_API_KEY` environment variable and is never stored in the repository.
 - Random seeds: 1234 (only matters if `--sampling` is used; the default greedy decoding is deterministic).
 - Key hyperparameters or config file: `--dtype float16 --device cpu --max-new-tokens 128` (defaults).
 - Package versions: `environment/requirements.txt` (Python 3.11.9, torch 2.14.1+cpu, transformers 5.19.0, safetensors 0.8.0).
