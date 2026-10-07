@@ -76,7 +76,7 @@ PRICE_IN_PER_MTOK = 2.00             # standard price, USD per million input tok
 PRICE_OUT_PER_MTOK = 10.00           # standard price, USD per million output tokens
 BATCH_FACTOR = 0.5                   # the Batch API charges half
 TYPICAL_IN, TYPICAL_OUT = 1200, 1500 # rough guess of tokens per question, only for the "expected" line
-PROMPT_VERSION = "v2"                # which prompt file is used; change with --prompt (see set_prompt)
+PROMPT_VERSION = "v3"                # which prompt file is used; change with --prompt (see set_prompt)
 
 REPO = Path(__file__).resolve().parents[2]
 PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{PROMPT_VERSION}.md"
@@ -275,6 +275,21 @@ def worst_case(params, batch=False):
 # ---------------------------------------------------------------------------------------------
 # Checking a returned item
 # ---------------------------------------------------------------------------------------------
+WORD_NUMBERS = {"zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6}
+
+
+def stated_decimals(question):
+    """How many decimal places the question asks for ('3 decimal places', 'two decimals', 'whole number'), or None."""
+    q = question.lower()
+    m = re.search(r"\b(\d+|zero|one|two|three|four|five|six)\s+decimal(?:\s+place)?s?\b", q)
+    if m:
+        v = m.group(1)
+        return int(v) if v.isdigit() else WORD_NUMBERS[v]
+    if "whole number" in q or "nearest integer" in q:
+        return 0
+    return None
+
+
 def check_item(item, slot, stop_reason):
     """Return a list of problems (empty list = the item looks fine)."""
     problems = []
@@ -291,6 +306,12 @@ def check_item(item, slot, stop_reason):
             problems.append(f"{k} differs from the slot ({item[k]!r} vs {slot[k]!r})")
     if not item["question"].strip():
         problems.append("empty question")
+    # The model sometimes "thinks aloud" inside the question text (found in trial 3, BM0015: "...must be... no:
+    # exactly 2 statisticians..."). R cannot catch this because the code and key can still be consistent.
+    text = item["question"] + " " + " ".join(item["choices"])
+    marker = re.search(r"\bno:|\bwait\b|\bhmm\b|\bsorry\b|\blet me\b|\boops\b|\.\.\.\s*(no|wait|hmm)\b", text, re.I)
+    if marker:
+        problems.append(f"question text looks unfinished or self-correcting (found {marker.group(0)!r})")
     if not item["canonical_answer"].strip():
         problems.append("empty canonical_answer")
     if len(item["canonical_answer"]) > 100:
@@ -316,9 +337,26 @@ def check_item(item, slot, stop_reason):
     # Prompt v2 items: a number answer must come with R code that recomputes it (verify runs that code).
     if not legacy and item["answer_type"] == "number" and not item["r_solution"].strip():
         problems.append("number answer without r_solution (no R code to recompute the key)")
+    # Rounding rules (prompt v3): when the question states how to round, the key must be written with
+    # exactly that many decimals and the allowed error must cover a tie rounded the other way.
+    # (Found in trial 2: BM0005 asked for 3 decimals but the key was "0.74"; BM0001's exact value 0.3125
+    # was rounded to 0.312 by R but written 0.313 in the key.)
+    if item["answer_type"] == "number":
+        d = stated_decimals(item["question"])
+        if d is not None:
+            key_text = item["canonical_answer"].strip().replace(",", "")
+            key_decimals = len(key_text.split(".")[1]) if "." in key_text else 0
+            if key_decimals != d:
+                problems.append(f"the question asks for {d} decimal place(s) but the key has {key_decimals}")
+            # (only for answers with decimals: a whole-number answer from exact code output may have tolerance 0)
+            if d >= 1 and float(item["answer_tolerance"]) < 0.5 * 10 ** (-d) - 1e-12:
+                problems.append(f"answer_tolerance {item['answer_tolerance']:g} is below half of the last decimal place "
+                                f"({0.5 * 10 ** (-d):g}), so a tie rounded the other way would be marked wrong")
     # Cheap consistency test for number answers: the key should equal the last number in the model's own
     # worked explanation. (Found in the first trial: two keys contradicted their own working.)
-    if item["answer_type"] == "number":
+    # Only used for items WITHOUT r_solution: when R code exists, R is the authority and `verify` compares
+    # against it (the text test gave a false alarm on BM0020 in trial 2, where the key was right).
+    if item["answer_type"] == "number" and not (item.get("r_solution") or "").strip():
         try:
             key = float(item["canonical_answer"].replace(",", ""))
             nums = re.findall(r"-?\d+(?:\.\d+)?", item["explanation"].replace(",", ""))
@@ -682,6 +720,9 @@ def cmd_verify(args):
     for line in open(path, encoding="utf-8"):
         item = json.loads(line)
         status, issues, r_value = verify_item(item, rscript)
+        extra = check_item(item, item, "end_turn")  # also report the free format and rounding checks here
+        if extra:
+            status, issues = "FLAGGED", issues + extra
         counts[status] = counts.get(status, 0) + 1
         out_rows.append({**item, "verify_status": status, "verify_issues": issues, "r_value": r_value})
         if status == "FLAGGED":
@@ -699,7 +740,7 @@ def cmd_verify(args):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--prompt", default=PROMPT_VERSION, choices=["v1", "v2"], help="which prompt file to use (default v2)")
+    ap.add_argument("--prompt", default=PROMPT_VERSION, choices=["v1", "v2", "v3"], help="which prompt file to use (default v3)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("verify", help="run R to test the answer keys of an items.jsonl file (free)")
     p.add_argument("--items", required=True)
