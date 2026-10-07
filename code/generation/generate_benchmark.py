@@ -76,7 +76,7 @@ PRICE_IN_PER_MTOK = 2.00             # standard price, USD per million input tok
 PRICE_OUT_PER_MTOK = 10.00           # standard price, USD per million output tokens
 BATCH_FACTOR = 0.5                   # the Batch API charges half
 TYPICAL_IN, TYPICAL_OUT = 1200, 1500 # rough guess of tokens per question, only for the "expected" line
-PROMPT_VERSION = "v3"                # which prompt file is used; change with --prompt (see set_prompt)
+PROMPT_VERSION = "v5"                # which prompt file is used; change with --prompt (see set_prompt)
 
 REPO = Path(__file__).resolve().parents[2]
 PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{PROMPT_VERSION}.md"
@@ -173,8 +173,28 @@ ITEM_SCHEMA = {
                  "answer_tolerance", "r_check", "explanation", "difficulty", "category", "subtopic"],
     "additionalProperties": False,
 }
+
+
+def schema_for(version):
+    """The output schema for a prompt version.
+    v1-v3: the original field order (`working` sits after `question`).
+    v4: `working` is the FIRST field. The API refused every v4 request (trial 4), most likely because a
+        reasoning/scratchpad field in the reply is what its `reasoning_extraction` safety check looks for.
+    v5: no `working` field at all; the model does its reasoning in its own thinking, not in the reply."""
+    if version in ("v1", "v2", "v3"):
+        return ITEM_SCHEMA
+    props = ITEM_SCHEMA["properties"]
+    if version == "v4":
+        order = ["working"] + [k for k in props if k != "working"]
+        return {**ITEM_SCHEMA, "properties": {k: props[k] for k in order}}
+    return {**ITEM_SCHEMA, "properties": {k: v for k, v in props.items() if k != "working"},
+            "required": V5_REQUIRED}
+
+
 # Fields that exist in prompt-v1 items (the first trial), so old files can still be checked.
 V1_REQUIRED = [k for k in ITEM_SCHEMA["required"] if k not in ("working", "r_solution")]
+# Fields of prompt-v5 items: everything except `working`.
+V5_REQUIRED = [k for k in ITEM_SCHEMA["required"] if k != "working"]
 
 
 def utc_now():
@@ -253,13 +273,13 @@ def build_request(slot, prompt):
         "messages": [{"role": "user", "content": user}],
         # Structured output (a JSON schema) plus the effort level. Thinking is left at its default
         # (adaptive: the model decides how much to think). Temperature cannot be set on this model.
-        "output_config": {"effort": EFFORT, "format": {"type": "json_schema", "schema": ITEM_SCHEMA}},
+        "output_config": {"effort": EFFORT, "format": {"type": "json_schema", "schema": schema_for(PROMPT_VERSION)}},
     }
 
 
 def est_input_tokens(params):
     """Deliberately generous upper estimate: one token per 3 characters."""
-    chars = len(params["system"]) + sum(len(m["content"]) for m in params["messages"]) + len(json.dumps(ITEM_SCHEMA))
+    chars = len(params["system"]) + sum(len(m["content"]) for m in params["messages"]) + len(json.dumps(schema_for(PROMPT_VERSION)))
     return math.ceil(chars / 3.0)
 
 
@@ -293,10 +313,12 @@ def stated_decimals(question):
 def check_item(item, slot, stop_reason):
     """Return a list of problems (empty list = the item looks fine)."""
     problems = []
-    legacy = "working" not in item  # an item written by prompt v1
+    legacy = "r_solution" not in item  # an item written by prompt v1 (no working, no r_solution)
     if stop_reason == "max_tokens":
         problems.append("cut off at max_tokens")
-    for k in (V1_REQUIRED if legacy else ITEM_SCHEMA["required"]):
+    # v2-v4 items have `working`; v5 items do not (see schema_for). Which fields to require follows the item.
+    required = V1_REQUIRED if legacy else (ITEM_SCHEMA["required"] if "working" in item else V5_REQUIRED)
+    for k in required:
         if k not in item:
             problems.append(f"missing field {k}")
     if problems:
@@ -446,7 +468,8 @@ def cmd_trial(args):
         print("\n--- First request exactly as it would be sent (dry run: nothing was sent) ---")
         print("SYSTEM:\n" + reqs[0]["system"])
         print("\nUSER:\n" + reqs[0]["messages"][0]["content"])
-        print("\noutput_config:", json.dumps({"effort": EFFORT, "format": "json_schema (ITEM_SCHEMA)"}))
+        print("\noutput_config:", json.dumps({"effort": EFFORT, "format": f"json_schema (schema_for {PROMPT_VERSION})"}))
+        print("Output fields, in order:", ", ".join(schema_for(PROMPT_VERSION)["properties"]))
         return
     if not ok:
         sys.exit(2)
@@ -484,21 +507,37 @@ def cmd_trial(args):
             u = msg.usage
             c = cost_usd(u.input_tokens, u.output_tokens)
             spent += c
-            text = first_text(msg)
-            try:
-                item = json.loads(text)
-                problems = check_item(item, slot, msg.stop_reason)
-            except json.JSONDecodeError as e:
-                item, problems = None, [f"reply is not valid JSON ({e})"]
+            msg_dump = msg.model_dump(mode="json")
+            refused = msg.stop_reason == "refusal"
+            item = None
+            if refused:
+                # A refusal is a normal HTTP 200 reply with no content, not an error and not bad JSON.
+                # Do not try to parse it (trial 4 did, and reported 20 misleading "not valid JSON" problems).
+                problems = ["refused by the API (stop_reason refusal); see stop_details"]
+            else:
+                try:
+                    item = json.loads(first_text(msg))
+                    problems = check_item(item, slot, msg.stop_reason)
+                except json.JSONDecodeError as e:
+                    problems = [f"reply is not valid JSON ({e})"]
             call = {"item_id": slot["item_id"], "request_id": msg._request_id, "stop_reason": msg.stop_reason,
+                    # The WHOLE stop_details object exactly as the API sent it (None if the reply has none),
+                    # because its fields can be null and new fields may be added.
+                    "stop_details": msg_dump.get("stop_details"),
                     "input_tokens": u.input_tokens, "output_tokens": u.output_tokens, "cost_usd": round(c, 6),
                     "seconds": round(time.time() - t0, 1), "problems": problems}
             calls.append(call)
-            resp_f.write(json.dumps({"item_id": slot["item_id"], "response": msg.model_dump(mode="json")},
-                                    ensure_ascii=False) + "\n")
+            resp_f.write(json.dumps({"item_id": slot["item_id"], "response": msg_dump}, ensure_ascii=False) + "\n")
             resp_f.flush()
             if item is not None:
                 items.append({**slot, **item, "problems": problems})
+            if refused:
+                print(f"{slot['item_id']}: REFUSED. stop_details={json.dumps(call['stop_details'])} "
+                      f"request_id={call['request_id']} in {u.input_tokens} out {u.output_tokens} ${c:.4f}  [total ${spent:.4f}]")
+                # Stop now (a refusal usually repeats for every item), but only AFTER this call's entry and
+                # raw reply are saved above; the code after the loop still writes the run log and item files.
+                stopped = f"stopped at {slot['item_id']}: refusal, stop_details={json.dumps(call['stop_details'])}"
+                break
             print(f"{slot['item_id']}: in {u.input_tokens} out {u.output_tokens} ${c:.4f} "
                   f"({call['seconds']}s) {'OK' if not problems else 'PROBLEMS: ' + '; '.join(problems)}  [total ${spent:.4f}]")
 
@@ -576,14 +615,20 @@ def cmd_fetch(args):
             u = msg.usage
             c = cost_usd(u.input_tokens, u.output_tokens, batch=True)
             spent += c
-            try:
-                item = json.loads(first_text(msg))
-                problems = check_item(item, slots[iid], msg.stop_reason)
-            except json.JSONDecodeError as e:
-                item, problems = None, [f"reply is not valid JSON ({e})"]
-            calls.append({"item_id": iid, "stop_reason": msg.stop_reason, "input_tokens": u.input_tokens,
+            msg_dump = msg.model_dump(mode="json")
+            if msg.stop_reason == "refusal":
+                # In a batch a refusal comes back as a "succeeded" result; record it, do not parse it.
+                item, problems = None, ["refused by the API (stop_reason refusal); see stop_details"]
+            else:
+                try:
+                    item = json.loads(first_text(msg))
+                    problems = check_item(item, slots[iid], msg.stop_reason)
+                except json.JSONDecodeError as e:
+                    item, problems = None, [f"reply is not valid JSON ({e})"]
+            calls.append({"item_id": iid, "message_id": msg_dump.get("id"), "stop_reason": msg.stop_reason,
+                          "stop_details": msg_dump.get("stop_details"), "input_tokens": u.input_tokens,
                           "output_tokens": u.output_tokens, "cost_usd": round(c, 6), "problems": problems})
-            resp_f.write(json.dumps({"item_id": iid, "response": msg.model_dump(mode="json")}, ensure_ascii=False) + "\n")
+            resp_f.write(json.dumps({"item_id": iid, "response": msg_dump}, ensure_ascii=False) + "\n")
             if item is not None:
                 items.append({**slots[iid], **item, "problems": problems})
     items.sort(key=lambda i: i["item_id"])
@@ -691,8 +736,12 @@ def verify_item(item, rscript):
                 else:
                     r_value = float(nums[0])
                     try:
-                        key = float(item["canonical_answer"].replace(",", ""))
-                        if abs(r_value - key) > KEY_TOL:
+                        key_text = item["canonical_answer"].strip().replace(",", "")
+                        key = float(key_text)
+                        # A correctly rounded key is within half of its own last decimal place of R's value
+                        # (0.94 for R's 0.940869 is right when the question asks for 2 decimals).
+                        key_decimals = len(key_text.split(".")[1]) if "." in key_text else 0
+                        if abs(r_value - key) > max(KEY_TOL, 0.5 * 10 ** (-key_decimals) + 1e-9):
                             issues.append(f"KEY MISMATCH: key {key:g} but R computes {r_value:.6g}")
                     except ValueError:
                         issues.append("key is not a plain number")
@@ -740,7 +789,7 @@ def cmd_verify(args):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--prompt", default=PROMPT_VERSION, choices=["v1", "v2", "v3"], help="which prompt file to use (default v3)")
+    ap.add_argument("--prompt", default=PROMPT_VERSION, choices=["v1", "v2", "v3", "v4", "v5"], help="which prompt file to use (default v5)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("verify", help="run R to test the answer keys of an items.jsonl file (free)")
     p.add_argument("--items", required=True)
