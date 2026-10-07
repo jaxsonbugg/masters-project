@@ -56,3 +56,15 @@ The low end of each range assumes no thinking tokens (Base: 300 in / 600 out per
 - Token counts per example are assumptions. The pilot (Phase 4) should generate about 1k examples, record `usage` from the API responses, and update this file.
 - Prices change. Re-check the pricing page before the large run.
 - The verifier cost depends on a model and plan not yet chosen.
+
+## 7. Sensitivity to answer length (added 2026-10-06, from the Pythia probe)
+
+The estimates above assume the teacher writes up to 600 output tokens plus up to 2,000 thinking tokens per example. The Pythia probe (`docs/pythia_behavior_analysis.md`) found that the students can only imitate short answers, so the training answers can be short. Output tokens (including thinking) are the expensive part, so shorter answers could cut the cost a lot. Sonnet 5.5 Batch: cost = (input tokens x $1 + output tokens x $5) / 1,000,000.
+
+| Scenario | Input tokens | Output tokens incl. thinking | Per example | 50k | 200k |
+|---|---|---|---|---|---|
+| Current high case (above) | 300 | 2,600 | $0.0133 | $665 | $2,660 |
+| Short answer, no thinking | 300 | 200 | $0.0013 | $65 | $260 |
+| Short answer, 1,000 thinking tokens | 300 | 1,200 | $0.0063 | $315 | $1,260 |
+
+This is arithmetic on assumptions, not a forecast. Keep the high case for any funding request until the Phase 4 pilot measures real tokens and verification pass rates at two effort levels. Actual spend is tracked in `cost_log.md`.

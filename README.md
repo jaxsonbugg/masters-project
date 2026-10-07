@@ -71,11 +71,13 @@ This file is the living guide for the project. Update it as decisions are made, 
 - [x] Teacher: Claude Sonnet 5.5 selected from desk research (Opus 5.5 is the fallback if the Phase 5 teacher accuracy is below 80% or the Phase 7 pass rate is poor); see `docs/teacher_selection.md`
 - [x] Students: Pythia 70M, 160M, 410M, 1B (deduped variants only)
 - [x] Record exact model checkpoints/revisions used: deduped, final `step143000` checkpoints pinned by commit SHA; see `docs/model_versions.md`
+- [x] Probe how the base models behave (free, local CPU, no API), done 2026-10-06: `code/evaluation/pythia_probe.py` gave all four students 16 mixed questions in 3 prompt formats and saved the outputs to `results/pythia_probe/`; findings and the resulting design advice are in `docs/pythia_behavior_analysis.md`. Key findings: the base models never stop on their own (0 of 192 generations ended with the end token), outputs loop, arithmetic is wrong at every size, and the 1B config names the wrong stop token. Done before Phases 3 and 4 because the results shape how benchmark questions and training data are written
 
 ### Phase 3: Create the evaluation benchmark
 This phase now comes first because the pilot (Phase 4) needs a frozen benchmark to score against. The benchmark is generated with the Claude API (Sonnet 5.5, Batch API) and is the real, full-size benchmark for the whole project, not a throwaway pilot version. Plain-language walkthrough: `docs/pilot_plan.md`.
 - [ ] Build a held-out set of about 1k statistics/R questions with the Claude API, using prompts kept separate from the training-data prompts
 - [ ] Cover a balanced mix (see Benchmark Design)
+- [ ] Give every question an answer type (number, multiple choice, short text, R code with tests) and a short canonical answer of about 20 tokens or less, so grading works on the first line of a model's output (the probe showed the students do not stop on their own)
 - [ ] Make every answer key checkable, strongest check first (the "independence ladder", see Section 9): (1) run R code and recompute numeric answers; (2) have a fresh, separate API call solve each question without seeing the key and send disagreements to manual review; (3) have a different-family model (ChatGPT) check a sample of keys; (4) hand spot-check a sample yourself
 - [ ] **Freeze** the benchmark (hash it, store read-only) before any training
 - [ ] Guarantee these exact questions, and near-duplicates, are never used in distillation data
@@ -85,7 +87,7 @@ This phase now comes first because the pilot (Phase 4) needs a frozen benchmark 
 Goal: prove the whole pipeline works on the Miami cluster and the Claude API at small scale, and measure real cost and time before committing to the full project. Plain-language walkthrough: `docs/pilot_plan.md`.
 - [x] Confirm cluster access: Redhawk login works (password + Duo), confirmed 2026-10-01; the `redhawk` command logs in; cluster choice analysis in `docs/cluster_selection.md`
 - [ ] Run a few test jobs on Redhawk (environment, GPU allocation, job scheduler)
-- [ ] Generate about 1k training questions and teacher answers with the Claude API, with no overlap with the frozen benchmark (n-gram/embedding decontamination check)
+- [ ] Generate about 1k training questions and teacher answers with the Claude API, with no overlap with the frozen benchmark (n-gram/embedding decontamination check). Use one fixed template (`Question: ...` / `Answer: ...`) with short answers ending in a marked final answer, every example ending with the end-of-text token (id 0, set explicitly; the 1B config names the wrong token). Reasons: `docs/pythia_behavior_analysis.md` sections 3.2 and 5
 - [ ] Light verification of the 1k set: run the R code, hand spot-check a sample (the full verifier stays in Phase 7)
 - [ ] Fine-tune Pythia 70M on the 1k set on Redhawk
 - [ ] Evaluate the untrained 70M and the fine-tuned 70M on the frozen benchmark; run the teacher on the benchmark once so the retained-accuracy ratio can be computed
@@ -227,7 +229,7 @@ masters-project/
 | `code/analysis/` | Statistics and plots |
 | `configs/` | Hyperparameters, cluster job scripts, and `paths.yaml` (defines the large-storage locations; code reads paths from it) |
 | `environment/` | Requirements or conda export so the environment can be rebuilt |
-| `results/` | Metrics, tables, figures, and small logs |
+| `results/` | Metrics, tables, figures, and small logs; `results/pythia_probe/` holds the small data files from the base-model probe |
 | `report/` | Final paper and slides |
 
 ### 7.2 Outside the repository: `C:\masters_project_large\` (NOT backed up)
@@ -293,6 +295,9 @@ Dates are placeholders; replace with real deadlines from the program.
 
 ## 10. Open Decisions
 
+- [ ] Training-data template and answer length (proposed from the Pythia probe: one fixed `Question:`/`Answer:` template, short answers with a marked final answer, end-of-text id 0 on every example, loss on the answer and end token only); confirm in the Phase 4 pilot and with Dr. Lee
+- [ ] Evaluation protocol for all students and baselines (prompt format, stop rule such as first blank line or `Question:`, max new tokens, greedy decoding); declare it before any results
+- [ ] Whether to add a multiple-choice slice to the benchmark scored by answer likelihood (works for base models without generation, reported separately from generation accuracy)
 - [ ] Exact question-format mix and difficulty distribution of the benchmark
 - [ ] Grading method for free-text answers
 - [ ] Which ChatGPT model and reasoning effort to use as verifier

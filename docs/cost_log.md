@@ -21,6 +21,7 @@ Worked example (Batch, from `cost_estimate.md`): one benchmark question with 300
 | UTC date/time | Purpose (phase) | Model ID | Effort / thinking | Batch or standard | Input tokens | Output tokens (incl. thinking) | Cost (USD) | Running total (USD) | Output folder | Note |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-06 | Setup, no API calls yet | n/a | n/a | n/a | 0 | 0 | 0.00 | 0.00 | n/a | Teacher selection and cost estimates were desk research from public pages, not API spend. Subscription seats not purchased. |
+| 2026-10-07 00:15 UTC | Pythia base-model probe (Phase 2, `code/evaluation/pythia_probe.py`) | n/a (no Claude call; local Pythia models) | n/a | n/a | 0 | 0 | 0.00 | 0.00 | `results/pythia_probe/2026-10-07_0015Z_probe.*` | Ran on this PC's CPU, so $0. Recorded here because it is a measured pilot-related step. An earlier run the same evening had a stop-token bug for the 1B model and was replaced. |
 
 ## Pilot budget versus actual
 
@@ -34,5 +35,7 @@ Expected cost of the Phase 3 and Phase 4 pilot, using the desk figures in `cost_
 | Phase 4: run the teacher on the benchmark (for the teacher accuracy baseline) | $3 to $13 | not yet run | |
 | Over-generation for items that fail checks (10 to 25% of one generation run) | up to about $3 | not yet run | |
 | **Pilot total** | **about $13 to $57** | **$0.00 so far** | |
+
+**Possible savings to test in the pilot (not yet a forecast):** the Pythia probe (`pythia_behavior_analysis.md` section 5.3) suggests the student can only imitate short answers, so the teacher does not need to write long ones. At Batch prices, 300 input tokens plus 200 output tokens costs $0.0013 per example, and 300 in plus 1,200 out (with some thinking) costs $0.0063, against $0.0133 for the current high case. So the real cost per 1k examples might be $1.30 to $6.30 instead of $13.30. The pilot should generate a small sample at two effort levels and record both the cost and the share of answers that pass verification, because a cheaper answer only saves money if it is still correct.
 
 The point of the pilot is to replace these guesses with measured token counts. After the pilot, update `cost_estimate.md` with the measured cost per item and re-project the 50k, 100k and 200k costs. If the measured cost per item differs a lot from $0.0033 to $0.0133, that changes the size of the funding request.

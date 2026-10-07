@@ -65,10 +65,10 @@ Fine-tuning is **not** described as "pure FP16 training". Only the loading of mo
 
 | Size | Checkpoint storage dtype / observed serialized dtype | Experimental runtime load dtype | `config.json` `torch_dtype` (metadata only) |
 |---|---|---|---|
-| 70M | Not read from the tensor header yet. `model.safetensors` is 281,715,176 bytes, approximately consistent with 4 bytes per official parameter | `torch.float16` | float16 |
-| 160M | Not read from the tensor header yet. 649,308,728 bytes, approximately consistent with 4 bytes per official parameter | `torch.float16` | float16 |
-| 410M | Not read from the tensor header yet. 1,621,370,224 bytes, approximately consistent with 4 bytes per official parameter | `torch.float16` | float16 |
-| 1B | Not read from the tensor header yet. 2,023,586,192 bytes, approximately consistent with 2 bytes per official parameter | `torch.float16` | float16 |
+| 70M | **F32** for all 76 tensors (read from the safetensors header 2026-10-06). `model.safetensors` is 281,715,176 bytes | `torch.float16` (verified loaded: only `torch.float16`) | float16 |
+| 160M | **F32** for all 148 tensors. 649,308,728 bytes | `torch.float16` (verified) | float16 |
+| 410M | **F32** for all 292 tensors. 1,621,370,224 bytes | `torch.float16` (verified) | float16 |
+| 1B | **F16** for all 196 tensors. 2,023,586,192 bytes. (EleutherAI says the 1B was trained in bf16 because of a loss spike in fp16.) | `torch.float16` (verified) | float16 |
 
 Cautions:
 - The file-size observation is only an approximate consistency check (official parameters x 4 or x 2, plus a small header). It is not proof of the stored dtype of every tensor, and it says nothing about the dtype used after loading. A direct read of the tensor dtypes in each safetensors header is still to be done once Python is available.
@@ -88,7 +88,9 @@ For each of the four sizes, in order:
 7. Re-run the SHA-256 check to confirm the files are unchanged.
 8. Fill in the environment table below.
 
-Status: not done. Python 3.11.9 and pip 24.0 are installed locally (`C:\Users\Buggb\AppData\Local\Programs\Python\Python311\`), but PyTorch, Transformers, safetensors and huggingface_hub are not. This PC has no NVIDIA GPU, so the load check is better run on Redhawk or as a CPU check of the smallest models. (An earlier version of this file said Python was not installed; the Windows Store alias had hidden the real install.)
+Status (updated 2026-10-06): steps 1 to 6 are done for all four sizes by `code/evaluation/pythia_probe.py` on this PC's CPU (results in `results/pythia_probe/2026-10-07_0015Z_probe_model_info.json`). Parameter counts match the official counts exactly (difference 0 for all four, including the 1B, so the 512-value gap in the Hugging Face API listing does not show up in the loaded model). Every loaded parameter is `torch.float16`. The stored tensor dtypes are in the table above (F32 for 70M, 160M, 410M; F16 for 1B). No errors loading in `float16` on CPU. Step 7 (re-hashing the files) and the Redhawk-side check are not done. Python 3.11.9 is at `C:\Users\Buggb\AppData\Local\Programs\Python\Python311\`; the probe runs in the venv `C:\masters_project_large\envs\probe` (recipe: `recovery/python_env.md`). This PC has no NVIDIA GPU.
+
+**Found by the probe: the 1B stop token is misconfigured.** In the shared vocabulary id 0 is `<|endoftext|>` and id 2 is `!`. The 70M, 160M and 410M configs say `eos_token_id: 0` and their tokenizers define `<|endoftext|>` as the end token. The **1B config says `eos_token_id: 2` (`!`)** and its tokenizer defines no end token (`eos_token` is `None`). Rule: set the end-of-text id explicitly to 0 (found by name `<|endoftext|>`) in all training and evaluation code and assert it, for all four sizes. See `docs/pythia_behavior_analysis.md` section 3.2.
 
 ## 4. Files and hashes
 
@@ -132,19 +134,21 @@ Local location: `C:\masters_project_large\models\pythia\pythia-<size>-deduped\st
 | special_tokens_map.json | 3 | `ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356` |
 
 ### Tokenizer: open check
-The 70M, 160M and 410M tokenizer files are byte-identical (same hashes). The 1B tokenizer files (`tokenizer.json`, `tokenizer_config.json`, `special_tokens_map.json`) differ from the smaller models at the file level, and the 1B `config.json` has a different `eos_token_id` (2, versus 0 in the 70M config) and extra fields. Whether this changes actual tokenization behavior will be tested before Phase 5 (encode the same text with each tokenizer, including special tokens, and record any difference). Not done yet (needs Python).
+The 70M, 160M and 410M tokenizer files are byte-identical (same hashes). The 1B tokenizer files (`tokenizer.json`, `tokenizer_config.json`, `special_tokens_map.json`) differ from the smaller models at the file level, and the 1B `config.json` has a different `eos_token_id` (2, versus 0 in the 70M config) and extra fields. **Tested 2026-10-06:** eight test strings (plain text, a p-value sentence, three R snippets, numbers, the `<|endoftext|>` string, whitespace and a tab) encode to **identical token ids for all four sizes, including 1B**, and `<|endoftext|>` is the single id 0 in all of them. The 1B differences that remain are in the configuration: no defined end/pad/bos tokens in the tokenizer, `eos_token_id: 2` in the config (see section 3), and a `clean_up_tokenization_spaces=True` setting that the library warns is destructive for this tokenizer type and ignores. Still to check once, when the evaluation code is written: that decoded 1B text matches the others for text with spaces before punctuation.
 
 ## 5. Environment versions
 
-Filled in the first time the check in section 3 is run.
+Filled in 2026-10-06 from the local probe environment (`C:\masters_project_large\envs\probe`; exact pins in `environment/requirements.txt`, rebuild steps in `recovery/python_env.md`).
 
 | Component | Version |
 |---|---|
-| Python | 3.11.9 on this PC (pip 24.0); cluster version not yet checked |
-| PyTorch | not yet installed |
-| Transformers | not yet installed |
-| Hugging Face Hub | not yet installed |
-| CUDA | not yet known (depends on the cluster) |
+| Python | 3.11.9 on this PC; cluster version not yet checked |
+| PyTorch | 2.14.1+cpu (CPU build, local only) |
+| Transformers | 5.19.0 |
+| safetensors | 0.8.0 |
+| tokenizers | 0.23.2 |
+| Hugging Face Hub | 1.33.0 (installed as a dependency; the model files were downloaded with `curl`, not this library) |
+| CUDA | none locally; unknown on the cluster (the Redhawk environment will need a CUDA build of PyTorch and its own record) |
 
 ## 6. Teacher
 

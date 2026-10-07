@@ -1,0 +1,688 @@
+{
+  "environment": {
+    "python": "3.11.9",
+    "torch": "2.14.1+cpu",
+    "transformers": "5.19.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "device": "cpu",
+    "dtype_requested": "float16",
+    "cpu_threads": 14,
+    "ram_total_gb": 34.0
+  },
+  "models": {
+    "70m": {
+      "repo": "EleutherAI/pythia-70m-deduped",
+      "commit_sha": "9a7c847e93250c8f24d4b7e7134dbf369e8fc9cb",
+      "official_params": 70426624,
+      "counted_params": 70426624,
+      "param_difference": 0,
+      "loaded_dtypes": [
+        "torch.float16"
+      ],
+      "file_tensor_dtypes": {
+        "F32": 76
+      },
+      "config_eos_token_id": 0,
+      "config_bos_token_id": 0,
+      "config_eos_token_string": "<|endoftext|>",
+      "tokenizer_eos_token": "<|endoftext|>",
+      "tokenizer_eos_token_id": 0,
+      "eos_id_used_by_probe": 0,
+      "tokenizer_vocab_size": 50277,
+      "model_max_positions": 2048,
+      "load_seconds": 0.45,
+      "peak_ram_mb_after_load": 771.3
+    },
+    "160m": {
+      "repo": "EleutherAI/pythia-160m-deduped",
+      "commit_sha": "c54a0e0b28cc667b6f278803024438d57f847b5d",
+      "official_params": 162322944,
+      "counted_params": 162322944,
+      "param_difference": 0,
+      "loaded_dtypes": [
+        "torch.float16"
+      ],
+      "file_tensor_dtypes": {
+        "F32": 148
+      },
+      "config_eos_token_id": 0,
+      "config_bos_token_id": 0,
+      "config_eos_token_string": "<|endoftext|>",
+      "tokenizer_eos_token": "<|endoftext|>",
+      "tokenizer_eos_token_id": 0,
+      "eos_id_used_by_probe": 0,
+      "tokenizer_vocab_size": 50277,
+      "model_max_positions": 2048,
+      "load_seconds": 0.71,
+      "peak_ram_mb_after_load": 1101.4
+    },
+    "410m": {
+      "repo": "EleutherAI/pythia-410m-deduped",
+      "commit_sha": "c66f7467608ffee8fca0d28cf1f46a7574b53cec",
+      "official_params": 405334016,
+      "counted_params": 405334016,
+      "param_difference": 0,
+      "loaded_dtypes": [
+        "torch.float16"
+      ],
+      "file_tensor_dtypes": {
+        "F32": 292
+      },
+      "config_eos_token_id": 0,
+      "config_bos_token_id": 0,
+      "config_eos_token_string": "<|endoftext|>",
+      "tokenizer_eos_token": "<|endoftext|>",
+      "tokenizer_eos_token_id": 0,
+      "eos_id_used_by_probe": 0,
+      "tokenizer_vocab_size": 50277,
+      "model_max_positions": 2048,
+      "load_seconds": 1.59,
+      "peak_ram_mb_after_load": 1623.2
+    },
+    "1b": {
+      "repo": "EleutherAI/pythia-1b-deduped",
+      "commit_sha": "d1988145ec1cf1e76d786cd05af9f53e8b1c95cc",
+      "official_params": 1011781632,
+      "counted_params": 1011781632,
+      "param_difference": 0,
+      "loaded_dtypes": [
+        "torch.float16"
+      ],
+      "file_tensor_dtypes": {
+        "F16": 196
+      },
+      "config_eos_token_id": 2,
+      "config_bos_token_id": 0,
+      "config_eos_token_string": "!",
+      "tokenizer_eos_token": null,
+      "tokenizer_eos_token_id": null,
+      "eos_id_used_by_probe": 0,
+      "tokenizer_vocab_size": 50277,
+      "model_max_positions": 2048,
+      "load_seconds": 1.6,
+      "peak_ram_mb_after_load": 3440.7
+    }
+  },
+  "tokenizer_comparison": {
+    "The quick brown fox jumps over the lazy dog.": {
+      "ids_by_model": {
+        "70m": [
+          510,
+          3158,
+          8516,
+          30013,
+          27287,
+          689,
+          253,
+          22658,
+          4370,
+          15
+        ],
+        "160m": [
+          510,
+          3158,
+          8516,
+          30013,
+          27287,
+          689,
+          253,
+          22658,
+          4370,
+          15
+        ],
+        "410m": [
+          510,
+          3158,
+          8516,
+          30013,
+          27287,
+          689,
+          253,
+          22658,
+          4370,
+          15
+        ],
+        "1b": [
+          510,
+          3158,
+          8516,
+          30013,
+          27287,
+          689,
+          253,
+          22658,
+          4370,
+          15
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "A p-value of 0.034 is below alpha = 0.05.": {
+      "ids_by_model": {
+        "70m": [
+          34,
+          268,
+          14,
+          2877,
+          273,
+          470,
+          15,
+          20570,
+          310,
+          2708,
+          9765,
+          426,
+          470,
+          15,
+          1762,
+          15
+        ],
+        "160m": [
+          34,
+          268,
+          14,
+          2877,
+          273,
+          470,
+          15,
+          20570,
+          310,
+          2708,
+          9765,
+          426,
+          470,
+          15,
+          1762,
+          15
+        ],
+        "410m": [
+          34,
+          268,
+          14,
+          2877,
+          273,
+          470,
+          15,
+          20570,
+          310,
+          2708,
+          9765,
+          426,
+          470,
+          15,
+          1762,
+          15
+        ],
+        "1b": [
+          34,
+          268,
+          14,
+          2877,
+          273,
+          470,
+          15,
+          20570,
+          310,
+          2708,
+          9765,
+          426,
+          470,
+          15,
+          1762,
+          15
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "model <- lm(y ~ x1 + x2, data = df)\nsummary(model)": {
+      "ids_by_model": {
+        "70m": [
+          7645,
+          12630,
+          298,
+          78,
+          9,
+          90,
+          5062,
+          1269,
+          18,
+          559,
+          1269,
+          19,
+          13,
+          941,
+          426,
+          20926,
+          10,
+          187,
+          8774,
+          9,
+          7645,
+          10
+        ],
+        "160m": [
+          7645,
+          12630,
+          298,
+          78,
+          9,
+          90,
+          5062,
+          1269,
+          18,
+          559,
+          1269,
+          19,
+          13,
+          941,
+          426,
+          20926,
+          10,
+          187,
+          8774,
+          9,
+          7645,
+          10
+        ],
+        "410m": [
+          7645,
+          12630,
+          298,
+          78,
+          9,
+          90,
+          5062,
+          1269,
+          18,
+          559,
+          1269,
+          19,
+          13,
+          941,
+          426,
+          20926,
+          10,
+          187,
+          8774,
+          9,
+          7645,
+          10
+        ],
+        "1b": [
+          7645,
+          12630,
+          298,
+          78,
+          9,
+          90,
+          5062,
+          1269,
+          18,
+          559,
+          1269,
+          19,
+          13,
+          941,
+          426,
+          20926,
+          10,
+          187,
+          8774,
+          9,
+          7645,
+          10
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "for (i in 1:10) {\n    print(i^2)\n}": {
+      "ids_by_model": {
+        "70m": [
+          1542,
+          313,
+          74,
+          275,
+          337,
+          27,
+          740,
+          10,
+          551,
+          187,
+          50274,
+          3845,
+          9,
+          74,
+          63,
+          19,
+          10,
+          187,
+          94
+        ],
+        "160m": [
+          1542,
+          313,
+          74,
+          275,
+          337,
+          27,
+          740,
+          10,
+          551,
+          187,
+          50274,
+          3845,
+          9,
+          74,
+          63,
+          19,
+          10,
+          187,
+          94
+        ],
+        "410m": [
+          1542,
+          313,
+          74,
+          275,
+          337,
+          27,
+          740,
+          10,
+          551,
+          187,
+          50274,
+          3845,
+          9,
+          74,
+          63,
+          19,
+          10,
+          187,
+          94
+        ],
+        "1b": [
+          1542,
+          313,
+          74,
+          275,
+          337,
+          27,
+          740,
+          10,
+          551,
+          187,
+          50274,
+          3845,
+          9,
+          74,
+          63,
+          19,
+          10,
+          187,
+          94
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "mean(c(4, 8, 15, 16, 23, 42))  # 18": {
+      "ids_by_model": {
+        "70m": [
+          10722,
+          9,
+          68,
+          9,
+          21,
+          13,
+          854,
+          13,
+          1458,
+          13,
+          1668,
+          13,
+          3495,
+          13,
+          5976,
+          1228,
+          50276,
+          4,
+          1283
+        ],
+        "160m": [
+          10722,
+          9,
+          68,
+          9,
+          21,
+          13,
+          854,
+          13,
+          1458,
+          13,
+          1668,
+          13,
+          3495,
+          13,
+          5976,
+          1228,
+          50276,
+          4,
+          1283
+        ],
+        "410m": [
+          10722,
+          9,
+          68,
+          9,
+          21,
+          13,
+          854,
+          13,
+          1458,
+          13,
+          1668,
+          13,
+          3495,
+          13,
+          5976,
+          1228,
+          50276,
+          4,
+          1283
+        ],
+        "1b": [
+          10722,
+          9,
+          68,
+          9,
+          21,
+          13,
+          854,
+          13,
+          1458,
+          13,
+          1668,
+          13,
+          3495,
+          13,
+          5976,
+          1228,
+          50276,
+          4,
+          1283
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "123456789 3.14159 -0.5e-3": {
+      "ids_by_model": {
+        "70m": [
+          42594,
+          43784,
+          495,
+          15,
+          1047,
+          17220,
+          428,
+          17,
+          15,
+          22,
+          70,
+          14,
+          20
+        ],
+        "160m": [
+          42594,
+          43784,
+          495,
+          15,
+          1047,
+          17220,
+          428,
+          17,
+          15,
+          22,
+          70,
+          14,
+          20
+        ],
+        "410m": [
+          42594,
+          43784,
+          495,
+          15,
+          1047,
+          17220,
+          428,
+          17,
+          15,
+          22,
+          70,
+          14,
+          20
+        ],
+        "1b": [
+          42594,
+          43784,
+          495,
+          15,
+          1047,
+          17220,
+          428,
+          17,
+          15,
+          22,
+          70,
+          14,
+          20
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "<|endoftext|>": {
+      "ids_by_model": {
+        "70m": [
+          0
+        ],
+        "160m": [
+          0
+        ],
+        "410m": [
+          0
+        ],
+        "1b": [
+          0
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    },
+    "   indented    spaces\t and a tab": {
+      "ids_by_model": {
+        "70m": [
+          50275,
+          527,
+          8006,
+          50274,
+          31748,
+          186,
+          285,
+          247,
+          10334
+        ],
+        "160m": [
+          50275,
+          527,
+          8006,
+          50274,
+          31748,
+          186,
+          285,
+          247,
+          10334
+        ],
+        "410m": [
+          50275,
+          527,
+          8006,
+          50274,
+          31748,
+          186,
+          285,
+          247,
+          10334
+        ],
+        "1b": [
+          50275,
+          527,
+          8006,
+          50274,
+          31748,
+          186,
+          285,
+          247,
+          10334
+        ]
+      },
+      "identical_to_first_model": {
+        "70m": true,
+        "160m": true,
+        "410m": true,
+        "1b": true
+      }
+    }
+  }
+}

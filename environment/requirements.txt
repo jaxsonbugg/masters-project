@@ -1,0 +1,14 @@
+# Python packages for the Pythia probe (code/evaluation/pythia_probe.py), exact versions installed 2026-10-06.
+# Python 3.11.9. Install order matters for torch: the CPU build comes from the PyTorch index.
+#   python -m venv C:\masters_project_large\envs\probe
+#   C:\masters_project_large\envs\probe\Scripts\python.exe -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+#   C:\masters_project_large\envs\probe\Scripts\python.exe -m pip install transformers==5.19.0 safetensors==0.8.0 PyYAML==6.0.3 psutil==7.2.2
+# Everything else below is installed automatically as a dependency of those packages.
+torch==2.14.1+cpu
+transformers==5.19.0
+safetensors==0.8.0
+tokenizers==0.23.2
+huggingface_hub==1.33.0
+numpy==2.4.6
+PyYAML==6.0.3
+psutil==7.2.2

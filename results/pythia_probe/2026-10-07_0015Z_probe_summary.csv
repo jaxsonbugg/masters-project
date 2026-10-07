@@ -1,0 +1,13 @@
+model,format,decoding,n,errors,mean_generated_tokens,eos_rate,repeat_rate,mean_tokens_per_second
+70m,raw,greedy,16,0,128.0,0.0,1.0,176.06
+70m,qa,greedy,16,0,128.0,0.0,1.0,174.44
+70m,fewshot,greedy,16,0,128.0,0.0,1.0,165.69
+160m,raw,greedy,16,0,128.0,0.0,0.938,78.17
+160m,qa,greedy,16,0,128.0,0.0,0.875,77.53
+160m,fewshot,greedy,16,0,128.0,0.0,1.0,69.6
+410m,raw,greedy,16,0,128.0,0.0,0.812,32.2
+410m,qa,greedy,16,0,128.0,0.0,0.938,32.02
+410m,fewshot,greedy,16,0,128.0,0.0,1.0,28.68
+1b,raw,greedy,16,0,128.0,0.0,0.938,10.19
+1b,qa,greedy,16,0,128.0,0.0,0.938,9.98
+1b,fewshot,greedy,16,0,128.0,0.0,1.0,8.48
