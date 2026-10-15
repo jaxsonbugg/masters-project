@@ -25,6 +25,14 @@
 ```
 To re-check saved replies without any API call: `... generate_benchmark.py replay --responses <responses.jsonl> --n 20`.
 
+**100-question batch (prompt v6, 2026-10-15 UTC):** `...2026-10-15_sonnet-5-5_benchmark-batch02\` (slots BM0021 to BM0120; `batch01` is the 2-question test batch), cost $0.4681 plus $0.0268 for regeneration. Files: `batch_manifest.json` (batch id and slots), `responses.jsonl` (all 103 replies), `items.jsonl`, `rejected_attempts.jsonl`, `batch_log.json`; copies of items, log, rejected attempts and the `verify` output are in `results/benchmark_trial/`. Commands (PowerShell; set `ANTHROPIC_API_KEY` first):
+```powershell
+& C:\masters_project_large\envs\probe\Scripts\python.exe C:\dev\masters-project\code\generation\generate_benchmark.py --prompt v6 submit --start 21 --n 100 --cap-usd 3.00
+& C:\masters_project_large\envs\probe\Scripts\python.exe C:\dev\masters-project\code\generation\generate_benchmark.py --prompt v6 fetch --manifest <path to batch_manifest.json> --retry-failed --cap-usd 1.00
+& C:\masters_project_large\envs\probe\Scripts\python.exe C:\dev\masters-project\code\generation\generate_benchmark.py dupcheck --items <items.jsonl> --against "results\benchmark_trial\*_items.jsonl"
+```
+These items are trial items (not part of the frozen benchmark).
+
 ## Versions, seeds, and settings
 - Source / model revision / API model + version: `claude-sonnet-5-5` (a pinned snapshot), effort `medium`, adaptive thinking (API default), `max_tokens` 5000, structured JSON output. Sampling settings cannot be set on this model.
 - Random seeds: none for the model. The question slots are deterministic (seeded shuffle inside the script).

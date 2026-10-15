@@ -64,6 +64,7 @@ EXAMPLES (run with the project's virtual environment Python)
 """
 
 import argparse
+import glob
 import hashlib
 import json
 import math
@@ -282,6 +283,13 @@ def blueprint(n):
     return slots
 
 
+def select_slots(n, start=1):
+    """n slots beginning at question number `start` (1 = BM0001). Because the blueprint repeats a 20-slot
+    pattern, any run of 20 (or a multiple of 20) slots has the same mix of categories, difficulties and answer
+    types, so `start=21, n=100` gives BM0021 to BM0120: the same mix as the first 20, with none of their slots."""
+    return blueprint(start - 1 + n)[start - 1:]
+
+
 # ---------------------------------------------------------------------------------------------
 # The single place where a request is built (used by trial AND batch)
 # ---------------------------------------------------------------------------------------------
@@ -361,12 +369,20 @@ def check_item(item, slot, stop_reason, r_keyed=False):
     # The model sometimes "thinks aloud" inside the question text (found in trial 3, BM0015: "...must be... no:
     # exactly 2 statisticians..."). R cannot catch this because the code and key can still be consistent.
     text = item["question"] + " " + " ".join(item["choices"])
-    marker = re.search(r"\bno:|\bwait\b|\bhmm\b|\bsorry\b|\blet me\b|\boops\b|\.\.\.\s*(no|wait|hmm)\b", text, re.I)
+    # "wait" alone is normal English ("customers wait at a clinic", batch BM0056), so it only counts as an
+    # interjection ("Wait, ..."). "Actually, to keep it simple, consider this version instead" (batch BM0047)
+    # is the model changing its mind inside the question.
+    marker = re.search(r"\bno:|\bwait\s*[,.:!\u2014-]|[.!?]\s+wait\b|\bhmm\b|\bsorry\b|\blet me\b|\boops\b|"
+                       r"\.\.\.\s*(no|wait|hmm)\b|(?:^|[.!?]\s+|\n\s*)actually,|\bto keep it simple\b|"
+                       r"\bon second thought\b|\bscratch that\b", text, re.I)
     if marker:
         problems.append(f"question text looks unfinished or self-correcting (found {marker.group(0)!r})")
     # A question that trails off ("... must be... ") is unfinished (trial 7, BM0015). Only a TRAILING ellipsis
     # counts: "..." inside the text is normal, for example "X1, ..., Xn".
-    if re.search(r"(\.\.\.|…)\s*$", item["question"]):
+    # An ellipsis right after code ("cv <- function(x) ...", meaning "write the body") is a normal way to
+    # show a template to complete (batch BM0063), so it is allowed after ) ( { , = or <- .
+    m_end = re.search(r"(\S)\s*(?:\.\.\.|\u2026)\s*$", item["question"])
+    if m_end and m_end.group(1) not in ")({,=-" :
         problems.append("question text ends with an ellipsis, so it looks unfinished")
     # A placeholder explanation such as "invalid" shows the model gave up (trial 7, BM0020).
     if not legacy and len(item["explanation"].strip()) < 10:
@@ -390,6 +406,12 @@ def check_item(item, slot, stop_reason, r_keyed=False):
             problems.append("number answer is not a plain number")
     if item["answer_type"] == "r_expression" and not item["r_check"].strip():
         problems.append("r_expression item without an r_check")
+    # Rule 4: the answer must not appear in the question (batch BM0078 spelled out its own answer).
+    if item["answer_type"] in ("r_expression", "short_text"):
+        squash = lambda s: re.sub(r"\s+", "", s)
+        key_text = squash(item["canonical_answer"])
+        if len(key_text) >= 10 and key_text in squash(item["question"]):
+            problems.append("the answer key appears word for word inside the question")
     # An R check must actually test the student's answer, which is stored in the variable `candidate`.
     # (Found in the first trial: one check re-tested the answer key itself and would pass for any answer.)
     if item["r_check"].strip() and "candidate" not in item["r_check"]:
@@ -469,7 +491,7 @@ def run_meta(kind, n, cap, sha):
 # Commands
 # ---------------------------------------------------------------------------------------------
 def cmd_plan(args):
-    slots = blueprint(args.n)
+    slots = select_slots(args.n, args.start)
     print(f"{'id':<8}{'category':<23}{'difficulty':<14}{'answer type':<17}subtopic")
     for s in slots:
         print(f"{s['item_id']:<8}{s['category']:<23}{s['difficulty']:<14}{s['answer_type']:<17}{s['subtopic']}")
@@ -586,7 +608,7 @@ def cmd_trial(args):
     import anthropic
 
     prompt, sha = load_prompt()
-    slots = blueprint(args.n)
+    slots = select_slots(args.n, args.start)
     ok, w_total, reqs = preflight(slots, prompt, args.cap_usd, batch=False)
     if args.dry_run:
         print("\n--- First request exactly as it would be sent (dry run: nothing was sent) ---")
@@ -603,6 +625,7 @@ def cmd_trial(args):
 
     out = new_output_dir("trial")
     meta = run_meta("trial", args.n, args.cap_usd, sha)
+    meta["first_item_number"] = args.start
     print(f"\nOutput folder: {out}\n")
     client = anthropic.Anthropic(max_retries=2)
     calls, items, rejected, workspace_ids = [], [], [], set()
@@ -659,7 +682,7 @@ def cmd_submit(args):
     from anthropic.types.messages.batch_create_params import Request
 
     prompt, sha = load_prompt()
-    slots = blueprint(args.n)
+    slots = select_slots(args.n, args.start)
     if args.first:
         slots = slots[: args.first]
     ok, w_total, reqs = preflight(slots, prompt, args.cap_usd, batch=True)
@@ -672,7 +695,7 @@ def cmd_submit(args):
     batch = client.messages.batches.create(requests=[
         Request(custom_id=s["item_id"], params=MessageCreateParamsNonStreaming(**r)) for s, r in zip(slots, reqs)])
     manifest = run_meta("batch", len(slots), args.cap_usd, sha)
-    manifest.update({"batch_id": batch.id, "slots": slots, "output_dir": str(out)})
+    manifest.update({"batch_id": batch.id, "slots": slots, "output_dir": str(out), "first_item_number": args.start})
     (out / "batch_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     print(f"Submitted batch {batch.id} with {len(slots)} requests. Status: {batch.processing_status}")
     print(f"Manifest: {out / 'batch_manifest.json'}")
@@ -765,8 +788,17 @@ def cmd_fetch(args):
     with open(out / "rejected_attempts.jsonl", "w", encoding="utf-8") as f:
         for it in rejected:
             f.write(json.dumps(it, ensure_ascii=False) + "\n")
-    print(f"Fetched {len(items)} items, {len(usable)} usable; batch cost ${spent:.4f}"
-          + (f", regeneration cost ${retry_spent:.4f}" if args.retry_failed else "") + f". Saved in {out}")
+    review = REPO / "results" / "benchmark_trial"   # a small copy inside the repository (backed up by Git)
+    review.mkdir(parents=True, exist_ok=True)
+    for name, dest in (("items.jsonl", "_items.jsonl"), ("batch_log.json", "_log.json"),
+                       ("rejected_attempts.jsonl", "_rejected_attempts.jsonl")):
+        if (out / name).stat().st_size > 0 or name != "rejected_attempts.jsonl":
+            shutil.copy(out / name, review / f"{out.name}{dest}")
+    first_ok = manifest["usable_on_first_attempt"]
+    print(f"Fetched {len(items)} items, {len(usable)} usable ({first_ok} on the first attempt, "
+          f"{len(items) - len(usable)} still failing); items with soft flags: {manifest['items_with_soft_flags']}; "
+          f"batch cost ${spent:.4f}" + (f", regeneration cost ${retry_spent:.4f}" if args.retry_failed else "")
+          + f". Saved in {out}; copies in {review}")
 
 
 def cmd_replay(args):
@@ -793,6 +825,75 @@ def cmd_replay(args):
             print(f"{slot['item_id']} [{slot['category']}]{key}" + ("  HARD: " + "; ".join(hard) if hard else "")
                   + ("  SOFT: " + "; ".join(soft) if soft else ""))
     print(f"\n{n} replies replayed: {n_hard} with hard problems (would be regenerated), {n_soft} with soft flags.")
+
+
+def _question_text(item, mask_digits):
+    """The text compared by dupcheck: question plus choices, lower-case, spaces squeezed, optionally with every
+    number replaced by # (so "6 coin tosses" and "8 coin tosses" look the same)."""
+    text = (item["question"] + " " + " ".join(item.get("choices") or [])).lower()
+    if mask_digits:
+        text = re.sub(r"\d+(?:\.\d+)?", "#", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _similarity(a, b):
+    """0 to 1 text similarity (1 = identical). The cheap upper bounds skip pairs that cannot reach a high score."""
+    from difflib import SequenceMatcher
+    m = SequenceMatcher(None, a, b, autojunk=False)
+    return m.ratio() if m.real_quick_ratio() > 0.5 and m.quick_ratio() > 0.5 else 0.0
+
+
+def cmd_dupcheck(args):
+    """Free: does any question in --items look like a question in the --against files (earlier trials, the pilot),
+    or like another question in the same file? Two scores per pair: with numbers kept (about 1.0 means the same
+    question) and with numbers masked (high means the same template with different numbers). Prints a person's
+    review list; it never deletes anything."""
+    def load(path):
+        return [json.loads(line) for line in open(path, encoding="utf-8") if line.strip()]
+
+    new = load(args.items)
+    refs = []
+    for pattern in args.against:
+        for f in sorted(glob.glob(pattern)):
+            if Path(f).resolve() == Path(args.items).resolve():
+                continue
+            refs += [(Path(f).name.replace("_items.jsonl", ""), r) for r in load(f)]
+    print(f"{len(new)} question(s) checked against {len(refs)} earlier question(s) from {len(args.against)} pattern(s).")
+    texts = {k: [_question_text(r, k) for r in new] for k in (False, True)}
+    ref_texts = {k: [_question_text(r, k) for _, r in refs] for k in (False, True)}
+    rows, dups, templates = [], 0, 0
+    for i, item in enumerate(new):
+        best = {}
+        for k in (False, True):
+            scored = [(_similarity(texts[k][i], ref_texts[k][j]), j) for j in range(len(refs))]
+            best[k] = max(scored, default=(0.0, None))
+        (s_keep, j_keep), (s_mask, j_mask) = best[False], best[True]
+        is_dup, is_tpl = s_keep >= args.dup, s_mask >= args.template
+        dups += is_dup
+        templates += is_tpl and not is_dup
+        rows.append((s_mask, item["item_id"], s_keep, j_keep, s_mask, j_mask))
+        if is_dup or is_tpl:
+            j = j_keep if is_dup else j_mask
+            src, other = refs[j]
+            print(f"{item['item_id']} [{item['subtopic']}] vs {src} {other['item_id']}: same-numbers {s_keep:.2f}, "
+                  f"template {s_mask:.2f}  {'DUPLICATE' if is_dup else 'same template'}\n   NEW: {item['question'][:150]!r}"
+                  f"\n   OLD: {other['question'][:150]!r}")
+    if args.top:
+        print(f"\nTop {args.top} closest matches to an earlier question (template score, to calibrate thresholds):")
+        for s_mask, iid, s_keep, j_keep, _, j_mask in sorted(rows, reverse=True)[: args.top]:
+            src, other = refs[j_mask]
+            print(f"  {iid} vs {src} {other['item_id']}: template {s_mask:.2f}, same-numbers {s_keep:.2f}")
+    # similar pairs inside the file itself
+    inside = []
+    for a in range(len(new)):
+        for b in range(a + 1, len(new)):
+            s = _similarity(texts[True][a], texts[True][b])
+            if s >= args.template:
+                inside.append((s, new[a]["item_id"], new[b]["item_id"]))
+    for s, a, b in sorted(inside, reverse=True):
+        print(f"inside the file: {a} and {b} look alike (template score {s:.2f})")
+    print(f"\nSummary: {dups} duplicate(s) of an earlier question (same-numbers score >= {args.dup}), "
+          f"{templates} more with the same template (>= {args.template}), {len(inside)} similar pair(s) inside the file.")
 
 
 def cmd_check(args):
@@ -1033,14 +1134,17 @@ def main():
     p.set_defaults(fn=cmd_check)
     p = sub.add_parser("plan", help="print the blueprint (no API call)")
     p.add_argument("--n", type=int, default=20)
+    p.add_argument("--start", type=int, default=1, help="first question number to include (21 = start at BM0021)")
     p.set_defaults(fn=cmd_plan)
     p = sub.add_parser("trial", help="write n questions with ordinary calls and a hard dollar cap")
     p.add_argument("--n", type=int, default=20)
+    p.add_argument("--start", type=int, default=1, help="first question number to include (21 = start at BM0021)")
     p.add_argument("--cap-usd", type=float, default=3.00)
     p.add_argument("--dry-run", action="store_true", help="show the cost picture and one request; send nothing")
     p.set_defaults(fn=cmd_trial)
     p = sub.add_parser("submit", help="send the requests to the Batch API (half price)")
     p.add_argument("--n", type=int, default=1000)
+    p.add_argument("--start", type=int, default=1, help="first question number to include (21 = start at BM0021)")
     p.add_argument("--first", type=int, default=None, help="only submit the first N slots (for a tiny test batch)")
     p.add_argument("--cap-usd", type=float, default=30.0)
     p.add_argument("--dry-run", action="store_true")
@@ -1050,6 +1154,13 @@ def main():
     p.add_argument("--retry-failed", action="store_true", help="regenerate failed or missing questions with standard calls")
     p.add_argument("--cap-usd", type=float, default=5.0, help="money cap for the regeneration calls only")
     p.set_defaults(fn=cmd_fetch)
+    p = sub.add_parser("dupcheck", help="does a new question look like an earlier trial question? (free)")
+    p.add_argument("--items", required=True, help="the items.jsonl to check")
+    p.add_argument("--against", required=True, nargs="+", help="earlier items files or glob patterns")
+    p.add_argument("--dup", type=float, default=0.80, help="same-numbers similarity that counts as a duplicate")
+    p.add_argument("--template", type=float, default=0.80, help="numbers-masked similarity that counts as the same template")
+    p.add_argument("--top", type=int, default=0, help="also list the N closest matches (to calibrate the thresholds)")
+    p.set_defaults(fn=cmd_dupcheck)
     p = sub.add_parser("replay", help="re-run the checks and the R-key step on saved API replies (free)")
     p.add_argument("--responses", required=True, help="a responses.jsonl file from an earlier run")
     p.add_argument("--n", type=int, default=20, help="how many slots of the blueprint to match against")
