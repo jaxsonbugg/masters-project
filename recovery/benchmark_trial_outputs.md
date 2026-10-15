@@ -15,7 +15,15 @@
 
 **Trial 2 (prompt v2, 2026-10-07):** same layout in `...benchmark-trial02\`, 20 items, cost $0.1765, review copies in `results/benchmark_trial/` including `..._items_verified.jsonl` (R check results). Regenerate with the same command (v2 is the default prompt); verify with `python code\generation\generate_benchmark.py verify --items <items.jsonl>`. `verify` needs R: R 4.3.1 lives at `C:\R-4.3.1` (outside the repository; reinstall from CRAN if lost) and its path is `rscript` in `configs/paths.yaml`.
 
-**Trial 3 (prompt v3, 2026-10-07):** `...benchmark-trial03\`, 20 items, cost $0.1800, review copies (items, log, verified) in `results/benchmark_trial/`. v3 is now the default prompt.
+**Trial 3 (prompt v3, 2026-10-07):** `...benchmark-trial03\`, 20 items, cost $0.1800, review copies (items, log, verified) in `results/benchmark_trial/`.
+
+**Trials 4 to 7 (2026-10-07):** trial 4 (prompt v4) was refused by the API on all 20 calls (no items); trial 5 was rejected with HTTP 403 `model_access_suspended` (no items, $0); trial 6 was a one-question probe of v5; trial 7 ran the 20 questions with v5 (cost $0.1623). Folders `...benchmark-trial04` to `...trial07`; their logs and items are in `results/benchmark_trial/`.
+
+**Trial 8 (prompt v6, 2026-10-15 UTC):** `...2026-10-15_sonnet-5-5_benchmark-trial02\` (the numbering restarted when the UTC date changed; `...2026-10-15..._trial01` is the one-question probe), 20 items, cost $0.1885. Number keys come from R and failed items are regenerated, so the folder also holds `rejected_attempts.jsonl` (empty if nothing failed). v6 is now the default prompt. To regenerate a trial like this one (about $0.19, cap $1.50, PowerShell; set `ANTHROPIC_API_KEY` first):
+```powershell
+& C:\masters_project_large\envs\probe\Scripts\python.exe C:\dev\masters-project\code\generation\generate_benchmark.py --prompt v6 trial --n 20 --cap-usd 1.50
+```
+To re-check saved replies without any API call: `... generate_benchmark.py replay --responses <responses.jsonl> --n 20`.
 
 ## Versions, seeds, and settings
 - Source / model revision / API model + version: `claude-sonnet-5-5` (a pinned snapshot), effort `medium`, adaptive thinking (API default), `max_tokens` 5000, structured JSON output. Sampling settings cannot be set on this model.
@@ -31,4 +39,4 @@
 Cost to redo: about $0.13 and 2 minutes, but you get different questions. These are trial items only: they are **not** part of the frozen benchmark and must not be used for training or reused as final benchmark questions without checking their answer keys (three keys in this trial were wrong). Losing them costs nothing important.
 
 ## Last updated
-2026-10-07
+2026-10-15

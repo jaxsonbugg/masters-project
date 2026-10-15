@@ -1,0 +1,55 @@
+{
+  "run_kind": "trial",
+  "started_utc": "2026-10-15T01:22:08+00:00",
+  "items_requested": 1,
+  "model_id": "claude-sonnet-5-5",
+  "effort": "medium",
+  "thinking_mode": "adaptive (API default; cannot be disabled on this model)",
+  "sampling": "API defaults (temperature/top_p cannot be set on this model)",
+  "max_tokens": 5000,
+  "prompt_file": "data\\prompts\\benchmark_generation_v6.md",
+  "prompt_version": "v6",
+  "prompt_sha256": "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4",
+  "prices_usd_per_mtok": {
+    "input": 2.0,
+    "output": 10.0,
+    "batch_factor": 0.5
+  },
+  "cap_usd": 0.25,
+  "max_attempts": 3,
+  "number_key_source": "R output of r_solution (the model's typed key is kept as model_canonical_answer)",
+  "finished_utc": "2026-10-15T01:22:13+00:00",
+  "calls": [
+    {
+      "item_id": "BM0001",
+      "attempt": 1,
+      "request_id": "req_011Cg39UDuB2ciQCWNt1WCvp",
+      "stop_reason": "end_turn",
+      "stop_details": null,
+      "content_blocks": [
+        "text"
+      ],
+      "input_tokens": 2130,
+      "output_tokens": 279,
+      "cost_usd": 0.00705,
+      "seconds": 5.5,
+      "problems": [],
+      "soft_flags": []
+    }
+  ],
+  "workspace_ids_seen": [
+    "wrkspc_01SnSeWc7TvEtPNw4KUucwhH"
+  ],
+  "stopped_early_reason": null,
+  "total_input_tokens": 2130,
+  "total_output_tokens": 279,
+  "total_cost_usd": 0.00705,
+  "items_parsed": 1,
+  "usable_items": 1,
+  "usable_on_first_attempt": 1,
+  "failed_after_all_attempts": 0,
+  "retry_calls": 0,
+  "rejected_attempts": 0,
+  "items_with_soft_flags": 0,
+  "items_with_problems": 0
+}
