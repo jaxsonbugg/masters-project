@@ -10,6 +10,10 @@ threading.Timer(150, os._exit, [0]).start()
 MODE = os.environ.get("FAKE_MODE", "good")
 FAIL_ITEM = os.environ.get("FAKE_FAIL_ITEM", "")
 STATE = os.environ.get("FAKE_STATE", "")
+ARGS = os.environ.get("FAKE_SERVER_ARGS", "")
+# FAKE_FA_CRASH=1: die on the first request if the server was started with flash attention auto or on (like a real
+# llama.cpp assertion in the flash-attention kernels); with -fa off it behaves normally
+CRASH = os.environ.get("FAKE_FA_CRASH") == "1" and re.search(r"-fa (auto|on)\b", ARGS) is not None
 
 def make_item(cat, sub, diff, atype):
     it = {"question": "x", "answer_type": atype, "choices": [], "working": "w", "r_solution": "", "canonical_answer": "",
@@ -36,6 +40,9 @@ class H(BaseHTTPRequestHandler):
         self.send_response(503 if loading else 200); self.end_headers()
         self.wfile.write(b'{"error":{"message":"Loading model"}}' if loading else b'{"status":"ok"}')
     def do_POST(self):
+        if CRASH:
+            print("/build/llama.cpp/ggml/src/ggml-cuda/fattn.cu:421: GGML_ASSERT(flash attention head size 256 not supported on sm_70) failed", flush=True)
+            os._exit(1)
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         user = body["messages"][1]["content"]
         iid = re.search(r"item (BM\d{4})", user).group(1)

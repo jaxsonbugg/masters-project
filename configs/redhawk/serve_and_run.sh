@@ -11,6 +11,7 @@
 #   QT_RESUME    (main only) an existing run folder to continue; QT_BREAK_LOCK=yes removes a stale lock;
 #                QT_RETRY_ERRORS=yes re-sends slots whose earlier call ERRORED (recorded as attempt 2, 3, ...)
 #   QT_PY_TIMEOUT optional limit for the client, e.g. 35m (used by the smoke stages)
+#   QT_ATTEMPT   optional attempt number (the pipeline sets 2 when it retries Stage A); only changes log file names
 #   QT_ACK_QUALITY=yes  needed to go on after a stage in which EVERY smoke reply had a model-quality finding
 #
 # WHAT MUST PASS BEFORE ANYTHING IS SENT (each stops the job with a plain message):
@@ -50,8 +51,11 @@ fi
 JOB="${SLURM_JOB_ID:-nojob}"
 RESULT_DIR="$QT_OUT/stage_results"; LOGDIR="$QT_OUT/job_logs"
 mkdir -p "$RESULT_DIR" "$LOGDIR"
-SERVER_LOG="$LOGDIR/llama_server_${JOB}.log"; MEMLOG="$LOGDIR/gpu_memory_${JOB}.csv"
-PYLOG="$LOGDIR/run_${JOB}.out"; VALLOG="$LOGDIR/validate_${JOB}.out"
+# Log files are named by job AND stage (and attempt), because the pipeline job runs several stages inside one Slurm job:
+# llama_server_<job>_A.log, llama_server_<job>_B.log, llama_server_<job>_main.log, and ..._A_2.log for a retried Stage A.
+TAGID="${JOB}_${STAGE}${QT_ATTEMPT:+_$QT_ATTEMPT}"
+SERVER_LOG="$LOGDIR/llama_server_${TAGID}.log"; MEMLOG="$LOGDIR/gpu_memory_${TAGID}.csv"
+PYLOG="$LOGDIR/run_${TAGID}.out"; VALLOG="$LOGDIR/validate_${TAGID}.out"
 
 load_modules
 need MOD_CUDA
@@ -117,7 +121,7 @@ gate_from() {  # $1 = the stage whose result file must show a pass for exactly t
   [ "$(res "$f" FA)" = "$FA" ] || die "Stage $1 passed with flash-attn $(res "$f" FA), not $FA"
   { [ "$(res "$f" LLAMA_COMMIT)" = "$COMMIT" ] && [ "$(res "$f" WEIGHTS_SHA256)" = "$SHA" ]; } || die "Stage $1 passed with a different llama.cpp or weights"
   if [ "$(res "$f" QUALITY_ALL)" = yes ] && [ "${QT_ACK_QUALITY:-}" != yes ]; then
-    die "every reply of Stage $1 had a model-quality finding ($f). Read $LOGDIR/validate_$(res "$f" JOB).out; if it is understood, rerun with QT_ACK_QUALITY=yes"
+    die "every reply of Stage $1 had a model-quality finding ($f). Read $LOGDIR/validate_$(res "$f" LOGTAG).out; if it is understood, rerun with QT_ACK_QUALITY=yes"
   fi
 }
 if [ "$STAGE" = B ]; then
@@ -148,10 +152,10 @@ write_result() {  # $1 = PASS | PASS_QUALITY_WARN | FAIL_INFRA, $2 = reason. Smo
   [ "$STAGE" != main ] || f="$RESULT_DIR/main_job${JOB}.txt"
   { echo "RESULT=$1"; echo "REASON=$2"; echo "INFRA=$INFRA_STATE"; echo "QUALITY_REPLIES=$QUALITY_REPLIES"; echo "REPLIES=$REPLIES"
     echo "QUALITY_ALL=$QUALITY_ALL"; echo "CTX=$CTX"; echo "PARALLEL=$PAR"; echo "FA=$FA"; echo "LLAMA_COMMIT=$COMMIT"
-    echo "WEIGHTS_SHA256=$SHA"; echo "MIN_FREE_MIB=$MINFREE"; echo "STAGE_B_ALLOWED=$B_ALLOWED"; echo "JOB=$JOB"
+    echo "WEIGHTS_SHA256=$SHA"; echo "MIN_FREE_MIB=$MINFREE"; echo "STAGE_B_ALLOWED=$B_ALLOWED"; echo "JOB=$JOB"; echo "LOGTAG=$TAGID"
     echo "NODE=$(hostname)"; echo "UTC=$(date -u +%FT%TZ)"; echo "RUN_DIR=$RUN_DIR"; } > "$f.tmp"
   mv "$f.tmp" "$f"
-  [ "$STAGE" = main ] || cp "$f" "$RESULT_DIR/stage${STAGE}_job${JOB}.txt"
+  [ "$STAGE" = main ] || cp "$f" "$RESULT_DIR/stage${STAGE}_job${JOB}${QT_ATTEMPT:+_$QT_ATTEMPT}.txt"
 }
 fail() {  # an infrastructure failure before or during loading
   echo "FAIL (infrastructure): $1" >&2; echo "--- last lines of the server log ---" >&2; tail -n 30 "$SERVER_LOG" >&2 || true

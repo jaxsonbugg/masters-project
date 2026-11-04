@@ -120,6 +120,23 @@ check_flags() {  # $1 = llama-server binary
   echo "llama-server lists all required flags: ${REQUIRED_FLAGS[*]}"
 }
 
+# --- Slurm time-left text -> seconds. `squeue -h -j <job> -o %L` prints [days-]hours:minutes:seconds, minutes:seconds,
+# or words such as UNLIMITED / INVALID. Prints whole seconds, or -1 when the text is not a countdown. `10#` stops numbers
+# with a leading zero (08, 09) from being read as octal.
+parse_slurm_time() {
+  local t="$1" d h m s
+  t="${t// /}"
+  case "$t" in
+    [0-9]*-[0-9]*:[0-9]*:[0-9]*) d="${t%%-*}"; t="${t#*-}"; IFS=: read -r h m s <<<"$t"; echo $(( 10#$d * 86400 + 10#$h * 3600 + 10#$m * 60 + 10#$s )) ;;
+    [0-9]*:[0-9]*:[0-9]*) IFS=: read -r h m s <<<"$t"; echo $(( 10#$h * 3600 + 10#$m * 60 + 10#$s )) ;;
+    [0-9]*:[0-9]*) IFS=: read -r m s <<<"$t"; echo $(( 10#$m * 60 + 10#$s )) ;;
+    *) echo -1 ;;
+  esac
+}
+slurm_seconds_left() {  # seconds left in this job, or -1 if unknown
+  parse_slurm_time "$(squeue -h -j "${SLURM_JOB_ID:-0}" -o %L 2>/dev/null | head -n 1)"
+}
+
 # --- GPU memory summary. Input: the CSV written by the monitor in serve_and_run.sh ------------------------------
 # Columns: timestamp,gpu,mem_used_mib,mem_total_mib,util_pct  ($1..$5 below, split on a comma plus optional spaces).
 # Prints one line per GPU (peak used, total, minimum free = total - peak) and a last line MINFREE <n>.

@@ -12,15 +12,19 @@ real job scripts against it and check what they do.
 - `test_suite.py` (about 1 minute; needs R for the scoring checks): slot isolation (smoke slots BM9001-BM9004 versus main
   slots BM0021-BM0120), the two failure kinds of `validate` (infrastructure versus model quality), resume safety (no
   overwrite, no repeat, lock file, settings must match), the Novita budget ledger with 8 calls at once, scoring through R.
-- `shtest.sh` (a few minutes per part): the Redhawk job scripts with fake `nvidia-smi`, `module`, `scontrol` and
-  `llama-server`: GPU, weights, template and flag checks, the stage gates, the memory summary, queue wait, mandatory
-  validation, and an incomplete main run followed by a deliberate resume.
+- `shtest.sh` (a few minutes per part; four parts that can run at the same time): the Redhawk job scripts with fake
+  `nvidia-smi`, `module`, `scontrol`, `squeue` and `llama-server`.
+  - Parts 1-2, the single stages: GPU, weights, template and flag checks, the stage gates, the memory summary, queue wait,
+    mandatory validation, the `module` command, and an incomplete main run followed by a deliberate resume.
+  - Parts 3-4, the one-job pipeline (`qwen_pipeline.sbatch`): the healthy A, B, main path; Stage B skipped or failed so the
+    main run falls back to one sequence; Stage A failing so nothing else runs; every smoke reply a quality finding (stops
+    unless acknowledged); a flash-attention crash retried once with it off (and never when the setting was explicit); too
+    little time left for the main run; separate logs per stage; and the time-left parser.
 
 **Run them** (from the repository root, in Git Bash):
 ```
 python code/tests/qwen_deployment_test/test_suite.py
-bash code/tests/qwen_deployment_test/shtest.sh /tmp/ott_sh 1
-bash code/tests/qwen_deployment_test/shtest.sh /tmp/ott_sh 2
+for p in 1 2 3 4; do bash code/tests/qwen_deployment_test/shtest.sh /tmp/ott_sh $p & done; wait
 ```
 Each prints PASS or FAIL per check and ends with a count. They clean up after themselves (including the review copies
 that `score` would otherwise leave in `results/open_teacher_test/`).

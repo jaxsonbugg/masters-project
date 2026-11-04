@@ -6,7 +6,10 @@
 #SBATCH --exclude=mualhpcp50.mpi
 #SBATCH --time=12:00:00
 #SBATCH --output=%x_%j.log
-# qwen_test.sbatch - the overnight run: the main slots BM0021-BM0120, ONE attempt per slot.
+# qwen_test.sbatch - the MAIN RUN ON ITS OWN: the main slots BM0021-BM0120, ONE attempt per slot.
+# The normal way to run the test is qwen_pipeline.sbatch (smoke A, smoke B and this main run in ONE Slurm job, so the long
+# queue wait happens once). Use THIS job instead to RESUME a main run that was cut off (QT_RESUME, below), or to start the
+# main run after the pipeline stopped for lack of time (it prints the exact command).
 # It REFUSES to start unless the matching smoke stage passed with exactly the same context, parallelism,
 # flash-attention mode, llama.cpp commit and weights. The setting must be given explicitly (no default):
 #   cd <repo copy>
