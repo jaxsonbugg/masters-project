@@ -26,9 +26,9 @@ echo "--- quota (whichever command exists) ---"
 { quota -s 2>&1 || true; lfs quota -h -u "$(id -un)" "$QT_MODELS" 2>&1 || true; } | head -12
 [ "${QT_CONFIRM_STORAGE:-}" = "yes" ] || die "read the free space and quota above, then run again with QT_CONFIRM_STORAGE=yes. Nothing was downloaded."
 
-module load "$MOD_PYTHON" 2>/dev/null || warn "module $MOD_PYTHON not loaded; using whatever python3 is on PATH"
-command -v python3 >/dev/null || die "python3 not found"
-[ -d "$QT_VENV" ] || python3 -m venv "$QT_VENV"
+[ -x "$QT_BASE_PYTHON" ] || die "no Python at $QT_BASE_PYTHON (see probe_cluster_part2.sh section 1; set QT_BASE_PYTHON to a Python 3.8+ interpreter)"
+"$QT_BASE_PYTHON" -c 'import sys, ssl, venv; assert sys.version_info >= (3, 8), sys.version' || die "$QT_BASE_PYTHON is not a Python 3.8+ with venv and ssl"
+[ -d "$QT_VENV" ] || "$QT_BASE_PYTHON" -m venv "$QT_VENV"
 # shellcheck disable=SC1091
 source "$QT_VENV/bin/activate"
 pip install --quiet --upgrade pip huggingface_hub httpx pyyaml

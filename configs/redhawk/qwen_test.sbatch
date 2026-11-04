@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=qt_main
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=48G
+#SBATCH --nodes=1
+#SBATCH --exclusive
+#SBATCH --exclude=mualhpcp50.mpi
 #SBATCH --time=12:00:00
 #SBATCH --output=%x_%j.log
 # qwen_test.sbatch - the overnight run: the main slots BM0021-BM0120, ONE attempt per slot.

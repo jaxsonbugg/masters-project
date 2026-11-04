@@ -60,7 +60,7 @@ need MOD_CUDA
 command -v nvidia-smi >/dev/null || die "nvidia-smi not found: this is not a GPU node"
 GPU_LIST="$(nvidia-smi -L)"
 N_GPU="$(grep -c '^GPU ' <<<"$GPU_LIST" || true)"
-[ "$N_GPU" = 2 ] || die "expected exactly 2 visible GPUs, found $N_GPU. Request --gres=gpu:2. Visible: $GPU_LIST"
+[ "$N_GPU" = 2 ] || die "expected exactly 2 visible GPUs, found $N_GPU. The job must take a whole V100 node (--exclusive). Visible: $GPU_LIST"
 grep -qi 'V100' <<<"$GPU_LIST" || warn "GPUs do not look like V100s: $GPU_LIST"
 while read -r mib; do
   [ "${mib:-0}" -ge 15000 ] || die "a GPU reports only $mib MiB, expected about 16 GB"
@@ -241,8 +241,8 @@ echo "=== peak GPU memory over the whole job ==="; echo "$MEM" | grep -v '^MINFR
 MINFREE="$(sed -n 's/^MINFREE //p' <<<"$MEM")"; MINFREE="${MINFREE:--1}"
 ERRS="$(grep -Eic 'CUDA error|out of memory|GGML_ASSERT|GGML_ABORT|failed to allocate|segmentation fault|illegal memory' "$SERVER_LOG" || true)"
 echo "errors in the server log: $ERRS; minimum free GPU memory: ${MINFREE} MiB"
-echo "(Throughput, tokens and timings are in $RUN_DIR/run_log.json; confirm queue times after the job with:"
-echo "   sacct -j $JOB -X -P --format=JobID,Submit,Start,End,Elapsed,State)"
+echo "(Throughput, tokens, timings and the queue times read from scontrol at job start are in $RUN_DIR/run_log.json."
+echo " sacct does not work on this cluster: its accounting host does not resolve.)"
 
 REASON=""
 HINT=""

@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=qt_smokeB
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=48G
+#SBATCH --nodes=1
+#SBATCH --exclusive
+#SBATCH --exclude=mualhpcp50.mpi
 #SBATCH --time=01:00:00
 #SBATCH --output=%x_%j.log
 # gpu_smoke_b.sbatch - Stage B: TWO sequences at once (context 40,960 = 20,480 per sequence), development slots

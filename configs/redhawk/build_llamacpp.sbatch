@@ -10,7 +10,7 @@
 # It is a batch job (not run on the login node) because compiling needs significant CPU time. It uses NO network:
 # the source was fetched on the login node by fetch_source.sh.
 # nvcc compiles for sm_70 without a GPU being present. If linking fails for lack of the CUDA driver library on a
-# `batch` node, rerun with:  sbatch --partition=gpu --gres=gpu:1 configs/redhawk/build_llamacpp.sbatch
+# `batch` node, rerun with:  sbatch --partition=gpu --nodes=1 --exclusive --exclude=mualhpcp50.mpi configs/redhawk/build_llamacpp.sbatch
 set -euo pipefail
 SD="${SLURM_SUBMIT_DIR:-$PWD}/configs/redhawk"
 [ -f "$SD/common.sh" ] || { echo "STOP: submit from the repository root (cd <repo>; sbatch configs/redhawk/build_llamacpp.sbatch)" >&2; exit 2; }

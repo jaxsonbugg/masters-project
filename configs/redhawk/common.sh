@@ -62,16 +62,41 @@ if [ "${QT_TEST_MODE:-}" = "1" ]; then
   export LLAMA_EXPECT_COMMIT="${TEST_LLAMA_COMMIT:-$LLAMA_EXPECT_COMMIT}"
 fi
 
-# Module names are NOT known yet. After probe_cluster.sh, export them (or edit here). CUDA must be a 12.x module:
-# CUDA 13 dropped the V100. Scripts stop with a clear message if a needed one is empty.
-export MOD_CUDA="${MOD_CUDA:-}"
-export MOD_GCC="${MOD_GCC:-}"
-export MOD_CMAKE="${MOD_CMAKE:-}"
-export MOD_PYTHON="${MOD_PYTHON:-anaconda-python3}"   # the one module name the Redhawk pages show
+# Module names, VERIFIED by probe_cluster.sh on 2026-11-04 (they load together: nvcc 12.2.140, gcc 12.2.0, cmake 3.31.2).
+# CUDA must be a 12.x module (CUDA 13 dropped the V100); CUDA 12.2 supports host compilers up to gcc 12, hence gcc-12.2.0.
+# `${VAR-default}` (no colon) means: use the default only if the variable is UNSET, so an explicit empty value stays empty
+# and makes the scripts stop (that is what the tests rely on).
+export MOD_CUDA="${MOD_CUDA-cuda-12.2}"
+export MOD_GCC="${MOD_GCC-gcc-12.2.0}"
+export MOD_CMAKE="${MOD_CMAKE-cmake-3.31.2}"
+# PYTHON: loading a Python module on Redhawk does NOT put a new Python on PATH (python stays 2.7.5 and python3 is 3.6.8,
+# too old for the client). So a full interpreter is called by path. Verified by probe_cluster_part2.sh before use.
+export QT_BASE_PYTHON="${QT_BASE_PYTHON-/software/python/anaconda3-2023-python3.10/bin/python}"
+
+# Make sure the `module` command exists. A batch script starts a NON-login shell, where `module` may be undefined, so the
+# usual init files are tried. `set +u` is needed because those init files use variables that may be unset.
+ensure_module_cmd() {
+  type module >/dev/null 2>&1 && return 0
+  local f
+  for f in /etc/profile.d/modules.sh "${MODULESHOME:-/nonexistent}/init/bash" /usr/share/Modules/init/bash /usr/share/lmod/lmod/init/bash; do
+    if [ -f "$f" ]; then
+      set +u; # shellcheck disable=SC1090
+      . "$f"; set -u
+      type module >/dev/null 2>&1 && return 0
+    fi
+  done
+  die "the 'module' command is not available in this shell and no init file was found (see probe_cluster_part2.sh section 2)"
+}
 
 load_modules() {
-  for m in "$MOD_GCC" "$MOD_CMAKE" "$MOD_CUDA" "$MOD_PYTHON"; do
-    [ -n "$m" ] && { module load "$m" || die "module load $m failed (see: module avail)"; }
+  ensure_module_cmd
+  local m
+  for m in "$MOD_GCC" "$MOD_CMAKE" "$MOD_CUDA"; do
+    if [ -n "$m" ]; then
+      set +u
+      module load "$m" || { set -u; die "module load $m failed (see: module avail)"; }
+      set -u
+    fi
   done
   return 0
 }

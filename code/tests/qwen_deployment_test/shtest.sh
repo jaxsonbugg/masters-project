@@ -123,6 +123,13 @@ echo "b11960 deadbeef" > "$T/rh/llama_cpp_version.txt"
 sub gpu_smoke_a.sbatch; chk "a different llama.cpp commit stops the job" '[ $RC -ne 0 ] && grep -q "is not the pinned" <<<"$OUT"'
 echo "b11960 fakecommit000" > "$T/rh/llama_cpp_version.txt"
 sub gpu_smoke_a.sbatch MOD_CUDA=; chk "an empty CUDA module name stops the job" '[ $RC -ne 0 ] && grep -q "MOD_CUDA is empty" <<<"$OUT"'
+echo "[S10] the module command is defined when a batch shell lacks it, and the verified module names are the defaults"
+mkdir -p "$T/fakemod/init"; printf 'module() { echo "FAKEMODULE $*"; }
+' > "$T/fakemod/init/bash"
+M="$(env -i PATH=/usr/bin:/bin MODULESHOME="$T/fakemod" bash -c "source $T/repo/configs/redhawk/common.sh; set -u; load_modules; echo loaded" 2>&1)"
+chk "module is defined from \$MODULESHOME/init/bash and loads gcc-12.2.0, cmake-3.31.2 and cuda-12.2 by default" 'grep -q "FAKEMODULE load gcc-12.2.0" <<<"$M" && grep -q "FAKEMODULE load cmake-3.31.2" <<<"$M" && grep -q "FAKEMODULE load cuda-12.2" <<<"$M" && grep -q "^loaded" <<<"$M"'
+M="$(env -i PATH=/usr/bin:/bin bash -c "source $T/repo/configs/redhawk/common.sh; set -u; load_modules; echo loaded" 2>&1)"
+chk "with no module command and no init file the job stops with a clear message" '! grep -q "^loaded" <<<"$M" && grep -q "the .module. command is not available" <<<"$M"'
 fi
 
 if [ "$PART" = 2 ]; then
