@@ -43,7 +43,7 @@ This file is the living guide for the project. Update it as decisions are made, 
 
 | Factor | Levels |
 |---|---|
-| Teacher | Claude Sonnet 5.5 (fallback: Opus 5.5); see `docs/teacher_selection.md` |
+| Teacher | Claude Sonnet 5.5 (fallback: Opus 5.5); see `docs/teacher_selection.md`. **Pending:** Anthropic support is asked whether Claude outputs may train the students; if not, an open-weight teacher replaces it (candidates in `docs/teacher_model_evaluations.md`) |
 | Student size | Pythia 70M, 160M, 410M, 1B (deduped variants, final `step143000` checkpoints; see `docs/model_versions.md`) |
 | Distillation set size | 1k, 10k, 50k, 100k, 200k (stretch); **50k is the fallback single size** |
 | Verifier | A different frontier model (high-effort ChatGPT model) |
@@ -309,6 +309,7 @@ Dates are placeholders; replace with real deadlines from the program.
 - [ ] Whether to add a multiple-choice slice to the benchmark scored by answer likelihood (works for base models without generation, reported separately from generation accuracy)
 - [ ] Exact question-format mix and difficulty distribution of the benchmark
 - [ ] Grading method for free-text answers
+- [ ] Teacher model if Anthropic does not allow Claude outputs for training: open-weight shortlist Qwen3.6-27B, DeepSeek V4-Flash, gpt-oss-120b, to be narrowed by a small test (`docs/teacher_model_evaluations.md`); also ask whether the Claude-written benchmark is affected
 - [ ] Which ChatGPT model and reasoning effort to use as verifier
 - [ ] Fine-tuning approach: full fine-tune vs. LoRA (full fine-tune is cleaner for small models)
 - [ ] Number of seeds per condition
