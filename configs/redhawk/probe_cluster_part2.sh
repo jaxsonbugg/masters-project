@@ -17,8 +17,13 @@
 # WHY THE WHOLE BODY IS IN main RUN WITH STANDARD INPUT CLOSED: see probe_cluster.sh (a command reading standard input
 # must not be able to swallow the rest of this script).
 #
-# OPTIONAL: PROBE_SBATCH_TEST=yes runs `sbatch --test-only`, which VALIDATES a request and estimates a start time
-# WITHOUT submitting a job. Off by default; run it only with Jaxson's approval.
+# 5. (APPROVED 2026-11-04) PROBE_SBATCH_TEST=yes runs `sbatch --test-only`. That command asks the scheduler to VALIDATE a
+#    request and ESTIMATE when it would start; it does NOT create or submit a job. It is asked for exactly what the pipeline
+#    job will request (one whole GPU node, 24 hours, excluding the drained node), so it answers two questions at once:
+#    does the cluster's per-user policy accept that request, and how long would the wait be? Off unless the variable is set:
+#      ssh redhawk 'PROBE_SBATCH_TEST=yes bash -l -s' < configs/redhawk/probe_cluster_part2.sh | tee /c/Users/Buggb/redhawk_probe_output4.txt
+#    Section 4b (always on, read-only) also prints Slurm's QOS limits, to find the per-user CPU cap that is holding the
+#    21 waiting jobs.
 
 main() {
   set +e
@@ -74,14 +79,25 @@ main() {
   echo "-- how many waiting jobs asked for a whole node (exclusive)"
   squeue -p gpu -h -t PD -o "%C" 2>&1 | awk '$1 >= 24 {n++} END {print n+0, "of the waiting jobs ask for 24 or more CPUs"}'
 
+  echo; echo "== 4b. Slurm's own limits that could affect a whole-node request (read-only) =="
+  echo "-- QOS definitions (this may fail: job accounting is off on this cluster); look for MaxTRESPU / MaxTRESPerUser = cpu=..."
+  scontrol show assoc_mgr flags=qos 2>&1 | head -n 60
+  echo "-- scheduler settings"
+  scontrol show config 2>&1 | grep -iE "^(PriorityType|SchedulerType|DefMemPerNode|MaxJobCount|MinJobAge)"
+  echo "-- your own jobs right now (expected: none)"
+  squeue -u "$(id -un)" 2>&1 | head -n 5
+  echo "(a whole GPU node is 24 cores, so the per-user CPU cap must be at least 24)"
+
   if [ "${PROBE_SBATCH_TEST:-}" = "yes" ]; then
     echo; echo "== 5. sbatch --test-only: VALIDATES the request and estimates a start time; NO JOB IS SUBMITTED =="
-    echo "-- one whole GPU node (what the scripts will use), excluding the drained node"
-    sbatch --test-only --partition=gpu --nodes=1 --exclusive --exclude=mualhpcp50.mpi --time=01:00:00 --wrap="hostname" 2>&1 | head -n 3
-    echo "-- the same for 12 hours"
-    sbatch --test-only --partition=gpu --nodes=1 --exclusive --exclude=mualhpcp50.mpi --time=12:00:00 --wrap="hostname" 2>&1 | head -n 3
+    echo "-- THE PIPELINE'S REQUEST: one whole GPU node for 24 hours, excluding the drained node"
+    sbatch --test-only --partition=gpu --nodes=1 --exclusive --exclude=mualhpcp50.mpi --time=24:00:00 --wrap="hostname" 2>&1 | head -n 4
+    echo "-- the same for 12 hours (useful if 24 hours is refused)"
+    sbatch --test-only --partition=gpu --nodes=1 --exclusive --exclude=mualhpcp50.mpi --time=12:00:00 --wrap="hostname" 2>&1 | head -n 4
+    echo "-- the same for 1 hour (a smoke stage on its own)"
+    sbatch --test-only --partition=gpu --nodes=1 --exclusive --exclude=mualhpcp50.mpi --time=01:00:00 --wrap="hostname" 2>&1 | head -n 4
     echo "-- with --gres=gpu:2, as Miami's Slurm page documents (expected to be rejected)"
-    sbatch --test-only --partition=gpu --gres=gpu:2 --time=01:00:00 --wrap="hostname" 2>&1 | head -n 3
+    sbatch --test-only --partition=gpu --gres=gpu:2 --time=01:00:00 --wrap="hostname" 2>&1 | head -n 4
   fi
   echo; echo "Done. Nothing was changed. Paste this output back."
 }
