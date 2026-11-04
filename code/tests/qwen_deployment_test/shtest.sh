@@ -1,6 +1,6 @@
 #!/bin/bash
 # Local test of the Redhawk job scripts with FAKE nvidia-smi / module / scontrol / llama-server (see README.md here).
-# Usage: bash shtest.sh <work_dir> <part 1|2|3|4>   (parts 1-2: the single stages and gates; 3-4: the one-job pipeline;
+# Usage: bash shtest.sh <work_dir> <part 1|2|3|4|5>   (parts 1-2: the single stages and gates; 3-4: the one-job pipeline; 5: prep and submit scripts;
 #        each part takes a few minutes; the parts may run at the same time)
 # Needs bash, GNU coreutils, curl and a python with httpx and pyyaml (OTT_TEST_PYTHON, as a bash-style path, or `python`).
 set -u
@@ -26,7 +26,22 @@ echo "JobId=$3 JobName=x SubmitTime=2026-11-04T20:00:00 StartTime=2026-11-04T20:
 EOF
   cat > "$T/bin/squeue" <<'EOF'
 #!/bin/bash
-echo "${FAKE_TIMELEFT:-23:00:00}"
+case "$*" in
+  *"%L"*) echo "${FAKE_TIMELEFT:-23:00:00}" ;;
+  *"-n qt_pipeline"*) [ -n "${FAKE_PIPE_QUEUED:-}" ] && echo "9999 qt_pipeline PD" ;;
+  *"-j"*) [ -n "${FAKE_BUILD_QUEUED:-}" ] && echo "5555 R" ;;
+esac
+exit 0
+EOF
+  cat > "$T/bin/sbatch" <<'EOF'
+#!/bin/bash
+if [[ "$*" == *"--test-only"* ]]; then
+  if [ "${FAKE_TESTONLY_FAIL:-}" = 1 ]; then echo "sbatch: error: Batch job submission failed: Invalid generic resource (gres) specification"; exit 1; fi
+  echo "sbatch: Job 99 to start at 2026-11-17T15:33:21 using 24 processors on nodes mualhpcp38.mpi in partition gpu"; exit 0
+fi
+if [ "${FAKE_SBATCH_FAIL:-}" = 1 ]; then echo "sbatch: error: Batch job submission failed"; exit 1; fi
+echo "$*" >> "${FAKE_SBATCH_LOG:-/dev/null}"
+echo "Submitted batch job ${FAKE_JOBID:-5555}"
 EOF
   cat > "$T/bin/nvidia-smi" <<'EOF'
 #!/bin/bash
@@ -216,6 +231,56 @@ pt() { bash -c "source $T/repo/configs/redhawk/common.sh; parse_slurm_time '$1'"
 chk "1-02:03:04 is 93784 s, 23:59:59 is 86399, 00:08:09 is 489 (no octal trap), 59:59 is 3599" '[ "$(pt 1-02:03:04)" = 93784 ] && [ "$(pt 23:59:59)" = 86399 ] && [ "$(pt 00:08:09)" = 489 ] && [ "$(pt 59:59)" = 3599 ]'
 chk "UNLIMITED, INVALID and empty text give -1 (unknown)" '[ "$(pt UNLIMITED)" = -1 ] && [ "$(pt INVALID)" = -1 ] && [ "$(pt "")" = -1 ]'
 fi
-rm -rf "$T"
+
+if [ "$PART" = 5 ]; then
+setup
+STATE_F="$T/rh/prep_state.txt"; WLOG_F="$T/rh/fetch_weights.log"; BLOG_F="$T/repo/qt_build_5555.log"
+printf '#!/bin/bash\necho "stub fetch_source ran"\nexit 0\n' > "$T/stub_fs.sh"
+printf '#!/bin/bash\necho "stub download"\necho "OK: weights verified"\n' > "$T/stub_fw.sh"
+prep() { env QT_PREP_AGAIN="${QT_PREP_AGAIN:-}" PREP_FETCH_SOURCE="$T/stub_fs.sh" PREP_FETCH_WEIGHTS="$T/stub_fw.sh" "$@" bash "$T/repo/configs/redhawk/prep_cluster.sh" 2>&1; }
+fresh() { rm -f "$STATE_F" "$WLOG_F" "$BLOG_F" "$T/rh/pipeline.log"; }
+
+echo "[Q1] prep_cluster.sh: the first run"
+fresh; OUT="$(prep)"; RC=$?; echo "$OUT" | tail -n 6 | cut -c1-150
+for i in 1 2 3 4 5 6; do grep -q "OK: weights verified" "$WLOG_F" 2>/dev/null && break; sleep 1; done
+chk "exits 0, checks the files, runs fetch_source, submits the build job and reports its number" '[ $RC -eq 0 ] && grep -q "prompt file hash matches" <<<"$OUT" && grep -q "stub fetch_source ran" <<<"$OUT" && grep -q "Submitted batch job 5555" <<<"$OUT"'
+chk "the download was started in the background and wrote its own log" 'grep -q "OK: weights verified" "$WLOG_F"'
+chk "the state file records the build job and the log path" 'grep -q "^BUILD_JOB=5555" "$STATE_F" && grep -q "^WEIGHTS_LOG=" "$STATE_F"'
+chk "it tells the user what to run next" 'grep -q "submit_pipeline.sh" <<<"$OUT" && grep -q "qt_build_5555.log" <<<"$OUT"'
+echo "[Q2] a second run is refused so nothing is submitted twice"
+OUT="$(prep)"; RC=$?; chk "refused, and no second build job number appears" '[ $RC -ne 0 ] && grep -q "already started" <<<"$OUT" && ! grep -q "Submitted batch job" <<<"$OUT"'
+QT_PREP_AGAIN=yes OUT="$(QT_PREP_AGAIN=yes prep)"; RC=$?; chk "QT_PREP_AGAIN=yes allows a deliberate repeat" '[ $RC -eq 0 ] && grep -q "Submitted batch job" <<<"$OUT"'
+echo "[Q3] damaged copies stop everything before anything is started"
+fresh; cp "$T/repo/configs/redhawk/common.sh" "$T/common.bak"; printf 'echo hi\r\n' >> "$T/repo/configs/redhawk/common.sh"
+OUT="$(prep)"; RC=$?; chk "a Windows line ending in a script is refused, nothing submitted, no state file" '[ $RC -ne 0 ] && grep -q "carriage return" <<<"$OUT" && ! grep -q "Submitted batch job" <<<"$OUT" && [ ! -f "$STATE_F" ]'
+cp "$T/common.bak" "$T/repo/configs/redhawk/common.sh"
+cp "$T/repo/data/prompts/benchmark_generation_v6.md" "$T/prompt.bak"; echo "x" >> "$T/repo/data/prompts/benchmark_generation_v6.md"
+fresh; OUT="$(prep)"; RC=$?; chk "a prompt file that differs from the pinned v6 hash is refused" '[ $RC -ne 0 ] && grep -q "pinned SHA-256" <<<"$OUT" && [ ! -f "$STATE_F" ]'
+cp "$T/prompt.bak" "$T/repo/data/prompts/benchmark_generation_v6.md"
+fresh; OUT="$(prep FAKE_SBATCH_FAIL=1)"; RC=$?; chk "if sbatch gives no job number, the download is NOT started and there is no state file" '[ $RC -ne 0 ] && [ ! -f "$WLOG_F" ] && [ ! -f "$STATE_F" ]'
+printf '#!/bin/bash\necho "git clone failed"\nexit 1\n' > "$T/stub_fs_fail.sh"
+fresh; OUT="$(env PREP_FETCH_SOURCE="$T/stub_fs_fail.sh" PREP_FETCH_WEIGHTS="$T/stub_fw.sh" bash "$T/repo/configs/redhawk/prep_cluster.sh" 2>&1)"; RC=$?
+chk "if fetch_source fails nothing else starts (no build job, no download)" '[ $RC -ne 0 ] && ! grep -q "Submitted batch job" <<<"$OUT" && [ ! -f "$WLOG_F" ]'
+
+echo "[Q4] submit_pipeline.sh: checks first, submits only when everything is ready"
+sp() { env QT_SUBMIT="${QT_SUBMIT:-}" "$@" bash "$T/repo/configs/redhawk/submit_pipeline.sh" 2>&1; }
+ready() { rm -f "$STATE_F"; echo "BUILD_JOB=5555" > "$STATE_F"; echo "REPO=$T/repo" >> "$STATE_F"; echo "BUILD OK" > "$BLOG_F"; printf 'download\nOK: weights verified\n' > "$WLOG_F"; }
+ready; OUT="$(sp)"; RC=$?; echo "$OUT" | tail -n 5 | cut -c1-140
+chk "everything ready, no QT_SUBMIT: the checks pass, the scheduler's estimate is shown, NOTHING is submitted" '[ $RC -eq 0 ] && grep -q "All checks passed" <<<"$OUT" && grep -q "to start at 2026-11-17" <<<"$OUT" && ! grep -q "PIPELINE_JOB" "$STATE_F"'
+ready; : > "$T/sbatch.log"; OUT="$(QT_SUBMIT=yes sp FAKE_JOBID=7777 FAKE_SBATCH_LOG="$T/sbatch.log")"; RC=$?
+chk "with QT_SUBMIT=yes it submits once, records the job and prints the monitoring commands" '[ $RC -eq 0 ] && grep -q "^PIPELINE_JOB=7777" "$STATE_F" && grep -q "scancel 7777" <<<"$OUT" && [ "$(grep -c "qwen_pipeline.sbatch" "$T/sbatch.log")" = 1 ]'
+ready; : > "$T/sbatch.log"; OUT="$(QT_SUBMIT=yes sp QT_ACK_QUALITY=yes QT_FA=off FAKE_SBATCH_LOG="$T/sbatch.log")"
+chk "QT_ACK_QUALITY and QT_FA are passed through to the job" 'grep -q "\-\-export=ALL,QT_ACK_QUALITY=yes,QT_FA=off" "$T/sbatch.log"'
+ready; OUT="$(sp FAKE_BUILD_QUEUED=1)"; RC=$?; chk "refused while the compile job is still queued or running" '[ $RC -ne 0 ] && grep -q "still in the queue" <<<"$OUT"'
+ready; rm -f "$BLOG_F"; OUT="$(QT_SUBMIT=yes sp)"; RC=$?; chk "refused when the build log is missing; nothing submitted" '[ $RC -ne 0 ] && grep -q "no build log" <<<"$OUT" && ! grep -q "PIPELINE_JOB" "$STATE_F"'
+ready; echo "error: link failed" > "$BLOG_F"; OUT="$(QT_SUBMIT=yes sp)"; RC=$?; chk "refused when the build did not end with BUILD OK" '[ $RC -ne 0 ] && grep -q "BUILD OK" <<<"$OUT" && ! grep -q "PIPELINE_JOB" "$STATE_F"'
+ready; echo "still downloading" > "$WLOG_F"; OUT="$(QT_SUBMIT=yes sp)"; RC=$?; chk "refused while the weights download has not verified" '[ $RC -ne 0 ] && grep -q "has not finished or failed" <<<"$OUT" && ! grep -q "PIPELINE_JOB" "$STATE_F"'
+ready; cp "$T/rh/models/Qwen3.6-27B-Q4_K_M.gguf" "$T/gguf.bak"; printf "x" >> "$T/rh/models/Qwen3.6-27B-Q4_K_M.gguf"; OUT="$(QT_SUBMIT=yes sp)"; RC=$?; chk "refused when the weights file has the wrong size" '[ $RC -ne 0 ] && grep -q "wrong size" <<<"$OUT"'
+cp "$T/gguf.bak" "$T/rh/models/Qwen3.6-27B-Q4_K_M.gguf"
+ready; OUT="$(QT_SUBMIT=yes sp FAKE_PIPE_QUEUED=1)"; RC=$?; chk "refused when a qt_pipeline job of yours is already waiting" '[ $RC -ne 0 ] && grep -q "already in the queue" <<<"$OUT"'
+ready; OUT="$(QT_SUBMIT=yes sp FAKE_TESTONLY_FAIL=1)"; RC=$?; chk "refused when the scheduler rejects the request" '[ $RC -ne 0 ] && grep -q "did not accept" <<<"$OUT" && ! grep -q "PIPELINE_JOB" "$STATE_F"'
+rm -f "$STATE_F"; OUT="$(QT_SUBMIT=yes sp)"; RC=$?; chk "refused when preparation was never started" '[ $RC -ne 0 ] && grep -q "run prep_cluster.sh first" <<<"$OUT"'
+fi
+[ -n "${KEEP_WORK:-}" ] || rm -rf "$T"
 echo "==== part $PART: $PASS passed, $FAIL failed ===="
 [ "$FAIL" -eq 0 ]

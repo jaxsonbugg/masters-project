@@ -16,6 +16,9 @@ real job scripts against it and check what they do.
   `nvidia-smi`, `module`, `scontrol`, `squeue` and `llama-server`.
   - Parts 1-2, the single stages: GPU, weights, template and flag checks, the stage gates, the memory summary, queue wait,
     mandatory validation, the `module` command, and an incomplete main run followed by a deliberate resume.
+  - Part 5, the preparation and submission scripts (`prep_cluster.sh`, `submit_pipeline.sh`): a first run, a refused second
+    run, damaged copies, a failed submission, and every reason the submit script refuses (build not finished, weights not
+    verified, wrong size, a pipeline job already waiting, the scheduler rejecting the request).
   - Parts 3-4, the one-job pipeline (`qwen_pipeline.sbatch`): the healthy A, B, main path; Stage B skipped or failed so the
     main run falls back to one sequence; Stage A failing so nothing else runs; every smoke reply a quality finding (stops
     unless acknowledged); a flash-attention crash retried once with it off (and never when the setting was explicit); too
@@ -24,7 +27,7 @@ real job scripts against it and check what they do.
 **Run them** (from the repository root, in Git Bash):
 ```
 python code/tests/qwen_deployment_test/test_suite.py
-for p in 1 2 3 4; do bash code/tests/qwen_deployment_test/shtest.sh /tmp/ott_sh $p & done; wait
+for p in 1 2 3 4 5; do bash code/tests/qwen_deployment_test/shtest.sh /tmp/ott_sh $p & done; wait
 ```
 Each prints PASS or FAIL per check and ends with a count. They clean up after themselves (including the review copies
 that `score` would otherwise leave in `results/open_teacher_test/`).
