@@ -10,3 +10,11 @@ logs: C:\masters_project_large\logs
 envs: C:\masters_project_large\envs
 # R is installed outside the repository and is not on the PATH. Used to run answer-key checks.
 rscript: C:\R-4.3.1\bin\Rscript.exe
+# Redhawk cluster (Linux paths, used by code and scripts that run on Redhawk; see recovery/redhawk_qwen_test.md).
+# They are UNSET on purpose: the home directory is a shared NFS share that was 81% full, so the location must be an
+# approved project or scratch area chosen AFTER running configs/redhawk/probe_cluster.sh (it prints free space and quota).
+# When chosen, set all four together; the scripts and the Python code stop with a clear message while any is UNSET.
+redhawk_root: UNSET
+redhawk_repo: UNSET
+redhawk_models: UNSET
+redhawk_outputs: UNSET
