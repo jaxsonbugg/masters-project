@@ -11,7 +11,7 @@ PYEXE="${OTT_TEST_PYTHON:-$(command -v python)}"
 PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); echo "  PASS  $1"; }
 bad() { FAIL=$((FAIL+1)); echo "  FAIL  $1   $2"; }
-chk() { if eval "$2"; then ok "$1"; else bad "$1" "(condition: $2)"; fi; }
+chk() { if eval "$2"; then ok "$1"; else bad "$1" "(condition: $2)"; [ -z "${SHOW_OUT_ON_FAIL:-}" ] || { echo "    --- captured output of the last command:"; echo "$OUT" | tail -n 14 | sed 's/^/    | /'; }; fi; }
 
 setup() {
   rm -rf "$T"; mkdir -p "$T"/{bin,repo/data,rh/models,rh/teacher_outputs,rh/llama.cpp/build/bin,rh/venv/bin}
@@ -280,6 +280,48 @@ cp "$T/gguf.bak" "$T/rh/models/Qwen3.6-27B-Q4_K_M.gguf"
 ready; OUT="$(QT_SUBMIT=yes sp FAKE_PIPE_QUEUED=1)"; RC=$?; chk "refused when a qt_pipeline job of yours is already waiting" '[ $RC -ne 0 ] && grep -q "already in the queue" <<<"$OUT"'
 ready; OUT="$(QT_SUBMIT=yes sp FAKE_TESTONLY_FAIL=1)"; RC=$?; chk "refused when the scheduler rejects the request" '[ $RC -ne 0 ] && grep -q "did not accept" <<<"$OUT" && ! grep -q "PIPELINE_JOB" "$STATE_F"'
 rm -f "$STATE_F"; OUT="$(QT_SUBMIT=yes sp)"; RC=$?; chk "refused when preparation was never started" '[ $RC -ne 0 ] && grep -q "run prep_cluster.sh first" <<<"$OUT"'
+
+echo "[Q5] build_llamacpp.sbatch: the compiler fix (the failure seen in job 2510636)"
+printf '#!/bin/bash\n[ "$1" = rev-parse ] && echo fakecommit000\nexit 0\n' > "$T/bin/git"
+printf '#!/bin/bash\necho "Cuda compilation tools, release 12.2, V12.2.140"\necho "Build cuda_12.2.r12.2/compiler.33191640_0"\n' > "$T/bin/nvcc"
+for c in gcc g++; do printf '#!/bin/bash\necho "%s (GCC) ${FAKE_GCC_VERSION:-12.2.0}"\n' "$c" > "$T/bin/$c"; done
+cat > "$T/bin/cmake" <<'EOF'
+#!/bin/bash
+if [ "${1:-}" = "--version" ]; then echo "cmake version 3.31.2"; exit 0; fi
+echo "cmake $*" >> "$T_CMAKE_LOG"
+if [ "${1:-}" = "--build" ]; then mkdir -p build/bin && cp "$FAKE_LLAMA_SERVER_BIN" build/bin/llama-server && exit 0; fi
+cc=""; for a in "$@"; do case "$a" in -DCMAKE_C_COMPILER=*) cc="${a#-DCMAKE_C_COMPILER=}";; esac; done
+[ "${FAKE_CMAKE_USES_CC:-}" = 1 ] && cc=/usr/bin/cc          # simulate CMake ignoring the request and using the old system cc
+mkdir -p build && echo "CMAKE_C_COMPILER:FILEPATH=$cc" > build/CMakeCache.txt
+exit 0
+EOF
+chmod +x "$T/bin/git" "$T/bin/nvcc" "$T/bin/gcc" "$T/bin/g++" "$T/bin/cmake"
+mkdir -p "$T/rh/llama.cpp/.git" "$T/rh/llama.cpp/build"; : > "$T/rh/llama.cpp/build/STALE_FROM_A_FAILED_BUILD"
+cp "$T/bin/llama-server" "$T/fake_llama_server_bin"; CML="$T/cmake.log"; : > "$CML"
+bld() { env T_CMAKE_LOG="$CML" FAKE_LLAMA_SERVER_BIN="$T/fake_llama_server_bin" SLURM_SUBMIT_DIR="$T/repo" "$@" bash "$T/repo/configs/redhawk/build_llamacpp.sbatch" 2>&1; }
+OUT="$(bld)"; RC=$?; echo "$OUT" | tail -n 5 | cut -c1-150
+chk "with gcc 12.2: BUILD OK, and CMake was told the exact compilers (gcc, g++ and the CUDA host compiler)" '[ $RC -eq 0 ] && grep -q "BUILD OK" <<<"$OUT" && grep -q "DCMAKE_C_COMPILER=$T/bin/gcc" "$CML" && grep -q "DCMAKE_CXX_COMPILER=$T/bin/g++" "$CML" && grep -q "DCMAKE_CUDA_HOST_COMPILER=$T/bin/g++" "$CML"'
+chk "the stale build folder from the failed attempt was wiped first" '[ ! -e "$T/rh/llama.cpp/build/STALE_FROM_A_FAILED_BUILD" ] && [ -x "$T/rh/llama.cpp/build/bin/llama-server" ]'
+chk "the log names the compilers it used" 'grep -q "compilers: C=$T/bin/gcc" <<<"$OUT" && grep -q "CMake C compiler: $T/bin/gcc" <<<"$OUT"'
+: > "$CML"; OUT="$(bld FAKE_GCC_VERSION=4.8.5)"; RC=$?
+chk "a compiler that is not 12.2 (the old 4.8.5) is refused BEFORE CMake runs" '[ $RC -ne 0 ] && grep -q "is not gcc 12.2" <<<"$OUT" && [ ! -s "$CML" ]'
+: > "$CML"; OUT="$(bld FAKE_CMAKE_USES_CC=1)"; RC=$?
+chk "if CMake substitutes the old system cc anyway, the build is refused before compiling" '[ $RC -ne 0 ] && grep -q "CMake configured with C compiler" <<<"$OUT" && ! grep -q -- "--build" "$CML"'
+
+echo "[Q6] rebuild_llamacpp.sh: resubmit the compile job and make submit_pipeline.sh follow the NEW job"
+bld > /dev/null   # one good build first, so a binary exists (the refused build just above wiped the folder)
+printf 'PREP_STARTED_UTC=x\nBUILD_JOB=5555\nREPO=%s\n' "$T/repo" > "$STATE_F"; echo "error: stdatomic.h" > "$BLOG_F"; printf 'download\nOK: weights verified\n' > "$WLOG_F"
+rb() { env "$@" bash "$T/repo/configs/redhawk/rebuild_llamacpp.sh" 2>&1; }
+OUT="$(rb FAKE_JOBID=6666)"; RC=$?; echo "$OUT" | tail -n 3 | cut -c1-150
+chk "submits the compile job again and appends the new job number (old lines are kept)" '[ $RC -eq 0 ] && [ "$(sed -n "s/^BUILD_JOB=//p" "$STATE_F" | tail -n 1)" = 6666 ] && grep -q "^BUILD_JOB=5555" "$STATE_F" && grep -q "^REBUILD_REPLACES=5555" "$STATE_F"'
+echo "BUILD OK" > "$T/repo/qt_build_6666.log"
+OUT="$(env QT_SUBMIT= bash "$T/repo/configs/redhawk/submit_pipeline.sh" 2>&1)"; RC=$?
+chk "submit_pipeline.sh now checks the NEW build log (the old failed log is ignored)" '[ $RC -eq 0 ] && grep -q "build job 6666" <<<"$OUT" && grep -q "All checks passed" <<<"$OUT"'
+OUT="$(rb FAKE_BUILD_QUEUED=1 FAKE_JOBID=7777)"; RC=$?; chk "refused while the previous compile job is still queued or running" '[ $RC -ne 0 ] && grep -q "still queued or running" <<<"$OUT" && [ "$(sed -n "s/^BUILD_JOB=//p" "$STATE_F" | tail -n 1)" = 6666 ]'
+cp "$T/repo/configs/redhawk/build_llamacpp.sbatch" "$T/bld.bak"; printf 'echo x\r\n' >> "$T/repo/configs/redhawk/build_llamacpp.sbatch"
+OUT="$(rb FAKE_JOBID=8888)"; RC=$?; chk "refused if the compile script has Windows line endings" '[ $RC -ne 0 ] && grep -q "carriage returns" <<<"$OUT" && [ "$(sed -n "s/^BUILD_JOB=//p" "$STATE_F" | tail -n 1)" = 6666 ]'
+cp "$T/bld.bak" "$T/repo/configs/redhawk/build_llamacpp.sbatch"
+rm -f "$STATE_F"; OUT="$(rb)"; RC=$?; chk "refused when preparation was never started" '[ $RC -ne 0 ] && grep -q "run prep_cluster.sh first" <<<"$OUT"'
 fi
 [ -n "${KEEP_WORK:-}" ] || rm -rf "$T"
 echo "==== part $PART: $PASS passed, $FAIL failed ===="
