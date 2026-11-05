@@ -105,6 +105,13 @@ read -r TAG COMMIT < "$QT_ROOT/llama_cpp_version.txt"
 BIN="$QT_BUILD/build/bin/llama-server"
 [ -x "$BIN" ] || die "llama-server not built at $BIN (run build_llamacpp.sbatch)"
 check_flags "$BIN" || exit 2
+# On the GPU node every library llama-server needs must resolve: gcc's newer libstdc++ and the CUDA libraries come from the
+# modules loaded above, and libcuda.so.1 from the node's NVIDIA driver. Anything missing is reported now, with its name.
+if [ "${QT_TEST_MODE:-}" != 1 ] && command -v ldd >/dev/null 2>&1; then
+  MISSING_LIBS="$(ldd "$BIN" 2>&1 | grep -E "=> not found|version .* not found" | sort -u | head -n 8 || true)"
+  [ -z "$MISSING_LIBS" ] || die "llama-server cannot find libraries on this node (module or driver problem):
+$MISSING_LIBS"
+fi
 # shellcheck disable=SC1091
 source "$QT_VENV/bin/activate"
 python -c 'import httpx, yaml' 2>/dev/null || die "the Python environment lacks httpx/pyyaml (run fetch_weights.sh, which installs them)"

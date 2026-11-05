@@ -60,6 +60,12 @@ exit 0
 EOF
   cat > "$T/bin/llama-server" <<'EOF'
 #!/bin/bash
+if [ "${FAKE_NEEDS_DRIVER:-}" = 1 ]; then
+  have=no; IFS=: read -ra D <<<"${LD_LIBRARY_PATH:-}"
+  for d in "${D[@]}"; do [ -e "$d/libcuda.so.1" ] && have=yes; done
+  if [ "$have" = no ]; then echo "./llama-server: error while loading shared libraries: libcuda.so.1: cannot open shared object file: No such file or directory"; exit 127; fi
+fi
+for a in "$@"; do [ "$a" = "--version" ] && { echo "version: 1 (fakecommit000)"; exit 0; }; done
 for a in "$@"; do [ "$a" = "--help" ] && { cat "$FAKE_HELP"; exit 0; }; done
 port=""; prev=""; for a in "$@"; do [ "$prev" = "--port" ] && port="$a"; prev="$a"; done
 echo "print_info: arch             = qwen35"; echo "load_tensors:      CUDA0 model buffer size =  8000.00 MiB"; echo "load_tensors:      CUDA1 model buffer size =  8000.00 MiB"
@@ -322,6 +328,34 @@ cp "$T/repo/configs/redhawk/build_llamacpp.sbatch" "$T/bld.bak"; printf 'echo x\
 OUT="$(rb FAKE_JOBID=8888)"; RC=$?; chk "refused if the compile script has Windows line endings" '[ $RC -ne 0 ] && grep -q "carriage returns" <<<"$OUT" && [ "$(sed -n "s/^BUILD_JOB=//p" "$STATE_F" | tail -n 1)" = 6666 ]'
 cp "$T/bld.bak" "$T/repo/configs/redhawk/build_llamacpp.sbatch"
 rm -f "$STATE_F"; OUT="$(rb)"; RC=$?; chk "refused when preparation was never started" '[ $RC -ne 0 ] && grep -q "run prep_cluster.sh first" <<<"$OUT"'
+
+echo "[Q7] llama-server cannot start without the NVIDIA driver (the real failure of job 2510641): the check borrows the CUDA stub library"
+mkdir -p "$T/lib64/stubs"; echo stub > "$T/lib64/stubs/libcuda.so"
+LSB="$T/rh/llama.cpp/build/bin/llama-server"; mkdir -p "$T/rh/llama.cpp/build/bin"; cp "$T/bin/llama-server" "$LSB"
+runfn() { env FAKE_NEEDS_DRIVER=1 bash -c "source $T/repo/configs/redhawk/common.sh; $1" 2>&1; }
+OUT="$(runfn "run_llama $LSB --help | head -n 3")"
+chk "run_llama: the first try fails without the driver, the stub retry prints the help" 'grep -q -- "--model" <<<"$OUT" && ! grep -q "error while loading" <<<"$OUT"'
+OUT="$(runfn "check_flags $LSB")"; RC=$?
+chk "check_flags passes on a node that has no driver" '[ $RC -eq 0 ] && grep -q "lists all required flags" <<<"$OUT"'
+mv "$T/lib64/stubs/libcuda.so" "$T/stub.bak"
+OUT="$(runfn "check_flags $LSB")"; RC=$?
+chk "with no stub available it fails AND shows the loader error, not just a list of 'missing flags'" '[ $RC -ne 0 ] && grep -q "error while loading shared libraries" <<<"$OUT"'
+mv "$T/stub.bak" "$T/lib64/stubs/libcuda.so"
+echo "[Q8] verify_build.sh records a verification of the existing binary without recompiling; submit_pipeline.sh accepts it"
+vb() { env FAKE_NEEDS_DRIVER=1 bash "$T/repo/configs/redhawk/verify_build.sh" 2>&1; }
+rm -f "$T/rh/build_verified.txt"; BEFORE="$(sha256sum "$LSB" | cut -d' ' -f1)"
+OUT="$(vb)"; RC=$?; echo "$OUT" | tail -n 3 | cut -c1-150
+chk "verify_build.sh passes and writes the record (pinned commit, binary hash, flags ok)" '[ $RC -eq 0 ] && grep -q "^COMMIT=fakecommit000" "$T/rh/build_verified.txt" && grep -q "^BIN_SHA256=[0-9a-f]\{64\}" "$T/rh/build_verified.txt" && grep -q "^FLAGS_OK=yes" "$T/rh/build_verified.txt"'
+chk "it did not modify the binary (no rebuild happened)" '[ "$(sha256sum "$LSB" | cut -d" " -f1)" = "$BEFORE" ] && grep -q "^BIN_SHA256=$BEFORE" "$T/rh/build_verified.txt"'
+ready; echo "error: flag check failed on a CPU node" > "$BLOG_F"
+OUT="$(env FAKE_NEEDS_DRIVER=1 QT_SUBMIT= bash "$T/repo/configs/redhawk/submit_pipeline.sh" 2>&1)"; RC=$?
+chk "submit_pipeline.sh accepts the verified binary although the build log has no BUILD OK" '[ $RC -eq 0 ] && grep -q "verify_build.sh verified this exact binary" <<<"$OUT" && grep -q "All checks passed" <<<"$OUT"'
+printf '\n# changed after verification\n' >> "$LSB"
+OUT="$(env FAKE_NEEDS_DRIVER=1 QT_SUBMIT= bash "$T/repo/configs/redhawk/submit_pipeline.sh" 2>&1)"; RC=$?
+chk "once the binary changes, the old verification no longer counts" '[ $RC -ne 0 ] && grep -q "no verification of the current binary" <<<"$OUT"'
+rm -f "$T/rh/build_verified.txt"; ready; echo "error" > "$BLOG_F"
+OUT="$(env FAKE_NEEDS_DRIVER=1 QT_SUBMIT= bash "$T/repo/configs/redhawk/submit_pipeline.sh" 2>&1)"; RC=$?
+chk "with a failed build log and no verification at all it refuses and points to verify_build.sh" '[ $RC -ne 0 ] && grep -q "verify_build.sh" <<<"$OUT"'
 fi
 [ -n "${KEEP_WORK:-}" ] || rm -rf "$T"
 echo "==== part $PART: $PASS passed, $FAIL failed ===="

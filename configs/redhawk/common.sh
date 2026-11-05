@@ -106,14 +106,41 @@ need() { [ -n "${!1:-}" ] || die "$1 is empty. Export it before running (see pro
 # (Verified in the b11960 server README on 2026-11-04. Re-checked on the real binary by serve_and_run.sh.)
 REQUIRED_FLAGS=(-m --alias --host --port -ngl -sm -ts -fa -c --parallel --jinja --chat-template-file --reasoning-format)
 
+# run_llama BIN ARGS...: run llama-server and print its output. llama-server is linked to the NVIDIA driver library
+# (libcuda.so.1), which exists only on GPU nodes. On the login node or a CPU node the program cannot even start
+# ("error while loading shared libraries: libcuda.so.1"), so its --help prints nothing. Found on Redhawk 2026-11-04 (job
+# 2510641): every flag looked "missing". So if that exact error appears, the call is repeated ONCE with the CUDA toolkit's
+# stub libcuda on the library path for that single call (the toolkit ships stubs/libcuda.so for exactly this purpose: it
+# lets a program load and print help without a GPU). It is never used to run a model.
+run_llama() {
+  local bin="$1" out rc nvcc stubs tmp
+  shift
+  out="$("$bin" "$@" 2>&1)"; rc=$?
+  if [ "$rc" -ne 0 ] && grep -q "error while loading shared libraries: libcuda" <<<"$out"; then
+    nvcc="$(command -v nvcc 2>/dev/null || true)"
+    if [ -n "$nvcc" ]; then
+      stubs="$(dirname "$(dirname "$nvcc")")/lib64/stubs/libcuda.so"
+      if [ -f "$stubs" ]; then
+        tmp="$(mktemp -d)"; ln -s "$stubs" "$tmp/libcuda.so.1"
+        out="$(LD_LIBRARY_PATH="$tmp:${LD_LIBRARY_PATH:-}" "$bin" "$@" 2>&1)"; rc=$?
+        rm -rf "$tmp"
+      fi
+    fi
+  fi
+  printf '%s\n' "$out"
+  return "$rc"
+}
+
 check_flags() {  # $1 = llama-server binary
   local help missing=() f
-  help="$("$1" --help 2>&1 || true)"
+  help="$(run_llama "$1" --help || true)"
   for f in "${REQUIRED_FLAGS[@]}"; do
     grep -qE "(^|[[:space:],])${f}([[:space:],=]|\$)" <<<"$help" || missing+=("$f")
   done
   if [ "${#missing[@]}" -gt 0 ]; then
     echo "STOP: this llama-server does not list: ${missing[*]}" >&2
+    echo "What it printed for --help (first 3 lines; an error here usually means a missing library, not missing flags):" >&2
+    head -n 3 <<<"$help" | sed 's/^/    /' >&2
     echo "The test cannot run as designed. Do not improvise flags; report this and re-pin llama.cpp." >&2
     return 1
   fi

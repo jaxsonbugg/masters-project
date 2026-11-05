@@ -25,11 +25,24 @@ BUILD_JOB="$(sed -n 's/^BUILD_JOB=//p' "$STATE" | tail -n 1)"
 ok "preparation was started (build job $BUILD_JOB)"
 
 echo "== 2. the compile job and the binary =="
+load_modules   # gcc's libstdc++ and the CUDA libraries are needed just to run llama-server --help
 if [ -n "$(squeue -h -j "$BUILD_JOB" 2>/dev/null)" ]; then die "the compile job $BUILD_JOB is still in the queue or running. Wait for it to leave 'squeue -u $(id -un)'."; fi
-BLOG="$QT_REPO/qt_build_${BUILD_JOB}.log"
-[ -f "$BLOG" ] || die "no build log $BLOG: the compile job did not run. Look at 'squeue' and the job's output file."
-grep -q "BUILD OK" "$BLOG" || die "the build log does not end with BUILD OK ($BLOG). Read it; the pipeline must not be submitted."
-[ -x "$QT_BUILD/build/bin/llama-server" ] || die "llama-server is missing at $QT_BUILD/build/bin/llama-server."
+BIN="$QT_BUILD/build/bin/llama-server"
+[ -x "$BIN" ] || die "llama-server is missing at $BIN."
+# The build counts as good if its own log ends with BUILD OK, OR if verify_build.sh has recorded a verification of THIS very
+# binary (same commit, same SHA-256). The second route exists because the first compile's own check ran on a CPU node
+# without a GPU driver and failed although the binary was fine (see docs/cluster_selection.md).
+BLOG="$QT_REPO/qt_build_${BUILD_JOB}.log"; VER="$QT_ROOT/build_verified.txt"
+if [ -f "$BLOG" ] && grep -q "BUILD OK" "$BLOG"; then
+  ok "the build log ends with BUILD OK"
+elif [ -f "$VER" ] && [ "$(sed -n 's/^COMMIT=//p' "$VER" | tail -n 1)" = "$LLAMA_EXPECT_COMMIT" ] \
+     && [ "$(sed -n 's/^BIN_SHA256=//p' "$VER" | tail -n 1)" = "$(sha256sum "$BIN" | cut -d' ' -f1)" ]; then
+  ok "verify_build.sh verified this exact binary on $(sed -n 's/^VERIFIED_UTC=//p' "$VER" | tail -n 1)"
+elif [ ! -f "$BLOG" ]; then
+  die "no build log $BLOG: the compile job did not run. Look at 'squeue' and the job's output file."
+else
+  die "the build log does not end with BUILD OK ($BLOG) and there is no verification of the current binary. Read the log; if the build itself succeeded run: bash -l configs/redhawk/verify_build.sh"
+fi
 [ -f "$QT_ROOT/llama_cpp_version.txt" ] || die "llama_cpp_version.txt is missing."
 read -r TAG COMMIT < "$QT_ROOT/llama_cpp_version.txt"
 [ "$COMMIT" = "$LLAMA_EXPECT_COMMIT" ] || die "the built commit $COMMIT is not the pinned $LLAMA_EXPECT_COMMIT."
