@@ -164,6 +164,28 @@ slurm_seconds_left() {  # seconds left in this job, or -1 if unknown
   parse_slurm_time "$(squeue -h -j "${SLURM_JOB_ID:-0}" -o %L 2>/dev/null | head -n 1)"
 }
 
+# --- Is the model really spread over both GPUs? Evidence = what nvidia-smi measured, NOT the wording of the server log. -----
+# The first pipeline job (2510690) stopped at Stage A because it searched the log for "arch = qwen35" and "CUDA0"/"CUDA1".
+# That llama.cpp build (b11960) prints a short, timestamped log without those lines, so the search could never succeed although
+# the model had loaded (about 8.8 GB on GPU 0 and 9.2 GB on GPU 1). Memory readings do not depend on log wording.
+# gpus_hold_model CSV MIN_MIB: uses the LATEST sample of each GPU in the monitor's CSV (columns timestamp,gpu,used,total,util).
+# Prints one line per GPU. Returns 0 only if exactly 2 GPUs were sampled and each has at least MIN_MIB in use. The weights file
+# is 16.8 GB, so a GPU holding its half has about 8 GB; 4096 MiB per GPU is far below that and far above an idle card (0-300 MiB).
+gpus_hold_model() {
+  local out
+  out="$(awk -F', *' -v min="$2" '
+    NR == 1 { next }
+    NF >= 4 && $3 ~ /^[0-9]+$/ { used[$2] = $3 + 0 }          # later rows overwrite earlier ones: the latest sample wins
+    END {
+      n = 0; ok = 1
+      for (g in used) { n++; printf "gpu %s in_use_MiB %d (needs at least %d)\n", g, used[g], min; if (used[g] < min) ok = 0 }
+      if (n != 2) ok = 0
+      print "GPUS_SEEN " n; print "HOLD_OK " ok
+    }' "$1")"
+  grep -v '^HOLD_OK\|^GPUS_SEEN' <<<"$out"
+  [ "$(sed -n 's/^HOLD_OK //p' <<<"$out")" = 1 ]
+}
+
 # --- GPU memory summary. Input: the CSV written by the monitor in serve_and_run.sh ------------------------------
 # Columns: timestamp,gpu,mem_used_mib,mem_total_mib,util_pct  ($1..$5 below, split on a comma plus optional spaces).
 # Prints one line per GPU (peak used, total, minimum free = total - peak) and a last line MINFREE <n>.

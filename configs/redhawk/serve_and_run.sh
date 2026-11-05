@@ -21,8 +21,9 @@
 #   - the llama.cpp source commit equals the pinned commit, and the binary lists every flag this test uses;
 #   - the stage gate: Stage B needs a passing Stage A with 3 GB free per GPU; the main run needs a passing stage with
 #     the SAME context, parallelism, flash-attention mode, llama.cpp commit and weights.
-# AFTER THE LOAD it also requires evidence in the server log that the qwen35 architecture loaded on both GPUs
-# (QT_SKIP_LOGCHECK=yes bypasses only that log check, after a person has read the log).
+# AFTER THE LOAD it also requires that nvidia-smi shows at least 4096 MiB in use on each of the 2 GPUs (the model is on
+# both cards). This replaced an earlier search of the server log for "arch = qwen35" / "CUDA0" / "CUDA1": the pinned
+# llama.cpp build does not print those lines, and that search stopped the first job although the model had loaded fine.
 #
 # TWO KINDS OF FAILURE, KEPT APART (validation is mandatory in every stage, including the main run):
 #   INFRASTRUCTURE failure = the plumbing is wrong: missing files, invalid metadata, duplicate slot ids, an
@@ -193,12 +194,15 @@ done
 [ -n "$READY" ] || fail "server not ready after 20 minutes"
 LOAD="$(( $(date +%s) - T0 ))"
 echo "Server ready after ${LOAD}s (model load time)"
-if [ "${QT_SKIP_LOGCHECK:-}" != yes ]; then
-  grep -qE "arch[[:space:]]*=[[:space:]]*qwen35" "$SERVER_LOG" || fail "the server log does not show the qwen35 architecture (read the log; QT_SKIP_LOGCHECK=yes only after a person has)"
-  { grep -q "CUDA0" "$SERVER_LOG" && grep -q "CUDA1" "$SERVER_LOG"; } || fail "the log does not show the model on both GPUs (CUDA0 and CUDA1)"
-fi
-sleep 6
+sleep 6   # lets the monitor take at least two fresh samples after the load
 echo "--- GPU memory right after loading ---"; summarize_memory "$MEMLOG" | grep -v '^MINFREE' || true
+# Evidence that the model is on BOTH GPUs: measured memory, not log wording (see gpus_hold_model in common.sh). Whether the
+# model really is the Qwen3.6 weights is already settled by the SHA-256 re-hash above and by the load itself.
+HOLD="$(gpus_hold_model "$MEMLOG" 4096)" || fail "the model is not on both GPUs: $(tr '\n' ';' <<<"$HOLD")"
+echo "--- model is on both GPUs (latest nvidia-smi readings) ---"; echo "$HOLD"
+# Informational only, never a pass/fail test: any lines this build's log prints about the architecture or the devices.
+echo "--- server log lines naming the architecture or devices (if this build prints any) ---"
+grep -iE "arch|qwen3|CUDA[0-9]|offload|flash|n_ctx|devices" "$SERVER_LOG" | head -n 12 || true
 
 # ---- 6. run the client -------------------------------------------------------------------------------------------
 cd "$QT_REPO/code/generation"

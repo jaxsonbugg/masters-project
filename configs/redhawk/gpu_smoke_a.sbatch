@@ -11,7 +11,7 @@
 # generation work, are the replies saved and tied to the right slots, and how much GPU memory is free?
 # SUBMIT FROM THE REPOSITORY ROOT:   cd <repo copy> && sbatch configs/redhawk/gpu_smoke_a.sbatch
 # Prerequisites that this job checks and stops on (see serve_and_run.sh): 2 V100s visible, weights SHA-256, chat
-# template hash, pinned llama.cpp commit, every llama-server flag listed, qwen35 loaded on both GPUs.
+# template hash, pinned llama.cpp commit, every llama-server flag listed; after the load, memory in use on both GPUs.
 # WHY A WHOLE NODE: Slurm on Redhawk has no GPU resources defined (GresTypes = null), so --gres=gpu:2 would be rejected
 # and a job that does not take the node exclusively could share the two V100s with another user's job. --exclusive gives
 # this job the whole node (24 cores, both V100s). mualhpcp38-41 hold the V100s; mualhpcp50 is a different, drained

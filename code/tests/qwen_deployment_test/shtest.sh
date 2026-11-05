@@ -68,7 +68,7 @@ fi
 for a in "$@"; do [ "$a" = "--version" ] && { echo "version: 1 (fakecommit000)"; exit 0; }; done
 for a in "$@"; do [ "$a" = "--help" ] && { cat "$FAKE_HELP"; exit 0; }; done
 port=""; prev=""; for a in "$@"; do [ "$prev" = "--port" ] && port="$a"; prev="$a"; done
-echo "print_info: arch             = qwen35"; echo "load_tensors:      CUDA0 model buffer size =  8000.00 MiB"; echo "load_tensors:      CUDA1 model buffer size =  8000.00 MiB"
+echo "0.01.562.689 I srv  llama_server: initializing ..."; echo "0.09.817.908 I srv  server_run_i: model loaded"   # the REAL b11960 log has no architecture or CUDA0/CUDA1 lines
 echo "args: $*"
 FAKE_SERVER_ARGS="$*" exec "$PYEXE" "$FAKE_SERVER" "$port"
 EOF
@@ -136,6 +136,17 @@ sub gpu_smoke_b.sbatch; chk "Stage B refuses after a failed Stage A" '[ $RC -ne 
 sub qwen_test.sbatch QT_CTX=20480 QT_PARALLEL=1; chk "main 20480/1 refuses after a failed Stage A" '[ $RC -ne 0 ] && grep -q "Stage A did not pass" <<<"$OUT"'
 cp $RES/stageA.bak $RES/stageA.txt
 sub gpu_smoke_a.sbatch FAKE_GPUS=1; chk "one visible GPU stops the job" '[ $RC -ne 0 ] && grep -q "expected exactly 2 visible GPUs" <<<"$OUT"'
+echo "[S11] the both-GPUs check rests on measured memory, not on log wording (job 2510690 died on a log-wording check)"
+cp $RES/stageA.txt $RES/stageA.keep
+sub gpu_smoke_a.sbatch FAKE_USED1=200; chk "model on only one GPU (GPU 1 holds 200 MiB): FAIL_INFRA, exit 3, nothing sent" '[ $RC -eq 3 ] && grep -q "the model is not on both GPUs" <<<"$OUT" && grep -q "gpu 1 in_use_MiB 200" <<<"$OUT" && [ "$(val $RES/stageA.txt RESULT)" = FAIL_INFRA ]'
+sub gpu_smoke_a.sbatch; chk "the fake server log has no arch/CUDA0/CUDA1 lines (like the real build) and Stage A still passes" '[ $RC -eq 0 ] && grep -q "RESULT: PASS (stage A)" <<<"$OUT" && grep -q "model is on both GPUs" <<<"$OUT" && grep -q "gpu 0 in_use_MiB 12000" <<<"$OUT"'
+printf 'timestamp,gpu,mem_used_mib,mem_total_mib,util_pct\n2026/11/05 09:35:11.178, 0, 7698, 16384, 0\n2026/11/05 09:35:11.180, 1, 8270, 16384, 38\n2026/11/05 09:35:13.223, 0, 8790, 16384, 1\n2026/11/05 09:35:13.224, 1, 9226, 16384, 0\n' > "$T/real_mem.csv"
+OUT="$(bash -c "source $T/repo/configs/redhawk/common.sh; gpus_hold_model $T/real_mem.csv 4096; echo rc=\$?" 2>&1)"
+chk "the real readings of job 2510690 (8790 and 9226 MiB) pass the check" 'grep -q "gpu 0 in_use_MiB 8790" <<<"$OUT" && grep -q "gpu 1 in_use_MiB 9226" <<<"$OUT" && grep -q "rc=0" <<<"$OUT"'
+printf 'timestamp,gpu,mem_used_mib,mem_total_mib,util_pct\n2026/11/05 09:35:11.178, 0, 9000, 16384, 0\n' > "$T/one_gpu.csv"
+OUT="$(bash -c "source $T/repo/configs/redhawk/common.sh; gpus_hold_model $T/one_gpu.csv 4096; echo rc=\$?" 2>&1)"
+chk "a CSV with samples from only one GPU fails the check" 'grep -q "rc=1" <<<"$OUT"'
+cp $RES/stageA.keep $RES/stageA.txt
 cp "$T/help.txt" "$T/help.bak"; grep -v -- "--chat-template-file" "$T/help.bak" > "$T/help.txt"
 sub gpu_smoke_a.sbatch; chk "a llama-server without a required flag stops the job" '[ $RC -ne 0 ] && grep -q "does not list: --chat-template-file" <<<"$OUT"'
 cp "$T/help.bak" "$T/help.txt"
