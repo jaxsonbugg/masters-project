@@ -70,7 +70,7 @@ echo "=== node $(hostname), job $JOB, stage $STAGE, $(date -u +%FT%TZ) ==="
 echo "$GPU_LIST"
 nvidia-smi --query-gpu=index,name,memory.total,driver_version --format=csv
 echo "layout: $GPU_COUNT GPU(s), tensor parallel $TENSOR_PARALLEL, replicas $REPLICAS, max sequences $MAX_NUM_SEQS, max length per sequence $MAX_MODEL_LEN"
-echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; used only to match the Redhawk and Novita runs."
+echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; used only to match the Redhawk run."
 
 # ---- 2. queue wait, from Slurm itself (not from an assumed variable) -------------------------------------------------
 SUBMIT="unknown"; STARTED="unknown"; WAIT="unknown"

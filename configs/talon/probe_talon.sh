@@ -24,13 +24,13 @@
 #   5c maintenance          down or drained nodes with reasons, and reservations (maintenance windows with end times)
 #   5d queue                what is running and waiting on talon, and the scheduler's start estimates for waiting jobs
 #   5e limits and billing   your associations (account, QOS), QOS limits and usage factors, accounting reachability
-#   6  storage              home, scratch and project folders, mounts, free space, quotas, the login banner
+#   6  storage              home, scratch and project folders, mounts, free space, quota commands (the 500 GB limit), home size, the login banner
 #   7  internet             can THIS login node reach Hugging Face and PyPI (the 54 GB download and pip install need it)?
 #   8  pins to choose       the current commit of Qwen/Qwen3.6-27B and the vLLM versions on PyPI (a person picks and pins one)
 # GPUs are not looked at: login nodes usually have none, and a GPU node would need a job.
 #
 # READ-ONLY, ENFORCED BY TESTS (code/tests/talon_deployment_test): every command below is a query (sinfo, scontrol show, squeue,
-# sacctmgr show, sshare, sacct, df, findmnt, ls, cat, id, getent, module avail, command -v, curl to /dev/null, python3 -c). A test
+# sacctmgr show, sshare, sacct, df, du, findmnt, ls, cat, id, getent, module avail/show, command -v, curl, python3 -c). A test
 # scans this file for anything that submits, allocates, installs, copies, deletes or writes, and another runs it with fake
 # versions of those programs that record every call (the record must stay empty).
 # Every query has a short time limit and its errors are printed, not hidden. `main </dev/null`: some commands (quota on Redhawk
@@ -67,7 +67,10 @@ main() {
   sec 4 "modules" OBSERVED
   # Run in THIS shell, not through T: `module` is usually a shell function of the login shell and a child `bash -c` may lack it.
   { type module 2>&1 | head -n 1; module --version 2>&1 | head -n 2; } || echo "  (no module command in this shell)"
-  { module -t avail 2>&1 | grep -iE "cuda|gcc|python|anaconda|conda|apptainer|singularity|vllm|torch|nccl" | sort -u | head -n 60; } || true
+  { module -t avail 2>&1 | grep -iE "cuda|gcc|python|anaconda|conda|miniforge|apptainer|singularity|vllm|torch|nccl" | sort -u | head -n 60; } || true
+  # Research Computing's example loads miniforge3-python3.12 (TOLD BY RESEARCH COMPUTING, 2026-11-06). `module show` only PRINTS what the
+  # module would set; nothing is loaded.
+  { module show miniforge3-python3.12 2>&1 | head -n 25; } || echo "  (module show failed)"
 
   sec 5 "Slurm in general" SLURM-REPORTED
   T 'sinfo -s'
@@ -101,9 +104,14 @@ main() {
   T 'df -hP "$HOME" /scratch /projects /project /fs /data /tmp 2>&1 | sort -u'
   T 'findmnt -t nfs,nfs4,lustre,gpfs,beegfs,xfs,ext4 -o TARGET,SOURCE,FSTYPE,SIZE,AVAIL 2>&1 | head -n 30'
   T 'for d in /scratch /scratch/$(id -un) /projects /project /fs /shared /data /work; do [ -e "$d" ] && ls -ld "$d"; done'
+  # Research Computing said a display of storage used / total (500 GB limit, TOLD 2026-11-06) exists; which command it is, is unknown,
+  # so list which usage commands this system has, then try the common ones.
+  T 'for c in quota myquota showquota lfs mmlsquota beegfs-ctl; do p="$(command -v $c 2>/dev/null)"; printf "  %-12s %s\n" "$c" "${p:-MISSING}"; done'
   T 'quota -s 2>&1 | head -n 12'
   T 'lfs quota -h -u "$(id -un)" "$HOME" 2>&1 | head -n 8'
+  T 'du -sh "$HOME" 2>&1' 40
   T 'ls /etc/motd 2>/dev/null && head -n 40 /etc/motd'
+  T 'ls /etc/profile.d 2>/dev/null | head -n 30'
 
   sec 7 "internet from this login node" OBSERVED
   T 'curl -sS -o /dev/null -w "  huggingface.co: HTTP %{http_code} in %{time_total}s\n" https://huggingface.co/api/models/Qwen/Qwen3.6-27B'

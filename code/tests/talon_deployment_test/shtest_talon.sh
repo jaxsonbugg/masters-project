@@ -271,6 +271,7 @@ chk "static scan: scontrol and sacctmgr are used only with show" '! grep -nE "sc
 chk "static scan: no output redirection except /dev/null and 2>&1" '! grep -nE ">>|>[[:space:]]*[^&[:space:]/]|>[[:space:]]*/[^d]" <<<"$CODE"'
 HDRS="$(grep -E '^  sec ' "$PSRC")"
 chk "all 13 sections exist and each header names an evidence label (OBSERVED or SLURM-REPORTED)" '[ "$(grep -c . <<<"$HDRS")" = 13 ] && [ "$(grep -cE " (OBSERVED|SLURM-REPORTED)\$" <<<"$HDRS")" = 13 ]'
+chk "the probe looks at the conda module Research Computing named and at the storage-usage displays (print-only commands)" 'grep -q "module show miniforge3-python3.12" <<<"$CODE" && grep -q "miniforge" <<<"$CODE" && grep -q "du -sh" <<<"$CODE" && grep -q "mmlsquota" <<<"$CODE" && ! grep -qE "module (load|unload|purge|swap|use)|conda (create|install|init)" <<<"$CODE"'
 chk "the Slurm sections are labelled SLURM-REPORTED, never OBSERVED" '[ "$(grep -E "^  sec (5|5b|5c|5d|5e) " <<<"$HDRS" | grep -c SLURM-REPORTED)" = 5 ]'
 mkdir -p "$T/nonet" "$T/danger" "$T/probebin"; printf '#!/bin/bash\necho "fake curl: no network in tests" >&2; exit 7\n' > "$T/nonet/curl"; chmod +x "$T/nonet/curl"
 for c in sbatch srun salloc scancel pip pip3 wget git rm mv cp mkdir touch tee chmod; do printf '#!/bin/bash\necho "%s $*" >> "%s"\nexit 0\n' "$c" "$T/danger.log" > "$T/danger/$c"; chmod +x "$T/danger/$c"; done

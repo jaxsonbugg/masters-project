@@ -18,8 +18,8 @@
 SETTINGS_REVIEWED=no     # change to yes ONLY after the probe output has been copied in below and a person has read this file
 
 # ---- how to reach Talon ----------------------------------------------------------------------------------------------
-TALON_SSH_ALIAS="${TALON_SSH_ALIAS-talon}"   # UNVERIFIED: the alias goes in ~/.ssh/config; login host and VPN/Duo rules are unknown
-                                              # (see recovery/talon_ssh_access.md; the host name is a placeholder until Miami gives it)
+TALON_SSH_ALIAS="${TALON_SSH_ALIAS-talon}"   # the alias in ~/.ssh/config (host mualhphp01.hpc.miamioh.edu, user buggjm, same account as Redhawk, VPN needed
+                                              # off campus: TOLD BY RESEARCH COMPUTING 2026-11-05/06); see recovery/talon_ssh_access.md
 
 # ---- Slurm: how to ask for GPUs (the submit script builds the sbatch options from these; #SBATCH lines cannot hold variables)
 TALON_PARTITION="${TALON_PARTITION-talon}"   # TOLD BY RESEARCH COMPUTING 2026-11-05 ("the GPU partition is called talon"); not yet checked by the probe
@@ -29,17 +29,21 @@ TALON_NODELIST="${TALON_NODELIST-}"          # OPTIONAL node choice, blank = any
                                               # must run on identical hardware (docs/talon_setup.md, section "Choosing a node").
 TALON_ACCOUNT="${TALON_ACCOUNT-}"            # UNVERIFIED: charge account / allocation name, if one must be given; blank = none
 TALON_QOS="${TALON_QOS-}"                    # UNVERIFIED: quality-of-service name, if required; blank = none
-TALON_GPU_STYLE="${TALON_GPU_STYLE-}"        # UNVERIFIED: gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N); blank = a person must choose
+TALON_GPU_STYLE="${TALON_GPU_STYLE-}"        # UNVERIFIED: gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N); blank = a person must choose.
+                                              # Research Computing's own example (2026-11-06) uses --gres=gpu:2, so gres is the likely answer, but
+                                              # nothing has been tested yet: probe_talon_part2.sh (sbatch --test-only) checks it, with approval.
 TALON_GPU_TYPE="${TALON_GPU_TYPE-}"          # UNVERIFIED: gpu type name inside the request, for example h100; blank = untyped
 TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # UNVERIFIED: any other required sbatch option, for example --cpus-per-task=16 --mem=200G
-TIME_SMOKE="${TIME_SMOKE-}"                  # UNVERIFIED: wall-time requests; the cluster's real maximum is unknown. Format [D-]HH:MM:SS
+TIME_SMOKE="${TIME_SMOKE-}"                  # wall-time requests. TOLD BY RESEARCH COMPUTING 2026-11-06: one job may run at most 3 days (72:00:00);
+                                              # the probe shows the scheduler's MaxTime for comparison. Format [D-]HH:MM:SS
 TIME_THROUGHPUT="${TIME_THROUGHPUT-}"
 TIME_PIPELINE="${TIME_PIPELINE-}"
 TIME_MAIN="${TIME_MAIN-}"
 TALON_MIN_MAIN_SECONDS="${TALON_MIN_MAIN_SECONDS-7200}"   # UNVERIFIED guess: the pipeline will not start the main run with less time left
 
 # ---- software ---------------------------------------------------------------------------------------------------------
-MOD_PYTHON="${MOD_PYTHON-}"                  # UNVERIFIED: module names from `module avail`; blank = do not load a module
+MOD_PYTHON="${MOD_PYTHON-}"                  # UNVERIFIED: module names from `module avail`; blank = do not load a module. Research Computing's example
+                                              # (2026-11-06) loads miniforge3-python3.12 (conda); the probe checks that the module exists
 MOD_CUDA="${MOD_CUDA-}"
 MOD_GCC="${MOD_GCC-}"
 MOD_EXTRA="${MOD_EXTRA-}"                    # UNVERIFIED: any other module needed, space separated
@@ -69,14 +73,17 @@ CLIENT_CONCURRENCY="${CLIENT_CONCURRENCY-}"  # how many requests the CLIENT keep
 # measure queueing and are still recorded.
 SWEEP_CONCURRENCY="${SWEEP_CONCURRENCY-1 4 8 16}"
 # Per-sequence context. 20,480 = 3,000 input cap + 16,384 output cap + headroom, chosen ONLY so the Talon comparison matches
-# the Redhawk and Novita runs. It is far below Qwen's native 262,144 tokens and below the 128K the model card advises for
+# the Redhawk run. It is far below Qwen's native 262,144 tokens and below the 128K the model card advises for
 # keeping thinking quality: do not read these results as the model's best.
 MAX_MODEL_LEN="${MAX_MODEL_LEN-20480}"
 
 # ---- Talon facts that are NOT verified (printed by every script that touches Talon) ---------------------------------------
+# Research Computing told Jaxson in a meeting on 2026-11-06 (verbal, NOT yet in writing): the account and user name are the same as
+# Redhawk's, using Talon costs nothing, the storage limit is 500 GB (more on request), one job may run at most 3 days, and the
+# scheduler may choose the node. Those are TOLD BY RESEARCH COMPUTING, so they are listed below with that caveat until written.
 TALON_UNVERIFIED_FACTS=(
-  "pricing and charges for GPU time"
-  "the allocation and whether a sponsored student draws on the faculty sponsor's research credit (a \$1,000 yearly credit per PI was seen only in a search snippet)"
-  "GPU quotas, per-user limits and maximum job length"
-  "access requirements (sponsorship request, expiry date, usage and data policies, and whether Redhawk and Talon accounts are separate)"
+  "pricing and charges for GPU time (told in the 2026-11-06 meeting: Talon costs nothing; verbal, not yet in writing)"
+  "the total GPU-hours we may use (no figure given) and whether a faculty research credit is involved"
+  "the 500 GB storage limit and the 3-day job limit (told in the meeting; the scheduler's own limits are shown by the probe), and any per-user GPU limits"
+  "usage and data policies (the meeting said nothing changes without written notice, and our use looked fine; nothing is in writing)"
 )

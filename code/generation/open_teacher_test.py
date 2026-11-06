@@ -6,9 +6,8 @@ If Anthropic does not allow Claude outputs to train the Pythia students, the pro
 (docs/teacher_model_evaluations.md). This script runs a pilot that compares two DEPLOYMENTS of Qwen3.6-27B on the
 same 100 question "slots" Claude Sonnet 5.5 answered in the 2026-10-15 batch (BM0021 to BM0120):
   redhawk - a 4-bit file (Unsloth Q4_K_M GGUF) served by llama.cpp on Miami's Redhawk cluster (2x V100, free);
-  novita  - the hosted model on Novita, which Novita advertises as BF16 (full precision), paid per token.
-  talon   - a third deployment, prepared in advance and NOT yet run: BF16 weights served by vLLM on Miami's Talon
-            cluster (H100). Its settings are drafts until the first Talon login (configs/talon, docs/talon_setup.md).
+  talon   - BF16 (full precision) weights served by vLLM on Miami's Talon cluster (H100, free). Prepared in advance and
+            NOT yet run: its settings are drafts until the first Talon login (configs/talon, docs/talon_setup.md).
 It is a comparison of two deployments, not a controlled test of quantization: the engine, the chat template code and
 other details also differ (docs/qwen36_precision_test_evaluation.md lists every difference).
 
@@ -32,24 +31,9 @@ WHAT IS REUSED UNCHANGED FROM generate_benchmark.py (so the prompt and the check
 THE ONE CHANGE NEEDED BECAUSE THIS IS NOT THE CLAUDE API
 Claude received the JSON schema through the API (`output_config.format`) and the API forced valid JSON. These
 backends do not show the schema to the model, and forcing JSON while the model is "thinking" is unreliable on both
-(llama.cpp issues #20345 and #29006; Novita does not document the combination). So the schema TEXT is appended to the
-system message, identically for both backends, and replies are parsed and checked instead of forced. A reply that is
-not valid JSON counts as a format failure.
-
-HOW THE $8 LIMIT IS ENFORCED (Novita only; Redhawk costs nothing)
-Novita has no spending limit of its own; the only limit it enforces is the prepaid balance. So this script keeps ONE
-budget ledger file for every Novita call ever made in this test (smoke tests, main run, resumes, re-asks):
-  1. Before a call is sent it RESERVES the call's worst possible cost: 3,000 input tokens (the real prompt is about
-     2,000) plus every one of the max_tokens output tokens. Example at the default 16,384:
-     3,000 x $0.60/M + 16,384 x $3.60/M = $0.0018 + $0.0590 = $0.0608.
-  2. The call is sent only if (money already spent + every open reservation + this reservation) <= the cap ($7.50,
-     which leaves $0.50 below the $8 target). With 8 calls running at once, 8 reservations are open and all count.
-  3. When the reply arrives the reservation is replaced by the real cost from the reply's token counts.
-  4. If a call errors, times out or the connection is lost, it stays charged at its FULL worst case, because Novita
-     may still have billed it. Only a reconciliation against Novita's dashboard (the `ledger` command) can lower it.
-  5. No automatic retries (a silent retry could be billed twice). Re-asking a slot needs the explicit flag
-     --retry-errors and goes through a new, reserved call.
-  6. Every run reads the ledger first, so a resumed run or a crash can never "forget" money already spent.
+(llama.cpp issues #20345 and #29006). So the schema TEXT is appended to the system message, identically for both
+backends, and replies are parsed and checked instead of forced. A reply that is not valid JSON counts as a format
+failure.
 
 HOW A RESUME STAYS SAFE (both backends)
   - responses.jsonl is append-only and each row is flushed to disk as it is written; nothing is ever rewritten.
@@ -60,17 +44,15 @@ HOW A RESUME STAYS SAFE (both backends)
     slots); otherwise it refuses. The prior rows are checked first and a damaged file stops the run.
   - Starting a NEW main run when a main run folder already exists is refused unless --new-run is given.
 
-EXAMPLES (Windows PC; on Redhawk the sbatch scripts call `run` themselves)
-  python open_teacher_test.py run --backend novita --dry-run
-  python open_teacher_test.py run --backend novita --terms-checked --smoke-cap-check      (smoke test A, 1 call)
-  python open_teacher_test.py run --backend novita --terms-checked --smoke-set A          (smoke test B, 2 calls)
-  python open_teacher_test.py run --backend novita --terms-checked --concurrency 8        (main run, 100 slots)
-  python open_teacher_test.py run --backend novita --terms-checked --resume <folder>      (continue after a stop)
+EXAMPLES (on the clusters the sbatch scripts call `run` themselves)
+  python open_teacher_test.py run --backend redhawk --dry-run                             (shows the first request; sends nothing)
+  python open_teacher_test.py run --backend redhawk --smoke-cap-check                     (smoke test, 1 call)
+  python open_teacher_test.py run --backend redhawk --smoke-set A                         (smoke test, 2 calls)
+  python open_teacher_test.py run --backend redhawk --concurrency 2                       (main run, 100 slots)
+  python open_teacher_test.py run --backend redhawk --resume <folder>                     (continue after a stop)
   python open_teacher_test.py validate --run <folder>                                     (free; no R needed)
   python open_teacher_test.py score --run <folder>                                        (free; needs R)
-  python open_teacher_test.py ledger
-  python open_teacher_test.py ledger --adjust -0.0412 --note "dashboard shows ... (reconciled 2026-11-04)"
-  python open_teacher_test.py compare --a <redhawk items> --b <novita items> --ref <sonnet batch02 items>
+  python open_teacher_test.py compare --a <redhawk items> --b <talon items> --ref <sonnet batch02 items>
 """
 
 import argparse
@@ -106,25 +88,12 @@ N_SLOTS, START = 100, 21                 # BM0021 to BM0120, the slots of Sonnet
 MAIN_FIRST, MAIN_LAST = 21, 120          # the only slot numbers a main run may contain
 SMOKE_SETS = {"A": (9001, 2), "B": (9003, 2), "T": (9101, 32)}   # (first slot number, how many): BM9001-2, BM9003-4, BM9101-9132 (T = throughput)
 MAX_TOKENS = 16384                       # output ceiling per call, INCLUDING thinking tokens (both backends)
-INPUT_TOKEN_CAP = 3000                   # worst-case input tokens reserved per call; longer prompts are refused
-CAP_USD = 7.50                           # ledger cap; the usage target is $8.00
-TARGET_USD = 8.00
 # Qwen3.6-27B model card, thinking mode (https://huggingface.co/Qwen/Qwen3.6-27B, read 2026-11-04)
 SAMPLING = {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0, "presence_penalty": 0.0}
 
 BACKENDS = {
-    "novita": {
-        "base_url": "https://api.novita.ai/openai", "model": "qwen/qwen3.6-27b",
-        "price_in": 0.60, "price_out": 3.60, "api_key_env": "NOVITA_API_KEY",
-        "precision": "provider-advertised BF16 (Novita model page, read 2026-11-04); not independently verified",
-        "weights": "unknown checkpoint revision (Novita page names provider 'Qwen'; no revision given)",
-        "engine": "unknown (Novita does not publish it)",
-        "extra": {"enable_thinking": True, "separate_reasoning": True},
-        "timeout_s": 1800, "label": "novita-bf16",
-    },
     "redhawk": {
         "base_url": "http://127.0.0.1:8080/v1", "model": "qwen3.6-27b-q4_k_m",
-        "price_in": 0.0, "price_out": 0.0, "api_key_env": None,
         "precision": "4-bit Q4_K_M GGUF (Unsloth), weights SHA-256 checked by the job script",
         "weights": "unsloth/Qwen3.6-27B-GGUF @ 82d411acf4a06cfb8d9b073a5211bf410bfc29bf, Qwen3.6-27B-Q4_K_M.gguf, "
                    "sha256 5ed60d0af4650a854b1755bd392f9aef4872643dc25a254bc68043fa638392a0",
@@ -134,10 +103,9 @@ BACKENDS = {
     },
     # Talon (Miami's H100 cluster): BF16 weights served by vLLM. DRAFT entry, written before any Talon login: the engine
     # version and the exact weights revision are UNVERIFIED and are replaced from the probe output (configs/talon). The
-    # model alias must equal --served-model-name in configs/talon/serve_and_run.sh. Free to run (price 0), so no ledger.
+    # model alias must equal --served-model-name in configs/talon/serve_and_run.sh. Free to run.
     "talon": {
         "base_url": "http://127.0.0.1:8000/v1", "model": "qwen3.6-27b-bf16",
-        "price_in": 0.0, "price_out": 0.0, "api_key_env": None,
         "precision": "BF16 safetensors (Qwen/Qwen3.6-27B), UNVERIFIED until the probe pins the revision",
         "weights": "Qwen/Qwen3.6-27B @ UNVERIFIED-revision (resolved to a commit hash at probe time)",
         "engine": "vLLM (exact version recorded by the job script in meta; UNVERIFIED until the probe)",
@@ -166,8 +134,8 @@ CLUSTER_BACKENDS = {"redhawk": "redhawk", "talon": "talon"}   # backend -> the c
 def outputs_root(backend=None):
     """Teacher outputs live outside the repository. On Windows the PC path from paths.yaml. On Linux the path of the
     cluster the backend belongs to: a talon run uses talon_outputs, a redhawk run redhawk_outputs, and the two can never
-    be swapped (so Talon results can never land in the Redhawk folder, or the reverse). Anything else (Novita's ledger,
-    or a command that has no backend) keeps the Redhawk path as before. The key is UNSET until a storage check on the
+    be swapped (so Talon results can never land in the Redhawk folder, or the reverse). A command that has no backend
+    keeps the Redhawk path as before. The key is UNSET until a storage check on the
     cluster picks an approved location."""
     if OUT_ROOT_OVERRIDE:
         return Path(OUT_ROOT_OVERRIDE)
@@ -214,77 +182,6 @@ def build_body(backend, slot, prompt, max_tokens):
 def est_input_tokens(body):
     """Deliberately generous: one token per 3 characters (the same rule generate_benchmark uses)."""
     return math.ceil(sum(len(m["content"]) for m in body["messages"]) / 3.0)
-
-
-def call_cost(backend, in_tok, out_tok):
-    cfg = BACKENDS[backend]
-    return (in_tok * cfg["price_in"] + out_tok * cfg["price_out"]) / 1_000_000
-
-
-def worst_case(backend, max_tokens):
-    return call_cost(backend, INPUT_TOKEN_CAP, max_tokens)
-
-
-# ---------------------------------------------------------------------------------------------
-# The budget ledger (one append-only file for all Novita calls of this test)
-# ---------------------------------------------------------------------------------------------
-class Ledger:
-    """Events: reserve (money held for a call in flight), settle (the real cost replaces a reservation),
-    charge_worst (an errored call stays charged at its worst case), adjust (a reconciliation against the dashboard).
-    Spent = settle + charge_worst + adjust. Open = reservations with no settle/charge_worst yet; they always count."""
-
-    def __init__(self, path, cap):
-        self.path, self.cap, self.lock = Path(path), cap, threading.Lock()
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-
-    def _events(self):
-        if not self.path.exists():
-            return []
-        return [json.loads(l) for l in self.path.read_text(encoding="utf-8").splitlines() if l.strip()]
-
-    def state(self):
-        spent, open_res = 0.0, {}
-        for e in self._events():
-            if e["event"] == "reserve":
-                open_res[e["call_id"]] = e["usd"]
-            elif e["event"] in ("settle", "charge_worst"):
-                open_res.pop(e["call_id"], None)
-                spent += e["usd"]
-            elif e["event"] == "adjust":
-                spent += e["usd"]
-        return spent, open_res
-
-    def _append(self, **e):
-        e["utc"] = utc_now().isoformat(timespec="seconds")
-        with open(self.path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(e) + "\n")
-            f.flush()
-            os.fsync(f.fileno())
-
-    def reserve(self, call_id, usd, note=""):
-        """Return True and record the reservation if it fits under the cap, else False (nothing recorded)."""
-        with self.lock:
-            spent, open_res = self.state()
-            if spent + sum(open_res.values()) + usd > self.cap + 1e-12:
-                return False
-            self._append(event="reserve", call_id=call_id, usd=round(usd, 6), note=note)
-            return True
-
-    def settle(self, call_id, usd, note=""):
-        with self.lock:
-            self._append(event="settle", call_id=call_id, usd=round(usd, 6), note=note)
-
-    def charge_worst(self, call_id, usd, note=""):
-        with self.lock:
-            self._append(event="charge_worst", call_id=call_id, usd=round(usd, 6), note=note)
-
-    def adjust(self, usd, note):
-        with self.lock:
-            self._append(event="adjust", call_id=None, usd=round(usd, 6), note=note)
-
-
-def ledger_path():
-    return outputs_root() / "novita_budget_ledger.jsonl"
 
 
 # ---------------------------------------------------------------------------------------------
@@ -395,24 +292,12 @@ def cmd_run(args):
         sys.exit("Smoke runs are not resumed; start a new one.")
     bodies = {s["item_id"]: build_body(backend, s, prompt, max_tokens) for s in slots}
     longest = max(est_input_tokens(b) for b in bodies.values())
-    w_call = worst_case(backend, max_tokens)
-    paid = cfg["price_out"] > 0
-    ledger = Ledger(ledger_path(), args.cap_usd) if paid else None
 
     print(f"Backend {backend}: model {cfg['model']} at {cfg['base_url']}")
     print(f"Precision: {cfg['precision']}")
     print(f"Slots: {len(slots)} {[s['item_id'] for s in slots] if kind == 'smoke' else (slots[0]['item_id'] + ' to ' + slots[-1]['item_id'])} "
           f"({kind}), max_tokens {max_tokens}, concurrency {args.concurrency}, sampling {SAMPLING}")
-    print(f"Prompt v6 sha256 {sha}; longest prompt about {longest} tokens (generous estimate); input cap {INPUT_TOKEN_CAP}")
-    if longest > INPUT_TOKEN_CAP:
-        sys.exit("A prompt is longer than the input-token cap used for the worst case. Nothing was sent.")
-    if paid:
-        spent, open_res = ledger.state()
-        print(f"Worst case per call ${w_call:.4f}; for these {len(slots)} calls ${w_call * len(slots):.4f}")
-        print(f"Ledger {ledger.path}: spent ${spent:.4f}, open reservations ${sum(open_res.values()):.4f} "
-              f"({len(open_res)}), cap ${args.cap_usd:.2f} (target ${TARGET_USD:.2f})")
-        headroom = args.cap_usd - spent - sum(open_res.values())
-        print(f"Headroom ${headroom:.4f}: room for {int(headroom // w_call)} more worst-case call(s)")
+    print(f"Prompt v6 sha256 {sha}; longest prompt about {longest} tokens (generous estimate)")
     if args.dry_run:
         first = bodies[slots[0]["item_id"]]
         print("\n--- First request body exactly as it would be sent (dry run: nothing was sent) ---")
@@ -420,17 +305,7 @@ def cmd_run(args):
         print("\nSYSTEM:\n" + first["messages"][0]["content"])
         print("\nUSER:\n" + first["messages"][1]["content"])
         return
-    if backend == "novita" and not args.terms_checked:
-        sys.exit("Novita's terms must be read and recorded first (docs/hosting_platform_selection.md); "
-                 "then pass --terms-checked. Nothing was sent.")
-    if args.cap_usd > TARGET_USD:
-        sys.exit(f"--cap-usd may not exceed the ${TARGET_USD:.2f} target.")
-    headers = {"Content-Type": "application/json"}
-    if cfg["api_key_env"]:
-        key = os.environ.get(cfg["api_key_env"])
-        if not key:
-            sys.exit(f"{cfg['api_key_env']} is not set in this environment. Nothing was sent.")
-        headers["Authorization"] = f"Bearer {key}"
+    headers = {"Content-Type": "application/json"}   # the servers run on the cluster node itself and need no key
 
     # --- choose the run folder, with the guards that keep a resume from overwriting or repeating anything ---
     if args.resume:
@@ -456,8 +331,7 @@ def cmd_run(args):
         "prompt_version": gb.PROMPT_VERSION, "prompt_sha256": sha,
         "adapter_change": "ITEM_SCHEMA JSON appended to the system message after '" + SCHEMA_BLOCK_HEADER + "'; "
                           "no constrained decoding (response_format not sent)",
-        "attempts_per_slot": 1, "prices_usd_per_mtok": {"input": cfg["price_in"], "output": cfg["price_out"]},
-        "cap_usd": args.cap_usd if paid else None, "worst_case_per_call_usd": round(w_call, 6),
+        "attempts_per_slot": 1,
         "meta": dict(kv.split("=", 1) for kv in args.meta), "sessions": [],
     }
     if meta_path.exists():
@@ -502,7 +376,7 @@ def cmd_run(args):
     print(f"RUN_DIR={run_dir}\n")
 
     write_lock, stop = threading.Lock(), threading.Event()
-    stats = {"calls": 0, "ok": 0, "errors": 0, "out_tokens": 0, "in_tokens": 0, "usd": 0.0, "refused_by_cap": 0}
+    stats = {"calls": 0, "ok": 0, "errors": 0, "out_tokens": 0, "in_tokens": 0}
     client = httpx.Client(timeout=httpx.Timeout(cfg["timeout_s"], connect=30.0))
     t_start = time.time()
 
@@ -536,11 +410,6 @@ def cmd_run(args):
             return
         iid = slot["item_id"]
         call_id = f"{run_dir.name}/{iid}/{utc_now().strftime('%H%M%S%f')}"
-        if paid and not ledger.reserve(call_id, w_call, note=f"{iid} max_tokens {max_tokens}"):
-            stats["refused_by_cap"] += 1
-            stop.set()
-            print(f"{iid}: NOT SENT, the reservation would pass the ${args.cap_usd:.2f} cap. Stopping.")
-            return
         started, t0 = utc_now().isoformat(timespec="seconds"), time.time()
         row = {"item_id": iid, "use": "dev_test_only", "backend": backend, "attempt": err_by_id.get(iid, 0) + 1,
                "call_id": call_id, "request_started_utc": started}
@@ -552,18 +421,10 @@ def cmd_run(args):
                 row["response"] = r.json()
             except ValueError:
                 row["response"], row["error"] = None, r.text[:2000]
-        except Exception as e:  # timeout, lost connection: the provider may still have billed it
+        except Exception as e:  # timeout or lost connection
             row.update({"http_status": None, "seconds": round(time.time() - t0, 1), "response": None,
                         "error": f"{type(e).__name__}: {e}"})
         usage = (row.get("response") or {}).get("usage") or {}
-        if paid:
-            if row["http_status"] == 200 and usage:
-                c = call_cost(backend, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
-                ledger.settle(call_id, c, note=iid)
-            else:
-                c = w_call
-                ledger.charge_worst(call_id, c, note=f"{iid} {row.get('error') or row['http_status']}")
-            row["cost_usd"] = round(c, 6)
         with write_lock:
             with open(run_dir / "responses.jsonl", "a", encoding="utf-8") as f:
                 f.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -572,7 +433,6 @@ def cmd_run(args):
             stats["calls"] += 1
             stats["in_tokens"] += usage.get("prompt_tokens", 0)
             stats["out_tokens"] += usage.get("completion_tokens", 0)
-            stats["usd"] += row.get("cost_usd", 0.0)
             ch = ((row.get("response") or {}).get("choices") or [{}])[0]
             if row["http_status"] == 200:
                 stats["ok"] += 1
@@ -580,14 +440,12 @@ def cmd_run(args):
                 stats["errors"] += 1
             print(f"{iid}: HTTP {row['http_status']} finish {ch.get('finish_reason')} in {usage.get('prompt_tokens')} "
                   f"out {usage.get('completion_tokens')} {row['seconds']}s"
-                  + (f" ${row['cost_usd']:.4f}" if paid else "") + (f" ERROR {row['error'][:120]}" if row.get("error") else ""),
+                  + (f" ERROR {row['error'][:120]}" if row.get("error") else ""),
                   flush=True)
             if stats["calls"] % 10 == 0:
                 el = time.time() - t_start
                 print(f"  -- {stats['calls']} calls, {stats['out_tokens']} output tokens in {el:.0f}s "
                       f"= {stats['out_tokens'] / max(el, 1):.1f} tok/s aggregate", flush=True)
-        if paid and row["http_status"] in (401, 402, 403):
-            stop.set()  # bad key or no balance: stop instead of reserving more money
 
     note = None
     try:
@@ -598,43 +456,16 @@ def cmd_run(args):
     except KeyboardInterrupt:
         stop.set()
         note = "keyboard interrupt"
-        print("Interrupted. Calls already sent are recorded in the ledger (errored ones at worst case).")
+        print("Interrupted. Completed replies are saved; resume with --resume.")
     finally:
         wall = finish(note)
         try:
             lock.unlink()
         except OSError:
             pass
-    print(f"\nDone: {stats['ok']} ok, {stats['errors']} errors, {stats['refused_by_cap']} not sent (cap). "
+    print(f"\nDone: {stats['ok']} ok, {stats['errors']} errors. "
           f"Output tokens {stats['out_tokens']} in {wall:.0f}s ({session['aggregate_output_tok_per_s']} tok/s).")
-    if paid:
-        spent, open_res = ledger.state()
-        print(f"This session ${stats['usd']:.4f}. Ledger total spent ${spent:.4f}, open ${sum(open_res.values()):.4f}, "
-              f"cap ${args.cap_usd:.2f}. Compare with the Novita dashboard and record it with `ledger --adjust`.")
     print(f"Saved in {run_dir}")
-
-
-# ---------------------------------------------------------------------------------------------
-# ledger
-# ---------------------------------------------------------------------------------------------
-def cmd_ledger(args):
-    led = Ledger(ledger_path(), CAP_USD)
-    if args.adjust is not None:
-        if not args.note:
-            sys.exit("--adjust needs --note saying what the dashboard showed and when.")
-        led.adjust(args.adjust, args.note)
-    if args.close_open:
-        _, open_res = led.state()
-        for cid, usd in open_res.items():
-            led.charge_worst(cid, usd, note="open reservation closed at worst case: " + args.close_open)
-    spent, open_res = led.state()
-    events = led._events()
-    print(f"Ledger {led.path}")
-    print(f"Events {len(events)}; settled calls {sum(e['event'] == 'settle' for e in events)}; "
-          f"charged at worst case {sum(e['event'] == 'charge_worst' for e in events)}; "
-          f"adjustments {sum(e['event'] == 'adjust' for e in events)}")
-    print(f"Spent ${spent:.4f}; open reservations ${sum(open_res.values()):.4f} ({len(open_res)}); "
-          f"cap ${CAP_USD:.2f}; target ${TARGET_USD:.2f}")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -991,7 +822,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out-root", default=None, help="override the output folder from paths.yaml (used by tests)")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("run", help="send the slots to a backend (Novita calls go through the budget ledger)")
+    p = sub.add_parser("run", help="send the slots to a backend (both run on Miami's clusters and are free)")
     p.add_argument("--backend", required=True, choices=list(BACKENDS))
     p.add_argument("--base-url", default=None, help="override the backend URL (Redhawk jobs pick a free port)")
     p.add_argument("--n", type=int, default=N_SLOTS)
@@ -1001,20 +832,13 @@ def main():
     p.add_argument("--smoke-cap-check", action="store_true", help="one call (BM9001) with max_tokens 512")
     p.add_argument("--max-tokens", type=int, default=MAX_TOKENS)
     p.add_argument("--concurrency", type=int, default=1)
-    p.add_argument("--cap-usd", type=float, default=CAP_USD)
     p.add_argument("--resume", default=None, help="an existing run folder to continue (skips finished slots)")
     p.add_argument("--new-run", action="store_true", help="allow a second, separate main run folder")
     p.add_argument("--retry-errors", action="store_true", help="re-send slots whose earlier call errored (attempt 2, 3, ...)")
     p.add_argument("--break-lock", action="store_true", help="remove a stale run.lock (only if no job is running)")
     p.add_argument("--meta", action="append", default=[], help="KEY=VALUE recorded in run_log.json (engine commit etc.)")
-    p.add_argument("--terms-checked", action="store_true", help="confirm Novita's terms were read and recorded")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(fn=cmd_run)
-    p = sub.add_parser("ledger", help="show the Novita budget ledger; record a reconciliation")
-    p.add_argument("--adjust", type=float, default=None, help="add a correction in USD (negative lowers spend)")
-    p.add_argument("--note", default="")
-    p.add_argument("--close-open", default=None, help="close open reservations at worst case, with this note")
-    p.set_defaults(fn=cmd_ledger)
     p = sub.add_parser("validate", help="check saved replies are complete, tied to their slots and parseable (free; no R)")
     p.add_argument("--run", required=True)
     p.set_defaults(fn=cmd_validate)

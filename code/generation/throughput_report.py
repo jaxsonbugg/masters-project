@@ -54,7 +54,7 @@ TARGET_EXAMPLES = 200_000
 CONTEXT_NOTE = (
     "CONTEXT NOTE: these runs use 20,480 tokens per sequence (3,000 input cap + 16,384 output cap + headroom). That is far\n"
     "below Qwen's native 262,144 tokens and below the 128K its model card advises for keeping thinking quality. It was chosen\n"
-    "only so the Talon run matches the Redhawk and Novita runs. Treat every number here as valid for THAT setting only."
+    "only so the Talon run matches the Redhawk run. Treat every number here as valid for THAT setting only."
 )
 UNVERIFIED_NOTE = (
     "UNVERIFIED (ask Miami Research Computing): Talon pricing, allocation, GPU quota and access limits. The scaling lines\n"
@@ -202,7 +202,7 @@ def main(argv=None):
         print("\nFINDINGS (not hidden):")
         for f in flagged:
             print("  -", f)
-        print("A layout with findings above the threshold should not be called comparable to the Redhawk and Novita runs.")
+        print("A layout with findings above the threshold should not be called comparable to the Redhawk run.")
         return 2
     print("\nNo layout is above the truncation / reasoning-exhaustion threshold.")
     return 0

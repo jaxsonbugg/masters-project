@@ -1,5 +1,5 @@
 """Local test suite for code/generation/open_teacher_test.py (see README.md in this folder).
-A fake model server stands in for llama-server and Novita. Nothing here touches Redhawk, the network, or any paid service.
+A fake model server stands in for llama-server (and vLLM). Nothing here touches Redhawk, Talon or the network.
 Usage: python test_suite.py [work_dir]      (work_dir defaults to a new temporary folder that is deleted at the end)
 Needs R (path in configs/paths.yaml) for the scoring checks."""
 import hashlib, json, os, re, shutil, subprocess, sys, tempfile, threading, time
@@ -18,7 +18,6 @@ shutil.rmtree(WORK, ignore_errors=True); WORK.mkdir(parents=True)
 # tests can remove only what they created.
 REVIEW = CODE.parent / "results" / "open_teacher_test"
 REVIEW_BEFORE = set(p.name for p in REVIEW.glob("*")) if REVIEW.exists() else None
-os.environ["NOVITA_API_KEY"] = "dummy-not-a-key"
 
 # ------------------------------------------------------------------ fake server
 STATE = {"mode": "good", "calls": {}, "fail_once": set(), "failed": set(), "cur": 0, "max": 0, "delay": 0.0,
@@ -192,41 +191,26 @@ rc, out = cli(R4, "validate", "--run", str(d)); check("after the retry the main 
 rc, out = cli(R4, "run", "--backend", "redhawk", "--base-url", URL, "--n", "4", "--start", "21", "--resume", str(d))
 check("a half-written last line stops the resume cleanly (no lock left)", rc != 0 and "not valid JSON" in out and not (d / "run.lock").exists(), out[-250:])
 
-# ------------------------------------------------------------------ 5. the Novita budget ledger (fake server, 8 at once)
-print("\n[5] Novita ledger: reservations at concurrency 8, errors at worst case, resume, smoke gate")
-R5 = WORK / "r5"; reset(delay=0.15, usage=(2000, 8000), http500_every=9)
-rc, out = cli(R5, "run", "--backend", "novita", "--base-url", URL, "--terms-checked", "--n", "100", "--start", "21", "--concurrency", "8", "--cap-usd", "1.00")
-rc2, led = cli(R5, "ledger")
-spent = float(re.search(r"Spent \$([\d.]+)", led).group(1)); opn = float(re.search(r"open reservations \$([\d.]+)", led).group(1))
-check("without --terms-checked nothing is sent", True)  # covered separately below
-check("spending stayed under the cap ($1.00) with 8 calls in flight", spent <= 1.0 + 1e-9 and opn == 0.0, led)
-check("the run stopped because of the cap, with 8 concurrent calls seen", "NOT SENT" in out and STATE["max"] <= 8 and STATE["max"] >= 4, (STATE["max"], out[-200:]))
-d = last_run(R5, "*novita*_test*"); rr = rows(d)
-tot = sum(r.get("cost_usd", 0) for r in rr)
-check("the ledger total equals the sum of the saved row costs", abs(tot - spent) < 1e-4, (tot, spent))
-check("errored calls were charged at the full worst case ($0.0608)", all(abs(r["cost_usd"] - 0.0608) < 1e-4 for r in rr if r["http_status"] != 200) and any(r["http_status"] != 200 for r in rr))
-check("max_retries is 0: no slot was sent twice", all(v == 1 for v in STATE["calls"].values()), {k: v for k, v in STATE["calls"].items() if v > 1})
-calls_before = dict(STATE["calls"]); spent_before = spent
-rc, out = cli(R5, "run", "--backend", "novita", "--base-url", URL, "--terms-checked", "--n", "100", "--start", "21", "--concurrency", "8", "--cap-usd", "2.00", "--resume", str(d))
-rc2, led = cli(R5, "ledger"); spent2 = float(re.search(r"Spent \$([\d.]+)", led).group(1))
-sent_twice = [k for k in STATE["calls"] if STATE["calls"][k] > 1]
-check("resume counts earlier spend, stays under the new cap, and never re-sends finished or errored slots", spent2 <= 2.0 + 1e-9 and spent2 > spent_before and not sent_twice, (spent2, sent_twice))
-rc, out = cli(R5, "run", "--backend", "novita", "--base-url", URL, "--smoke-cap-check")
-check("without --terms-checked a paid run is refused", rc != 0 and "terms must be read" in out, out[-200:])
+# ------------------------------------------------------------------ 5. eight calls at once, errors, smoke cap check
+print("\n[5] concurrency 8: nothing is sent twice, errored slots are not re-sent, the cap check sends one development slot")
+R5 = WORK / "r5"; reset(delay=0.15, http500_every=9)
+rc, out = cli(R5, "run", "--backend", "redhawk", "--base-url", URL, "--n", "100", "--start", "21", "--concurrency", "8")
+d = last_run(R5, "*_test*"); rr = rows(d)
+check("100 slots were answered or errored, with 8 calls in flight at once", len(rr) == 100 and STATE["max"] <= 8 and STATE["max"] >= 4, (len(rr), STATE["max"]))
+check("some calls errored (every 9th) and the others succeeded", any(r["http_status"] != 200 for r in rr) and any(r["http_status"] == 200 for r in rr))
+check("no automatic retries: no slot was sent twice", all(v == 1 for v in STATE["calls"].values()), {k: v for k, v in STATE["calls"].items() if v > 1})
+calls_before = dict(STATE["calls"])
+rc, out = cli(R5, "run", "--backend", "redhawk", "--base-url", URL, "--n", "100", "--start", "21", "--concurrency", "8", "--resume", str(d))
+check("resume never re-sends finished or errored slots", STATE["calls"] == calls_before, [k for k in STATE["calls"] if STATE["calls"][k] != calls_before.get(k)])
 R6 = WORK / "r6"; reset()
-rc, out = cli(R6, "run", "--backend", "novita", "--base-url", URL, "--terms-checked", "--smoke-cap-check")
+rc, out = cli(R6, "run", "--backend", "redhawk", "--base-url", URL, "--smoke-cap-check")
 body_ok = rc == 0 and "BM9001" in out and "max_tokens 512" in out
 check("smoke test A (cap check) sends exactly one dev slot with max_tokens 512", body_ok and sum(STATE["calls"].values()) == 1 and list(STATE["calls"]) == ["BM9001"], (STATE["calls"], out[-200:]))
-rc, out = cli(R6, "run", "--backend", "novita", "--base-url", URL, "--terms-checked", "--smoke-set", "A", "--cap-usd", "0.10")
-rc2, led = cli(R6, "ledger")
-check("smoke runs share the same persistent ledger", "settled calls 2" in led, led)
-rc, out = cli(R6, "run", "--backend", "novita", "--base-url", URL, "--terms-checked", "--smoke-set", "B", "--cap-usd", "0.05")
-check("a cap below the next worst case stops the run before sending", "NOT SENT" in out, out[-300:])
 
 # ------------------------------------------------------------------ 6. dry run prints the exact request, schema block included
 print("\n[6] dry run")
-rc, out = cli(WORK / "r7", "run", "--backend", "novita", "--dry-run")
-check("dry run shows the prompt hash, worst case and the schema block", rc == 0 and "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4" in out and "Output schema (JSON Schema):" in out and "$0.0608" in out)
+reset(); rc, out = cli(WORK / "r7", "run", "--backend", "redhawk", "--dry-run")
+check("dry run shows the prompt hash and the schema block and sends nothing", rc == 0 and "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4" in out and "Output schema (JSON Schema):" in out and not STATE["calls"])
 # ------------------------------------------------------------------ cleanup: leave nothing behind
 if REVIEW.exists():
     for p in REVIEW.glob("*"):

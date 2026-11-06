@@ -1,17 +1,17 @@
 # Local tests for the Qwen3.6-27B deployment test
 
 These tests check the plumbing of `code/generation/open_teacher_test.py` and the Redhawk scripts in `configs/redhawk/`
-**without** touching Redhawk, the internet or any paid service. They exist because a mistake found on the cluster or in a
-paid run costs queue time or money, while a mistake found here costs nothing.
+**without** touching Redhawk, Talon or the internet. They exist because a mistake found on a cluster costs queue time
+(days, on Redhawk), while a mistake found here costs nothing.
 
 **How they work.** A small fake server (`fake_server.py`) pretends to be the model server (llama-server on Redhawk, or
-Novita). It answers with realistic JSON replies that match each question slot, and it can be told to misbehave: return
+vLLM on Talon). It answers with realistic JSON replies that match each question slot, and it can be told to misbehave: return
 invalid JSON, cut a reply off, fail once, or die while loading. The tests then run the real command-line tool and the
 real job scripts against it and check what they do.
 
 - `test_suite.py` (about 1 minute; needs R for the scoring checks): slot isolation (smoke slots BM9001-BM9004 versus main
   slots BM0021-BM0120), the two failure kinds of `validate` (infrastructure versus model quality), resume safety (no
-  overwrite, no repeat, lock file, settings must match), the Novita budget ledger with 8 calls at once, scoring through R.
+  overwrite, no repeat, lock file, settings must match), 8 calls at once with no repeats, scoring through R.
 - `shtest.sh` (a few minutes per part; four parts that can run at the same time): the Redhawk job scripts with fake
   `nvidia-smi`, `module`, `scontrol`, `squeue` and `llama-server`.
   - Parts 1-2, the single stages: GPU, weights, template and flag checks, the stage gates, the memory summary, queue wait,

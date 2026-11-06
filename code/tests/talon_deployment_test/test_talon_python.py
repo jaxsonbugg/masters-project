@@ -4,7 +4,7 @@ Tests for the small Talon additions to code/generation/open_teacher_test.py. No 
 What is checked, and why:
   - On Linux (the clusters) a talon run writes under talon_outputs and a redhawk run under redhawk_outputs, never the other way
     round, and an UNSET talon_outputs stops with a message that points at the Talon scripts (not at Redhawk).
-  - The Novita ledger and commands without a backend keep the old Redhawk path (so nothing about Redhawk or Novita changed).
+  - Commands without a backend keep the old Redhawk path (so nothing about Redhawk changed).
   - Run folders of the two clusters can never be mistaken for each other ("one main run per backend" looks only at its own label).
   - Development set T is BM9101-BM9132 (32 slots), separate from the smoke sets and from the main slots.
   - The reasoning text is found under both field names: reasoning_content (llama.cpp, older vLLM) and reasoning (newer vLLM).
@@ -55,7 +55,7 @@ try:
     print("[I1] the output folder follows the backend's cluster")
     chk("talon -> talon_outputs", ott.outputs_root("talon") == tl, ott.outputs_root("talon"))
     chk("redhawk -> redhawk_outputs", ott.outputs_root("redhawk") == rh)
-    chk("no backend (e.g. the Novita ledger) -> redhawk_outputs, as before this change", ott.outputs_root() == rh and ott.ledger_path().parent == rh)
+    chk("no backend -> redhawk_outputs, as before this change", ott.outputs_root() == rh)
     d = ott.new_run_dir("talon", "smokeA")
     chk("a new talon run folder is created under talon_outputs with the talon-bf16 label", d.parent == tl and "talon-bf16_smokeA01" in d.name)
     d2 = ott.new_run_dir("redhawk", "test")
@@ -86,8 +86,8 @@ try:
     main_ids = set(range(ott.MAIN_FIRST, ott.MAIN_LAST + 1))
     chk("set T shares no slot number with the main slots or with sets A and B",
         not ({int(i[2:]) for i in ids} & (main_ids | {9001, 9002, 9003, 9004})))
-    chk("the talon backend exists, is unpaid, and its label differs from redhawk's",
-        "talon" in ott.BACKENDS and ott.BACKENDS["talon"]["price_out"] == 0.0 and ott.BACKENDS["talon"]["label"] != ott.BACKENDS["redhawk"]["label"])
+    chk("the talon backend exists and its label differs from redhawk's",
+        "talon" in ott.BACKENDS and ott.BACKENDS["talon"]["label"] != ott.BACKENDS["redhawk"]["label"])
     chk("the talon model alias equals SERVED_NAME in configs/talon/talon_settings.sh",
         'SERVED_NAME="${SERVED_NAME-' + ott.BACKENDS["talon"]["model"] + '}"' in (HERE.parents[2] / "configs" / "talon" / "talon_settings.sh").read_text(encoding="utf-8"))
 
