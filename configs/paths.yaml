@@ -19,3 +19,12 @@ redhawk_root: /home/buggjm/masters_project
 redhawk_repo: /home/buggjm/masters_project/repo
 redhawk_models: /home/buggjm/masters_project/models
 redhawk_outputs: /home/buggjm/masters_project/teacher_outputs
+# Talon cluster (Miami's H100 GPU cluster; Linux paths, used by configs/talon and by code that runs on Talon). ALL UNSET ON
+# PURPOSE: no Talon account exists yet, so no path is known. They are filled in on the first login from the output of
+# configs/talon/probe_talon.sh (home, project and scratch locations, quotas and purge rules are all UNVERIFIED). Talon
+# results are written under talon_outputs and never under redhawk_outputs; the code picks the key from the backend name.
+# Set all four together; the Talon scripts and the Python code stop with a clear message if any is UNSET.
+talon_root: UNSET
+talon_repo: UNSET
+talon_models: UNSET
+talon_outputs: UNSET

@@ -35,3 +35,10 @@ that `score` would otherwise leave in `results/open_teacher_test/`).
 **What a pass does not prove.** The fake programs only imitate the real ones. Real `nvidia-smi` output, Slurm options,
 module names, the llama.cpp build, flash attention on a V100 and real speed can only be checked on Redhawk, which is
 what the GPU smoke tests are for.
+
+## The Talon twin of these tests
+The Talon scripts (`configs/talon/`) have their own tests in `code/tests/talon_deployment_test/`: `shtest_talon.sh` (parts 1-3: the
+draft guard, GPU layout and memory checks for 1, 2 and 4 fake GPUs, the stage gates, the throughput stage, the pipeline, submit,
+probe, prep and download guards), `test_throughput_report.py` (hand-computed throughput arithmetic), `test_talon_python.py` (Talon
+and Redhawk output folders can never be mixed up; reasoning field names) and `fake_vllm_server.py`. They do not change how
+the Redhawk tests here run, and these Redhawk tests must keep passing unchanged. See that folder's README.

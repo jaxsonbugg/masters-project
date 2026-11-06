@@ -7,6 +7,8 @@ If Anthropic does not allow Claude outputs to train the Pythia students, the pro
 same 100 question "slots" Claude Sonnet 5.5 answered in the 2026-10-15 batch (BM0021 to BM0120):
   redhawk - a 4-bit file (Unsloth Q4_K_M GGUF) served by llama.cpp on Miami's Redhawk cluster (2x V100, free);
   novita  - the hosted model on Novita, which Novita advertises as BF16 (full precision), paid per token.
+  talon   - a third deployment, prepared in advance and NOT yet run: BF16 weights served by vLLM on Miami's Talon
+            cluster (H100). Its settings are drafts until the first Talon login (configs/talon, docs/talon_setup.md).
 It is a comparison of two deployments, not a controlled test of quantization: the engine, the chat template code and
 other details also differ (docs/qwen36_precision_test_evaluation.md lists every difference).
 
@@ -18,7 +20,8 @@ TWO KINDS OF SLOTS, KEPT APART ON PURPOSE
   main slots  BM0021-BM0120 : the real experiment. ONE attempt per slot, no re-asking for a better answer.
   smoke slots BM9001-BM9004 : development slots used only to test the plumbing (GPU memory, saving, parsing).
                               Set A = BM9001-BM9002, set B = BM9003-BM9004. They are never mixed with main slots.
-A run is either a smoke run (--smoke-set A|B) or a main run; the script refuses to mix them.
+  throughput set T          : BM9101-BM9132, 32 development slots for the Talon throughput benchmark (configs/talon).
+A run is either a smoke run (--smoke-set A|B|T) or a main run; the script refuses to mix them.
 
 WHAT IS REUSED UNCHANGED FROM generate_benchmark.py (so the prompt and the checks cannot drift)
   load_prompt + build_request  - the exact v6 prompt text for each slot (the prompt file is not edited);
@@ -101,7 +104,7 @@ except Exception:
 # ---------------------------------------------------------------------------------------------
 N_SLOTS, START = 100, 21                 # BM0021 to BM0120, the slots of Sonnet's 2026-10-15 batch
 MAIN_FIRST, MAIN_LAST = 21, 120          # the only slot numbers a main run may contain
-SMOKE_SETS = {"A": (9001, 2), "B": (9003, 2)}   # (first slot number, how many): BM9001-2 and BM9003-4
+SMOKE_SETS = {"A": (9001, 2), "B": (9003, 2), "T": (9101, 32)}   # (first slot number, how many): BM9001-2, BM9003-4, BM9101-9132 (T = throughput)
 MAX_TOKENS = 16384                       # output ceiling per call, INCLUDING thinking tokens (both backends)
 INPUT_TOKEN_CAP = 3000                   # worst-case input tokens reserved per call; longer prompts are refused
 CAP_USD = 7.50                           # ledger cap; the usage target is $8.00
@@ -129,6 +132,18 @@ BACKENDS = {
         "extra": {"chat_template_kwargs": {"enable_thinking": True}},
         "timeout_s": 3600, "label": "redhawk-q4km",
     },
+    # Talon (Miami's H100 cluster): BF16 weights served by vLLM. DRAFT entry, written before any Talon login: the engine
+    # version and the exact weights revision are UNVERIFIED and are replaced from the probe output (configs/talon). The
+    # model alias must equal --served-model-name in configs/talon/serve_and_run.sh. Free to run (price 0), so no ledger.
+    "talon": {
+        "base_url": "http://127.0.0.1:8000/v1", "model": "qwen3.6-27b-bf16",
+        "price_in": 0.0, "price_out": 0.0, "api_key_env": None,
+        "precision": "BF16 safetensors (Qwen/Qwen3.6-27B), UNVERIFIED until the probe pins the revision",
+        "weights": "Qwen/Qwen3.6-27B @ UNVERIFIED-revision (resolved to a commit hash at probe time)",
+        "engine": "vLLM (exact version recorded by the job script in meta; UNVERIFIED until the probe)",
+        "extra": {"chat_template_kwargs": {"enable_thinking": True}},
+        "timeout_s": 3600, "label": "talon-bf16",
+    },
 }
 
 SCHEMA_BLOCK_HEADER = "Output schema (JSON Schema):"
@@ -145,16 +160,23 @@ def paths():
     return yaml.safe_load((gb.REPO / "configs" / "paths.yaml").read_text())
 
 
-def outputs_root():
-    """Teacher outputs live outside the repository. On Windows the PC path from paths.yaml; on Linux (Redhawk) the
-    Redhawk path, which must have been set (it is UNSET until the storage check picks an approved location)."""
+CLUSTER_BACKENDS = {"redhawk": "redhawk", "talon": "talon"}   # backend -> the cluster whose paths.yaml keys it uses
+
+
+def outputs_root(backend=None):
+    """Teacher outputs live outside the repository. On Windows the PC path from paths.yaml. On Linux the path of the
+    cluster the backend belongs to: a talon run uses talon_outputs, a redhawk run redhawk_outputs, and the two can never
+    be swapped (so Talon results can never land in the Redhawk folder, or the reverse). Anything else (Novita's ledger,
+    or a command that has no backend) keeps the Redhawk path as before. The key is UNSET until a storage check on the
+    cluster picks an approved location."""
     if OUT_ROOT_OVERRIDE:
         return Path(OUT_ROOT_OVERRIDE)
-    key = "teacher_outputs" if os.name == "nt" else "redhawk_outputs"
+    cluster = CLUSTER_BACKENDS.get(backend, "redhawk")
+    key = "teacher_outputs" if os.name == "nt" else f"{cluster}_outputs"
     value = paths().get(key)
     if not value or str(value).strip().upper() == "UNSET":
-        sys.exit(f"{key} is UNSET in configs/paths.yaml. Run the storage check (configs/redhawk/probe_cluster.sh), "
-                 f"choose an approved project or scratch location, and set redhawk_root and redhawk_outputs.")
+        sys.exit(f"{key} is UNSET in configs/paths.yaml. Run the storage check (configs/{cluster}/probe_*.sh), "
+                 f"choose an approved project or scratch location, and set {cluster}_root and {cluster}_outputs.")
     return Path(value)
 
 
@@ -269,7 +291,7 @@ def ledger_path():
 # Run folders, the lock and reading saved rows
 # ---------------------------------------------------------------------------------------------
 def new_run_dir(backend, label):
-    root = outputs_root()
+    root = outputs_root(backend)
     date = utc_now().strftime("%Y-%m-%d")
     nn = 1
     while True:
@@ -281,7 +303,7 @@ def new_run_dir(backend, label):
 
 
 def existing_main_runs(backend):
-    root = outputs_root()
+    root = outputs_root(backend)
     pattern = f"*_qwen3-6-27b-{BACKENDS[backend]['label']}_test[0-9][0-9]"
     return [d for d in sorted(root.glob(pattern)) if (d / "responses.jsonl").exists()]
 
@@ -644,7 +666,9 @@ def reply_parts(rec):
     ch = (resp.get("choices") or [{}])[0]
     msg = ch.get("message") or {}
     content = msg.get("content") or ""
-    reasoning = msg.get("reasoning_content") or "".join(THINK.findall(content))
+    # llama.cpp and older vLLM name the field reasoning_content; newer vLLM versions name it reasoning. Both are
+    # accepted so a server upgrade cannot silently make the reasoning disappear from the saved analysis.
+    reasoning = msg.get("reasoning_content") or msg.get("reasoning") or "".join(THINK.findall(content))
     return content, reasoning, ch.get("finish_reason"), resp.get("usage") or {}
 
 
@@ -708,7 +732,7 @@ def cmd_validate(args):
     elif meta["slot_set"] == "dev_smoke":
         smoke_ids = {n for first, count in SMOKE_SETS.values() for n in range(first, first + count)}
         if not set(nums) <= smoke_ids:
-            infra.append("a smoke run lists slots that are not BM9001-BM9004 (smoke and main slots must never mix)")
+            infra.append("a smoke run lists slots that are not in a development set (BM9001-BM9004 or BM9101-BM9132); smoke and main slots must never mix")
     else:
         infra.append(f"slot_set {meta['slot_set']!r} is neither 'main' nor 'dev_smoke'")
     if meta["backend"] not in BACKENDS or meta["model"] != BACKENDS[meta["backend"]]["model"]:
@@ -973,7 +997,7 @@ def main():
     p.add_argument("--n", type=int, default=N_SLOTS)
     p.add_argument("--start", type=int, default=START)
     p.add_argument("--smoke-set", choices=list(SMOKE_SETS), default=None,
-                   help="send a development smoke set (A = BM9001-2, B = BM9003-4) instead of the main slots")
+                   help="send a development set (A = BM9001-2, B = BM9003-4, T = BM9101-9132 throughput) instead of the main slots")
     p.add_argument("--smoke-cap-check", action="store_true", help="one call (BM9001) with max_tokens 512")
     p.add_argument("--max-tokens", type=int, default=MAX_TOKENS)
     p.add_argument("--concurrency", type=int, default=1)
