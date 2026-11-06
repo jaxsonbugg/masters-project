@@ -27,13 +27,14 @@ TALON_NODELIST="${TALON_NODELIST-}"          # OPTIONAL node choice, blank = any
                                               # 2026-11-05: --nodelist=mualhpgp01.mpi lands a job on GPU node 1. That is a confirmed way to CHOOSE
                                               # a node, not a requirement: pin a node only if the nodes differ, only one is usable, or a benchmark
                                               # must run on identical hardware (docs/talon_setup.md, section "Choosing a node").
-TALON_ACCOUNT="${TALON_ACCOUNT-}"            # UNVERIFIED: charge account / allocation name, if one must be given; blank = none
-TALON_QOS="${TALON_QOS-}"                    # UNVERIFIED: quality-of-service name, if required; blank = none
+TALON_ACCOUNT="${TALON_ACCOUNT-}"            # blank = none. SLURM-REPORTED 2026-11-06 (probe 5e): job accounting is switched off, so there are no accounts to name
+TALON_QOS="${TALON_QOS-}"                    # blank = none. SLURM-REPORTED 2026-11-06: no QOS limits are configured
 TALON_GPU_STYLE="${TALON_GPU_STYLE-}"        # UNVERIFIED: gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N); blank = a person must choose.
                                               # Research Computing's own example (2026-11-06) uses --gres=gpu:2, so gres is the likely answer, but
                                               # nothing has been tested yet: probe_talon_part2.sh (sbatch --test-only) checks it, with approval.
-TALON_GPU_TYPE="${TALON_GPU_TYPE-}"          # UNVERIFIED: gpu type name inside the request, for example h100; blank = untyped
-TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # UNVERIFIED: any other required sbatch option, for example --cpus-per-task=16 --mem=200G
+TALON_GPU_TYPE="${TALON_GPU_TYPE-nvidia_h100_nvl}"   # SLURM-REPORTED 2026-11-06 (probe 5b): the GPU's name in the scheduler's configuration; blank = untyped
+TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # UNVERIFIED: any other option, for example --cpus-per-task=16. SLURM-REPORTED: nodes have 64 cores, 515 GB RAM and are
+                                              # shared between jobs (a 64-core request, like Research Computing's example, waits for a completely empty node)
 TIME_SMOKE="${TIME_SMOKE-}"                  # wall-time requests. TOLD BY RESEARCH COMPUTING 2026-11-06: one job may run at most 3 days (72:00:00);
                                               # the probe shows the scheduler's MaxTime for comparison. Format [D-]HH:MM:SS
 TIME_THROUGHPUT="${TIME_THROUGHPUT-}"
@@ -42,21 +43,22 @@ TIME_MAIN="${TIME_MAIN-}"
 TALON_MIN_MAIN_SECONDS="${TALON_MIN_MAIN_SECONDS-7200}"   # UNVERIFIED guess: the pipeline will not start the main run with less time left
 
 # ---- software ---------------------------------------------------------------------------------------------------------
-MOD_PYTHON="${MOD_PYTHON-}"                  # UNVERIFIED: module names from `module avail`; blank = do not load a module. Research Computing's example
-                                              # (2026-11-06) loads miniforge3-python3.12 (conda); the probe checks that the module exists
+MOD_PYTHON="${MOD_PYTHON-miniforge3-python3.12}"   # OBSERVED 2026-11-06 (probe 4): this module exists and puts /software/miniforge3-python3.12/bin on PATH.
+                                              # The login node's own Python is 3.9, too old for vLLM (needs 3.11+), so Python 3.12 comes from this module.
 MOD_CUDA="${MOD_CUDA-}"
 MOD_GCC="${MOD_GCC-}"
 MOD_EXTRA="${MOD_EXTRA-}"                    # UNVERIFIED: any other module needed, space separated
 TALON_ENGINE_MODE="${TALON_ENGINE_MODE-venv}"   # venv = a Python virtual environment with vLLM installed by pip.
                                                 # container = Apptainer/Singularity image: NOT IMPLEMENTED in this draft (decide after the probe)
-QT_BASE_PYTHON="${QT_BASE_PYTHON-}"          # UNVERIFIED: full path of a Python 3.10+ interpreter (blank = a person must choose)
+QT_BASE_PYTHON="${QT_BASE_PYTHON-/software/miniforge3-python3.12/bin/python3.12}"   # OBSERVED 2026-11-06: prints "Python 3.12.5" (vLLM needs 3.11+)
 VLLM_VERSION="${VLLM_VERSION-}"              # UNVERIFIED: exact pin; the model card requires vllm>=0.19.0. Blank = a person must choose
 SGLANG_NOTE="SGLang (>=0.5.10) is the model card's other engine; it is a fallback if vLLM cannot be installed, not built here."
 
 # ---- the model: BF16 safetensors from Hugging Face, pinned to one commit ---------------------------------------------------
 MODEL_REPO="${MODEL_REPO-Qwen/Qwen3.6-27B}"  # from the model card read 2026-11-05
-MODEL_REV="${MODEL_REV-}"                    # UNVERIFIED: a COMMIT HASH, never a branch name; resolved at probe time from the Hugging Face page
-WEIGHTS_MIB="${WEIGHTS_MIB-51500}"           # UNVERIFIED ARITHMETIC: 27B parameters x 2 bytes = about 54 GB = about 51,500 MiB; prep records the real total
+MODEL_REV="${MODEL_REV-6a9e13bd6fc8f0983b9b99948120bc37f49c13e9}"   # OBSERVED 2026-11-06 (probe 8): the current commit on Hugging Face (last modified
+                                             # 2026-04-24). A COMMIT HASH, never a branch name. A person confirms it when reviewing this file.
+WEIGHTS_MIB="${WEIGHTS_MIB-53011}"           # OBSERVED 2026-11-06 (probe 8): the 29 files of that commit total 55.6 GB = 53,011 MiB; prep records the real total
 SERVED_NAME="${SERVED_NAME-qwen3.6-27b-bf16}"   # must equal BACKENDS["talon"]["model"] in code/generation/open_teacher_test.py
 GPU_MIN_TOTAL_MIB="${GPU_MIN_TOTAL_MIB-70000}"  # UNVERIFIED: an 80 GB-class H100 reports about 81,500 MiB; the 94 GB variant about 95,800
 
@@ -84,6 +86,6 @@ MAX_MODEL_LEN="${MAX_MODEL_LEN-20480}"
 TALON_UNVERIFIED_FACTS=(
   "pricing and charges for GPU time (told in the 2026-11-06 meeting: Talon costs nothing; verbal, not yet in writing)"
   "the total GPU-hours we may use (no figure given) and whether a faculty research credit is involved"
-  "the 500 GB storage limit and the 3-day job limit (told in the meeting; the scheduler's own limits are shown by the probe), and any per-user GPU limits"
+  "per-user GPU limits (none are configured in Slurm; the 3-day job limit and the 500 GB home quota were seen in the scheduler and in the quota display, but are not in writing)"
   "usage and data policies (the meeting said nothing changes without written notice, and our use looked fine; nothing is in writing)"
 )

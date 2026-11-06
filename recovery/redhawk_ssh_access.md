@@ -12,7 +12,10 @@
        HostName redhawk.hpc.muohio.edu
        User buggjm
        ServerAliveInterval 60
+       IdentityFile ~/.ssh/talon_ed25519
+       IdentitiesOnly yes
    ```
+   (The last two lines are optional and need the key from `recovery/talon_ssh_access.md`; without them login uses password + Duo.)
 2. Create `C:\Users\Buggb\bin\redhawk.cmd` containing the single line `@ssh redhawk %*`.
 3. Add `C:\Users\Buggb\bin` to the user PATH (PowerShell): append it to `[Environment]::GetEnvironmentVariable("Path","User")` and write it back with `[Environment]::SetEnvironmentVariable("Path", <new value>, "User")`. Open a new terminal.
 4. Test: type `redhawk`, log in with your Miami password and Duo, then type `exit`.
@@ -22,7 +25,7 @@
 - Random seeds: none.
 - Key hyperparameters or config file: the `Host redhawk` block above.
 - Package versions (see environment/): none.
-- Login method: Miami password + Duo. No SSH key is installed yet. If a key is added later (`~/.ssh/redhawk_ed25519`), add `IdentityFile ~/.ssh/redhawk_ed25519` to the block and record only the public-key fingerprint here, never the private key. To revoke, delete that key's line from `~/.ssh/authorized_keys` on the cluster.
+- Login method: SSH key, no password or Duo (since 2026-11-06). Redhawk and Talon share one home folder, so the key made for Talon (`~/.ssh/talon_ed25519`, set up in `recovery/talon_ssh_access.md`) also works here; the `Host redhawk` block has `IdentityFile ~/.ssh/talon_ed25519` and `IdentitiesOnly yes`. Without the key, the fallback is the Miami password + Duo (remove those two lines, or the key line from `~/.ssh/authorized_keys`). Record only the public-key fingerprint, never the private key. Revoking the key on one cluster revokes it on the other.
 
 ## Verification
 - Expected file count / size: 2 small files (config entry, `redhawk.cmd`).

@@ -92,7 +92,7 @@ EOF
   echo "$REV" > "$T/tl/models/model_revision.txt"
   export PATH="$T/bin:$PATH" QT_TEST_MODE=1 PYEXE="$PYEXE" FAKE_VHELP="$T/vhelp.txt" FAKE_STATE="$T/state" \
          FAKE_VLLM_SERVER="$(cygpath -m "$HERE/fake_vllm_server.py" 2>/dev/null || echo "$HERE/fake_vllm_server.py")" \
-         VLLM_VERSION=0.19.1 MODEL_REV="$REV" QT_BASE_PYTHON="$PYEXE" \
+         VLLM_VERSION=0.19.1 MODEL_REV="$REV" QT_BASE_PYTHON="$PYEXE" WEIGHTS_MIB=51500 \
          GPU_COUNT=2 TENSOR_PARALLEL=2 REPLICAS=1 MAX_NUM_SEQS=8 CLIENT_CONCURRENCY=4 SWEEP_CONCURRENCY="1 4" \
          TALON_PARTITION=gpu-h100 TALON_GPU_STYLE=gres TALON_GPU_TYPE=h100 TIME_SMOKE=00:45:00 TIME_THROUGHPUT=02:00:00 TIME_PIPELINE=12:00:00 TIME_MAIN=10:00:00 \
          QT_LOAD_POLLS=30 SLURM_SUBMIT_DIR="$T/repo"
@@ -358,6 +358,32 @@ cp "$T/repo/configs/paths.yaml" "$T/paths.bak"; sed -i "s|^talon_models: .*|talo
 OUT="$(bash "$T/repo/configs/talon/fetch_talon.sh" 2>&1)"; RC=$?
 chk "fetch refuses a models folder in the home directory without QT_ALLOW_HOME=yes" '[ $RC -ne 0 ] && grep -q "inside your home folder" <<<"$OUT" && [ ! -e "$HOME/talon_models_test_never_created" ]'
 cp "$T/paths.bak" "$T/repo/configs/paths.yaml"
+echo "[Q1] the home quota is read from the REAL output seen on Talon (quota -s -v -f /home, 2026-11-06)"
+mkdir -p "$T/qfake"
+cat > "$T/quota_real.txt" <<'QEOF'
+Disk quotas for user buggjm (uid 1895442):
+     Filesystem   space   quota   limit   grace   files   quota   limit   grace
+muanasp05-4001.mcs.miamioh.edu:p05_nfs_oel_rh3_home
+                 17336M    480G    500G           10541   4295m   4295m
+QEOF
+printf '#!/bin/bash\ncat "%s"\n' "$T/quota_real.txt" > "$T/qfake/quota"; chmod +x "$T/qfake/quota"
+hq() { ( cd "$T/repo" && PATH="$T/qfake:$PATH" bash -c 'source configs/talon/common.sh; home_quota_mib /home' 2>&1 ); }
+chk "the real output gives used 17336 MiB, soft 480 GiB, hard 500 GiB (in MiB)" '[ "$(hq)" = "17336 491520 512000" ]'
+cat > "$T/quota_over.txt" <<'QEOF'
+Disk quotas for user buggjm (uid 1895442):
+     Filesystem   space   quota   limit   grace   files   quota   limit   grace
+muanasp05-4001.mcs.miamioh.edu:p05_nfs_oel_rh3_home
+                 490G*    480G    500G  6days     10541   4295m   4295m
+QEOF
+cp "$T/quota_over.txt" "$T/quota_real.txt"
+chk "a size over the soft limit (with * and a grace period) is still read correctly" '[ "$(hq)" = "501760 491520 512000" ]'
+printf 'something else entirely\n' > "$T/quota_real.txt"
+chk "an unreadable answer is UNKNOWN, never a guess" '[ "$(hq)" = UNKNOWN ]'
+: > "$T/quota_real.txt"
+chk "an empty answer is UNKNOWN" '[ "$(hq)" = UNKNOWN ]'
+printf 'Disk quotas for user x (uid 1):\n     Filesystem   space   quota   limit   grace   files   quota   limit   grace\nshorthost:/h   2048K   1G   2G   10   20   30\n' > "$T/quota_real.txt"
+chk "a short file-system name with the numbers on the same line is read too (2048K = 2 MiB)" '[ "$(hq)" = "2 1024 2048" ]'
+chk "the fetch script uses the home quota and refuses to pass the soft limit" 'grep -q "home_quota_mib /home" "$REPO/configs/talon/fetch_talon.sh" && grep -q "would pass the soft quota" "$REPO/configs/talon/fetch_talon.sh"'
 echo "[H1] file hygiene of the real repository's Talon folder"
 BAD=""; for f in "$REPO"/configs/talon/*.sh "$REPO"/configs/talon/*.sbatch; do [ "$(tr -cd '\r' < "$f" | wc -c)" = 0 ] || BAD="$BAD $f"; bash -n "$f" || BAD="$BAD $f(syntax)"; done
 chk "every Talon script has no carriage return and parses" '[ -z "$BAD" ]'

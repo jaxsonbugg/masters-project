@@ -11,7 +11,7 @@
 - **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** the Talon account uses the same user name as Redhawk (`buggjm`); the VPN is needed off campus; using Talon costs nothing; storage limit 500 GB (ask for more if needed); one job may run up to 3 days; own software may be installed (conda environments); contact: Dr. Mueller.
 - **OBSERVED (2026-11-05):** the head node answers on port 22 only while the Miami VPN is connected.
 - **Documented (Miami IT news and research-computing pages):** 4 GPU nodes with 4 H100 each; student accounts via "Research Cluster Account Sponsorships".
-- **OBSERVED (2026-11-06):** the first login worked with password and Duo push (option 1); the user name `buggjm` worked; groups are `hpcusers` and `leed13-shared`; there was no `~/.ssh` folder on Talon before the key was installed (a hint, not proof, that the home folder is not shared with Redhawk: probe section 1b settles it); key login skips Duo.
+- **OBSERVED (2026-11-06):** the first login worked with password and Duo push (option 1); the user name `buggjm` worked; groups are `hpcusers` and `leed13-shared`; there was no `~/.ssh` folder on Talon before the key was installed; key login skips Duo. The probe (section 1b) showed that **the home folder is shared with Redhawk** (`/home` is the same network disk; `~/masters_project` is visible on Talon), so the one `authorized_keys` file serves both: the Talon key (`talon_ed25519`) also logs in to Redhawk without a password (tested by Jaxson, 2026-11-06). Revoking the key on one cluster revokes it on the other.
 - **UNVERIFIED:** GPU-hour allocation.
 
 ## Host key (decision recorded 2026-11-06)

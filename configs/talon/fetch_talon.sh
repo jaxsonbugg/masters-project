@@ -32,8 +32,22 @@ echo "Target: $QT_MODELS"
 df -hP "$QT_MODELS" | tail -1
 echo "Free: $((FREE_KB / 1024 / 1024)) GB; needed: $NEED_GB GB (about 54 GB of BF16 weights plus margin)"
 [ "$FREE_KB" -ge $((NEED_GB * 1024 * 1024)) ] || die "not enough free space on that file system"
-echo "--- quota (whichever command exists; UNVERIFIED which one Talon uses) ---"
-{ quota -s 2>&1 || true; lfs quota -h -u "$(id -un)" "$QT_MODELS" 2>&1 || true; } | head -12
+echo "--- quota: the 500 GB limit applies to the home file system (OBSERVED 2026-11-06 with: quota -s -v -f /home) ---"
+MNT="$(df -P "$QT_MODELS" | awk 'NR==2 {print $6}')"
+if [ "$MNT" = /home ]; then
+  timeout 60 quota -s -v -f /home 2>&1 | head -12 || true
+  Q="$(home_quota_mib /home)"
+  if [ "$Q" = UNKNOWN ]; then
+    warn "could not read the home quota, so the 500 GB limit cannot be checked here (the file system still enforces it)"
+  else
+    read -r Q_USED Q_SOFT Q_HARD <<<"$Q"
+    NEED_MIB=$((WEIGHTS_MIB + ${QT_ENV_MIB:-25000}))   # the weights plus about 25 GB for the Python environment and caches
+    echo "home quota: used $Q_USED MiB, soft limit $Q_SOFT MiB, hard limit $Q_HARD MiB; this setup needs about $NEED_MIB MiB more"
+    [ $((Q_USED + NEED_MIB)) -le "$Q_SOFT" ] || die "this download would pass the soft quota of the home folder ($Q_SOFT MiB; $Q_USED MiB used). Free space or ask Research Computing for more. Nothing was downloaded."
+  fi
+else
+  echo "(the target is on $MNT, not /home: the home quota does not apply; no quota command is known for it)"
+fi
 [ "${QT_CONFIRM_STORAGE:-}" = "yes" ] || die "read the free space and quota above, then run again with QT_CONFIRM_STORAGE=yes. Nothing was downloaded."
 
 echo "== Python environment with vllm==$VLLM_VERSION =="

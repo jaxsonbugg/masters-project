@@ -18,9 +18,33 @@ export QT_SCRIPT_DIR QT_REPO QT_CONF QT_SETTINGS_FILE
 die() { echo "STOP: $*" >&2; exit 2; }
 warn() { echo "WARNING: $*" >&2; }
 
+# Talon's login shell sets http_proxy and https_proxy to the university web proxy (OBSERVED 2026-11-06, /etc/profile.d/httpproxy.sh).
+# Our client and health checks talk to vllm on 127.0.0.1 inside the job: that traffic must never go through a proxy, so these two
+# addresses are added to no_proxy here, whatever the environment already holds. Downloads (Hugging Face, PyPI) keep using the proxy.
+export no_proxy="${no_proxy:+$no_proxy,}127.0.0.1,localhost"
+export NO_PROXY="$no_proxy"
+
 [ -f "$QT_SETTINGS_FILE" ] || die "$QT_SETTINGS_FILE is missing (is this the repository copy?)"
 # shellcheck disable=SC1090
 source "$QT_SETTINGS_FILE"
+
+# home_quota_mib [FILESYSTEM]: prints "USED SOFT HARD" in MiB for the home file system, or UNKNOWN if the output cannot be read.
+# Built on the REAL output of `quota -s -v -f /home` seen on Talon on 2026-11-06 (the file-system name sits on its own line and the
+# numbers on the next one; sizes carry a K, M, G or T suffix; a "*" after the used size means a limit was passed):
+#   muanasp05-4001.mcs.miamioh.edu:p05_nfs_oel_rh3_home
+#                    17336M    480G    500G           10541   4295m   4295m
+# An unreadable answer is UNKNOWN, never a guess: the caller warns and the file system itself still enforces the limit.
+home_quota_mib() {
+  local out
+  out="$(timeout 60 quota -s -v -f "${1:-/home}" 2>/dev/null)" || { echo UNKNOWN; return 0; }
+  awk '
+    function mib(s,   u, n) { gsub(/\*/, "", s); u = substr(s, length(s)); n = s + 0
+      if (u == "K") return n / 1024; if (u == "M") return n; if (u == "G") return n * 1024; if (u == "T") return n * 1048576
+      return n / 1024 }
+    /^[^ ].*:/ && !/^Disk quotas/ { if (NF >= 4) { print int(mib($2)), int(mib($3)), int(mib($4)); found = 1; exit } want = 1; next }
+    want && NF >= 3 { print int(mib($1)), int(mib($2)), int(mib($3)); found = 1; exit }
+    END { if (!found) print "UNKNOWN" }' <<<"$out"
+}
 
 yaml_get() {  # value of a top-level "key: value" line of paths.yaml, without trailing spaces
   sed -n "s/^$1: *//p" "$QT_CONF" | head -n 1 | sed 's/[[:space:]]*$//'

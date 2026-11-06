@@ -19,12 +19,13 @@ redhawk_root: /home/buggjm/masters_project
 redhawk_repo: /home/buggjm/masters_project/repo
 redhawk_models: /home/buggjm/masters_project/models
 redhawk_outputs: /home/buggjm/masters_project/teacher_outputs
-# Talon cluster (Miami's H100 GPU cluster; Linux paths, used by configs/talon and by code that runs on Talon). ALL UNSET ON
-# PURPOSE: no Talon account exists yet, so no path is known. They are filled in on the first login from the output of
-# configs/talon/probe_talon.sh (home, project and scratch locations, quotas and purge rules are all UNVERIFIED). Talon
-# results are written under talon_outputs and never under redhawk_outputs; the code picks the key from the backend name.
-# Set all four together; the Talon scripts and the Python code stop with a clear message if any is UNSET.
-talon_root: UNSET
-talon_repo: UNSET
-talon_models: UNSET
-talon_outputs: UNSET
+# Talon cluster (Miami's H100 GPU cluster; Linux paths, used by configs/talon and by code that runs on Talon). Chosen 2026-11-06
+# from the first probe: Talon and Redhawk SHARE one home folder (/home/buggjm) and one 500 GB quota (hard limit; soft limit 480 GB;
+# OBSERVED with `quota -s -v -f /home`), so Talon uses its OWN folder inside it, never the Redhawk folder above. Because these
+# folders are under the home folder, the download script needs QT_ALLOW_HOME=yes (the 500 GB is what Research Computing said is ours
+# to use). Nothing is created until prep_talon.sh runs. Talon results are written under talon_outputs and never under
+# redhawk_outputs; the code picks the key from the backend name. Set all four together.
+talon_root: /home/buggjm/talon_project
+talon_repo: /home/buggjm/talon_project/repo
+talon_models: /home/buggjm/talon_project/models
+talon_outputs: /home/buggjm/talon_project/teacher_outputs
