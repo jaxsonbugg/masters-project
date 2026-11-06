@@ -115,6 +115,7 @@ build_sbatch_opts() {
   [ -z "$TALON_PARTITION" ] || SB_OPTS+=(--partition="$TALON_PARTITION")
   [ -z "$TALON_ACCOUNT" ] || SB_OPTS+=(--account="$TALON_ACCOUNT")
   [ -z "$TALON_QOS" ] || SB_OPTS+=(--qos="$TALON_QOS")
+  [ -z "$TALON_NODELIST" ] || SB_OPTS+=(--nodelist="$TALON_NODELIST")   # optional; blank = the scheduler may use any node of the partition
   case "$TALON_GPU_STYLE" in
     gres) SB_OPTS+=(--gres="gpu${TALON_GPU_TYPE:+:$TALON_GPU_TYPE}:$GPU_COUNT") ;;
     gpus) SB_OPTS+=(--gpus="${TALON_GPU_TYPE:+$TALON_GPU_TYPE:}$GPU_COUNT") ;;

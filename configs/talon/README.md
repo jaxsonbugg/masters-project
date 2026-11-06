@@ -12,7 +12,8 @@ that are the two probes, because they are how the real values are found.
 |---|---|---|
 | `talon_settings.sh` | The ONLY place with Talon guesses (partition, account, GPU request style, modules, Python, vLLM version, model revision, GPU layout, wall times). Every line is UNVERIFIED until the probe confirms it. Also lists the unverified Talon facts (pricing, allocation, quotas, access). | edited once, after the probe |
 | `common.sh` | Helpers (twin of the Redhawk one): paths from the `talon_*` keys of `configs/paths.yaml`, the review guard, layout checks, sbatch option builder, Slurm time parser, GPU memory checks. | sourced by every script |
-| `probe_talon.sh` | READ-ONLY look at Talon on the first login: OS, tools, modules, Slurm partitions and limits, storage and quotas, internet, and the model/vLLM versions to pin. | first login, no approval beyond logging in |
+| `run_probe_local.sh` | Runs the probe FROM THE PC through ssh's standard input (nothing is copied to Talon), keeps ssh's exit status, records `.out`, `.err` and `.diag` under `~/talon_probe/`, and says COMPLETE only if `END OF PROBE` and all 13 sections are present. Uses `StrictHostKeyChecking=yes`: verify the host key first (`recovery/talon_ssh_access.md`). | first login |
+| `probe_talon.sh` | READ-ONLY look at Talon (sent by the wrapper): who/where, shared-home check, OS, tools, modules, Slurm in general, the `talon` partition and every node of it, maintenance and reservations, queue, limits and billing weights, storage and quotas, internet, and the model/vLLM versions to pin. Every section header carries an evidence label (OBSERVED or SLURM-REPORTED). Tests enforce that it submits, installs and writes nothing. | via the wrapper |
 | `probe_talon_part2.sh` + `probe_gpu_job.sbatch` | Asks the scheduler which GPU request forms it accepts (`--test-only`, no job), then (with `QT_SUBMIT=yes`, needs your separate approval) runs ONE 5-minute GPU job, then `record` writes `talon_verified.txt`. | first login, after `probe_talon.sh` |
 | `prep_talon.sh` + `fetch_talon.sh` | Checks the copied files, then installs the pinned vLLM into a Python environment and downloads and verifies the pinned BF16 weights (about 54 GB) in the background. Needs `QT_CONFIRM_STORAGE=yes` from you. | after review, once |
 | `submit_pipeline.sh <kind>` | Checks everything is ready, builds the sbatch options from the settings, shows the scheduler's start estimate, and (with `QT_SUBMIT=yes`) submits one job. Kinds: `smoke_a`, `smoke_b`, `throughput`, `pipeline`, `main`. | for every job |
@@ -23,8 +24,8 @@ that are the two probes, because they are how the real values are found.
 | `talon_test.sbatch` | The main run alone (to resume or repeat it). | via `submit_pipeline.sh main` |
 
 ## Order on day 1 (each cluster action needs your approval, as with Redhawk)
-1. Log in, record the host and your findings in `recovery/talon_ssh_access.md`.
-2. `probe_talon.sh` (read-only). Paste the output into the chat.
+1. Check reachability, **verify the host key with Research Computing**, connect once by hand, record the findings in `recovery/talon_ssh_access.md`.
+2. `bash configs/talon/run_probe_local.sh` (read-only; it checks its own completeness). Paste the output into the chat.
 3. Fill the values into `talon_settings.sh`; set the `talon_*` keys in `configs/paths.yaml`.
 4. `probe_talon_part2.sh` (checks), then, after approval, `QT_SUBMIT=yes ...`, then `... record`.
 5. Read `talon_settings.sh` end to end; only then set `SETTINGS_REVIEWED=yes`.

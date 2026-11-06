@@ -22,7 +22,11 @@ TALON_SSH_ALIAS="${TALON_SSH_ALIAS-talon}"   # UNVERIFIED: the alias goes in ~/.
                                               # (see recovery/talon_ssh_access.md; the host name is a placeholder until Miami gives it)
 
 # ---- Slurm: how to ask for GPUs (the submit script builds the sbatch options from these; #SBATCH lines cannot hold variables)
-TALON_PARTITION="${TALON_PARTITION-}"        # UNVERIFIED: partition name for the H100 nodes; blank = the scheduler's default
+TALON_PARTITION="${TALON_PARTITION-talon}"   # TOLD BY RESEARCH COMPUTING 2026-11-05 ("the GPU partition is called talon"); not yet checked by the probe
+TALON_NODELIST="${TALON_NODELIST-}"          # OPTIONAL node choice, blank = any node of the partition (the default). TOLD BY RESEARCH COMPUTING
+                                              # 2026-11-05: --nodelist=mualhpgp01.mpi lands a job on GPU node 1. That is a confirmed way to CHOOSE
+                                              # a node, not a requirement: pin a node only if the nodes differ, only one is usable, or a benchmark
+                                              # must run on identical hardware (docs/talon_setup.md, section "Choosing a node").
 TALON_ACCOUNT="${TALON_ACCOUNT-}"            # UNVERIFIED: charge account / allocation name, if one must be given; blank = none
 TALON_QOS="${TALON_QOS-}"                    # UNVERIFIED: quality-of-service name, if required; blank = none
 TALON_GPU_STYLE="${TALON_GPU_STYLE-}"        # UNVERIFIED: gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N); blank = a person must choose

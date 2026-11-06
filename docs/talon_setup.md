@@ -18,19 +18,35 @@ The Redhawk test (pipeline job 2511641) continues independently and stays the ba
 
 ## 2. What is known and what is not
 
-| Topic | What we know | Status |
+### How to read the status labels (used here, in the settings file and in the probe output)
+Four labels say HOW we know something. A weaker source never promotes something to a stronger label:
+- **OBSERVED**: seen directly by a command (the login works, an operating-system release, a disk size, an HTTP status). Independent of the scheduler's settings.
+- **SLURM-REPORTED**: what the scheduler's *configuration* says (a partition's time limit, a node's `Gres=gpu:h100:4`, billing weights, QOS limits, reservations). It tells us what is
+  *configured*. It does **not** prove that a particular GPU request is accepted, that a GPU works, or what Miami's policy is. Example: a `Gres=gpu:h100:4` line does not make
+  "`--gres=gpu:h100:N` works" verified; only a scheduler acceptance test or a real job can.
+- **TOLD BY RESEARCH COMPUTING**: stated in a message from Research Computing, with date and channel; we have not checked it ourselves yet.
+- **UNVERIFIED**: everything else. It needs a test, a GPU job or an email.
+
+| Topic | What we have | Status (as of 2026-11-05, before the first probe) |
 |---|---|---|
-| Hardware | 4 GPU nodes x 4 H100, plus 20 CPU nodes | documented (Miami IT news, Nov 2025) |
-| H100 memory variant | 80 GB or 94 GB | **UNVERIFIED** |
+| Hardware | 4 GPU nodes x 4 H100, plus 20 CPU nodes | documented (Miami IT news, Nov 2025); not observed by us |
+| Login (head) node | `mualhphp01.hpc.miamioh.edu` | **TOLD BY RESEARCH COMPUTING** 2026-11-05 (message to Jaxson); connection not yet tried |
+| GPU partition name | `talon` (`--partition=talon`) | **TOLD BY RESEARCH COMPUTING** 2026-11-05; not yet seen in `sinfo` |
+| Choosing a node | `--nodelist=mualhpgp01.mpi` lands a job on GPU node 1 | **TOLD BY RESEARCH COMPUTING** 2026-11-05: a confirmed option, not a requirement (see "Choosing a node") |
+| Other GPU node names (`mualhpgp02` to `04`) | guessed from the naming pattern | **UNVERIFIED** |
+| VPN and Duo needed? | not yet tested | **UNVERIFIED** (the probe's connection test makes it OBSERVED) |
+| H100 memory variant | 80 GB or 94 GB | **UNVERIFIED** (only `nvidia-smi` inside a job shows it) |
 | Account process | Students use "Research Cluster Account Sponsorships" (faculty sponsor, expiry date) | documented |
-| Login host, VPN, Duo, web portal | not published | **UNVERIFIED** |
-| Scheduler and partitions | Slurm very likely; partition names, time limits, GPU request syntax, whether a whole node can be requested | **UNVERIFIED** |
-| Modules, OS, driver, CUDA, containers, internet from the nodes | not published | **UNVERIFIED** |
-| Storage (paths, quotas, purge rules) | not published | **UNVERIFIED** |
-| Pricing and charges | a PI credit of $1,000 per year was seen only in a search snippet | **UNVERIFIED** |
-| Allocation, GPU quotas, per-user limits, maximum job length | not published | **UNVERIFIED** |
-| Access requirements and policies (usage, data), whether Redhawk and Talon accounts are separate | not published | **UNVERIFIED** |
-| Maintenance window and return date | not published; Talon is in maintenance | **UNVERIFIED** |
+| Same account and home folder as Redhawk? | not known | **UNVERIFIED** (probe section 1b makes it OBSERVED) |
+| Time limits, whole-node jobs, GPU resource string | not known | **UNVERIFIED** (probe sections 5b/5e make the configured values SLURM-REPORTED) |
+| Accepted GPU request syntax (`--gres=gpu:N`, typed, `--gpus=N`) | not known | **UNVERIFIED**: needs `sbatch --test-only` (no job) or a job |
+| Modules, OS, glibc, Python, containers (login node) | not known | **UNVERIFIED** (probe sections 2-4 make them OBSERVED) |
+| Driver, CUDA, NVLink, internet from compute nodes | not known | **UNVERIFIED**: needs a job on a GPU node |
+| Storage (paths, quotas, purge rules) | not known | **UNVERIFIED** (probe section 6 makes paths and quotas OBSERVED; purge rules only if posted) |
+| Pricing and charges | a PI credit of $1,000 per year was seen only in a search snippet | **UNVERIFIED**: billing weights may show as SLURM-REPORTED, dollar prices and the credit are policy |
+| Allocation, GPU quotas, per-user limits, maximum job length | not known | **UNVERIFIED** (limits configured in Slurm would be SLURM-REPORTED, not policy) |
+| Access requirements and policies (usage, data) | not published | **UNVERIFIED** |
+| Maintenance window and return date | Talon was described as in maintenance | **UNVERIFIED** (probe section 5c shows Slurm's reservations and drained nodes) |
 
 Every Talon script prints the unverified list (pricing, allocation, GPU quota, access) so it cannot be forgotten, and nothing in the code assumes an
 answer to any of them.
@@ -42,6 +58,18 @@ answer to any of them.
 4. Where should large files go (home, project, scratch), with what quotas and purge rules? Is downloading about 55 GB from Hugging Face acceptable, from a login node or from a compute node? Do compute nodes have internet?
 5. Which modules exist (CUDA, Python), may I use pip/uv virtual environments, and are Apptainer containers available?
 6. Which H100 variant are the nodes (memory per GPU)? When does Talon come back from maintenance?
+7. **Before the first login:** what are the SHA256 fingerprints of the SSH host keys of `mualhphp01.hpc.miamioh.edu` (ED25519, ECDSA and RSA; on the node: `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` and the equivalents)? They are needed to verify the server before typing a password.
+
+(Items 1 and 2 are partly answered by Research Computing's message of 2026-11-05: head node `mualhphp01.hpc.miamioh.edu`, partition `talon`, `--nodelist=mualhpgp01.mpi` for GPU node 1. Those stay
+"told by Research Computing" until the probe observes them; the rest of the list still applies, and the probe will settle some of it first.)
+
+### Choosing a node: `--nodelist=mualhpgp01.mpi` or no node at all
+Research Computing confirmed that `--nodelist=mualhpgp01.mpi` places a job on GPU node 1. That is a **confirmed way to choose a node, not a requirement** for every job.
+Without it, the scheduler may start a job on any free GPU node of the partition. That is usually better: a job is not held back because node 1 happens to be busy, drained or
+reserved, and it does not depend on node 1 staying available. Pinning a node helps when (a) every benchmark run must use identical hardware, so throughput numbers are comparable,
+(b) only that node is usable by us for now, or (c) a problem is being debugged on one node. The probe lists all nodes of the partition side by side (section 5b) with their state
+and any reservation (5c), so we can see whether the nodes look identical. The default is therefore **no node pinned** (`TALON_NODELIST` is blank in `talon_settings.sh`); it is
+set only if the probe shows the nodes differ or only one is usable.
 
 ## 3. Why every Talon script is a draft
 
@@ -133,9 +161,12 @@ needs, and these get their own plan and approval later:
 
 Each step that touches the cluster needs your approval first, as for Redhawk.
 1. **Email** the questions in section 2 (you may already have). Until answered, pricing, allocation, quotas and access limits stay UNVERIFIED.
-2. **Connect** (VPN/Duo as needed), add the `talon` alias, and record the host and findings in `recovery/talon_ssh_access.md`.
-3. **Copy the Talon files** and run the read-only probe (the command is at the top of `configs/talon/probe_talon.sh`). Paste the output to me. I
-   fill `talon_settings.sh` and the `talon_*` keys in `configs/paths.yaml` from it, correct the test fakes with the real facts, and rerun the tests.
+2. **Check reachability and verify the host key, then connect.** Run `Test-NetConnection mualhphp01.hpc.miamioh.edu -Port 22` (connect the Miami VPN if it times out). **Do not
+   just type "yes" at the first SSH prompt:** display the server's host-key fingerprints, get Research Computing's own fingerprints by email or phone, compare them, and only then
+   accept the key once (the procedure is in `recovery/talon_ssh_access.md`). Record the host, VPN yes/no and Duo method there.
+3. **Run the read-only probe** with the local wrapper (`bash configs/talon/run_probe_local.sh` in Git Bash): it sends the probe through ssh without copying anything to Talon, keeps ssh's
+   exit status, records the output and diagnostics under `~/talon_probe/`, and calls the result COMPLETE only if `END OF PROBE` and every section are present. Paste the output to me. I
+   fill `talon_settings.sh` and the `talon_*` keys in `configs/paths.yaml` from it, mark each fact with its evidence label, correct the test fakes with the real facts, and rerun the tests.
 4. **Part 2 of the probe**: first only the checks (no job). Then, after your separate approval, `QT_SUBMIT=yes` (one 5-minute GPU job, which may use
    allocation), then `... record`.
 5. **Review** `talon_settings.sh` together, then set `SETTINGS_REVIEWED=yes`.

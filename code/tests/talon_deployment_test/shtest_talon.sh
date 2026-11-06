@@ -262,12 +262,82 @@ OUT="$(env FAKE_JOB_RUNNING=1 bash configs/talon/probe_talon_part2.sh record 2>&
 chk "record refuses while the probe job is still in the queue" '[ $RC -ne 0 ] && grep -q "still in the queue" <<<"$OUT"'
 OUT="$(bash configs/talon/probe_talon_part2.sh record 2>&1)"; RC=$?
 chk "record writes talon_verified.txt with PART2_OK, accepted styles, GPU name and network facts" '[ $RC -eq 0 ] && grep -q "^PART2_OK=yes" talon_verified.txt && grep -q "^GPU_STYLES_ACCEPTED=gres$" talon_verified.txt && grep -q "^GPU_NAME=NVIDIA H100 80GB HBM3$" talon_verified.txt && grep -q "^COMPUTE_NODE_PYPI=200" talon_verified.txt'
-echo "[PR2] probe_talon.sh is read-only and finishes even when every cluster command is missing"
-mkdir -p "$T/nonet"; printf '#!/bin/bash\necho "fake curl: no network in tests" >&2; exit 7\n' > "$T/nonet/curl"; chmod +x "$T/nonet/curl"
+echo "[PR2] probe_talon.sh is READ-ONLY, finishes even when every cluster command is missing, and labels its evidence"
+PSRC="$REPO/configs/talon/probe_talon.sh"
+CODE="$(grep -v '^[[:space:]]*#' "$PSRC")"
+BADCMD='(^|[;&|(]|\$\()[[:space:]]*(sbatch|srun|salloc|scancel|sattach|rm|mv|cp|mkdir|touch|tee|chmod|chown|ln|dd|wget|pip|pip3|git|apptainer|singularity|podman|docker)[[:space:]]'
+chk "static scan: no command that submits, allocates, installs, copies, deletes or creates is in command position" '! grep -nE "$BADCMD" <<<"$CODE"'
+chk "static scan: scontrol and sacctmgr are used only with show" '! grep -nE "scontrol[[:space:]]+(update|create|delete|reconfigure|shutdown|hold|release|requeue|suspend|resume|takeover)|sacctmgr[^|]*[[:space:]](add|modify|delete|remove|create)[[:space:]]" <<<"$CODE"'
+chk "static scan: no output redirection except /dev/null and 2>&1" '! grep -nE ">>|>[[:space:]]*[^&[:space:]/]|>[[:space:]]*/[^d]" <<<"$CODE"'
+HDRS="$(grep -E '^  sec ' "$PSRC")"
+chk "all 13 sections exist and each header names an evidence label (OBSERVED or SLURM-REPORTED)" '[ "$(grep -c . <<<"$HDRS")" = 13 ] && [ "$(grep -cE " (OBSERVED|SLURM-REPORTED)\$" <<<"$HDRS")" = 13 ]'
+chk "the Slurm sections are labelled SLURM-REPORTED, never OBSERVED" '[ "$(grep -E "^  sec (5|5b|5c|5d|5e) " <<<"$HDRS" | grep -c SLURM-REPORTED)" = 5 ]'
+mkdir -p "$T/nonet" "$T/danger" "$T/probebin"; printf '#!/bin/bash\necho "fake curl: no network in tests" >&2; exit 7\n' > "$T/nonet/curl"; chmod +x "$T/nonet/curl"
+for c in sbatch srun salloc scancel pip pip3 wget git rm mv cp mkdir touch tee chmod; do printf '#!/bin/bash\necho "%s $*" >> "%s"\nexit 0\n' "$c" "$T/danger.log" > "$T/danger/$c"; chmod +x "$T/danger/$c"; done
+printf '#!/bin/bash\necho "mualhpgp01.mpi"; echo "mualhpgp02.mpi"\n' > "$T/probebin/sinfo"
+printf '#!/bin/bash\necho "scontrol $*" >> "%s"\necho "NodeName=fake State=IDLE Gres=gpu:h100:4"\n' "$T/read.log" > "$T/probebin/scontrol"
+printf '#!/bin/bash\necho "sacctmgr $*" >> "%s"\nexit 0\n' "$T/read.log" > "$T/probebin/sacctmgr"
+chmod +x "$T/probebin/"*; : > "$T/danger.log"; : > "$T/read.log"
 BEFORE="$(find "$T" -type f | wc -l)"
-OUT="$(PATH="$T/nonet:$PATH" bash configs/talon/probe_talon.sh 2>&1)"; RC=$?
-chk "probe_talon.sh exits 0, reaches its end and names the UNVERIFIED facts" '[ $RC -eq 0 ] && grep -q "END OF PROBE" <<<"$OUT" && grep -q "UNVERIFIED" <<<"$OUT"'
-chk "it created no file" '[ "$(find "$T" -type f | wc -l)" = "$BEFORE" ]'
+OUT="$(PATH="$T/danger:$T/probebin:$T/nonet:$PATH" bash configs/talon/probe_talon.sh 2>&1)"; RC=$?
+chk "probe_talon.sh exits 0, reaches END OF PROBE and names what stays UNVERIFIED" '[ $RC -eq 0 ] && grep -q "^END OF PROBE$" <<<"$OUT" && grep -q "NOTE: nothing above verifies that a GPU request is accepted" <<<"$OUT"'
+chk "dynamic: not one write-capable program (sbatch, srun, salloc, pip, git, rm, cp, tee ...) was called" '[ ! -s "$T/danger.log" ]'
+chk "it created no file anywhere under the work folder" '[ "$(find "$T" -type f | wc -l)" = "$((BEFORE + 0))" ]'
+chk "the per-node loop ran: scontrol show node was called for each node of the partition" 'grep -q "^scontrol show node mualhpgp01.mpi" "$T/read.log" && grep -q "^scontrol show node mualhpgp02.mpi" "$T/read.log"'
+chk "every scontrol and sacctmgr call was a show query" '[ -s "$T/read.log" ] && ! grep -vE "^(scontrol (-[a-zA-Z]+ )*show |sacctmgr (-[a-zA-Z]+ )*show )" "$T/read.log"'
+OUT="$(env -u TALON_PARTITION PATH="$T/nonet:$PATH" bash configs/talon/probe_talon.sh 2>&1)"; O2="$(env PATH="$T/nonet:$PATH" TALON_PARTITION=other bash configs/talon/probe_talon.sh 2>&1)"
+chk "the partition defaults to talon (told by Research Computing) and can be overridden" 'grep -q "Partition probed: talon" <<<"$OUT" && grep -q "Partition probed: other" <<<"$O2"'
+chk "every section header printed in the real output has a label" '[ "$(grep -c "^================ " <<<"$OUT")" = 13 ] && [ "$(grep "^================ " <<<"$OUT" | grep -cE "\[(OBSERVED|SLURM-REPORTED)\] ================\$")" = 13 ]'
+echo "[PR4] run_probe_local.sh: ssh status preserved, diagnostics recorded, completeness verified (fake ssh)"
+mkdir -p "$T/sshbin"
+cat > "$T/sshbin/ssh" <<'EOF'
+#!/bin/bash
+echo "$*" >> "${FAKE_SSH_LOG:-/dev/null}"
+for a in "$@"; do
+  [ "$a" = "-V" ] && { echo "OpenSSH_fake_9.9" >&2; exit 0; }
+  [ "$a" = "-G" ] && { printf 'hostname mualhphp01.hpc.miamioh.edu\nuser buggjm\nport 22\nstricthostkeychecking ask\n'; exit 0; }
+done
+cat > /dev/null                                   # swallow the probe script that arrives on standard input
+case "${FAKE_SSH_MODE:-ok}" in
+  fail255) echo "Host key verification failed." >&2; exit 255 ;;
+  denied)  echo "buggjm@mualhphp01.hpc.miamioh.edu: Permission denied (keyboard-interactive)." >&2; exit 255 ;;
+  timeout) echo "ssh: connect to host mualhphp01.hpc.miamioh.edu port 22: Connection timed out" >&2; exit 255 ;;
+esac
+for s in 1 1b 2 3 4 5 5b 5c 5d 5e 6 7 8; do
+  [ "${FAKE_SSH_MODE:-ok}" = missing5c ] && [ "$s" = 5c ] && continue
+  echo; echo "================ $s some title [OBSERVED] ================"; echo "  data of section $s"
+  [ "${FAKE_SSH_MODE:-ok}" = cut ] && [ "$s" = 5d ] && exit 0     # the connection dropped, yet ssh reports success
+done
+[ "${FAKE_SSH_MODE:-ok}" = noend ] || echo "END OF PROBE"
+exit 0
+EOF
+chmod +x "$T/sshbin/ssh"
+wrap() { OUT="$(env PATH="$T/sshbin:$PATH" TALON_PROBE_DIR="$T/rec_$1" FAKE_SSH_LOG="$T/ssh_$1.log" FAKE_SSH_MODE="$1" bash "$REPO/configs/talon/run_probe_local.sh" 2>&1)"; RC=$?; DIAG="$(cat "$T"/rec_$1/*.diag 2>/dev/null)"; }
+wrap ok
+chk "complete run: exit 0, verdict COMPLETE, three record files, diag says ssh 0, END present, no section missing" '[ $RC -eq 0 ] && grep -q "VERDICT: COMPLETE" <<<"$OUT" && [ "$(ls "$T"/rec_ok | wc -l)" = 3 ] && grep -q "^SSH_EXIT_STATUS=0$" <<<"$DIAG" && grep -q "^END_OF_PROBE_PRESENT=yes$" <<<"$DIAG" && grep -q "^SECTIONS_MISSING=$" <<<"$DIAG" && grep -qE "^OUTPUT_SHA256=[0-9a-f]{64}$" <<<"$DIAG"'
+chk "the diag records the local ssh version and the settings ssh resolved for the alias" 'grep -q "^LOCAL_SSH_VERSION=OpenSSH_fake_9.9" <<<"$DIAG" && grep -q "^RESOLVED_hostname mualhphp01.hpc.miamioh.edu$" <<<"$DIAG" && grep -q "^RESOLVED_user buggjm$" <<<"$DIAG"'
+chk "ssh was told never to accept a new host key, and received the probe on standard input (bash -l -s)" 'grep -q "StrictHostKeyChecking=yes" "$T/ssh_ok.log" && grep -q "bash -l -s" "$T/ssh_ok.log"'
+chk "the record is written outside the repository (default folder is under the home directory)" 'grep -q "OUTDIR=\"\${TALON_PROBE_DIR:-\$HOME/talon_probe}\"" "$REPO/configs/talon/run_probe_local.sh"'
+wrap fail255
+chk "ssh failure (255): the SAME status is returned, not hidden by tee; verdict INCOMPLETE; host-key advice" '[ $RC -eq 255 ] && grep -q "VERDICT: INCOMPLETE" <<<"$OUT" && grep -q "^SSH_EXIT_STATUS=255$" <<<"$DIAG" && grep -q "Verify the fingerprint with Research Computing" <<<"$OUT" && grep -q "Host key verification failed" "$T"/rec_fail255/*.err'
+wrap denied
+chk "login refused: status 255 preserved and the message says the account may not be active" '[ $RC -eq 255 ] && grep -q "account may not be active" <<<"$OUT"'
+wrap timeout
+chk "connection timeout: status 255 preserved and the message points at the VPN" '[ $RC -eq 255 ] && grep -q "Miami VPN" <<<"$OUT"'
+wrap noend
+chk "ssh exit 0 but no END OF PROBE: INCOMPLETE and exit 3 (not treated as complete)" '[ $RC -eq 3 ] && grep -q "VERDICT: INCOMPLETE" <<<"$OUT" && grep -q "does not end with END OF PROBE" <<<"$OUT" && grep -q "^END_OF_PROBE_PRESENT=no$" <<<"$DIAG"'
+wrap cut
+chk "a connection that dropped part-way yet exited 0: INCOMPLETE, exit 3" '[ $RC -eq 3 ] && grep -q "VERDICT: INCOMPLETE" <<<"$OUT" && grep -q "^SECTIONS_MISSING= 5e 6 7 8$" <<<"$DIAG"'
+wrap missing5c
+chk "a missing section is named: INCOMPLETE, exit 3, SECTIONS_MISSING= 5c" '[ $RC -eq 3 ] && grep -q "these sections are missing: 5c" <<<"$OUT" && grep -q "^SECTIONS_MISSING= 5c$" <<<"$DIAG"'
+echo "[PR5] the node choice is optional: no --nodelist by default, added only when TALON_NODELIST is set"
+ready; : > "$FAKE_SBATCH_LOG"; subm
+chk "default: the sbatch options contain no --nodelist" '[ $RC -eq 0 ] && ! grep -q -- "--nodelist" <<<"$OUT" && ! grep -q -- "--nodelist" "$FAKE_SBATCH_LOG"'
+: > "$FAKE_SBATCH_LOG"; subm TALON_NODELIST=mualhpgp01.mpi
+chk "TALON_NODELIST=mualhpgp01.mpi adds --nodelist=mualhpgp01.mpi to the options and to the test-only call" '[ $RC -eq 0 ] && grep -q -- "--nodelist=mualhpgp01.mpi" <<<"$OUT" && grep -q -- "--nodelist=mualhpgp01.mpi" "$FAKE_SBATCH_LOG"'
+: > "$FAKE_SBATCH_LOG"; OUT="$(env TALON_NODELIST=mualhpgp01.mpi bash configs/talon/probe_talon_part2.sh 2>&1)"; RC=$?
+chk "the part-2 probe also honours the optional node choice" '[ $RC -eq 0 ] && grep -q -- "--nodelist=mualhpgp01.mpi" "$FAKE_SBATCH_LOG"'
+chk "the shipped default partition is talon and the node choice is blank" 'grep -q "TALON_PARTITION=\"\${TALON_PARTITION-talon}\"" "$REPO/configs/talon/talon_settings.sh" && grep -q "TALON_NODELIST=\"\${TALON_NODELIST-}\"" "$REPO/configs/talon/talon_settings.sh"'
 cd - >/dev/null || exit 1
 echo "[PR3] prep_talon.sh and fetch_talon.sh guards (no network is used)"
 rm -f "$STATE"

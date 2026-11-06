@@ -30,3 +30,10 @@ for p in 1 2 3; do bash code/tests/talon_deployment_test/shtest_talon.sh /tmp/tt
 
 **What a pass does not prove.** Everything about Talon itself (host, partitions, GPU request syntax, modules, vLLM's real flags and output,
 real speed, storage, allocation) can only be checked on the cluster. That is what the probe and the smoke stages are for.
+
+## Added 2026-11-05: probe and wrapper tests (shell part 3)
+- The probe is checked to be READ-ONLY twice: a static scan of its commands, and a run with fake write-capable programs (sbatch, srun, salloc, pip, git, rm, cp, tee ...) whose call log must stay empty
+  with no file created. Its 13 section headers must each carry an evidence label.
+- `run_probe_local.sh` is tested with a fake `ssh`: success (COMPLETE), refused login, timeout and host-key failure (ssh's own status 255 preserved, helpful message), a connection that dropped but
+  exited 0 (INCOMPLETE, exit 3), and a missing section (named). The diagnostics file, `StrictHostKeyChecking=yes` and the probe arriving on standard input are checked.
+- The optional node choice: no `--nodelist` by default, added only when `TALON_NODELIST` is set.

@@ -51,6 +51,7 @@ BASE=(--nodes=1 --time=00:10:00)
 [ -z "$TALON_PARTITION" ] || BASE+=(--partition="$TALON_PARTITION")
 [ -z "$TALON_ACCOUNT" ] || BASE+=(--account="$TALON_ACCOUNT")
 [ -z "$TALON_QOS" ] || BASE+=(--qos="$TALON_QOS")
+[ -z "$TALON_NODELIST" ] || BASE+=(--nodelist="$TALON_NODELIST")   # optional node choice; blank = any node of the partition
 TYPE="${TALON_GPU_TYPE:-h100}"
 echo "== which GPU request forms does the scheduler accept? (sbatch --test-only: no job is created) =="
 echo "   base options: ${BASE[*]}"
