@@ -340,3 +340,8 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Probe additions (still read-only, tests extended):** it now also prints `module show miniforge3-python3.12`, which storage-usage commands exist (`quota`, `lfs`, `mmlsquota`, ...) and the size of the home folder, so the 500 GB limit and the used/total display can be found.
 - **Code and tests simplified:** `open_teacher_test.py` now supports the two cluster backends only (Redhawk and Talon); the Python suite has 46 checks (8 calls at once without repeats, the smoke cap check and the dry run now run on the Redhawk backend). All suites pass: Python 46 / 23 / 15, Redhawk shell 31/10/11/10/39, Talon shell 41/19/55. Nothing under `configs/redhawk/` changed.
 - **Next:** Jaxson runs the key-pair and first-login commands one approval at a time, then the probe wrapper and pastes the output; settings and docs are then updated from it. GPU tests stay a separate decision.
+
+### Talon: first login and key-pair login done (2026-11-06, still $0)
+- **What happened:** Jaxson made the key pair, logged in once (password and Duo push), and the public key was installed on Talon. A test with passwords forbidden (`BatchMode`) printed `KEY_LOGIN_OK`, so key login works and skips Duo. The `Host talon` entry now names the key (`IdentityFile`, `IdentitiesOnly`).
+- **Observed on the first login:** the account `buggjm` is active; groups are `hpcusers` and `leed13-shared`; there was no `~/.ssh` folder on Talon before the key was installed. Recorded in `recovery/talon_ssh_access.md` (with the public-key fingerprint only).
+- **Next:** run the read-only probe (`bash configs/talon/run_probe_local.sh`) and paste its output; settings and docs are then filled in from it.

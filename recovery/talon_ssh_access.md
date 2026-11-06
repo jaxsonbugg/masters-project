@@ -1,7 +1,7 @@
 # Recovery: Talon SSH access, the `talon` command and the key pair
 
 **What it is:** The SSH config entry, one-word command and key pair that log this PC into Miami's Talon GPU cluster.
-**Status (2026-11-06):** the config entry and `talon.cmd` exist on this PC. The first login and the key-pair installation are being done step by step (see "Key pair" below); fields marked `<TO FILL IN>` are completed as each step finishes.
+**Status (2026-11-06):** the first login worked, the public key is installed on Talon and key login works without a password or Duo (`KEY_LOGIN_OK` from a `BatchMode` test). The read-only probe is the next step.
 **Location:** `C:\Users\Buggb\.ssh\config` (entry `Host talon`), `C:\Users\Buggb\bin\talon.cmd`, and the key pair `C:\Users\Buggb\.ssh\talon_ed25519` (private, never shared) and `talon_ed25519.pub` (public).
 **Approx. size:** a few hundred bytes for the config and command; the keys are about 400 and 100 bytes.
 **Backed up?** No (only this recipe is in the repository). The private key must never be copied into the repository, a chat or an email. The account itself is managed by Miami.
@@ -11,7 +11,8 @@
 - **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** the Talon account uses the same user name as Redhawk (`buggjm`); the VPN is needed off campus; using Talon costs nothing; storage limit 500 GB (ask for more if needed); one job may run up to 3 days; own software may be installed (conda environments); contact: Dr. Mueller.
 - **OBSERVED (2026-11-05):** the head node answers on port 22 only while the Miami VPN is connected.
 - **Documented (Miami IT news and research-computing pages):** 4 GPU nodes with 4 H100 each; student accounts via "Research Cluster Account Sponsorships".
-- **UNVERIFIED:** the Duo method on Talon, whether a key login also skips Duo, GPU-hour allocation.
+- **OBSERVED (2026-11-06):** the first login worked with password and Duo push (option 1); the user name `buggjm` worked; groups are `hpcusers` and `leed13-shared`; there was no `~/.ssh` folder on Talon before the key was installed (a hint, not proof, that the home folder is not shared with Redhawk: probe section 1b settles it); key login skips Duo.
+- **UNVERIFIED:** GPU-hour allocation.
 
 ## Host key (decision recorded 2026-11-06)
 The first time ssh connects it shows the server's *fingerprint* (a short hash of its public host key). Normally you compare it with a value Research Computing gives you. Jaxson decided to trust the server as given, without comparing fingerprints; the server is reachable only on the Miami VPN. To keep one safeguard, the first login uses `-o StrictHostKeyChecking=accept-new`: ssh saves the key on that first connection and from then on **refuses automatically if the key ever changes** (a warning "REMOTE HOST IDENTIFICATION HAS CHANGED" means stop and tell Research Computing). The probe wrapper (`configs/talon/run_probe_local.sh`) uses `StrictHostKeyChecking=yes`, so it never accepts a new key by itself.
@@ -24,7 +25,7 @@ The first time ssh connects it shows the server's *fingerprint* (a short hash of
        User buggjm
        ServerAliveInterval 60
    ```
-   After the key works, add two lines to the block: `IdentityFile ~/.ssh/talon_ed25519` and `IdentitiesOnly yes`.
+   Add two more lines to the block (done once the key worked): `IdentityFile ~/.ssh/talon_ed25519` and `IdentitiesOnly yes`.
 2. Create `C:\Users\Buggb\bin\talon.cmd` containing the single line `@ssh talon %*` (the folder is already on the user PATH, see `recovery/redhawk_ssh_access.md`).
 3. Connect the Miami VPN, then test: `ssh -o StrictHostKeyChecking=accept-new talon "hostname; id; echo CONNECTED"`. Log in with your Miami password and Duo.
 
@@ -43,8 +44,8 @@ The first time ssh connects it shows the server's *fingerprint* (a short hash of
 - Key login still asks for Duo: the server requires it regardless of keys; that is allowed by policy, so keep using password + Duo (the probe is a single login).
 
 ## Record these as the steps finish (fill in)
-- Date of first login: `<TO FILL IN>`; Duo method: `<TO FILL IN>`; user name that worked: `<TO FILL IN>` (expected `buggjm`)
-- Key installed on: `<TO FILL IN>`; public-key fingerprint (from `ssh-keygen -lf ~/.ssh/talon_ed25519.pub`; public, safe to record): `<TO FILL IN>`; key login skips Duo: `<TO FILL IN>`
+- Date of first login: 2026-11-06; Duo method: push (option 1); user name that worked: `buggjm`
+- Key installed on: 2026-11-06; public-key fingerprint (from `ssh-keygen -lf ~/.ssh/talon_ed25519.pub`; public, safe to record): `SHA256:pXePaflorB2GPHHHCkxKSEGlDuCGvGQIIBMwywM5gWw` (ED25519); key login skips Duo: yes
 
 ## Versions, seeds, and settings
 - Source: Windows OpenSSH 9.5p2 (`ssh -V`).
@@ -59,4 +60,4 @@ The first time ssh connects it shows the server's *fingerprint* (a short hash of
 Re-create the config entry and `talon.cmd` as above (a minute, no cost). If the key pair is lost, make a new one and install its public key again (the old line can stay or be removed). If the account is gone or expired, renew the sponsorship (a faculty sponsor must approve) or email ResComp@MiamiOH.edu.
 
 ## Last updated
-2026-11-06 (account, VPN, no cost, 500 GB and 3-day limit from the Research Computing meeting; host-key decision; key-pair procedure)
+2026-11-06 (first login, key installed and tested; meeting answers; host-key decision)
