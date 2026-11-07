@@ -3,7 +3,7 @@
 **What it is:** The four student base checkpoints, Pythia 70M, 160M, 410M and 1B deduped, final `step143000` revision, exactly as distributed on Hugging Face.
 **Location:** `C:\masters_project_large\models\pythia\pythia-<size>-deduped\step143000\` (`models_pythia` in `configs/paths.yaml`)
 **Approx. size:** about 4.6 GB (0.28 + 0.65 + 1.62 + 2.02 GB of safetensors, plus small config and tokenizer files)
-**Backed up?** No (only this recipe is in the repository). Exact versions and hashes are in `docs/model_versions.md`.
+**Backed up?** No (only this recipe is in the repository). Exact versions and hashes are in `docs/models/model_versions.md`.
 
 ## How to rebuild
 1. Create the folders and download each file from the pinned commit (Git Bash; `curl` is resumable with `-C -`). A 404 on the optional `generation_config.json` removes that file and continues; any other response that is not 200 or 206 deletes the bad file and stops the script:
@@ -25,7 +25,7 @@
      done
    done
    ```
-2. Compare the hashes with `docs/model_versions.md` (section 4): `cd <folder> && sha256sum *`.
+2. Compare the hashes with `docs/models/model_versions.md` (section 4): `cd <folder> && sha256sum *`.
 3. Do not download `pytorch_model.bin` or the 12.2 GB `optimizer.pt` of the 1B repo.
 4. Do not convert, re-save or edit any file. The load dtype (`torch.float16`) is set in code at load time, never by changing the files.
 5. Optional: set the files read-only (`attrib +R <folder>\* /S` in a Windows prompt).
@@ -38,8 +38,8 @@
 
 ## Verification
 - Expected file count / size: 5 files per model (6 for 1B, which also has `generation_config.json`). `model.safetensors` sizes: 281,715,176 / 649,308,728 / 1,621,370,224 / 2,023,586,192 bytes.
-- Expected checksum: `model.safetensors` SHA-256 values are in `docs/model_versions.md` and match the Hugging Face file listing.
-- Quick sanity check: once Python exists, load each model with `torch_dtype=torch.float16`, check the parameter count and that every parameter dtype is `torch.float16` (procedure in `docs/model_versions.md`, section 3).
+- Expected checksum: `model.safetensors` SHA-256 values are in `docs/models/model_versions.md` and match the Hugging Face file listing.
+- Quick sanity check: once Python exists, load each model with `torch_dtype=torch.float16`, check the parameter count and that every parameter dtype is `torch.float16` (procedure in `docs/models/model_versions.md`, section 3).
 
 ## If it is lost
 Re-run step 1 and check the hashes. About 4.6 GB, a few minutes, no cost. If a hash does not match, stop and compare against the Hugging Face file listing for the pinned commit before using the file. If Hugging Face removes a repo, the SHAs and hashes recorded here identify the exact files to look for elsewhere.

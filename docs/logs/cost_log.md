@@ -1,13 +1,13 @@
 # Cost Log
 
-This file records every dollar the project spends, meaning every paid API call, including test calls. Cluster time on Talon and Redhawk is free and goes in `docs/compute_log.md` instead.
+This file records every dollar the project spends, meaning every paid API call, including test calls. Cluster time on Talon and Redhawk is free and goes in `docs/logs/compute_log.md` instead.
 
 **When a paid call happens:**
 1. Before the run, state the expected cost and a hard cap.
 2. Afterwards, add one row here in the same session.
 3. Compare the actual cost with the expected cost in the note.
 
-The only paid service planned is the answer verifier (ChatGPT, Claude or another frontier model, to be decided; `docs/workflow.md` Section 10.2).
+The only paid service planned is the answer verifier (ChatGPT, Claude or another frontier model, to be decided; `docs/methodology/workflow.md` Section 10.2).
 
 **How a row's cost is computed.** API providers charge per *token* (a chunk of text, about three quarters of a word), with separate prices for tokens sent (input) and tokens written (output, including any hidden "thinking" tokens):
 
@@ -32,4 +32,4 @@ For example, a verifier call with 1,500 input and 400 output tokens, at $2 and $
 | 2026-10-15 | 100-question batch BM0021 to BM0120 (v6) | Claude API, `claude-sonnet-5-5` | Batch, effort medium | 207,947 | 52,032 | 0.4681 | 1.41 | Expected ~$0.47 |
 | 2026-10-15 | 3 regeneration calls for that batch | Claude API, `claude-sonnet-5-5` | standard, effort medium | 6,098 | 1,464 | 0.0268 | 1.44 | Expected $0.03 to $0.09 |
 
-**Total spent to date: $1.44.** Every row above is a Claude-era benchmark trial. Claude is no longer the teacher (`docs/workflow.md` Section 2.2), and those outputs are archived under the Git tag `pre-cleanup-claude-era`, where the original detailed version of this file, with per-trial arithmetic and the old pilot budget, can also be read.
+**Total spent to date: $1.44.** Every row above is a Claude-era benchmark trial. Claude is no longer the teacher (`docs/methodology/workflow.md` Section 2.2), and those outputs are archived under the Git tag `pre-cleanup-claude-era`, where the original detailed version of this file, with per-trial arithmetic and the old pilot budget, can also be read.

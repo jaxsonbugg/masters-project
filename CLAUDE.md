@@ -4,7 +4,7 @@ Masters project (Jaxson Bugg, Miami University): distilling a large open-weight 
 
 Where things are:
 - **`README.md`** is the short technical overview: research question, design, status and repository map. Keep it general, keep it technically written, and keep project history out of it.
-- **`docs/workflow.md`** is the source of truth for specifics: success criteria (including the dated criterion 4 deviation), design, phase checklists, safeguards, metrics, statistics, storage, risks and open decisions. Read it at the start of a session. Update it when work is completed or a decision changes.
+- **`docs/methodology/workflow.md`** is the source of truth for specifics: success criteria (including the dated criterion 4 deviation), design, phase checklists, safeguards, metrics, statistics, storage, risks and open decisions. Read it at the start of a session. Update it when work is completed or a decision changes.
 - **`docs/progress_update.md`** is the dated history. Never rewrite past entries; add new ones.
 
 The rules below are the working notes for every session.
@@ -25,14 +25,14 @@ Write in American English (artifact, behavior, analyze).
 
 ## Record every compute run and every cost (standing rule)
 
-- **Compute log (`docs/compute_log.md`).** Every cluster job (Redhawk or Talon), every scheduler test, and every measured local run is recorded in the same session. The entry is detailed enough that anyone can reproduce or audit it:
+- **Compute log (`docs/logs/compute_log.md`).** Every cluster job (Redhawk or Talon), every scheduler test, and every measured local run is recorded in the same session. The entry is detailed enough that anyone can reproduce or audit it:
   - UTC submit, start and end times; cluster, partition, node and job ID;
   - purpose and stage; GPUs (count and type); engine and version; model, revision and quantization;
   - key settings; queue wait, wall time and GPU-hours; peak GPU memory;
   - output folder; outcome; and the related progress entry.
 
   A job that has not been reviewed yet is still logged, marked as such.
-- **Cost log (`docs/cost_log.md`).** Every paid call (for example a ChatGPT or Claude verifier, even a test call) is recorded with UTC time, purpose, service and model, mode, tokens, dollars and the running total. State the expected cost before a paid run and compare the actual afterward. Never make a paid call without logging it. Cluster time is free and goes only in the compute log.
+- **Cost log (`docs/logs/cost_log.md`).** Every paid call (for example a ChatGPT or Claude verifier, even a test call) is recorded with UTC time, purpose, service and model, mode, tokens, dollars and the running total. State the expected cost before a paid run and compare the actual afterward. Never make a paid call without logging it. Cluster time is free and goes only in the compute log.
 
 ## Working rules
 
@@ -59,13 +59,14 @@ Write in American English (artifact, behavior, analyze).
   3. *Training precision recipe:* decided in Phase 8.
 
   Preserve the pinned checkpoints exactly as distributed, verify the loaded dtype and parameter count, and document the final mixed-precision recipe once the training environment is set. The teacher's precision (BF16 on Talon, 4-bit on the Redhawk fallback) is always stated with its results.
-- **Benchmark isolation.** Never use benchmark questions in any training, prompting or tuning step. Benchmark and training data use separate prompts, separate IDs and decontamination (`docs/workflow.md` Section 4).
+- **Benchmark isolation.** Never use benchmark questions in any training, prompting or tuning step. Benchmark and training data use separate prompts, separate IDs and decontamination (`docs/methodology/workflow.md` Section 4).
 - **Consistency.** Keep procedures identical across student sizes unless a deviation is logged. Log all model versions, seeds, hyperparameters and job IDs so runs are reproducible. Flag any deviation from the plan or any surprising result rather than silently working around it.
 - **Clusters.** Never submit a job, download to a cluster, or change cluster files without the owner's approval for that step. Talon scripts stay drafts until `SETTINGS_REVIEWED=yes`. Redhawk scripts (`configs/redhawk/`) are the tested fallback; do not change them without a reason that is logged.
 - **Recovery docs.** Anything stored outside the repository (models, datasets, caches, environments, large logs) needs a file in `recovery/`, written from `recovery/_TEMPLATE.md` when the step is done. Include the source, exact commands, versions, seeds, expected size and checksum, and what to do if it is lost. Teacher outputs cost GPU-hours and are not deterministic, so their recovery doc says so, and a compressed backup of the verified 50k set is kept.
 - **Paths.** Read every storage location from `configs/paths.yaml`; never hardcode paths in code.
+- **Docs layout.** Every file in `docs/` lives in a topic subfolder: `methodology/`, `models/`, `clusters/`, `logs/`, `guides/`, or a new, clearly named folder when none fits (for example `meetings/`, `report/`). The only exception is `docs/progress_update.md`, which stays at the `docs/` root. When adding, moving or renaming a doc, update every reference to it (search the whole repository) and log the move in the progress log.
 - **Git.**
   - Commit every change with a clear message and push it to GitHub.
   - Never commit secrets or API keys, model weights, or anything from `C:\masters_project_large\`.
-  - Command notes are in `docs/github_notes.md`.
-  - The Claude-era material (the original teacher, ruled out by Anthropic's terms) is archived under the tag `pre-cleanup-claude-era`; see `docs/workflow.md` Section 2.2.
+  - Command notes are in `docs/guides/github_notes.md`.
+  - The Claude-era material (the original teacher, ruled out by Anthropic's terms) is archived under the tag `pre-cleanup-claude-era`; see `docs/methodology/workflow.md` Section 2.2.

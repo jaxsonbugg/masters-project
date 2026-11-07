@@ -6,7 +6,7 @@
 **Approx. size:** a few hundred bytes for the config and command; the keys are about 400 and 100 bytes.
 **Backed up?** No (only this recipe is in the repository). The private key must never be copied into the repository, a chat or an email. The account itself is managed by Miami.
 
-## What is known and not known (evidence labels as in `docs/talon_setup.md`)
+## What is known and not known (evidence labels as in `docs/clusters/talon_setup.md`)
 - **TOLD BY RESEARCH COMPUTING (message, 2026-11-05):** the login (head) node is `mualhphp01.hpc.miamioh.edu`; the GPU partition is `talon` (`--partition=talon`); `--nodelist=mualhpgp01.mpi` places a job on GPU node 1 (an option, not a requirement; we let the scheduler choose).
 - **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** the Talon account uses the same user name as Redhawk (`buggjm`); the VPN is needed off campus; using Talon costs nothing; storage limit 500 GB (ask for more if needed); one job may run up to 3 days; own software may be installed (conda environments); contact: Dr. Mueller.
 - **OBSERVED (2026-11-05):** the head node answers on port 22 only while the Miami VPN is connected.

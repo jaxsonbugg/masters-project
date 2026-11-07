@@ -31,7 +31,7 @@ BIN="$QT_BUILD/build/bin/llama-server"
 [ -x "$BIN" ] || die "llama-server is missing at $BIN."
 # The build counts as good if its own log ends with BUILD OK, OR if verify_build.sh has recorded a verification of THIS very
 # binary (same commit, same SHA-256). The second route exists because the first compile's own check ran on a CPU node
-# without a GPU driver and failed although the binary was fine (see docs/cluster_selection.md).
+# without a GPU driver and failed although the binary was fine (see docs/clusters/cluster_selection.md).
 BLOG="$QT_REPO/qt_build_${BUILD_JOB}.log"; VER="$QT_ROOT/build_verified.txt"
 if [ -f "$BLOG" ] && grep -q "BUILD OK" "$BLOG"; then
   ok "the build log ends with BUILD OK"

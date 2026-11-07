@@ -40,7 +40,7 @@ Tip: `git status` after each step shows what moved from "changed" to "staged" to
 
 ## Tags (bookmarks for important commits)
 
-A *tag* is a permanent name for one commit, so it can be found again after files are deleted. The tag `pre-cleanup-claude-era` marks the last commit before the Claude-era material was removed (2026-11-06; see `docs/workflow.md` Section 2.2).
+A *tag* is a permanent name for one commit, so it can be found again after files are deleted. The tag `pre-cleanup-claude-era` marks the last commit before the Claude-era material was removed (2026-11-06; see `docs/methodology/workflow.md` Section 2.2).
 
 | Command | What it does |
 |---|---|

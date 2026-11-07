@@ -11,7 +11,7 @@ so the data we design fits how they really behave.
 WHAT THE SCRIPT DOES (in plain steps)
 1. Loads each Pythia model from the pinned local copy (never from the internet).
 2. Checks the model: counts its parameters, checks the number type (dtype) of its weights,
-   and reads the number type stored in the file. This closes open checks in docs/model_versions.md.
+   and reads the number type stored in the file. This closes open checks in docs/models/model_versions.md.
 3. Checks the tokenizers (the part that cuts text into tokens). The 1B tokenizer files differ
    from the smaller ones, so we test whether the same text becomes the same tokens.
 4. Gives each model 16 questions (general knowledge, arithmetic, statistics, R code, ...) in 3
@@ -43,7 +43,7 @@ import yaml
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # ---------------------------------------------------------------------------------------
-# Fixed facts about the models (copied from docs/model_versions.md; do not edit casually).
+# Fixed facts about the models (copied from docs/models/model_versions.md; do not edit casually).
 # "sha" is the pinned Hugging Face commit, "official_params" is the model card's count.
 # ---------------------------------------------------------------------------------------
 MODELS = {
@@ -201,7 +201,7 @@ def main():
         model.eval()
         load_seconds = round(time.time() - t0, 2)
 
-        # --- model facts (closes the open checks in docs/model_versions.md section 3) ---
+        # --- model facts (closes the open checks in docs/models/model_versions.md section 3) ---
         n_params = sum(p.numel() for p in model.parameters())
         loaded_dtypes = sorted({str(p.dtype) for p in model.parameters()})
         info = {

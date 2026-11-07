@@ -2,15 +2,15 @@
 open_teacher_test.py - run the benchmark-generation prompt on an OPEN-WEIGHT teacher (Qwen3.6-27B) and score it.
 
 WHAT THIS IS AND WHY
-The project's teacher is the open-weight model Qwen3.6-27B (docs/workflow.md Section 2.1). This script sends the
+The project's teacher is the open-weight model Qwen3.6-27B (docs/methodology/workflow.md Section 2.1). This script sends the
 benchmark-generation prompt to a running Qwen server on one of Miami's clusters, saves every reply, and scores the
 replies with the same checks used for every generated question. It is used to test a deployment on 100 fixed
 question "slots" (BM0021 to BM0120) before the real benchmark run. Two backends exist:
   talon   - BF16 (full precision) weights served by vLLM on Miami's Talon cluster (H100, free). The primary cluster;
-            its settings stay drafts until reviewed (configs/talon, docs/talon_setup.md).
+            its settings stay drafts until reviewed (configs/talon, docs/clusters/talon_setup.md).
   redhawk - a 4-bit file (Unsloth Q4_K_M GGUF) served by llama.cpp on Miami's Redhawk cluster (2x V100, free). The
             fallback.
-The planned precision comparison is 4-bit versus BF16, both on Talon (docs/workflow.md Section 2.1); it needs a
+The planned precision comparison is 4-bit versus BF16, both on Talon (docs/methodology/workflow.md Section 2.1); it needs a
 Talon 4-bit backend that is not built yet. `compare` gives paired statistics for any two scored runs on the same
 slots.
 
@@ -325,7 +325,7 @@ def cmd_run(args):
 
     meta_path = run_dir / "run_log.json"
     new_meta = {
-        "use": "dev_test_only", "test": "Qwen3.6-27B deployment test (docs/workflow.md Section 2.1)",
+        "use": "dev_test_only", "test": "Qwen3.6-27B deployment test (docs/methodology/workflow.md Section 2.1)",
         "backend": backend, "model": cfg["model"], "precision": cfg["precision"], "weights": cfg["weights"],
         "engine": cfg["engine"], "extra_params": cfg["extra"], "sampling": SAMPLING, "max_tokens": max_tokens,
         "slot_set": "dev_smoke" if kind == "smoke" else "main", "slot_ids": [s["item_id"] for s in slots],

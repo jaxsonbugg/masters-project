@@ -15,8 +15,8 @@ Why it matters to this project: Talon is now the project's **primary cluster** f
 whole-node job (2026-11-04). Its generation speed has not been measured yet. Talon's H100s can hold the full-precision model and serve many requests at once. **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** using Talon costs
 us nothing, one job may run at most 3 days, and we have 500 GB of storage (more must be requested). How many GPU-hours we may use in total is **UNVERIFIED**.
 
-The Redhawk pipeline job 2511641 has finished, but its results have **not been reviewed yet** (`docs/compute_log.md`, entry 7). It is no longer a
-comparison baseline. The planned precision comparison is **4-bit versus BF16, both on Talon** (`docs/workflow.md` Section 2.1), so hardware does not
+The Redhawk pipeline job 2511641 has finished, but its results have **not been reviewed yet** (`docs/logs/compute_log.md`, entry 7). It is no longer a
+comparison baseline. The planned precision comparison is **4-bit versus BF16, both on Talon** (`docs/methodology/workflow.md` Section 2.1), so hardware does not
 differ between the two runs. Redhawk stays the tested fallback: **nothing under `configs/redhawk/` was changed**.
 
 ## 2. What is known and what is not
@@ -227,7 +227,7 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 7. **Stage A** (`submit_pipeline.sh smoke_a`): read it before anything else. This is also where the real vLLM log and reply fields replace the fakes.
 8. **Stage T** for each layout (1 GPU, 2 GPUs, ...), then `throughput_report.py`; choose the layout together.
 9. **Stage B and the main run** (or `pipeline`) with the chosen layout: the BF16 side of the 4-bit versus BF16 comparison on Talon. The 4-bit side
-   needs a Talon 4-bit backend (format and engine still open, `docs/workflow.md` Section 10.2).
+   needs a Talon 4-bit backend (format and engine still open, `docs/methodology/workflow.md` Section 10.2).
 10. A **new plan** for the 200,000-example work, using the measured GPU-hours.
 
 ## 10. What could go wrong

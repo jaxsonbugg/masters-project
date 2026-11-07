@@ -44,7 +44,7 @@ export LLAMA_TAG="b11960"                                            # released 
 export LLAMA_EXPECT_COMMIT="8642541b255bfb5dc39cd351a178be09013a55d6"
 # The only V100 evidence found (Atlas3D, 2026-10-20) used commit f74e2fa6a31cc33ab4ee4ae516641cfe62df3924 plus a patch
 # for a flash-attention dispatch crash that was NOT confirmed upstream. If the smoke test crashes in flash attention,
-# the contingency ladder in recovery/redhawk_qwen_test.md is: (1) QT_FA=off, (2) that commit with the patch.
+# the contingency ladder is: (1) QT_FA=off, (2) that commit with the patch (docs/progress_update.md, 2026-11-04, "The one-job pipeline built").
 
 # --- the 4-bit weights: pinned commit and SHA-256 (Hugging Face API, read 2026-11-04) -----------------------------
 export GGUF_REPO="unsloth/Qwen3.6-27B-GGUF"

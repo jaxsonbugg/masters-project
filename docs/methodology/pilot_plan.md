@@ -1,6 +1,6 @@
 # Pilot Plan: a 1k Example, 70M Model, End-to-End Run (Phases 3 and 4)
 
-Prepared 2026-10-06; rewritten 2026-11-07 for the current plan (teacher Qwen3.6-27B on Miami's Talon cluster, Redhawk as the fallback). This document explains in plain language what the pilot does and why, in the order things happen. The status of each step lives in the Phase 3 and Phase 4 checklists in `docs/workflow.md` Section 5. Cluster jobs and GPU time are recorded in `docs/compute_log.md`; any paid call (only the verifier could be one) is recorded in `docs/cost_log.md`.
+Prepared 2026-10-06; rewritten 2026-11-07 for the current plan (teacher Qwen3.6-27B on Miami's Talon cluster, Redhawk as the fallback). This document explains in plain language what the pilot does and why, in the order things happen. The status of each step lives in the Phase 3 and Phase 4 checklists in `docs/methodology/workflow.md` Section 5. Cluster jobs and GPU time are recorded in `docs/logs/compute_log.md`; any paid call (only the verifier could be one) is recorded in `docs/logs/cost_log.md`.
 
 ## The big idea
 
@@ -8,9 +8,9 @@ The full project asks how small a model can be and still be good at statistics a
 
 **Distillation** is the name for what we are doing. A big "teacher" model (Qwen3.6-27B, an open-weight model with about 27 billion parameters) writes example questions with good answers. A tiny "student" model (Pythia 70M, about 70 million parameters) is then trained to imitate those answers. The hope is that the student picks up useful skill from the teacher while being far cheaper to run. **Fine-tuning** is the training step itself: take the student, which already knows general English text from its original training, and keep training it on our examples so it specializes.
 
-**Why Qwen and not Claude.** The project started with Claude as the teacher, but Anthropic confirmed that Claude outputs may not be used to train the students. Qwen3.6-27B's license (Apache 2.0) allows it, and because its weights are public we run it on Miami's own GPUs. That changes what "cost" means in this pilot: cluster time is free, so generation, training and evaluation cost no dollars. The real budget is GPU-hours, queue waits, the 3-day job limit and storage, and those are what we measure. The full reasoning is in `docs/workflow.md` Sections 2.1 and 2.2.
+**Why Qwen and not Claude.** The project started with Claude as the teacher, but Anthropic confirmed that Claude outputs may not be used to train the students. Qwen3.6-27B's license (Apache 2.0) allows it, and because its weights are public we run it on Miami's own GPUs. That changes what "cost" means in this pilot: cluster time is free, so generation, training and evaluation cost no dollars. The real budget is GPU-hours, queue waits, the 3-day job limit and storage, and those are what we measure. The full reasoning is in `docs/methodology/workflow.md` Sections 2.1 and 2.2.
 
-**Where things run.** **Talon** (Miami; 4 nodes, each with 4 NVIDIA H100 NVL GPUs) is the primary cluster for generation, fine-tuning and evaluation. **Redhawk** (Miami; older V100 GPUs with 16 GB of memory each) is the fallback. Both are shared computers that you do not use directly: you submit a **job** to a scheduler (Slurm), which queues it and runs it when the requested GPUs are free. Cluster facts are in `docs/cluster_selection.md` and `docs/talon_setup.md`.
+**Where things run.** **Talon** (Miami; 4 nodes, each with 4 NVIDIA H100 NVL GPUs) is the primary cluster for generation, fine-tuning and evaluation. **Redhawk** (Miami; older V100 GPUs with 16 GB of memory each) is the fallback. Both are shared computers that you do not use directly: you submit a **job** to a scheduler (Slurm), which queues it and runs it when the requested GPUs are free. Cluster facts are in `docs/clusters/cluster_selection.md` and `docs/clusters/talon_setup.md`.
 
 ## Step 0 (done 2026-10-06): see how the student actually behaves
 
@@ -38,7 +38,7 @@ Because of what Step 0 showed, every question gets a **short canonical answer** 
 
 ### What the Claude-era trials taught us
 
-Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and tested with Claude in small trials (120 questions in total, $1.44, none of them in the benchmark; archived under the Git tag `pre-cleanup-claude-era`, summary in `docs/workflow.md` Section 2.2). Qwen now uses the same pipeline and the same prompt (v6, SHA-256 `348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4`). Four lessons carry over:
+Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and tested with Claude in small trials (120 questions in total, $1.44, none of them in the benchmark; archived under the Git tag `pre-cleanup-claude-era`, summary in `docs/methodology/workflow.md` Section 2.2). Qwen now uses the same pipeline and the same prompt (v6, SHA-256 `348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4`). Four lessons carry over:
 
 - **R writes the number keys.** In the first trial, 3 of the 8 numerical keys the model typed were wrong even when its own working was right. Example: a question asked for a correlation; the working computed 36 / sqrt(40 x 60) = 0.735, but the typed key said 0.8. Now the model writes R code that recomputes the answer, our `verify` command runs that code on this computer, and R's printed number becomes the key. The model's typed number is kept only for comparison.
 - **Rounding comes last.** The chance of exactly 2 heads in 5 fair tosses is exactly 0.3125. The usual rule rounds it to 0.313, but R's `round(0.3125, 3)` gives 0.312 (R rounds an exact tie toward the even digit). So R prints the exact value, the key has the decimals the question asks for, and grading allows an error of half the last decimal place, so a student who rounds a tie either way is marked right.
@@ -48,8 +48,8 @@ Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and te
 ### What has to happen before the 1,000-question run
 
 1. **Fix slot variety.** Change the slot design so no combination repeats more than necessary (more subtopics, varied settings and contexts), then re-run `dupcheck`, which compares every question with every earlier one by text similarity, once with numbers kept and once with numbers masked, and lists near-copies for review. Success looks like few or no flagged pairs on a development batch.
-2. **Bring up Talon.** Pin the vLLM version (vLLM is the program that loads the model onto the GPUs and answers requests; the model card requires 0.19.0 or later), settle how jobs request GPUs, review the settings file, run a scheduler acceptance test, download the BF16 weights, then run smoke stage A (a few questions, to see that everything works) and the throughput stage T (how many tokens per second Talon delivers). The exact steps are in `docs/talon_setup.md` Section 9. Talon's nodes are shared between jobs and a job may run for at most 3 days, so long runs are split into pieces that can be restarted.
-3. **Review the Redhawk fallback run.** Redhawk job 2511641 (the Qwen pipeline with the 4-bit model) has finished but nobody has looked at its results. It is reviewed and recorded in `docs/compute_log.md`, because it shows whether the fallback deployment works.
+2. **Bring up Talon.** Pin the vLLM version (vLLM is the program that loads the model onto the GPUs and answers requests; the model card requires 0.19.0 or later), settle how jobs request GPUs, review the settings file, run a scheduler acceptance test, download the BF16 weights, then run smoke stage A (a few questions, to see that everything works) and the throughput stage T (how many tokens per second Talon delivers). The exact steps are in `docs/clusters/talon_setup.md` Section 9. Talon's nodes are shared between jobs and a job may run for at most 3 days, so long runs are split into pieces that can be restarted.
+3. **Review the Redhawk fallback run.** Redhawk job 2511641 (the Qwen pipeline with the 4-bit model) has finished but nobody has looked at its results. It is reviewed and recorded in `docs/logs/compute_log.md`, because it shows whether the fallback deployment works.
 4. **Compare 4-bit and BF16 on Talon.** BF16 is a 16-bit number format, about 2 bytes per parameter: the full Qwen weights are about 53,011 MiB. A 4-bit version stores about half a byte per parameter: the 4-bit file used on Redhawk is 16.8 GB, roughly a third of the size, and usually faster. Compression can also cost accuracy. So the same development slots are answered twice on Talon, once with each version, and we compare the share of usable questions, the share of correct keys, and the speed. If 4-bit is just as good, it could speed up the 200,000-example generation; if not, BF16 stays. Both runs are on Talon so the hardware is the same. The Talon 4-bit setup is not built yet.
 
 ### Generating and checking the benchmark
@@ -60,7 +60,7 @@ Qwen then writes about 1,000 questions on Talon. Each question that fails the au
 
 1. **Run the code.** For numeric answers and R code questions, R computes the key or runs the check. An R check must accept the key and reject three deliberately wrong answers; one that accepts a wrong answer is flagged. A computer running R does not share Qwen's blind spots.
 2. **Blind re-solve.** A separate Qwen call solves each question without being shown the key. Where it disagrees with the key, we look by hand. This catches careless errors but not systematic ones.
-3. **A different model family.** A frontier model trained by a different company checks all multiple-choice and conceptual keys and a sample of the rest. Which one is still to be decided (ChatGPT, Claude or another). It is used only as a checker and never writes training text or questions. Its calls are paid, so the expected cost is stated before the run and every call is logged in `docs/cost_log.md`.
+3. **A different model family.** A frontier model trained by a different company checks all multiple-choice and conceptual keys and a sample of the rest. Which one is still to be decided (ChatGPT, Claude or another). It is used only as a checker and never writes training text or questions. Its calls are paid, so the expected cost is stated before the run and every call is logged in `docs/logs/cost_log.md`.
 4. **Your own spot-check** of a sample, which is also how you learn what the questions look like and how the leftover error rate is measured.
 
 Even after all this we report that the teacher's score on its own exam is probably a bit optimistic, with the verifier's agreement rate next to it. The benchmark is then frozen (hashed and stored read-only) before any training example exists.
@@ -87,7 +87,7 @@ If this set passes, it later becomes the 1,000 example subset of the bigger trai
 
 ## Step 4: train the 70M student
 
-We take the original Pythia 70M model (the pinned checkpoint described in `model_versions.md`) and fine-tune it on the 1,000 examples on Talon (Redhawk as the fallback). The training precision recipe used for the pilot (for example mixed precision in BF16, which the H100 supports) is recorded with the run; the final recipe for the full grid is fixed in Phase 8 (`model_versions.md` Section 3). We record in `docs/compute_log.md` how long the job took, how many GPUs it held, the GPU-hours (GPUs x hours: one GPU for 30 minutes is 0.5 GPU-hours), the peak GPU memory and the queue wait. Peak memory matters because it helps predict how the 1B model and the larger data sets will fit.
+We take the original Pythia 70M model (the pinned checkpoint described in `model_versions.md`) and fine-tune it on the 1,000 examples on Talon (Redhawk as the fallback). The training precision recipe used for the pilot (for example mixed precision in BF16, which the H100 supports) is recorded with the run; the final recipe for the full grid is fixed in Phase 8 (`model_versions.md` Section 3). We record in `docs/logs/compute_log.md` how long the job took, how many GPUs it held, the GPU-hours (GPUs x hours: one GPU for 30 minutes is 0.5 GPU-hours), the peak GPU memory and the queue wait. Peak memory matters because it helps predict how the 1B model and the larger data sets will fit.
 
 ## Step 5: take the exam
 
@@ -95,21 +95,21 @@ We run the frozen benchmark through three models and compare their scores. The p
 
 - **Untrained Pythia 70M**: the starting point. Any improvement has to be measured against this.
 - **Fine-tuned Pythia 70M**: did training on 1,000 examples help?
-- **The teacher (Qwen3.6-27B)**, run once on Talon: the ceiling we compare against. The project's main metric is the student's accuracy as a fraction of the teacher's. A teacher score below 80% is a red flag (`docs/workflow.md` Section 1.1); the first remedy is the same Qwen model at a higher precision or with more thinking, not a different model.
+- **The teacher (Qwen3.6-27B)**, run once on Talon: the ceiling we compare against. The project's main metric is the student's accuracy as a fraction of the teacher's. A teacher score below 80% is a red flag (`docs/methodology/workflow.md` Section 1.1); the first remedy is the same Qwen model at a higher precision or with more thinking, not a different model.
 
-**Timing for criterion 4b.** The same runs also measure speed. Criterion 4b (`docs/workflow.md` Section 1.2) asks that a student use at least 10x less GPU time per benchmark question than the teacher and have at least 10x lower median latency (the time from sending one question to receiving the full answer), measured on the same GPU type (H100 NVL) with the same serving settings and the same maximum number of new tokens. Worked example from the workflow: if the teacher on 2 H100s answers the 1,000 questions in 50 minutes, that is 2 x 3,000 s / 1,000 = 6.0 GPU-seconds per question; if a student on 1 H100 takes 4 minutes, that is 0.24 GPU-seconds, and 6.0 / 0.24 = 25x passes. The pilot fixes the measurement protocol (engine and version, batch size, warm-up runs excluded, number of repeated timings) before any real student result counts.
+**Timing for criterion 4b.** The same runs also measure speed. Criterion 4b (`docs/methodology/workflow.md` Section 1.2) asks that a student use at least 10x less GPU time per benchmark question than the teacher and have at least 10x lower median latency (the time from sending one question to receiving the full answer), measured on the same GPU type (H100 NVL) with the same serving settings and the same maximum number of new tokens. Worked example from the workflow: if the teacher on 2 H100s answers the 1,000 questions in 50 minutes, that is 2 x 3,000 s / 1,000 = 6.0 GPU-seconds per question; if a student on 1 H100 takes 4 minutes, that is 0.24 GPU-seconds, and 6.0 / 0.24 = 25x passes. The pilot fixes the measurement protocol (engine and version, batch size, warm-up runs excluded, number of repeated timings) before any real student result counts.
 
 Do not expect a 70M model trained on 1,000 examples to do well. A tiny model on a tiny dataset may score near zero on hard questions. The pilot is not testing whether the model is good; it is testing whether **every part of the pipeline runs and gives numbers we can trust**, and whether any improvement over untrained is visible at all.
 
 ## Step 6: the go/no-go review
 
-We then answer these questions and write the results in `docs/workflow.md` and `progress_update.md`:
+We then answer these questions and write the results in `docs/methodology/workflow.md` and `progress_update.md`:
 
 - Did every step run end to end without hand-fixing?
 - How much GPU time did one training example take to write, and what does that make 50,000, 100,000 and 200,000 examples take? Does that fit within the 3-day job limit (split into restartable pieces) and the project timeline?
 - How long did a training run take and how long was the queue, so how long will the full grid of 20 models take?
 - Is the storage plan safe? The shared home folder has a 480 GB soft quota (about 17 GB used so far).
-- Are the R-code and format success thresholds (90% each, `docs/workflow.md` Section 1.1) realistic for these models?
+- Are the R-code and format success thresholds (90% each, `docs/methodology/workflow.md` Section 1.1) realistic for these models?
 - Did the answer keys hold up under the layered checks, or do we need a stronger process before scaling? What would the verifier cost at full scale?
 - Did the criterion-4b timing protocol give stable, repeatable numbers?
 
@@ -117,4 +117,4 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
 
 ## Expected pilot cost
 
-Generation, training and evaluation run on Miami's clusters and cost **no money**; their cost is GPU-hours, which are logged per job in `docs/compute_log.md` and summed there. The only possible paid item is the different-family verifier, which is still to be decided. Before any paid verifier run, its expected cost is written down, and afterward the actual cost is compared in `docs/cost_log.md`.
+Generation, training and evaluation run on Miami's clusters and cost **no money**; their cost is GPU-hours, which are logged per job in `docs/logs/compute_log.md` and summed there. The only possible paid item is the different-family verifier, which is still to be decided. Before any paid verifier run, its expected cost is written down, and afterward the actual cost is compared in `docs/logs/cost_log.md`.

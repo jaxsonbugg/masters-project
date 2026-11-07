@@ -7,7 +7,7 @@ The project's benchmark is a fixed set of about 1,000 statistics/R questions wit
 "final exam" for the small Pythia models. The teacher model (Qwen3.6-27B on Talon, with Redhawk as the fallback)
 writes the questions. The client that talks to the teacher is open_teacher_test.py; it imports the pieces below so
 that the prompt and the checks are defined in exactly one place and cannot drift. This file makes no model calls.
-(The original Claude API commands were removed on 2026-11-06; see docs/workflow.md Section 2.2 and the Git tag
+(The original Claude API commands were removed on 2026-11-06; see docs/methodology/workflow.md Section 2.2 and the Git tag
 pre-cleanup-claude-era.)
 
 HOW A QUESTION GETS MADE (plain steps)
@@ -63,7 +63,7 @@ PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{PROMPT_VERSION
 
 # ---------------------------------------------------------------------------------------------
 # The blueprint: which kinds of questions, in which proportions.
-# This mix is a PROPOSAL (docs/workflow.md Section 3; an open decision to confirm with Dr. Lee).
+# This mix is a PROPOSAL (docs/methodology/workflow.md Section 3; an open decision to confirm with Dr. Lee).
 # The pattern below has 20 slots; 1,000 questions = this pattern 50 times.
 # Each tuple is (category, difficulty). Counts: numerical 6, conceptual 4, r_generation 4,
 # r_interpretation 3, output_interpretation 3; intro 8, intermediate 7, graduate 5 (40/35/25 %).
@@ -473,7 +473,7 @@ def cmd_check(args):
             n_bad += 1
             print(f"{item['item_id']}: " + "; ".join(problems))
     print(f"\n{n_bad} item(s) flagged by the automatic checks. These checks catch only some errors; "
-          "the answer keys still need to be verified by running R or recomputing (see docs/workflow.md Phase 3).")
+          "the answer keys still need to be verified by running R or recomputing (see docs/methodology/workflow.md Phase 3).")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -686,7 +686,7 @@ def cmd_verify(args):
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"\nSummary: {counts}   (wrote {dest})")
     print("ok = R agreed with the key; FLAGGED = R disagreed or the check is broken; not_machine_checkable = no "
-          "code to run (multiple-choice and conceptual items), these need the other checks in docs/workflow.md Phase 3.")
+          "code to run (multiple-choice and conceptual items), these need the other checks in docs/methodology/workflow.md Phase 3.")
 
 
 def main():

@@ -1,6 +1,6 @@
 # Workflow: the full method, phase by phase
 
-This is the detailed companion to the README. It holds the research question and the exact success criteria, the experimental design, the phase checklists, the safeguards for benchmark and training data, the metrics and statistics, storage, risks and open decisions. When work is completed or a decision changes, update this file and add a dated entry to `docs/progress_update.md` (the history). Cluster jobs go in `docs/compute_log.md` and paid calls in `docs/cost_log.md`.
+This is the detailed companion to the README. It holds the research question and the exact success criteria, the experimental design, the phase checklists, the safeguards for benchmark and training data, the metrics and statistics, storage, risks and open decisions. When work is completed or a decision changes, update this file and add a dated entry to `docs/progress_update.md` (the history). Cluster jobs go in `docs/logs/compute_log.md` and paid calls in `docs/logs/cost_log.md`.
 
 Terms used throughout, defined once:
 
@@ -73,7 +73,7 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 | Factor | Levels |
 |---|---|
 | Teacher | Qwen3.6-27B (Apache 2.0 license), BF16 weights served by vLLM on Talon (Section 2.1) |
-| Student size | Pythia 70M, 160M, 410M, 1B: deduped variants, final `step143000` checkpoints, pinned by commit SHA (`docs/model_versions.md`) |
+| Student size | Pythia 70M, 160M, 410M, 1B: deduped variants, final `step143000` checkpoints, pinned by commit SHA (`docs/models/model_versions.md`) |
 | Distillation set size | 1k, 10k, 50k, 100k, 200k (stretch). **50k is the fallback single size** |
 | Verifier | A different-family frontier model, to be decided (most likely ChatGPT or Claude used as a checker, never as a source of training text) |
 | Benchmark | Frozen held-out set of about 1,000 statistics and R questions |
@@ -90,22 +90,22 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 
 ### 2.1 The teacher: Qwen3.6-27B
 
-**What and why.** Qwen3.6-27B is a 27-billion-parameter reasoning model with open weights under the Apache 2.0 license, which allows training other models on its outputs. It was the first choice of the open-weight evaluation in `docs/teacher_model_evaluations.md` (license, math and code quality, fit with our prompt, ability to run on Miami hardware).
+**What and why.** Qwen3.6-27B is a 27-billion-parameter reasoning model with open weights under the Apache 2.0 license, which allows training other models on its outputs. It was the first choice of the open-weight evaluation in `docs/models/teacher_model_evaluations.md` (license, math and code quality, fit with our prompt, ability to run on Miami hardware).
 
 **Deployment.**
-- **Talon (primary):** vLLM serving the full BF16 weights. BF16 is a 16-bit number format, so the model runs as released, without compression. Repository `Qwen/Qwen3.6-27B`, revision `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`, about 53,011 MiB of weights. The vLLM version is still to be pinned (the model card requires vLLM 0.19.0 or later). Settings are in `configs/talon/talon_settings.sh`, explained in `docs/talon_setup.md`.
+- **Talon (primary):** vLLM serving the full BF16 weights. BF16 is a 16-bit number format, so the model runs as released, without compression. Repository `Qwen/Qwen3.6-27B`, revision `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`, about 53,011 MiB of weights. The vLLM version is still to be pinned (the model card requires vLLM 0.19.0 or later). Settings are in `configs/talon/talon_settings.sh`, explained in `docs/clusters/talon_setup.md`.
 - **Redhawk (fallback):** llama.cpp tag `b11960` (commit `8642541b...`) serving a 4-bit GGUF file (`unsloth/Qwen3.6-27B-GGUF` @ `82d411ac...`, `Qwen3.6-27B-Q4_K_M.gguf`, SHA-256 `5ed60d0a...`) on two 16 GB V100s. Pins are in `configs/redhawk/common.sh`.
-- **Sampling** (the model card's recommended thinking-mode settings, identical on both clusters): temperature 1.0, top_p 0.95, top_k 20, min_p 0, presence penalty 0. The output limit is 16,384 tokens per call, thinking included. The context is 20,480 tokens per sequence, which is a comparison setting and not the model's maximum (`docs/talon_setup.md` Section 7).
+- **Sampling** (the model card's recommended thinking-mode settings, identical on both clusters): temperature 1.0, top_p 0.95, top_k 20, min_p 0, presence penalty 0. The output limit is 16,384 tokens per call, thinking included. The context is 20,480 tokens per sequence, which is a comparison setting and not the model's maximum (`docs/clusters/talon_setup.md` Section 7).
 
 **Planned deployment comparison (4-bit vs BF16, both on Talon).** Before the full benchmark run, the same development slots are answered twice on Talon: once with the BF16 weights and once with a 4-bit version. The comparison measures whether compressing the teacher to 4 bits changes the share of usable questions and correct keys, and how much faster it is. It is done on one cluster, so hardware does not differ between the two runs. The Talon 4-bit backend (format and engine) is not built yet (Section 10). Redhawk's 4-bit run is no longer a comparison point; Redhawk is a fallback only.
 
-**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, or the Phase 7 pass rate is poor, the first step is the same model with a higher precision or more thinking, not a different model. The alternatives ranked in `docs/teacher_model_evaluations.md` stay documented but are not the plan.
+**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, or the Phase 7 pass rate is poor, the first step is the same model with a higher precision or more thinking, not a different model. The alternatives ranked in `docs/models/teacher_model_evaluations.md` stay documented but are not the plan.
 
 ### 2.2 Why the teacher changed (the Claude era, archived)
 
 The project began with Claude Sonnet 5.5 as the teacher, through the paid Claude API. Anthropic's commercial terms bar using outputs "to train competing AI models". When asked directly, Anthropic support confirmed that Claude outputs may not be used to train the Pythia students. The project therefore switched to an open-weight teacher, and Claude can no longer write either training data or benchmark questions.
 
-**What the Claude trials were.** Between 2026-10-07 and 2026-10-15, Claude wrote eight 20-question trials and one 100-question batch: 120 trial questions in total, never part of the frozen benchmark. The total spend was **$1.44** (`docs/cost_log.md`). The trials developed and tested the question-generation pipeline that Qwen now uses unchanged:
+**What the Claude trials were.** Between 2026-10-07 and 2026-10-15, Claude wrote eight 20-question trials and one 100-question batch: 120 trial questions in total, never part of the frozen benchmark. The total spend was **$1.44** (`docs/logs/cost_log.md`). The trials developed and tested the question-generation pipeline that Qwen now uses unchanged:
 
 - **Prompt v1 to v6.**
   - v1 put the key before any working: 3 of its 8 numeric keys were wrong.
@@ -143,7 +143,7 @@ The raw replies and run logs also remain outside the repository in `C:\masters_p
   | Interpretation of statistical output | 15% |
 
   Difficulty: intro 40%, intermediate 35%, graduate 25%. Answer types: number, multiple choice, R expression, short text. The 20-slot pattern in `code/generation/generate_benchmark.py` (`PATTERN`, `blueprint`) implements this mix, so any 20 consecutive slots have it.
-- **Short, checkable answers.** Every question has a canonical answer of about 20 tokens or less, so grading works on the first line of a model's output. The Pythia probe showed the students do not stop on their own (`docs/pythia_behavior_analysis.md`).
+- **Short, checkable answers.** Every question has a canonical answer of about 20 tokens or less, so grading works on the first line of a model's output. The Pythia probe showed the students do not stop on their own (`docs/models/pythia_behavior_analysis.md`).
 - **Ground truth.**
   - Number items are auto-graded within a tolerance; their keys come from R (Section 2.2).
   - Multiple-choice items are graded by letter.
@@ -208,27 +208,27 @@ The raw replies and run logs also remain outside the repository in `C:\masters_p
 - [x] Pre-register the success thresholds and primary metrics (dated 2026-09-29; criterion 4 deviation dated 2026-11-06)
 
 ### Phase 2: Choose teacher and student models
-- [x] Students: Pythia 70M, 160M, 410M, 1B (deduped only), final `step143000` checkpoints pinned by commit SHA (`docs/model_versions.md`)
-- [x] Probe how the base models behave (local CPU, 2026-10-06): `code/evaluation/pythia_probe.py`, results in `results/pythia_probe/`, findings in `docs/pythia_behavior_analysis.md`. Key findings:
+- [x] Students: Pythia 70M, 160M, 410M, 1B (deduped only), final `step143000` checkpoints pinned by commit SHA (`docs/models/model_versions.md`)
+- [x] Probe how the base models behave (local CPU, 2026-10-06): `code/evaluation/pythia_probe.py`, results in `results/pythia_probe/`, findings in `docs/models/pythia_behavior_analysis.md`. Key findings:
   - the models never stop on their own (0 of 192 generations ended with the end token);
   - outputs loop;
   - arithmetic is wrong at every size;
   - the 1B config names the wrong stop token.
-- [x] Teacher: Qwen3.6-27B, decided 2026-11-06 after Anthropic ruled out Claude (Section 2.1, `docs/teacher_model_evaluations.md`)
-- [ ] Pin the vLLM version for the Talon deployment and record it in `docs/model_versions.md`
+- [x] Teacher: Qwen3.6-27B, decided 2026-11-06 after Anthropic ruled out Claude (Section 2.1, `docs/models/teacher_model_evaluations.md`)
+- [ ] Pin the vLLM version for the Talon deployment and record it in `docs/models/model_versions.md`
 
 ### Phase 3: Create the evaluation benchmark
 The benchmark comes before the pilot because the pilot needs something frozen to score against. It is the real, full-size benchmark for the whole project.
 - [x] Generation pipeline built and tested (Claude era, Section 2.2): blueprint, prompt v6, R-written number keys, automatic checks, regeneration, `verify`, `dupcheck`
 - [x] Qwen client for the cluster deployments: `code/generation/open_teacher_test.py`, with `redhawk` and `talon` backends. It appends the schema text to the system prompt because these engines do not enforce it.
-- [ ] Talon bring-up (`docs/talon_setup.md` Section 9):
+- [ ] Talon bring-up (`docs/clusters/talon_setup.md` Section 9):
   - pin the vLLM version and the GPU request style (`--gres` or `--gpus`);
   - set `SETTINGS_REVIEWED=yes` after a review;
   - run a scheduler acceptance test;
   - download the BF16 weights;
   - run smoke stage A;
   - run the throughput stage T.
-- [ ] Review the Redhawk pipeline job 2511641 (finished, results not yet checked) and record it in `docs/compute_log.md`
+- [ ] Review the Redhawk pipeline job 2511641 (finished, results not yet checked) and record it in `docs/logs/compute_log.md`
 - [ ] 4-bit vs BF16 comparison on Talon (Section 2.1; the 4-bit backend still has to be built)
 - [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4), then re-run `dupcheck`
 - [ ] Blind re-solve command and other-family check for multiple-choice and conceptual items (R cannot check them)
@@ -236,18 +236,18 @@ The benchmark comes before the pilot because the pilot needs something frozen to
 - [ ] Generate about 1,000 questions with Qwen on Talon; regenerate failures; `verify` and `dupcheck` the whole set
 - [ ] Make every answer key checkable, strongest check first (Section 4, safeguard 6)
 - [ ] **Freeze** the benchmark (hash it, store read-only) before any training data exists
-- [ ] Record every cluster job in `docs/compute_log.md`
+- [ ] Record every cluster job in `docs/logs/compute_log.md`
 
 ### Phase 4: Pilot (1k examples, Pythia 70M, end to end)
-Goal: prove the whole pipeline on Talon at small scale and measure real GPU time before committing to the full grid. Plain-language walkthrough: `docs/pilot_plan.md`.
+Goal: prove the whole pipeline on Talon at small scale and measure real GPU time before committing to the full grid. Plain-language walkthrough: `docs/methodology/pilot_plan.md`.
 - [x] Cluster access: Redhawk (2026-10-01), Talon (account active and probed 2026-11-06)
-- [ ] Write the training-data prompt (separate from the benchmark prompt, Section 4). Use one fixed template (`Question: ...` / `Answer: ...`) with short answers ending in a marked final answer. Every example ends with the end-of-text token, id 0, set explicitly because the 1B config names the wrong token. Reasons: `docs/pythia_behavior_analysis.md` Sections 3.2 and 5.
+- [ ] Write the training-data prompt (separate from the benchmark prompt, Section 4). Use one fixed template (`Question: ...` / `Answer: ...`) with short answers ending in a marked final answer. Every example ends with the end-of-text token, id 0, set explicitly because the 1B config names the wrong token. Reasons: `docs/models/pythia_behavior_analysis.md` Sections 3.2 and 5.
 - [ ] Generate about 1k training questions and teacher answers on Talon; decontaminate against the frozen benchmark
 - [ ] Light verification of the 1k set: run the R code, hand spot-check a sample (the full verifier stays in Phase 7)
 - [ ] Fine-tune Pythia 70M on the 1k set on Talon (Redhawk as the fallback)
 - [ ] Evaluate the untrained and fine-tuned 70M on the frozen benchmark; run the teacher on the benchmark once, so the retained-accuracy ratio and criterion 4b can be computed
 - [ ] Fix the evaluation protocol and the criterion-4b measurement protocol (Section 1.2, Section 10)
-- [ ] Record GPU-hours, queue wait and peak GPU memory for every job in `docs/compute_log.md`
+- [ ] Record GPU-hours, queue wait and peak GPU memory for every job in `docs/logs/compute_log.md`
 - [ ] Go/no-go review:
   - Does the pipeline run end to end?
   - Is the projected GPU time for 50k to 200k acceptable?
@@ -264,10 +264,10 @@ Goal: prove the whole pipeline on Talon at small scale and measure real GPU time
 - [ ] Have the teacher generate answers, explanations and R code
 - [ ] Deduplicate, and decontaminate against the frozen benchmark (Section 4)
 - [ ] Use the same verified set for every student size
-- [ ] Build nested subsets (1k, 10k, 50k, 100k, 200k as feasible; 50k minimum). The 200k generation plan is in `docs/talon_setup.md` Section 8.
+- [ ] Build nested subsets (1k, 10k, 50k, 100k, 200k as feasible; 50k minimum). The 200k generation plan is in `docs/clusters/talon_setup.md` Section 8.
 
 ### Phase 7: Verify teacher-generated data
-- [ ] Choose the verifier model and effort (ChatGPT, Claude or another frontier model); log any paid calls in `docs/cost_log.md` with the expected cost stated first
+- [ ] Choose the verifier model and effort (ChatGPT, Claude or another frontier model); log any paid calls in `docs/logs/cost_log.md` with the expected cost stated first
 - [ ] Have the verifier grade the teacher outputs
 - [ ] Objective numerical answers must be verified correct; R code should be improved where needed
 - [ ] Execute R code where possible to check that it runs and produces the stated output
@@ -345,7 +345,7 @@ Storage is split in two. **Small, important items live in the project repository
 
 | Folder | Purpose |
 |---|---|
-| `docs/` | This workflow, the progress, compute and cost logs, and supporting studies |
+| `docs/` | Project documents in topic subfolders: `methodology/` (this workflow, the pilot plan), `models/` (model versions, teacher evaluation, Pythia behavior), `clusters/` (cluster selection, Talon setup), `logs/` (compute and cost logs), `guides/` (Git notes). The only file at the `docs/` root is `progress_update.md`. New kinds of document get a new, clearly named folder (for example `meetings/`, `report/`) |
 | `recovery/` | Rebuild instructions for everything stored outside the repository, one file per item, written from `_TEMPLATE.md` |
 | `benchmark/` | The frozen benchmark, its checksum and grading scripts (empty until Phase 3 ends) |
 | `data/prompts/` | Generation prompts (benchmark v6; the training prompt later) |
@@ -414,7 +414,7 @@ Dates are placeholders until the program's real deadlines are known.
 
 ### 10.2 Open decisions
 
-- [ ] **Verifier:** which frontier model (ChatGPT, Claude or another) and at what effort; any paid use is logged in `docs/cost_log.md`
+- [ ] **Verifier:** which frontier model (ChatGPT, Claude or another) and at what effort; any paid use is logged in `docs/logs/cost_log.md`
 - [ ] **Talon 4-bit vs BF16 comparison:** which 4-bit format and engine (for example a 4-bit GGUF with llama.cpp, or a 4-bit or FP8 checkpoint with vLLM), which slots, and which measures decide it
 - [ ] **Talon settings still unverified:**
   - the vLLM version pin;
@@ -428,8 +428,7 @@ Dates are placeholders until the program's real deadlines are known.
   - **The gap:** `check_item` in `generate_benchmark.py` decides which fields to require by looking at what a reply contains. A reply that leaves out the `r_solution` field entirely is checked under the old prompt-v1 rules. So a number question with no R code would pass, keeping the model's own typed key instead of a key computed by R. That undoes the main protection described in Section 2.2.
   - **Why it is still there:** the 2026-11-06 cleanup kept this behavior on purpose, because the refactor had to be proven identical.
   - **Recommended fix:** require `r_solution` (and `working`) for all v6 replies, then re-save the regression snapshot. Only the cases that test missing fields should change.
-- [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/model_versions.md` Section 5, next to the vLLM pin above.
-- [ ] **Stale reference in a Redhawk script:** a comment in `configs/redhawk/common.sh` (line 47) still points to `recovery/redhawk_qwen_test.md`, which was never written. It is harmless (a comment only) and was left alone because the Redhawk scripts are kept byte for byte. Fix it the next time a Redhawk script has to change for another reason, then rerun the Redhawk shell tests.
+- [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.
 - [ ] **Claude-era outputs outside the repository:** the raw Sonnet replies in `C:\masters_project_large\data\teacher_outputs\*_sonnet-5-5_*` are not in Git and were not touched. Keep them as part of the archive, or delete them (owner's decision; the items themselves are preserved in the Git tag `pre-cleanup-claude-era`).
 - [ ] **Benchmark blueprint** (proposal in Section 3, to confirm with Dr. Lee)
 - [ ] **Training-data template and answer length.** Proposed from the Pythia probe: one fixed `Question:`/`Answer:` template, short answers with a marked final answer, end-of-text id 0 on every example, loss on the answer and end token only. To confirm in the pilot and with Dr. Lee.
@@ -444,7 +443,7 @@ Dates are placeholders until the program's real deadlines are known.
 - [ ] Training precision recipe for Phase 8: mixed precision (AMP), gradient and optimizer-state precision, BF16 or FP16. Decided once the Talon environment is set up.
 - [ ] Peak GPU memory of all four students in training (pilot), to choose the 1B setup if one GPU is too small
 
-**Known cluster facts** (details and evidence labels in `docs/cluster_selection.md` and `docs/talon_setup.md`):
+**Known cluster facts** (details and evidence labels in `docs/clusters/cluster_selection.md` and `docs/clusters/talon_setup.md`):
 - **Redhawk:** Slurm; 4 V100 nodes; whole-node jobs with `--exclusive`, because no GPU resource is defined; 3-day limit; accounting off; long queue waits observed (about 13 days estimated on 2026-11-04).
 - **Talon:**
   - Slurm partition `talon` with 4 nodes x 4 H100 NVL, 64 cores and 515 GB RAM per node, shared between jobs.

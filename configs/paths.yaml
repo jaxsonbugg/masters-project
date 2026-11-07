@@ -11,7 +11,7 @@ envs: C:\masters_project_large\envs
 # R is installed outside the repository and is not on the PATH. Used to run answer-key checks.
 rscript: C:\R-4.3.1\bin\Rscript.exe
 # Redhawk cluster, the fallback (Linux paths, used by code and scripts that run on Redhawk; access: recovery/redhawk_ssh_access.md,
-# cluster facts: docs/cluster_selection.md Section 7).
+# cluster facts: docs/clusters/cluster_selection.md Section 7).
 # CHOSEN 2026-11-04 from probe_cluster.sh: the home folder has a personal quota of 480 GB (500 GB hard limit) and 60 KB was
 # in use; the 85% "full" figure was the whole shared disk (9.4 TB free). /scratch has no per-user quota but 86% full, no
 # per-user folder and an unknown purge policy, so it was not used. Set all four together; the scripts and the Python code

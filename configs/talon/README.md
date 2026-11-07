@@ -1,7 +1,7 @@
 # configs/talon - job scripts for Miami's Talon cluster (DRAFT, written before any Talon login)
 
 This folder is the Talon twin of `configs/redhawk/`. It was **copied and adapted, not shared**, so nothing in it can break the
-working Redhawk scripts (`configs/redhawk/` was not touched). Read `docs/talon_setup.md` first: it explains in plain language what
+working Redhawk scripts (`configs/redhawk/` was not touched). Read `docs/clusters/talon_setup.md` first: it explains in plain language what
 Talon is, what is known and unknown about it, why every script is a draft, and the exact steps after the account is activated.
 
 **Every file here is a draft.** The scripts refuse to run until a person has changed `SETTINGS_REVIEWED=no` to `yes` in
@@ -32,7 +32,7 @@ that are the two probes, because they are how the real values are found.
 6. `prep_talon.sh` (download), then `submit_pipeline.sh smoke_a`, read it, then `throughput` for each layout, then the pipeline.
 
 ## What is deliberately NOT here
-- The 200,000-example generation (see `docs/talon_setup.md`, section "What the 200,000-example generation will need").
+- The 200,000-example generation (see `docs/clusters/talon_setup.md`, section "What the 200,000-example generation will need").
 - Several server replicas side by side (`REPLICAS` must be 1 for now) and container mode (`TALON_ENGINE_MODE=venv` only).
 - Any preferred GPU layout: GPU count, tensor parallelism, sequences and concurrency are left blank until the throughput benchmark.
 

@@ -2,7 +2,7 @@
 # prep_cluster.sh - ALL the login-node preparation for the Qwen3.6-27B test, in one command. Run it ONCE, on a login node,
 # from the repository copy, right after the files were copied there:
 #   cd /home/buggjm/masters_project/repo && bash -l configs/redhawk/prep_cluster.sh
-# (the one-line command that copies the files and then runs this is in docs/cluster_selection.md and the chat; it needs
+# (the one-line command that copies the files and then runs this is in docs/clusters/cluster_selection.md and the chat; it needs
 # only ONE password + Duo login.)
 #
 # WHAT IT DOES, IN ORDER (any failure stops it with a plain message; nothing later runs):

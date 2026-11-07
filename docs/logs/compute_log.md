@@ -1,6 +1,6 @@
 # Compute Log
 
-This is the record of every cluster job, scheduler test and measured local run in the project. Cluster time on Talon and Redhawk costs no money, but it is the project's real budget: it is limited by queue waits, the 3-day job limit and the shared storage quota. The numbers here also feed the efficiency results (criterion 4b, `docs/workflow.md` Section 1.2) and the Phase 10 training-cost measurements. Paid API calls go in `docs/cost_log.md` instead.
+This is the record of every cluster job, scheduler test and measured local run in the project. Cluster time on Talon and Redhawk costs no money, but it is the project's real budget: it is limited by queue waits, the 3-day job limit and the shared storage quota. The numbers here also feed the efficiency results (criterion 4b, `docs/methodology/workflow.md` Section 1.2) and the Phase 10 training-cost measurements. Paid API calls go in `docs/logs/cost_log.md` instead.
 
 **Rule.** Add an entry in the same session as the job, including jobs that failed, were cancelled, or have not been reviewed yet (mark those clearly). Read-only probes and scheduler tests are logged too, with zero GPU time, because they explain what each later job could assume.
 
@@ -41,7 +41,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Software:** venv `C:\masters_project_large\envs\probe`, torch 2.14.1+cpu, transformers 5.19.0.
 - **Models:** Pythia 70M, 160M, 410M and 1B (deduped, `step143000`), loaded as `float16`.
 - **Settings:** 16 questions x 3 prompt formats x 4 sizes = 192 generations; greedy decoding; 128 new tokens.
-- **Speeds measured:** the 1B model ran at about 9.5 tokens per second on this CPU (`docs/pythia_behavior_analysis.md` Section 4).
+- **Speeds measured:** the 1B model ran at about 9.5 tokens per second on this CPU (`docs/models/pythia_behavior_analysis.md` Section 4).
 - **Outputs:** `results/pythia_probe/2026-10-07_0015Z_probe.*`.
 - **Outcome:** PASS. An earlier run the same evening had a stop-token bug for the 1B model; it was deleted and rerun (`docs/progress_update.md`, 2026-10-06).
 
@@ -50,7 +50,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **What ran:**
   - `configs/redhawk/probe_cluster.sh` twice. The first run stopped early because `quota` consumed the script's standard input; the probe was rewritten.
   - `probe_cluster_part2.sh`.
-- **Results:** Slurm `gpu` partition with 4 V100 nodes (`mualhpcp38` to `41`); no GPU resource defined, so jobs take a whole node with `--exclusive`; 3-day limit; accounting off; home quota 480 GB soft. Details in `docs/cluster_selection.md` Section 7.
+- **Results:** Slurm `gpu` partition with 4 V100 nodes (`mualhpcp38` to `41`); no GPU resource defined, so jobs take a whole node with `--exclusive`; 3-day limit; accounting off; home quota 480 GB soft. Details in `docs/clusters/cluster_selection.md` Section 7.
 - **GPU time:** none.
 
 ### 3. Redhawk scheduler test, 2026-11-04 21:47 UTC (no job created)
@@ -96,5 +96,5 @@ This is the record of every cluster job, scheduler test and measured local run i
   - login node reaches Hugging Face and PyPI through the university proxy;
   - home folder shared with Redhawk: 500 GB hard quota, about 17 GB used.
 
-  Evidence labels and the full table are in `docs/talon_setup.md` Section 2.
+  Evidence labels and the full table are in `docs/clusters/talon_setup.md` Section 2.
 - **GPU time:** none.

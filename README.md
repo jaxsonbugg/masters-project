@@ -54,7 +54,7 @@ A (student size, data size) pair counts as a successful specialization only if i
    - **4a:** at least 10x fewer parameters than the teacher.
    - **4b:** at least 10x less GPU time per query and at least 10x lower median latency on the same GPU.
 
-The full definitions, the original wording and the measurement protocol are in [docs/workflow.md](docs/workflow.md).
+The full definitions, the original wording and the measurement protocol are in [docs/methodology/workflow.md](docs/methodology/workflow.md).
 
 ## Current status and next steps
 
@@ -82,10 +82,10 @@ The full definitions, the original wording and the measurement protocol are in [
 
 | Path | Contents |
 |---|---|
-| [docs/workflow.md](docs/workflow.md) | Full methodology: criteria, phase checklists, benchmark and data safeguards, metrics, statistics, risks, open decisions |
+| [docs/methodology/workflow.md](docs/methodology/workflow.md) | Full methodology: criteria, phase checklists, benchmark and data safeguards, metrics, statistics, risks, open decisions |
 | [docs/progress_update.md](docs/progress_update.md) | Dated log of every change and decision |
-| [docs/compute_log.md](docs/compute_log.md) / [docs/cost_log.md](docs/cost_log.md) | Cluster jobs and measured local runs / paid API calls |
-| `docs/` | Supporting studies: model versions, Pythia behavior, teacher evaluation, cluster selection, Talon setup |
+| [docs/logs/compute_log.md](docs/logs/compute_log.md) / [docs/logs/cost_log.md](docs/logs/cost_log.md) | Cluster jobs and measured local runs / paid API calls |
+| `docs/` | Organized by topic: `methodology/` (workflow, pilot plan), `models/` (model versions, teacher evaluation, Pythia behavior), `clusters/` (cluster selection, Talon setup), `logs/` (compute and cost logs), `guides/` (Git notes); only `progress_update.md` sits at the root |
 | `code/generation/` | Benchmark slot blueprint, validity checks and R key verification (`generate_benchmark.py`); teacher client for the cluster deployments (`open_teacher_test.py`); throughput report |
 | `code/evaluation/`, `code/tests/` | Pythia probe; local test suites for the pipeline and the cluster job scripts |
 | `configs/` | `paths.yaml` (all storage locations) and the Redhawk and Talon Slurm scripts |

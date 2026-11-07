@@ -58,7 +58,7 @@ It answered, then invented the next quiz question itself, and would have gone on
 
 ### 3.2 The 1B model has a misconfigured stop token (a real trap)
 
-All four models share the same vocabulary, where token id 0 is `<|endoftext|>` and id 2 is the exclamation mark `!`. The 70M, 160M and 410M configs correctly say the end-of-sequence token is id 0. The **1B config says `eos_token_id: 2`, which is `!`**, and its tokenizer defines no end-of-sequence token at all (`eos_token` is `None`). The tokenizer files for 1B also differ from the others at the file level (already noted in `docs/model_versions.md`), though the text we tested tokenized identically (Section 3.6). Consequences:
+All four models share the same vocabulary, where token id 0 is `<|endoftext|>` and id 2 is the exclamation mark `!`. The 70M, 160M and 410M configs correctly say the end-of-sequence token is id 0. The **1B config says `eos_token_id: 2`, which is `!`**, and its tokenizer defines no end-of-sequence token at all (`eos_token` is `None`). The tokenizer files for 1B also differ from the others at the file level (already noted in `docs/models/model_versions.md`), though the text we tested tokenized identically (Section 3.6). Consequences:
 
 - If the 1B model is run with its default settings, generation would stop at the first `!` and never at end-of-text.
 - A training script that asks the tokenizer for its end-of-sequence token would get nothing for 1B, and could silently train it without any stop token.
@@ -105,7 +105,7 @@ For the 8 prompts with a short unambiguous answer (two general knowledge, three 
 
 `float16` loaded and ran on the CPU for all four sizes without errors. At 64 new tokens per question, a 1,000-question benchmark is about 6 minutes for 70M, 14 minutes for 160M, 34 minutes for 410M and 1.9 hours for 1B on this CPU, one question at a time (batching and a GPU will be much faster). These timings are only for planning; they say nothing about quality.
 
-### 3.6 Facts the probe settled from `docs/model_versions.md`
+### 3.6 Facts the probe settled from `docs/models/model_versions.md`
 
 - **Parameter counts match** the official counts exactly for all four sizes (difference 0). That includes the 1B (1,011,781,632), so the 512-value discrepancy seen in the Hugging Face API listing does not appear in the loaded model.
 - **Stored dtype of the files** (read from the `.safetensors` headers): 70M, 160M and 410M are stored as 32-bit floats (F32); **1B is stored as 16-bit (F16)**. All four loaded as `torch.float16` as required. The Pythia repository says the 1B was trained in bf16 because of a loss spike in fp16, which is worth remembering for the fine-tuning precision choice: Talon's H100 GPUs (the primary cluster) support bf16 in hardware, while Redhawk's V100 GPUs (the fallback) do not.
@@ -121,7 +121,7 @@ For the 8 prompts with a short unambiguous answer (two general knowledge, three 
 
 ## 5. How this should change the project
 
-The phase numbers below are the phases in `docs/workflow.md` Section 5.
+The phase numbers below are the phases in `docs/methodology/workflow.md` Section 5.
 
 ### 5.1 Training data design (Phase 4 and Phase 6)
 
@@ -140,7 +140,7 @@ The phase numbers below are the phases in `docs/workflow.md` Section 5.
 
 ### 5.3 Effect on teacher GPU time (Phase 4 and Phase 6)
 
-The teacher runs on Talon at no money cost, so what teacher data costs is GPU time (recorded in `docs/compute_log.md`), and most of that time goes into output tokens, including thinking tokens that are generated but never stored in the training example. Shorter teacher answers therefore mean fewer output tokens and less GPU time per example, and a longer answer would not be useful anyway, because the students can only imitate short answers. The pilot should measure the real tokens and GPU time per example, and check that the shorter answers still pass verification.
+The teacher runs on Talon at no money cost, so what teacher data costs is GPU time (recorded in `docs/logs/compute_log.md`), and most of that time goes into output tokens, including thinking tokens that are generated but never stored in the training example. Shorter teacher answers therefore mean fewer output tokens and less GPU time per example, and a longer answer would not be useful anyway, because the students can only imitate short answers. The pilot should measure the real tokens and GPU time per example, and check that the shorter answers still pass verification.
 
 ### 5.4 Evaluation compute (Phase 4 and Phase 5)
 

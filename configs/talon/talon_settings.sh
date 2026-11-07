@@ -26,7 +26,7 @@ TALON_PARTITION="${TALON_PARTITION-talon}"   # TOLD BY RESEARCH COMPUTING 2026-1
 TALON_NODELIST="${TALON_NODELIST-}"          # OPTIONAL node choice, blank = any node of the partition (the default). TOLD BY RESEARCH COMPUTING
                                               # 2026-11-05: --nodelist=mualhpgp01.mpi lands a job on GPU node 1. That is a confirmed way to CHOOSE
                                               # a node, not a requirement: pin a node only if the nodes differ, only one is usable, or a benchmark
-                                              # must run on identical hardware (docs/talon_setup.md, section "Choosing a node").
+                                              # must run on identical hardware (docs/clusters/talon_setup.md, section "Choosing a node").
 TALON_ACCOUNT="${TALON_ACCOUNT-}"            # blank = none. SLURM-REPORTED 2026-11-06 (probe 5e): job accounting is switched off, so there are no accounts to name
 TALON_QOS="${TALON_QOS-}"                    # blank = none. SLURM-REPORTED 2026-11-06: no QOS limits are configured
 TALON_GPU_STYLE="${TALON_GPU_STYLE-}"        # UNVERIFIED: gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N); blank = a person must choose.
@@ -62,7 +62,7 @@ WEIGHTS_MIB="${WEIGHTS_MIB-53011}"           # OBSERVED 2026-11-06 (probe 8): th
 SERVED_NAME="${SERVED_NAME-qwen3.6-27b-bf16}"   # must equal BACKENDS["talon"]["model"] in code/generation/open_teacher_test.py
 GPU_MIN_TOTAL_MIB="${GPU_MIN_TOTAL_MIB-70000}"  # UNVERIFIED: an 80 GB-class H100 reports about 81,500 MiB; the 94 GB variant about 95,800
 
-# ---- GPU layout: NO PREFERRED DEFAULT (the throughput benchmark chooses it; see docs/talon_setup.md) --------------------------
+# ---- GPU layout: NO PREFERRED DEFAULT (the throughput benchmark chooses it; see docs/clusters/talon_setup.md) --------------------------
 # GPU_COUNT must equal TENSOR_PARALLEL x REPLICAS. TENSOR_PARALLEL = how many GPUs one copy of the model is split across.
 # REPLICAS = how many independent copies run side by side (this draft implements REPLICAS=1 only; more are projected by
 # arithmetic from a one-replica measurement and belong to the 200,000-example pipeline, not to this comparison).

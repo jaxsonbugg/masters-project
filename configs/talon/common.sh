@@ -124,7 +124,7 @@ check_layout() {
     [[ "${!v:-}" =~ ^[1-9][0-9]*$ ]] || die "$v is '${!v:-}', not a positive whole number. The GPU layout has no preferred default on purpose (the throughput benchmark chooses it): set $v in $QT_SETTINGS_FILE or in the environment for this job."
   done
   [ "$((TENSOR_PARALLEL * REPLICAS))" -eq "$GPU_COUNT" ] || die "GPU_COUNT ($GPU_COUNT) must equal TENSOR_PARALLEL ($TENSOR_PARALLEL) x REPLICAS ($REPLICAS) = $((TENSOR_PARALLEL * REPLICAS))."
-  [ "$REPLICAS" -eq 1 ] || die "REPLICAS=$REPLICAS is not implemented in this draft: several side-by-side servers belong to the 200,000-example pipeline (docs/talon_setup.md). Project them by arithmetic from a one-replica measurement."
+  [ "$REPLICAS" -eq 1 ] || die "REPLICAS=$REPLICAS is not implemented in this draft: several side-by-side servers belong to the 200,000-example pipeline (docs/clusters/talon_setup.md). Project them by arithmetic from a one-replica measurement."
   [ "$MAX_MODEL_LEN" -ge 19384 ] || die "MAX_MODEL_LEN $MAX_MODEL_LEN is below 19,384 (3,000 input cap + 16,384 output cap): replies would be cut off by the server."
 }
 check_concurrency() {

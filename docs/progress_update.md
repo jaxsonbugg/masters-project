@@ -286,7 +286,9 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 ### Preparation and submission scripts built; a flawed check found and fixed (2026-11-04, still $0)
 - **Decision:** Jaxson approved finishing the Redhawk preparation and submitting the pipeline now, to take a place in the queue (the scheduler is first-come-first-served and estimated a start about 13 days out). Talon (H100) access is being pursued in parallel by email (see below).
 - **Built (local, tested):** `configs/redhawk/prep_cluster.sh` does the whole login-node preparation in one command (checks the copied files and the prompt hash, clones llama.cpp at the pinned commit, submits the compile job, starts the 17 GB download in the background) so only one password + Duo login is needed; `configs/redhawk/submit_pipeline.sh` re-checks that the build and the weights are really done, shows the scheduler's estimate, and submits the pipeline only then. `shtest.sh` part 5 covers both (21 checks); parts 1-4 were rerun.
-- **A flawed check, found and fixed:** the "no carriage returns" checks I reported earlier used `grep -c $''`, which in Git Bash does not detect carriage returns (it returned 0 for a file that really had them). Every earlier "0" was therefore meaningless. The files were re-counted with `tr -cd '' | wc -c`, which counts the bytes themselves: all scripts and tests under `configs/redhawk/` and `code/tests/` have 0 carriage returns, so nothing pushed was broken. The one file with Windows line endings is the older `generate_benchmark.py`, which Python reads without trouble. The prep script now uses the `tr` count and checks only shell scripts. I also caught my own repair script inserting a real carriage-return byte into that check; fixed and verified byte by byte.
+- **A flawed check, found and fixed:** the "no carriage returns" checks I reported earlier used `grep -c $'
+'`, which in Git Bash does not detect carriage returns (it returned 0 for a file that really had them). Every earlier "0" was therefore meaningless. The files were re-counted with `tr -cd '
+' | wc -c`, which counts the bytes themselves: all scripts and tests under `configs/redhawk/` and `code/tests/` have 0 carriage returns, so nothing pushed was broken. The one file with Windows line endings is the older `generate_benchmark.py`, which Python reads without trouble. The prep script now uses the `tr` count and checks only shell scripts. I also caught my own repair script inserting a real carriage-return byte into that check; fixed and verified byte by byte.
 - **Talon findings (Miami pages, read 2026-11-04):** Talon has four GPU nodes with four H100 GPUs each. Faculty can request accounts directly and sponsor student accounts through the Research Cluster Account Sponsorships page ("Request New Sponsorship", a faculty sponsor is required; approval time not stated). Questions go to ResComp@MiamiOH.edu; Jens Mueller, Director of High Performance Computing Services (muellej@miamioh.edu), is the contact for additional capacity. No Talon-specific request steps or GPU-hour limits are published.
 
 ### First Redhawk compile failed; cause found and fixed (2026-11-04, still $0)
@@ -442,3 +444,41 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **`docs/github_notes.md`:** a tags section added.
 - **Tests:** every suite ran before any change and again after all changes, with identical counts (Python 46 / 23 / 15; Redhawk shell 31/10/11/10/39; Talon shell 41/19/61; regression 51 and 153 parts).
 - **Recorded as open decisions** (`docs/workflow.md` Section 10.2), on Jaxson's choice to push first and decide these later: require `r_solution` in every reply; record the Talon CUDA version; the stale comment in `configs/redhawk/common.sh`; whether to keep the Claude-era outputs outside the repository.
+
+## 2026-11-07
+
+### `docs/` organized into topic folders; new docs-layout rule ($0, no cluster job)
+- **Why:** `docs/` had become one flat folder of 11 files mixing the method, logs, model notes, cluster notes and a Git cheat sheet. Jaxson asked for subfolders, and for a standing rule that every doc lives in a folder except this progress log.
+- **New layout (moved with `git mv`, so each file keeps its history):**
+
+| Old path | New path |
+|---|---|
+| `docs/workflow.md` | `docs/methodology/workflow.md` |
+| `docs/pilot_plan.md` | `docs/methodology/pilot_plan.md` |
+| `docs/model_versions.md` | `docs/models/model_versions.md` |
+| `docs/teacher_model_evaluations.md` | `docs/models/teacher_model_evaluations.md` |
+| `docs/pythia_behavior_analysis.md` | `docs/models/pythia_behavior_analysis.md` |
+| `docs/cluster_selection.md` | `docs/clusters/cluster_selection.md` |
+| `docs/talon_setup.md` | `docs/clusters/talon_setup.md` |
+| `docs/compute_log.md` | `docs/logs/compute_log.md` |
+| `docs/cost_log.md` | `docs/logs/cost_log.md` |
+| `docs/github_notes.md` | `docs/guides/github_notes.md` |
+
+  `docs/progress_update.md` stays at the `docs/` root. **Entries above this one keep the old paths, as written at the time; use this table to follow them.**
+- **Rule (in `CLAUDE.md`, Working rules):**
+  - Every file in `docs/` lives in a topic subfolder (`methodology/`, `models/`, `clusters/`, `logs/`, `guides/`).
+  - A new, clearly named folder is made when none fits, for example `meetings/` for advisor notes or `report/` for drafts. Folders are created only when they get a file.
+  - The only file at the root is this progress log.
+  - Moving or renaming a doc means updating every reference to it and logging the move here.
+
+  The layout is also described in `docs/methodology/workflow.md` Section 8.1 and in the README repository map.
+- **References updated:** 155 occurrences of the old paths outside this history file were repointed by script. They were in the README, `CLAUDE.md`, the docs themselves, three recovery docs, a `configs/paths.yaml` comment, three Talon files, code docstrings and comments, and the run-log `test` metadata string in `open_teacher_test.py` (not a resume fingerprint field).
+- **Redhawk scripts, comments only:**
+  - `prep_cluster.sh` and `submit_pipeline.sh` now point to `docs/clusters/cluster_selection.md`.
+  - In `common.sh`, the stale pointer to the never-written `recovery/redhawk_qwen_test.md` now points to the 2026-11-04 entry "The one-job pipeline built", where the flash-attention retry is described. `docs/clusters/cluster_selection.md` does not cover it.
+  - This resolves the open decision recorded on 2026-11-06, which was removed from `docs/methodology/workflow.md` Section 10.2.
+  - All three files pass `bash -n` and contain no carriage returns.
+- **Two user-facing messages** in `generate_benchmark.py` (`check`, `verify`) now say `docs/methodology/workflow.md` Phase 3.
+  - The regression test first failed on exactly that one line of the `verify` output; the exit code and the written file were identical.
+  - The snapshot was then re-saved. The scratchpad snapshot of the 100 Claude batch items was re-saved the same way.
+- **Tests:** all suites rerun after the move, all passing with unchanged counts: Python 46 / 23 / 15; Redhawk shell 31/10/11/10/39; Talon shell 41/19/61; regression 51 and 153 parts.
