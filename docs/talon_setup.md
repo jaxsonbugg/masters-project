@@ -9,12 +9,15 @@ scheduler (Slurm) instead of logging in and running things by hand. Miami's page
 in all) and 20 high-density CPU nodes. A GPU is the chip that does the heavy arithmetic for language models. The H100 is much newer and much larger
 than the V100s on Redhawk: an H100 has about 80 GB of memory per card (the exact variant, 80 GB or 94 GB, is **UNVERIFIED**), a V100 only 16 GB.
 
-Why it matters to this project: the project now includes generating **200,000 teacher examples** with Qwen3.6-27B. On Redhawk that cannot work (a
-27-billion-parameter model barely fits on two small V100s even squeezed to 4 bits, and it runs at about 35 tokens per second). Talon's H100s can hold
-the full-precision model and serve many requests at once. **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** using Talon costs
+Why it matters to this project: Talon is now the project's **primary cluster** for teacher generation, student fine-tuning and evaluation (decision
+2026-11-06; Redhawk is the fallback). The project includes generating **200,000 teacher examples** with Qwen3.6-27B. On Redhawk that is not practical: a
+27-billion-parameter model barely fits on two small V100s even squeezed to 4 bits, and Redhawk's queue estimated a start about 13 days out for a single
+whole-node job (2026-11-04). Its generation speed has not been measured yet. Talon's H100s can hold the full-precision model and serve many requests at once. **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** using Talon costs
 us nothing, one job may run at most 3 days, and we have 500 GB of storage (more must be requested). How many GPU-hours we may use in total is **UNVERIFIED**.
 
-The Redhawk test (pipeline job 2511641) continues independently and stays the baseline: **nothing under `configs/redhawk/` was changed**.
+The Redhawk pipeline job 2511641 has finished, but its results have **not been reviewed yet** (`docs/compute_log.md`, entry 7). It is no longer a
+comparison baseline. The planned precision comparison is **4-bit versus BF16, both on Talon** (`docs/workflow.md` Section 2.1), so hardware does not
+differ between the two runs. Redhawk stays the tested fallback: **nothing under `configs/redhawk/` was changed**.
 
 ## 2. What is known and what is not
 
@@ -170,7 +173,7 @@ once per layout you want to compare, for example 1 GPU and 2 GPUs at BF16.
 - **GPU-hours per 1,000 successful examples** = GPUs used x hours / successes x 1,000.
 - **truncation rate** (finish reason `length`, or prompt plus output reached the context limit) and **reasoning-exhaustion rate** (the model produced
   reasoning but no usable answer, often because thinking used up the output budget); both are printed as findings above 5% (editable) and then the layout
-  must not be called comparable to the Redhawk run.
+  must not be called comparable to the other runs.
 - peak GPU memory per GPU, if the job saved it.
 
 **Worked example (illustration only).** Suppose 2 GPUs finish 32 successful examples in half an hour. That is 64 examples per hour. GPU-hours per
@@ -184,8 +187,9 @@ waits and time limits, model loading repeats per job, and failed examples must b
 ## 7. The 20,480-token context is a comparison setting, not the model's best
 
 Qwen3.6-27B natively handles 262,144 tokens, and its model card advises keeping at least 128K tokens of context to preserve its thinking quality. The
-Talon comparison uses **20,480 tokens per sequence** (3,000 for the prompt, 16,384 for the output, headroom) only so that it matches the Redhawk
-run. The scripts print this note, and the checks above look for truncation and reasoning exhaustion. If the throughput benchmark shows
+Talon test runs use **20,480 tokens per sequence** (3,000 for the prompt, 16,384 for the output, headroom). It was chosen to match the Redhawk
+deployment, and it is kept so that the two Talon runs of the 4-bit versus BF16 comparison have identical room per question. The scripts print this
+note, and the checks above look for truncation and reasoning exhaustion. If the throughput benchmark shows
 truncation at 20,480, a run at a longer `MAX_MODEL_LEN` is the next experiment; the report can compare the two.
 
 ## 8. What the 200,000-example generation will need (documented, NOT built)
@@ -205,6 +209,10 @@ needs, and these get their own plan and approval later:
 ## 9. After your Talon account is activated: exact steps
 
 Each step that touches the cluster needs your approval first, as for Redhawk.
+
+*Status 2026-11-06: steps 1 to 3 are done (meeting with Research Computing; first login with `StrictHostKeyChecking=accept-new`, after Jaxson chose
+to trust the server instead of comparing fingerprints; key-pair login; read-only probe). The next step is 4.*
+
 1. **Email** the questions in section 2 (you may already have). Until answered, pricing, allocation, quotas and access limits stay UNVERIFIED.
 2. **Check reachability and verify the host key, then connect.** Run `Test-NetConnection mualhphp01.hpc.miamioh.edu -Port 22` (connect the Miami VPN if it times out). **Do not
    just type "yes" at the first SSH prompt:** display the server's host-key fingerprints, get Research Computing's own fingerprints by email or phone, compare them, and only then
@@ -218,7 +226,8 @@ Each step that touches the cluster needs your approval first, as for Redhawk.
 6. **`prep_talon.sh`** (installs vLLM, downloads and verifies about 54 GB; needs `QT_CONFIRM_STORAGE=yes`; separate approval).
 7. **Stage A** (`submit_pipeline.sh smoke_a`): read it before anything else. This is also where the real vLLM log and reply fields replace the fakes.
 8. **Stage T** for each layout (1 GPU, 2 GPUs, ...), then `throughput_report.py`; choose the layout together.
-9. **Stage B and the main run** (or `pipeline`) with the chosen layout: the second comparison point (Redhawk 4-bit versus Talon BF16).
+9. **Stage B and the main run** (or `pipeline`) with the chosen layout: the BF16 side of the 4-bit versus BF16 comparison on Talon. The 4-bit side
+   needs a Talon 4-bit backend (format and engine still open, `docs/workflow.md` Section 10.2).
 10. A **new plan** for the 200,000-example work, using the measured GPU-hours.
 
 ## 10. What could go wrong

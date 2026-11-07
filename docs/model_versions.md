@@ -1,6 +1,6 @@
 # Model Versions
 
-Exact model versions used in the project. Written 2026-10-01. Facts come from the linked sources, accessed 2026-09-30 and 2026-10-01 (the date each file was downloaded and hash-checked is in the table below).
+Exact model versions used in the project. Written 2026-10-01; teacher and cluster sections rewritten 2026-11-07 for the Qwen3.6-27B teacher. Pythia facts come from the linked sources, accessed 2026-09-30 and 2026-10-01 (the date each file was downloaded and hash-checked is in the table below).
 
 ## Reproducibility rule
 
@@ -57,7 +57,7 @@ Three separate concepts. Never merge them in docs, configs or code comments.
 |---|---|---|
 | 1. Checkpoint storage dtype | How the original Hugging Face weights are serialized on disk | Observed, not chosen. Files are kept exactly as downloaded: no conversion, no re-saving, no modification |
 | 2. Runtime load dtype | The dtype weights are loaded into for baseline evaluation | `torch.float16` for all four sizes, passed explicitly in every load call. Not taken from `config.json` |
-| 3. Training precision configuration | AMP/mixed precision, gradient precision, optimizer-state precision, loss scaling, BF16 or FP16 | Not decided. Set and documented separately in Phase 8, once the cluster/GPU environment (Redhawk V100 or Talon H100) is known |
+| 3. Training precision configuration | AMP/mixed precision, gradient precision, optimizer-state precision, loss scaling, BF16 or FP16 | Not decided. Set and documented separately in Phase 8, for the Talon H100 training environment (Redhawk V100 as the fallback), once that environment is built |
 
 Fine-tuning is **not** described as "pure FP16 training". Only the loading of model weights in FP16 is decided.
 
@@ -71,7 +71,7 @@ Fine-tuning is **not** described as "pure FP16 training". Only the loading of mo
 | 1B | **F16** for all 196 tensors. 2,023,586,192 bytes. (EleutherAI says the 1B was trained in bf16 because of a loss spike in fp16.) | `torch.float16` (verified) | float16 |
 
 Cautions:
-- The file-size observation is only an approximate consistency check (official parameters x 4 or x 2, plus a small header). It is not proof of the stored dtype of every tensor, and it says nothing about the dtype used after loading. A direct read of the tensor dtypes in each safetensors header is still to be done once Python is available.
+- The file-size observation is only an approximate consistency check (official parameters x 4 or x 2, plus a small header). It is not proof of the stored dtype of every tensor, and it says nothing about the dtype used after loading. The direct read of the tensor dtypes from each safetensors header was done on 2026-10-06 (status paragraph below); the dtypes in the table above come from that read, not from the file sizes.
 - Repository size, checkpoint size, config metadata, buffers and other non-parameter tensors, and duplicate serialization formats (the repos also hold `pytorch_model.bin`, which was not downloaded, and the 1B repo also holds a 12.2 GB `optimizer.pt`, not downloaded) are separate from the dtype used after loading.
 - All four `config.json` files say `float16`, while the 70M, 160M and 410M safetensors files are approximately 4 bytes per official parameter. The `torch_dtype` metadata does not by itself establish the dtype of every tensor stored in the checkpoint file. The experiment does not rely on it and sets the dtype itself.
 - V100 GPUs (Redhawk) have no native BF16 support and H100 GPUs (Talon) do. This is noted as a hardware fact only; no training-precision choice is made here.
@@ -142,33 +142,75 @@ Filled in 2026-10-06 from the local probe environment (`C:\masters_project_large
 
 | Component | Version |
 |---|---|
-| Python | 3.11.9 on this PC; cluster version not yet checked |
+| Python | 3.11.9 on this PC. Clusters (checked by read-only probes, no training environment built yet): Redhawk `/software/python/anaconda3-2023-python3.10/bin/python` = 3.10.9; Talon system Python 3.9, plus module `miniforge3-python3.12` = 3.12.5 |
 | PyTorch | 2.14.1+cpu (CPU build, local only) |
 | Transformers | 5.19.0 |
 | safetensors | 0.8.0 |
 | tokenizers | 0.23.2 |
 | Hugging Face Hub | 1.33.0 (installed as a dependency; the model files were downloaded with `curl`, not this library) |
-| CUDA | none locally; unknown on the cluster (the Redhawk environment will need a CUDA build of PyTorch and its own record) |
+| CUDA | none locally. Redhawk has the module `cuda-12.2` (used to build llama.cpp). The Talon CUDA version is not recorded here yet. The training environment on Talon (primary) or Redhawk (fallback) will need a CUDA build of PyTorch and its own record |
 
-## 6. Teacher
+## 6. Teacher: Qwen3.6-27B
 
-| Item | Value | Source |
-|---|---|---|
-| Model | Claude Sonnet 5.5 | [Models overview](https://platform.claude.com/docs/en/about-claude/models/overview) |
-| API model ID | `claude-sonnet-5-5` (Anthropic states every Claude model ID is a pinned snapshot, including dateless IDs) | same page |
-| Knowledge cutoff | Jun 2026 (reliable and training data) | same page |
-| Retirement | Not sooner than September 28, 2027 | same page |
-| Fallback | `claude-opus-5-5` | same page; decision in `docs/teacher_selection.md` |
-| Effort and thinking mode | Not yet used. Record the values actually used for each generation run | `docs/teacher_selection.md` plans medium or high |
+**What and why.** The teacher is Qwen3.6-27B, an open-weight reasoning model with about 27 billion parameters, released under the Apache 2.0 license, which allows training other models on its outputs. It was decided on 2026-11-06, after Anthropic confirmed that Claude outputs may not be used to train the students; the earlier Claude teacher is archived (`docs/workflow.md` Section 2.2). Because the weights are public, we download them and run the model on Miami's GPUs, so every part of the setup can be pinned: the exact weight files, the program that runs them, the chat template and the sampling settings. If one of these changes, the teacher's outputs can change, so each is recorded below and any change is logged in `docs/progress_update.md`.
 
-Every batch of teacher outputs must be recorded with the UTC date and time generated, the API model ID, effort level, thinking mode, sampling settings, and the files produced. Put the date in the file or folder name. Never overwrite a dated batch. The rule is in README Section 12.
+**Two deployments.** *Talon (primary)* runs the full BF16 weights. BF16 is a 16-bit number format, about 2 bytes per parameter, so the model runs as released, without compression. *Redhawk (fallback)* runs a 4-bit compressed copy (a GGUF file, the format used by the llama.cpp engine), which stores roughly half a byte per parameter so the model fits on two 16 GB V100 GPUs. Worked example of the size difference: the BF16 weights are about 53,011 MiB (55.6 GB), while the 4-bit file is 16,817,244,384 bytes (16.8 GB), about 30% of the size. Compression can cost some accuracy, which is why a 4-bit vs BF16 comparison is planned, both on Talon so the hardware is the same (the Talon 4-bit backend is not built yet; `docs/workflow.md` Section 2.1).
 
-## 7. Cluster notes (public documentation, checked 2026-10-01)
+### Talon (primary): BF16 weights served by vLLM
 
-Sources: [Redhawk cluster page](https://www.miamioh.edu/research/research-computing-support/services/hpc-cluster), [Slurm](https://miamioh.edu/research-innovation/research-computing-support/slurm-resource-manager.html), [batch usage](https://miamioh.edu/research-innovation/research-computing-support/batch-cluster-usage.html), [interactive usage](https://miamioh.edu/research-innovation/research-computing-support/interactive-cluster-usage.html), [Talon news](https://miamioh.edu/news/2026/06/new-talon-cluster-a-major-leap-forward-in-accelerated-computing-ai-technology-infrastructure-at-miami.html), [resource overview](https://miamioh.teamdynamix.com/TDClient/1813/Portal/KB/ArticleDet?ID=169669).
+| Item | Value |
+|---|---|
+| Repository | [Qwen/Qwen3.6-27B](https://huggingface.co/Qwen/Qwen3.6-27B) |
+| Pinned revision (commit SHA) | `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9` |
+| Weights | 29 files, about 53,011 MiB in total (read 2026-11-06; the download step records the real total) |
+| Engine | vLLM, the program that loads the model onto the GPUs and answers requests. **Version to be pinned**; the model card requires vLLM 0.19.0 or later |
+| Python for the engine | module `miniforge3-python3.12` (Python 3.12.5); Talon's system Python 3.9 is too old for vLLM |
+| Settings file | `configs/talon/talon_settings.sh`, explained in `docs/talon_setup.md` |
 
-- Redhawk: Slurm; partitions `batch`, `gpu`, `bigmem`; 4 GPU nodes with 2x NVIDIA Tesla V100-PCIE-16GB each; about 120 TB shared storage; login nodes should not be used for work over 1 hour of CPU time or 10 GB of memory.
-- Talon: 4 GPU nodes with 4x NVIDIA H100 each. No public documentation of its partitions, login or storage.
-- The four checkpoints total about 4.6 GB for the downloaded safetensors, small against the cluster storage. FP16 weights are about 0.14, 0.32, 0.81 and 2.02 GB for 70M, 160M, 410M and 1B, so baseline evaluation fits in 16 GB of GPU memory.
-- Not documented publicly (to ask rescomp@miamioh.edu): outbound internet from login and compute nodes, home and scratch quotas, available Python/PyTorch/CUDA modules, which cluster to use. The planned approach does not need cluster internet: the files are downloaded here and copied with `scp`, then re-checked with `sha256sum`.
+### Redhawk (fallback): 4-bit GGUF served by llama.cpp
+
+| Item | Value |
+|---|---|
+| Engine | llama.cpp tag `b11960`, which must resolve to commit `8642541b255bfb5dc39cd351a178be09013a55d6` |
+| Weights repository | `unsloth/Qwen3.6-27B-GGUF` at revision `82d411acf4a06cfb8d9b073a5211bf410bfc29bf` |
+| File | `Qwen3.6-27B-Q4_K_M.gguf`, 16,817,244,384 bytes |
+| File SHA-256 | `5ed60d0af4650a854b1755bd392f9aef4872643dc25a254bc68043fa638392a0` |
+| Chat template | Qwen's own `chat_template.jinja` from `Qwen/Qwen3.6-27B` at revision `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9` (the same commit as the Talon weights), so the template does not come from the third-party GGUF file. Its SHA-256 is computed at download and stored next to the model on the cluster (`chat_template.sha256`) |
+| Pins file | `configs/redhawk/common.sh` |
+
+A **chat template** is the small text recipe that turns a list of messages (system prompt, user question) into the exact token sequence the model was trained to read, including the markers that start and end its thinking. A wrong template can quietly change the answers, which is why it is pinned to Qwen's own repository.
+
+### Sampling and limits (identical on both clusters)
+
+These are the model card's recommended settings for thinking mode. *Temperature* 1.0 keeps the model's own word probabilities unchanged; *top_p* 0.95 means it picks only from the most likely words that together make up 95% of the probability; *top_k* 20 limits that to at most the 20 most likely words; *min_p* 0 and *presence penalty* 0 switch two further filters off.
+
+| Setting | Value |
+|---|---|
+| temperature | 1.0 |
+| top_p | 0.95 |
+| top_k | 20 |
+| min_p | 0 |
+| presence_penalty | 0 |
+| Maximum output per call | 16,384 tokens, thinking included |
+| Context per sequence | 20,480 tokens (a comparison setting, not the model's maximum; `docs/talon_setup.md` Section 7) |
+| Benchmark prompt | `data/prompts/benchmark_generation_v6.md`, SHA-256 `348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4` |
+
+Worked example of the limits: if Qwen thinks for 9,000 tokens and then writes a 600-token answer, the call used 9,600 of its 16,384 output tokens; a reply that needs more than 16,384 tokens of thinking plus answer is cut off and cannot be used. Because sampling at temperature 1.0 is random, rerunning the same slot gives a different question; that is why teacher outputs are never overwritten.
+
+**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, or the Phase 7 pass rate is poor, the first step is the same Qwen model at a higher precision or with more thinking, not a different model (`docs/workflow.md` Section 2.1).
+
+**Recording rule.** Every batch of teacher outputs is recorded with the UTC date and time generated, the cluster and job ID, the model repository and revision, the weight format (BF16 or the 4-bit file), the engine and its version, the chat template, the sampling settings, the prompt file and its SHA-256, and the files produced. Put the date in the file or folder name. Never overwrite a dated batch. Cluster jobs and their GPU time go in `docs/compute_log.md`; storage locations are in `docs/workflow.md` Section 8.
+
+## 7. Cluster notes (public documentation checked 2026-10-01; read-only probes 2026-11-04 on Redhawk and 2026-11-06 on Talon)
+
+This section only records the facts that matter for the model versions above. The full cluster facts, with how each was observed, are in `docs/cluster_selection.md` (Redhawk, and why each cluster is used) and `docs/talon_setup.md` (Talon). Every cluster job is recorded in `docs/compute_log.md`.
+
+Public sources: [Redhawk cluster page](https://www.miamioh.edu/research/research-computing-support/services/hpc-cluster), [Slurm](https://miamioh.edu/research-innovation/research-computing-support/slurm-resource-manager.html), [batch usage](https://miamioh.edu/research-innovation/research-computing-support/batch-cluster-usage.html), [interactive usage](https://miamioh.edu/research-innovation/research-computing-support/interactive-cluster-usage.html), [Talon news](https://miamioh.edu/news/2026/06/new-talon-cluster-a-major-leap-forward-in-accelerated-computing-ai-technology-infrastructure-at-miami.html), [resource overview](https://miamioh.teamdynamix.com/TDClient/1813/Portal/KB/ArticleDet?ID=169669).
+
+- **Which cluster.** Talon is the primary cluster for teacher generation, fine-tuning and evaluation; Redhawk is the fallback. Both are free to use; their cost is GPU time and queue waits.
+- **Talon:** Slurm partition `talon`; 4 nodes, each with 4 NVIDIA H100 NVL GPUs, 64 CPU cores and 515 GB of RAM. Nodes are shared between jobs, so a job asks for GPUs rather than a whole node. Jobs may run at most 3 days. Slurm accounting is off, so the scheduler keeps no job history (numbers come from the jobs' own logs). System Python is 3.9; module `miniforge3-python3.12` gives Python 3.12.5. The login node reaches Hugging Face and PyPI through the university proxy. The account is active and was probed read-only on 2026-11-06.
+- **Redhawk:** Slurm partition `gpu` with 4 V100 nodes (`mualhpcp38` to `mualhpcp41`), each with 2 NVIDIA V100 16 GB GPUs. There is no per-GPU request, so a job takes a whole node with `--exclusive`. Jobs may run at most 3 days; accounting is off. Python `/software/python/anaconda3-2023-python3.10/bin/python` is 3.10.9; the modules used are `cuda-12.2`, `gcc-12.2.0` and `cmake-3.31.2`. The public pages also list partitions `batch` and `bigmem`, about 120 TB of shared storage, and a rule that login nodes should not be used for work over 1 hour of CPU time or 10 GB of memory.
+- **Storage.** Redhawk and Talon share one home folder, `/home/buggjm`, with a 500 GB hard and 480 GB soft quota (about 17 GB used on 2026-11-06). The two clusters work in separate subfolders (`docs/workflow.md` Section 8).
+- **Precision hardware fact.** V100 GPUs (Redhawk) have no native BF16 support and H100 GPUs (Talon) do. Together with memory (about 53,011 MiB of BF16 weights cannot fit in a Redhawk node's 2 x 16 GB), this is why the BF16 teacher runs on Talon and Redhawk uses the 4-bit file.
+- **Student sizes against GPU memory.** The four Pythia checkpoints total about 4.6 GB for the downloaded safetensors, small against the home quota. FP16 weights are about 0.14, 0.32, 0.81 and 2.02 GB for 70M, 160M, 410M and 1B, so baseline evaluation fits even in one 16 GB V100. The planned approach does not need internet on the compute nodes: model files are downloaded on a login node or copied from this PC with `scp`, then re-checked with `sha256sum`.
 - Training memory depends on the training precision recipe (concept 3), which is not decided here.

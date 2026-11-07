@@ -7,14 +7,14 @@ Prepared 2026-10-06 (the data files carry the UTC stamp 2026-10-07_0015Z). Based
 The four Pythia students are **text continuers, not question answerers**. Given a question, they write something that looks like the next part of a web page, and they never stop on their own: in all 192 generations, not one ended with the end-of-text token. So most of the project's design has to be about *teaching a format*, and the data show that format, not knowledge, is the first thing fine-tuning must fix. Concretely:
 
 1. **Train on one fixed template and always end every answer with the end-of-text token** (`<|endoftext|>`, token id 0), with the loss counted only on the answer and that final token. Without that last token the fine-tuned model will keep rambling just like the untrained ones. For the 1B model, set the id explicitly, because its own config points at the wrong token (Section 3.2).
-2. **Keep teacher answers short** (a few sentences, or a short rationale ending in a clearly marked final answer). Long answers are not something these models can imitate well, and they are also what makes teacher data expensive. Section 5 shows how much this could shrink the API bill, as a hypothesis to measure in the pilot.
+2. **Keep teacher answers short** (a few sentences, or a short rationale ending in a clearly marked final answer). Long answers are not something these models can imitate well, and they also cost the teacher more GPU time per example (Section 5.3), a hypothesis to measure in the pilot.
 3. **Grade the benchmark on short, checkable answers** (numbers, multiple choice, R code run against tests), and cut the model's output at a stop rule (first blank line or `Question:`) before grading. Free-text explanations from a 70M model are not something we can grade meaningfully.
 4. **Expect the 70M model to score near zero on knowledge-heavy items** and make sure the benchmark has easy items and "well-formed answer" metrics, so differences between sizes are visible. This is a real risk to the 70% retained-accuracy tier at the smallest sizes; the project can still answer its question as a curve.
 5. **Do the evaluation on the GPU cluster.** On this CPU the 1B model produced about 9.5 tokens per second, so scoring a 1,000-question benchmark at 64 tokens each would take roughly 2 hours.
 
 ## 1. What a "base model" is, and how Pythia was trained
 
-A language model is a program that, given some text, predicts a probability for every possible next token (a token is a short chunk of text, about three quarters of a word on average). To generate text, you pick one token, add it to the text, and ask again, over and over. A **base model** is what you get when you train only on that one task over a huge pile of text. It is never taught to answer questions, follow instructions, or stop. An **instruction-tuned** model (like ChatGPT or Claude) gets extra training on examples of questions paired with good answers.
+A language model is a program that, given some text, predicts a probability for every possible next token (a token is a short chunk of text, about three quarters of a word on average). To generate text, you pick one token, add it to the text, and ask again, over and over. A **base model** is what you get when you train only on that one task over a huge pile of text. It is never taught to answer questions, follow instructions, or stop. An **instruction-tuned** model (like ChatGPT, Claude, or the project's teacher Qwen3.6-27B) gets extra training on examples of questions paired with good answers.
 
 Pythia is a base-model suite from EleutherAI. According to [the Pythia GitHub repository](https://github.com/EleutherAI/pythia) (read in full for this document), every model uses a 2,048-token context, trains on about 300 billion tokens at 2,097,152 tokens per step for 143,000 steps, and the "deduped" versions we use saw a de-duplicated copy of the Pile data for about 1.5 passes. The [70M model card](https://huggingface.co/EleutherAI/pythia-70m-deduped) states that the model "has not been fine-tuned for downstream contexts in which language models are commonly deployed", will not respond to a prompt "the way a product like ChatGPT does", and should never be relied on for factual output. Its tokenizer is the same as GPT-NeoX-20B's. The [Pythia paper](https://arxiv.org/abs/2304.01373) describes the suite as 16 models, 70M to 12B, trained on the same public data in the same order, built for research on how models change with scale, which is exactly why it suits a size-comparison project. The Pile itself is described as [22 diverse subsets, many of academic or professional origin](https://arxiv.org/abs/2101.00027).
 
@@ -71,7 +71,7 @@ The same question produced very different continuations depending on format:
 
 - **raw** drifts into other document types. Examples from the data: `What is 17 + 25?` made the 70M model write a stream of puzzle-style questions (`What is the next term in -1 + -1 - -1 - -1?`), the 410M and 1B models did the same with `In base 5, what is...` (the style of a machine-generated mathematics question set). `Write R code to compute the mean...` made the 160M and 1B models write C++ (`#include <iostream>`). Forum-style `A:` answers (like Stack Exchange) appear often. These are consistent with a web-scale training mix that includes forums, code and math exercise sets (the model card lists internet, prose, dialogue and academic sources; I did not verify the exact list of Pile subsets, so treat the "which subset" part as a guess).
 - **qa** gives a short first line most of the time (mean first-line length 5.9 to 14.6 words, the 160M model the longest), then keeps going.
-- **fewshot** produces the shortest, cleanest first lines (mean 1.1 to 5.9 words), because the model copies the pattern of short answers. But it also copies the *content* of the examples. Example, 160M: `Question: What is 17 + 25?` got ` White` (the colour answer from the example) and 70M answered `What is 144 divided by 12?` with `The sky is the same as the sky.` The model is imitating the surface form, not reading the question.
+- **fewshot** produces the shortest, cleanest first lines (mean 1.1 to 5.9 words), because the model copies the pattern of short answers. But it also copies the *content* of the examples. Example, 160M: `Question: What is 17 + 25?` got ` White` (the color answer from the example) and 70M answered `What is 144 divided by 12?` with `The sky is the same as the sky.` The model is imitating the surface form, not reading the question.
 
 **What it means:** we should not leave the format to chance. Fine-tuning on one fixed template removes this sensitivity, which is also a fairness point: all students and the untrained baselines need to be compared under a fixed, pre-declared format.
 
@@ -108,7 +108,7 @@ For the 8 prompts with a short unambiguous answer (two general knowledge, three 
 ### 3.6 Facts the probe settled from `docs/model_versions.md`
 
 - **Parameter counts match** the official counts exactly for all four sizes (difference 0). That includes the 1B (1,011,781,632), so the 512-value discrepancy seen in the Hugging Face API listing does not appear in the loaded model.
-- **Stored dtype of the files** (read from the `.safetensors` headers): 70M, 160M and 410M are stored as 32-bit floats (F32); **1B is stored as 16-bit (F16)**. All four loaded as `torch.float16` as required. The Pythia repository says the 1B was trained in bf16 because of a loss spike in fp16, which is worth remembering for the fine-tuning precision choice on Redhawk's V100 GPUs (no native bf16).
+- **Stored dtype of the files** (read from the `.safetensors` headers): 70M, 160M and 410M are stored as 32-bit floats (F32); **1B is stored as 16-bit (F16)**. All four loaded as `torch.float16` as required. The Pythia repository says the 1B was trained in bf16 because of a loss spike in fp16, which is worth remembering for the fine-tuning precision choice: Talon's H100 GPUs (the primary cluster) support bf16 in hardware, while Redhawk's V100 GPUs (the fallback) do not.
 - **Tokenizers:** the same eight test strings (plain text, a p-value sentence, three R snippets, numbers, the end-of-text string, whitespace and a tab) became **identical token sequences for all four sizes**, including 1B. One caveat: the 1B tokenizer config sets `clean_up_tokenization_spaces=True`, and the library printed a warning that this setting is destructive for this tokenizer type and was ignored. We should check once that decoding 1B output matches the others when we build the evaluation code.
 - **R code costs few tokens:** the 3-line R snippet `model <- lm(y ~ x1 + x2, data = df)\nsummary(model)` is 22 tokens and a 3-line loop is 19, so answers with some R code fit easily in the 2,048-token window.
 
@@ -120,6 +120,8 @@ For the 8 prompts with a short unambiguous answer (two general knowledge, three 
 - **Reported Pythia scores** (from one search snippet of the Pythia paper, not independently checked): on zero-shot tests, scores rise from the 70M to 1B models, for example LAMBADA 0.185, 0.328, 0.516, 0.562 and SciQ 0.601, 0.741, 0.811, 0.840 for 70M, 160M, 410M, 1B. This matches the direction of what we saw: bigger is better at recalling and completing, which are likelihood-style tasks.
 
 ## 5. How this should change the project
+
+The phase numbers below are the phases in `docs/workflow.md` Section 5.
 
 ### 5.1 Training data design (Phase 4 and Phase 6)
 
@@ -136,21 +138,13 @@ For the 8 prompts with a short unambiguous answer (two general knowledge, three 
 - **Consider a multiple-choice slice scored by likelihood.** It is the one measurement every student, including the untrained baselines, can be scored on without generation noise. Report it separately from generation accuracy, because the two do not always agree.
 - **Pre-declare one evaluation protocol** (prompt format, stop rule, max new tokens, greedy decoding) and use it for baselines, fine-tuned students and, where possible, the teacher. The untrained baselines will look worse under any format they were not trained on, so say so in the write-up.
 
-### 5.3 Cost implication for the teacher (Phase 4 and the budget request)
+### 5.3 Effect on teacher GPU time (Phase 4 and Phase 6)
 
-The current estimate (`docs/cost_estimate.md`) assumes 300 input tokens and 600 output tokens plus up to 2,000 thinking tokens per example, which is $0.0133 per example at Batch prices. Most of that cost is output tokens, which the student never sees, because thinking tokens are billed but not stored in the training example. If the training answers are short and the teacher runs at lower effort, the cost per example could fall a lot. Sensitivity, Sonnet 5.5 Batch ($1 per million input tokens, $5 per million output tokens, cost = (input x $1 + output x $5) / 1,000,000):
-
-| Scenario | Input tokens | Output tokens incl. thinking | Cost per example | 50k examples | 200k examples |
-|---|---|---|---|---|---|
-| Current high case | 300 | 2,600 | $0.0133 | $665 | $2,660 |
-| Short answer, no thinking | 300 | 200 | $0.0013 | $65 | $260 |
-| Short answer, 1,000 thinking tokens | 300 | 1,200 | $0.0063 | $315 | $1,260 |
-
-This is arithmetic on assumptions, not a forecast. The pilot will measure the real token counts; until then the funding request should still use the safe high case. The check to run in the pilot: generate the same 50 questions at two effort levels and compare both the cost and how many answers pass verification, since cheaper answers are only a saving if they are still correct.
+The teacher runs on Talon at no money cost, so what teacher data costs is GPU time (recorded in `docs/compute_log.md`), and most of that time goes into output tokens, including thinking tokens that are generated but never stored in the training example. Shorter teacher answers therefore mean fewer output tokens and less GPU time per example, and a longer answer would not be useful anyway, because the students can only imitate short answers. The pilot should measure the real tokens and GPU time per example, and check that the shorter answers still pass verification.
 
 ### 5.4 Evaluation compute (Phase 4 and Phase 5)
 
-Run baselines and evaluations on Redhawk's GPUs with batching. This PC is fine for development and for the 70M and 160M models.
+Run baselines and evaluations on Talon's GPUs with batching (Redhawk is the fallback). This PC is fine for development and for the 70M and 160M models.
 
 ## 6. How the models work: determination
 

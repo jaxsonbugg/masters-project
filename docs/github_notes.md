@@ -38,6 +38,18 @@ Tip: `git status` after each step shows what moved from "changed" to "staged" to
 | `git log --oneline` | Lists commits, newest first, one line each. |
 | `gh repo view` | Shows repository details, including whether it is private. |
 
+## Tags (bookmarks for important commits)
+
+A *tag* is a permanent name for one commit, so it can be found again after files are deleted. The tag `pre-cleanup-claude-era` marks the last commit before the Claude-era material was removed (2026-11-06; see `docs/workflow.md` Section 2.2).
+
+| Command | What it does |
+|---|---|
+| `git tag -n` | Lists tags with their messages. |
+| `git ls-tree -r --name-only pre-cleanup-claude-era` | Lists every file as it was at the tag. |
+| `git show pre-cleanup-claude-era:docs/teacher_selection.md` | Prints one old file without changing anything. |
+| `git checkout pre-cleanup-claude-era -- <path>` | Restores an old file into the working folder (then commit it if you want it back). |
+| `git push origin pre-cleanup-claude-era` | Uploads a tag to GitHub (tags are not pushed by a plain `git push`). |
+
 ## Things I learned
 
 - `.gitignore` lists files Git must never track (model files, secrets, temp files). Set it up before the first `git add`.

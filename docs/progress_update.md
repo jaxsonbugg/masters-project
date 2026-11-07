@@ -353,3 +353,92 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Follow-up read (same day):** the login shell sets `http_proxy`/`https_proxy` to the university web proxy (so the login node's internet goes through it); the scripts now add `127.0.0.1` and `localhost` to `no_proxy` so the model server inside a job is never sent through a proxy. The login script shows storage with `quota -s -f /home` but it printed nothing for us, so the 500 GB figure is still not seen; our group folder is `/shared/leed13_shared`. The conda module's folder holds `conda`, `pip` and `python3.12`.
 - **Key also works on Redhawk** (shared home folder): the `Host redhawk` entry now uses the same key, so Redhawk logins need no password or Duo (`recovery/redhawk_ssh_access.md`). The Talon shell test harness now pins `WEIGHTS_MIB=51500` so its expected numbers do not depend on the settings default.
 - **Storage result (2026-11-06):** `quota -s -v -f /home` shows 17,336 MB used, soft limit 480 GB, hard limit 500 GB on the home file system, which Redhawk and Talon share. So the 500 GB is OBSERVED, not only told, and our Redhawk work already uses 17 GB of it. `configs/paths.yaml` now sets the four Talon folders under `/home/buggjm/talon_project` (separate from `/home/buggjm/masters_project`); `fetch_talon.sh` reads this quota with a parser built on the real output (`home_quota_mib` in `common.sh`, 5 new tests) and refuses a download that would pass the soft limit. `QT_BASE_PYTHON` is set to the conda module's Python 3.12.5 (OBSERVED).
+
+### Repository cleanup: Claude dropped, Qwen3.6-27B on Talon, README split into README + workflow.md (2026-11-06, $0, no cluster job)
+- **Why:** Anthropic support confirmed that Claude outputs may not be used to train the Pythia students, so the Claude API is out of the project. The README had grown into a 356-line lab notebook mixing the overview with every detail, and the repository still held much Claude-only material. Jaxson asked for a short general README, a separate document with all specifics, an updated `CLAUDE.md`, and removal of whatever is no longer used.
+- **Decisions (Jaxson, 2026-11-06):**
+  - **Teacher:** Qwen3.6-27B, decided.
+  - **Fallback if it underperforms:** the same model at higher precision or with more thinking, not a different model.
+  - **Compute:** Talon for everything (generation, fine-tuning, evaluation); Redhawk is the fallback, and its scripts are kept unchanged.
+  - **Precision comparison:** 4-bit versus BF16, both on Talon, not Redhawk versus Talon. The Talon 4-bit backend is still to be built.
+  - **Benchmark:** regenerated with Qwen using the existing pipeline.
+  - **Verifier:** left open (ChatGPT, Claude or another frontier model, as a checker only).
+  - **Logs:** a compact cost log plus a new, detailed compute log.
+  - **Layout:** no folder moves.
+  - **Taxonomy:** `data/taxonomy/` left untracked and untouched.
+- **Success criterion 4, dated methodological deviation:**
+  - **Why:** the pre-registered wording assumed an API-only teacher whose size and hardware were unknown ("cost per query and latency"). The teacher now runs on our own GPUs.
+  - **What changed:** the criterion is split into two separate requirements, both of which must be met.
+    - **4a:** at least 10x fewer parameters than the teacher. Every Pythia size passes this, so it is a guard.
+    - **4b:** at least 10x less GPU time per query and at least 10x lower median latency, on the same GPU. The protocol is fixed in the pilot. This is the measured requirement.
+  - **Record:** the original wording is kept verbatim in `docs/workflow.md` Section 1.2.
+- **Archive tag first:** the annotated tag `pre-cleanup-claude-era` was created on commit `60c3ca0` before anything was deleted. Every removed file can be read with `git show pre-cleanup-claude-era:<path>`. What the Claude trials taught, and how to recover files, is in `docs/workflow.md` Section 2.2. The total Claude spend stays $1.44.
+- **README and workflow:**
+  - **`README.md`:** now a one-page technical overview: question, design, criteria in brief, status, repository map.
+  - **`docs/workflow.md` (new):** holds all specifics, updated for Qwen and Talon:
+    - success criteria, with the deviation;
+    - design and teacher deployment;
+    - the archived Claude era;
+    - benchmark design;
+    - a new section of **safeguards for one teacher writing both benchmark and training data** (separate prompts and IDs, freeze first, slot variety, decontamination, independent answer verification, stated limitations);
+    - phases 1 to 13;
+    - metrics and statistics;
+    - storage, including the cluster paths and the shared 500 GB home quota;
+    - timeline, risks and open decisions.
+  - **`CLAUDE.md`:** now holds the working rules from README Section 12, rewritten for the Qwen era. It points to `docs/workflow.md` as the source of truth, and the cost rule became two rules: a compute log and a cost log.
+- **Logs:**
+  - **`docs/cost_log.md`:** condensed to one line per paid run (13 Claude-era rows, $1.44); the per-trial arithmetic is in the tagged version.
+  - **`docs/compute_log.md` (new):** records every cluster job and measured local run: times, node, GPUs, GPU-hours, peak memory, outcome. Backfilled entries:
+    - the Pythia probe;
+    - the Redhawk probes and the scheduler test;
+    - build jobs 2510636 and 2510641;
+    - pipeline 2510690 (stopped at stage A, about 0.05 GPU-hours);
+    - pipeline **2511641** (finished, **results not yet reviewed**, and marked so);
+    - the Talon probe.
+- **Deleted from the working tree** (all preserved in the tag):
+  - `docs/api_console_guide.md`, `docs/cost_estimate.md`, `docs/teacher_selection.md`, `docs/teacher_subscription_feasibility.md`. These were entirely about the Claude API, its pricing, the subscription idea or the Claude teacher choice.
+  - `recovery/benchmark_trial_outputs.md`, the rebuild recipe for the Claude outputs.
+  - `results/benchmark_trial/`: all the Claude-written trial items and logs. No test reads them.
+  - `data/prompts/benchmark_generation_v1.md` to `v5.md`, the Claude-era prompt experiments.
+  - **Kept on purpose:**
+    - Prompt **v6, byte for byte.** Its SHA-256 `348db6ff...` is pinned by the Redhawk and Talon prep scripts and tests. Its human-only header still mentions Claude.
+    - The copies outside the repository (`C:\masters_project_large\data\teacher_outputs\*sonnet*`) were not touched.
+- **Code:**
+  - **`generate_benchmark.py`, removed:**
+    - the `trial`, `submit`, `fetch` and `replay` commands;
+    - the model, effort and price settings;
+    - the cost cap and the retry loop around API calls;
+    - the dated Claude output folders;
+    - support for prompts v1 to v5;
+    - `--prompt` and `--effort`.
+  - **`generate_benchmark.py`, now:** "the shared benchmark library plus the free checks" (`plan`, `check`, `verify`, `dupcheck`). `build_request` returns only the system text and user message, which are the only fields `open_teacher_test.py` used. The item-driven required-field logic in `check_item` is unchanged; its constants were renamed from `V1_REQUIRED`/`V5_REQUIRED` to `REQUIRED_WITHOUT_R_SOLUTION`/`REQUIRED_WITHOUT_WORKING`.
+  - **`open_teacher_test.py`:** comments and help text only.
+    - The Sonnet framing and the Redhawk-versus-Talon framing are removed.
+    - The missing `docs/qwen36_precision_test_evaluation.md` reference is repointed.
+    - `--ref` became a generic reference file.
+  - **`pythia_probe.py`:** a one-line docstring fix.
+  - **`environment/requirements.txt`:** dropped `anthropic`, `httpx2`, `pydantic` and `jiter`. It now lists `httpx==0.28.1`, which the Qwen client imports. `recovery/python_env.md` was updated to match.
+- **Regression proof for the refactor:**
+  - **What was built:** `code/tests/benchmark_core_regression/` (new): `capture.py`, `test_regression.py` and `snapshot_synthetic.json`. The snapshot records what the shared functions produce:
+    - all slots up to BM9132;
+    - the v6 prompt sections and hash;
+    - the system and user text for 1,036 slots;
+    - the schema;
+    - 35 hand-made replies (every hard-problem kind, soft flags, rounding ties, negative zero, exponent notation, unsafe R);
+    - `check_item`, `verify_item`, and the output of the `verify` command.
+  - **Before any change:** the snapshot was captured. It was also run once on the 100 Claude batch items, which are kept in the session scratchpad only and not committed.
+  - **After the refactor:** both snapshots matched exactly (51 and 153 parts).
+  - **The one deliberate wording change:** two user-facing messages that pointed to "README Phase 3" now point to `docs/workflow.md` Phase 3. That change was made next, the only difference was confirmed to be that one line, and the committed snapshot was re-saved.
+  - **A weakness found and deliberately not changed** (behavior was kept identical on purpose): a reply that omits the `r_solution` field is still checked under the old v1 rules. A number question without R code would therefore pass with the model's own key. Whether Qwen replies must always contain `r_solution` should be decided separately.
+- **Doc fixes:**
+  - **`docs/teacher_model_evaluations.md`:** reframed as how Qwen was chosen; the Claude-feature and Sonnet comparisons removed.
+  - **`docs/pilot_plan.md`:** rewritten for Qwen on Talon.
+  - **`docs/model_versions.md`:** §6 now holds the Qwen pins; the stale dtype and cluster-Python notes are fixed.
+  - **`docs/pythia_behavior_analysis.md`:** §5.3 (the Sonnet cost table) replaced by a GPU-time note.
+  - **`docs/cluster_selection.md`:** a current-decision note at the top; the "access not confirmed" cells dated; the comparison wording updated.
+  - **`docs/talon_setup.md`:** job 2511641 is no longer "the baseline"; the unmeasured "35 tokens per second" claim removed; the comparison wording updated; the day-1 status added.
+  - **`recovery/redhawk_ssh_access.md`:** a VPN note.
+  - **`configs/paths.yaml`:** the missing `recovery/redhawk_qwen_test.md` reference in a comment repointed. The same stale reference in `configs/redhawk/common.sh` was **left alone**, because the Redhawk scripts are preserved byte for byte.
+  - **`docs/github_notes.md`:** a tags section added.
+- **Tests:** every suite ran before any change and again after all changes, with identical counts (Python 46 / 23 / 15; Redhawk shell 31/10/11/10/39; Talon shell 41/19/61; regression 51 and 153 parts).
+- **Recorded as open decisions** (`docs/workflow.md` Section 10.2), on Jaxson's choice to push first and decide these later: require `r_solution` in every reply; record the Talon CUDA version; the stale comment in `configs/redhawk/common.sh`; whether to keep the Claude-era outputs outside the repository.

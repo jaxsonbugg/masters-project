@@ -18,7 +18,7 @@
    (The last two lines are optional and need the key from `recovery/talon_ssh_access.md`; without them login uses password + Duo.)
 2. Create `C:\Users\Buggb\bin\redhawk.cmd` containing the single line `@ssh redhawk %*`.
 3. Add `C:\Users\Buggb\bin` to the user PATH (PowerShell): append it to `[Environment]::GetEnvironmentVariable("Path","User")` and write it back with `[Environment]::SetEnvironmentVariable("Path", <new value>, "User")`. Open a new terminal.
-4. Test: type `redhawk`, log in with your Miami password and Duo, then type `exit`.
+4. Test: type `redhawk`, log in (with the key from step 1, or your Miami password and Duo), then type `exit`. **Off campus, connect the Miami VPN first:** without it, SSH to the cluster times out (port 22 is blocked from outside the campus network; observed 2026-11-04).
 
 ## Versions, seeds, and settings
 - Source / model revision / API model + version: Windows OpenSSH 9.5p2 (`ssh -V`).
@@ -36,4 +36,4 @@
 Re-create the two files as above (a minute, no cost). If the account itself is gone or expired, request or renew a sponsored account in the cluster management app (a faculty sponsor must approve) or email rescomp@miamioh.edu.
 
 ## Last updated
-2026-10-01
+2026-11-06 (key login shared with Talon; VPN note)
