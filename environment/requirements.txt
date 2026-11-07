@@ -13,8 +13,6 @@ numpy==2.4.6
 PyYAML==6.0.3
 psutil==7.2.2
 
-# Added 2026-10-07 for code/generation/generate_benchmark.py (Claude API client)
-anthropic==1.11.0
-httpx2==2.13.1
-pydantic==2.13.5
-jiter==0.17.0
+# HTTP client for code/generation/open_teacher_test.py (talks to the Qwen server on Redhawk or Talon). Already
+# installed above as a dependency of huggingface_hub; listed so the teacher client's need is explicit. (2026-11-06)
+httpx==0.28.1

@@ -2,14 +2,17 @@
 open_teacher_test.py - run the benchmark-generation prompt on an OPEN-WEIGHT teacher (Qwen3.6-27B) and score it.
 
 WHAT THIS IS AND WHY
-If Anthropic does not allow Claude outputs to train the Pythia students, the project needs an open-weight teacher
-(docs/teacher_model_evaluations.md). This script runs a pilot that compares two DEPLOYMENTS of Qwen3.6-27B on the
-same 100 question "slots" Claude Sonnet 5.5 answered in the 2026-10-15 batch (BM0021 to BM0120):
-  redhawk - a 4-bit file (Unsloth Q4_K_M GGUF) served by llama.cpp on Miami's Redhawk cluster (2x V100, free);
-  talon   - BF16 (full precision) weights served by vLLM on Miami's Talon cluster (H100, free). Prepared in advance and
-            NOT yet run: its settings are drafts until the first Talon login (configs/talon, docs/talon_setup.md).
-It is a comparison of two deployments, not a controlled test of quantization: the engine, the chat template code and
-other details also differ (docs/qwen36_precision_test_evaluation.md lists every difference).
+The project's teacher is the open-weight model Qwen3.6-27B (docs/workflow.md Section 2.1). This script sends the
+benchmark-generation prompt to a running Qwen server on one of Miami's clusters, saves every reply, and scores the
+replies with the same checks used for every generated question. It is used to test a deployment on 100 fixed
+question "slots" (BM0021 to BM0120) before the real benchmark run. Two backends exist:
+  talon   - BF16 (full precision) weights served by vLLM on Miami's Talon cluster (H100, free). The primary cluster;
+            its settings stay drafts until reviewed (configs/talon, docs/talon_setup.md).
+  redhawk - a 4-bit file (Unsloth Q4_K_M GGUF) served by llama.cpp on Miami's Redhawk cluster (2x V100, free). The
+            fallback.
+The planned precision comparison is 4-bit versus BF16, both on Talon (docs/workflow.md Section 2.1); it needs a
+Talon 4-bit backend that is not built yet. `compare` gives paired statistics for any two scored runs on the same
+slots.
 
 The outputs are TEST MATERIAL ONLY. They are never part of the benchmark and never training data; every saved row
 carries "use": "dev_test_only". Only slot descriptions (category, subtopic, difficulty, answer type) are sent, never a
@@ -24,16 +27,15 @@ A run is either a smoke run (--smoke-set A|B|T) or a main run; the script refuse
 
 WHAT IS REUSED UNCHANGED FROM generate_benchmark.py (so the prompt and the checks cannot drift)
   load_prompt + build_request  - the exact v6 prompt text for each slot (the prompt file is not edited);
-  select_slots                 - the same slots as Sonnet's batch;
+  select_slots                 - the fixed, repeatable question slots;
   ITEM_SCHEMA                  - the same output fields;
-  process_reply                - the same checks and the same "key from R" step used for every Sonnet reply.
+  process_reply                - the same checks and the same "key from R" step used for every generated question.
 
-THE ONE CHANGE NEEDED BECAUSE THIS IS NOT THE CLAUDE API
-Claude received the JSON schema through the API (`output_config.format`) and the API forced valid JSON. These
-backends do not show the schema to the model, and forcing JSON while the model is "thinking" is unreliable on both
-(llama.cpp issues #20345 and #29006). So the schema TEXT is appended to the system message, identically for both
-backends, and replies are parsed and checked instead of forced. A reply that is not valid JSON counts as a format
-failure.
+WHY THE SCHEMA IS SENT AS TEXT
+These servers do not enforce a JSON output schema, and forcing JSON while the model is "thinking" is unreliable on
+both engines (llama.cpp issues #20345 and #29006). So the schema TEXT is appended to the system message, identically
+for both backends, and replies are parsed and checked instead of forced. A reply that is not valid JSON counts as a
+format failure.
 
 HOW A RESUME STAYS SAFE (both backends)
   - responses.jsonl is append-only and each row is flushed to disk as it is written; nothing is ever rewritten.
@@ -52,7 +54,7 @@ EXAMPLES (on the clusters the sbatch scripts call `run` themselves)
   python open_teacher_test.py run --backend redhawk --resume <folder>                     (continue after a stop)
   python open_teacher_test.py validate --run <folder>                                     (free; no R needed)
   python open_teacher_test.py score --run <folder>                                        (free; needs R)
-  python open_teacher_test.py compare --a <redhawk items> --b <talon items> --ref <sonnet batch02 items>
+  python open_teacher_test.py compare --a <scored items A> --b <scored items B> [--ref <reference items>]
 """
 
 import argparse
@@ -84,7 +86,7 @@ except Exception:
 # ---------------------------------------------------------------------------------------------
 # Settings that define the test. Every one of these is written into run_log.json.
 # ---------------------------------------------------------------------------------------------
-N_SLOTS, START = 100, 21                 # BM0021 to BM0120, the slots of Sonnet's 2026-10-15 batch
+N_SLOTS, START = 100, 21                 # BM0021 to BM0120, the fixed deployment-test slots
 MAIN_FIRST, MAIN_LAST = 21, 120          # the only slot numbers a main run may contain
 SMOKE_SETS = {"A": (9001, 2), "B": (9003, 2), "T": (9101, 32)}   # (first slot number, how many): BM9001-2, BM9003-4, BM9101-9132 (T = throughput)
 MAX_TOKENS = 16384                       # output ceiling per call, INCLUDING thinking tokens (both backends)
@@ -166,7 +168,7 @@ def slots_for_ids(ids):
 # Requests
 # ---------------------------------------------------------------------------------------------
 def build_messages(slot, prompt):
-    """The v6 system and user text exactly as generate_benchmark.build_request makes them for Claude, plus the
+    """The v6 system and user text exactly as generate_benchmark.build_request makes them, plus the
     schema block appended to the system message (the one adapter change, explained at the top)."""
     req = gb.build_request(slot, prompt)
     system = req["system"] + "\n\n" + SCHEMA_BLOCK_HEADER + "\n" + json.dumps(gb.schema_for(gb.PROMPT_VERSION))
@@ -323,7 +325,7 @@ def cmd_run(args):
 
     meta_path = run_dir / "run_log.json"
     new_meta = {
-        "use": "dev_test_only", "test": "Qwen3.6-27B deployment comparison (docs/qwen36_precision_test_evaluation.md)",
+        "use": "dev_test_only", "test": "Qwen3.6-27B deployment test (docs/workflow.md Section 2.1)",
         "backend": backend, "model": cfg["model"], "precision": cfg["precision"], "weights": cfg["weights"],
         "engine": cfg["engine"], "extra_params": cfg["extra"], "sampling": SAMPLING, "max_tokens": max_tokens,
         "slot_set": "dev_smoke" if kind == "smoke" else "main", "slot_ids": [s["item_id"] for s in slots],
@@ -699,7 +701,7 @@ def cmd_score(args):
         text, strict = extract_json(content)
         stop_reason = "max_tokens" if finish == "length" else "end_turn"
         shim = SimpleNamespace(stop_reason=stop_reason, content=[SimpleNamespace(type="text", text=text)])
-        item, hard, soft = gb.process_reply(shim, slot, rscript)  # the same checks and R-key step as for Sonnet
+        item, hard, soft = gb.process_reply(shim, slot, rscript)  # the same checks and R-key step as every generated question
         fmt_ok = item is not None and stop_reason != "max_tokens" and not any(
             p.startswith(("missing field", "reply is not valid JSON", "cut off")) or "differs from the slot" in p
             for p in hard)
@@ -814,7 +816,7 @@ def cmd_compare(args):
         ref = load_items(args.ref)
         k = sum(1 for i in ids if i in ref and ref[i].get("final_status") == "ok" and ref[i].get("attempts") == 1)
         print(f"\nReference ({Path(args.ref).name}): passed every automatic check on the first attempt in {k}/{len(ids)} "
-              f"of these slots (Claude's API forced valid JSON, so its format layer is not comparable).")
+              f"of these slots (descriptive only; a reference produced with a different setup is not a paired comparison).")
 
 
 def main():
@@ -851,7 +853,7 @@ def main():
     p.add_argument("--b", required=True)
     p.add_argument("--hand-a", default=None, help="jsonl of {item_id, correct, note} hand verdicts for A")
     p.add_argument("--hand-b", default=None)
-    p.add_argument("--ref", default=None, help="Sonnet items on the same slots (reference only)")
+    p.add_argument("--ref", default=None, help="another items file on the same slots (reference only, not tested)")
     p.set_defaults(fn=cmd_compare)
     args = ap.parse_args()
     OUT_ROOT_OVERRIDE = args.out_root

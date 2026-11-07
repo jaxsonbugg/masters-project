@@ -1,18 +1,14 @@
 """
-generate_benchmark.py - ask Claude (via the API) to write the benchmark questions.
+generate_benchmark.py - the shared benchmark library: question slots, the generation prompt, the output schema,
+the automatic checks, and the step where R writes and verifies answer keys. Also four free command-line checks.
 
 WHAT THIS IS
-The project's benchmark is a fixed set of about 1,000 statistics/R questions with known answers,
-used as the "final exam" for the small Pythia models. We have Claude Sonnet 5.5 write the questions.
-This script does that in two ways that share ONE code path for building each request:
-
-  trial   - writes a small number of questions (default 20) with ordinary API calls, one at a time,
-            so you see results immediately. It has a hard dollar cap and stops itself before it can
-            exceed it. Use this to test the prompt and measure real cost.
-  submit  - sends the same requests to the Message Batches API (half price, results within hours).
-            Use this for the full 1,000. Then run `fetch` to download the results.
-
-Because both use build_request(), a prompt that works in the trial works unchanged in the big run.
+The project's benchmark is a fixed set of about 1,000 statistics/R questions with known answers, used as the
+"final exam" for the small Pythia models. The teacher model (Qwen3.6-27B on Talon, with Redhawk as the fallback)
+writes the questions. The client that talks to the teacher is open_teacher_test.py; it imports the pieces below so
+that the prompt and the checks are defined in exactly one place and cannot drift. This file makes no model calls.
+(The original Claude API commands were removed on 2026-11-06; see docs/workflow.md Section 2.2 and the Git tag
+pre-cleanup-claude-era.)
 
 HOW A QUESTION GETS MADE (plain steps)
 1. blueprint(n): a fixed, repeatable list of n "slots". Each slot says which category, subtopic,
@@ -20,62 +16,35 @@ HOW A QUESTION GETS MADE (plain steps)
    intro / number"). The list is built so that any 20 slots in a row already have the target mix, and
    1,000 slots are just 50 copies of that pattern with different subtopics. No randomness is left to
    chance: running it again gives the same slots.
-2. build_request(): fills the prompt file (data/prompts/benchmark_generation_v6.md by default; choose
-   another with --prompt) with one slot's details and attaches a JSON "output schema" so Claude must
-   answer with a clean, machine-readable object.
-3. The request is sent. Claude may "think" first (adaptive thinking); those hidden thinking tokens are
-   billed as output tokens, which is the expensive kind.
+2. build_request(): fills the prompt file (data/prompts/benchmark_generation_v6.md) with one slot's details and
+   returns the system text and the user message. open_teacher_test.py appends the output schema as text.
+3. The teacher writes one question as a JSON object.
 4. process_reply(): the reply is parsed and checked (valid JSON, right fields, short answer, not cut off,
    question text finished). The checks sort problems into two kinds:
-     HARD problem = the question is unusable, so it is regenerated (see step 6).
-     SOFT flag    = the question is kept but a person should look at it (see step 5).
+     HARD problem = the question is unusable, so it is asked for again.
+     SOFT flag    = the question is kept but a person should look at it.
 5. For a NUMBER question the key is taken from R, not from the model: apply_r_key() runs the model's
    r_solution code, rounds R's number the way the question says (halves up), and writes that as the key.
    The model's own typed key is kept as model_canonical_answer; if the two disagree the item gets a soft
-   flag. Example (trial 7, BM0013): the model typed 4.867, its code prints 4.25, so the key becomes 4.250.
+   flag. Example: the model typed 4.867, its code prints 4.25, so the key becomes 4.250.
    R fixes slips of arithmetic or typing. It cannot notice code that answers a different question than the
    one written, which is why the soft flag and, later, a blind re-solve exist.
-6. run_attempts(): a question with a hard problem is asked for again with the same prompt, up to
-   MAX_ATTEMPTS (3) attempts in all. Every attempt is saved; failed ones go to rejected_attempts.jsonl.
-   A key disagreement is deliberately NOT a reason to regenerate: that would quietly remove questions whose
-   arithmetic is hard to do in one's head and make the benchmark easier than intended. A refusal by the API
-   is not retried: the run stops after saving that call's log, because refusals repeat.
-7. The real token counts the API reports are turned into dollars.
 
-WHY THE COST CAP WORKS
-Each call has max_tokens (here 5000), the most output it can ever produce. So the most any single call
-can cost is known in advance: (input tokens x input price + 5000 x output price). The script adds that
-worst case up BEFORE starting and refuses to run if it could exceed your cap; and while running, it
-stops if (money spent so far + worst case of the next call) would pass the cap.
-
-This script never prints or stores your API key. It reads ANTHROPIC_API_KEY from the environment.
-
-EXAMPLES (run with the project's virtual environment Python)
-  python generate_benchmark.py plan --n 20
-  python generate_benchmark.py check --items <path to items.jsonl>          (free automatic checks)
-  python generate_benchmark.py verify --items <path to items.jsonl>         (free: runs R to test the keys)
-  python generate_benchmark.py trial --n 20 --cap-usd 3.00 --dry-run     (no API call, no cost)
-  python generate_benchmark.py trial --n 20 --cap-usd 3.00               (real calls)
-  python generate_benchmark.py --effort high trial --n 20 --cap-usd 3.00 (same, thinking harder)
-  python generate_benchmark.py replay --responses <path to responses.jsonl> --n 20   (free: re-check saved replies)
-  python generate_benchmark.py submit --n 1000 --cap-usd 30              (later: Batch API)
-  python generate_benchmark.py fetch --manifest <path to batch_manifest.json> [--retry-failed --cap-usd 5]
-(--prompt and --effort go BEFORE the command name.)
+FREE COMMANDS (no model call; run with the project's virtual environment Python)
+  python generate_benchmark.py plan --n 20 [--start 21]                 print the slots
+  python generate_benchmark.py check --items <items.jsonl>              re-run the automatic checks
+  python generate_benchmark.py verify --items <items.jsonl>             run R to test the answer keys
+  python generate_benchmark.py dupcheck --items <new.jsonl> --against <earlier files or patterns>   near-duplicates
 """
 
 import argparse
 import glob
 import hashlib
 import json
-import math
-import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
-import time
-from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
@@ -86,38 +55,15 @@ try:
 except Exception:
     pass
 
-# ---------------------------------------------------------------------------------------------
-# Settings that define "the teacher run". Every one of these is written into the run log.
-# ---------------------------------------------------------------------------------------------
-MODEL = "claude-sonnet-5-5"          # exact API model id (a pinned snapshot)
-EFFORT = "medium"                    # how hard the model thinks: low < medium < high < xhigh < max
-MAX_TOKENS = 5000                    # output ceiling per call, INCLUDING thinking tokens
-PRICE_IN_PER_MTOK = 2.00             # standard price, USD per million input tokens (Sonnet 5.5)
-PRICE_OUT_PER_MTOK = 10.00           # standard price, USD per million output tokens
-BATCH_FACTOR = 0.5                   # the Batch API charges half
-TYPICAL_IN, TYPICAL_OUT = 1200, 1500 # rough guess of tokens per question, only for the "expected" line
-PROMPT_VERSION = "v6"                # which prompt file is used; change with --prompt (see set_prompt)
-MAX_ATTEMPTS = 3                     # tries per question: one first attempt plus up to two regenerations
+PROMPT_VERSION = "v6"                # the generation prompt in use (data/prompts/benchmark_generation_v6.md)
 
 REPO = Path(__file__).resolve().parents[2]
 PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{PROMPT_VERSION}.md"
 
 
-def set_prompt(version):
-    """Choose the prompt file (v1 to v6). Trial, submit and fetch all read the same global, so they cannot drift."""
-    global PROMPT_VERSION, PROMPT_FILE
-    PROMPT_VERSION = version
-    PROMPT_FILE = REPO / "data" / "prompts" / f"benchmark_generation_{version}.md"
-
-
-def set_effort(level):
-    """Choose how hard the model thinks (low < medium < high < xhigh < max) without editing the code."""
-    global EFFORT
-    EFFORT = level
-
 # ---------------------------------------------------------------------------------------------
 # The blueprint: which kinds of questions, in which proportions.
-# This mix is a PROPOSAL (README Section 10 lists it as an open decision to confirm with Dr. Lee).
+# This mix is a PROPOSAL (docs/workflow.md Section 3; an open decision to confirm with Dr. Lee).
 # The pattern below has 20 slots; 1,000 questions = this pattern 50 times.
 # Each tuple is (category, difficulty). Counts: numerical 6, conceptual 4, r_generation 4,
 # r_interpretation 3, output_interpretation 3; intro 8, intermediate 7, graduate 5 (40/35/25 %).
@@ -179,7 +125,7 @@ SUBTOPICS = {
 # The strict JSON shape every question must come back in (the "output schema").
 # The ORDER of the fields matters: the model writes them top to bottom, so `working` (the calculation)
 # and `r_solution` (R code that recomputes it) come BEFORE `canonical_answer`. The key is therefore
-# written after the work, not before it. (Prompt v1 had no `working` or `r_solution`.)
+# written after the work, not before it.
 ITEM_SCHEMA = {
     "type": "object",
     "properties": {
@@ -203,29 +149,19 @@ ITEM_SCHEMA = {
 
 
 def schema_for(version):
-    """The output schema for a prompt version.
-    v1-v3 and v6: the original field order (`working` sits after `question`; v6 is v3 plus three content rules).
-    v4: `working` is the FIRST field. The API refused every v4 request (trial 4), most likely because a
-        reasoning/scratchpad field in the reply is what its `reasoning_extraction` safety check looks for.
-    v5: no `working` field at all; the model does its reasoning in its own thinking, not in the reply."""
-    if version in ("v1", "v2", "v3", "v6"):
-        return ITEM_SCHEMA
-    props = ITEM_SCHEMA["properties"]
-    if version == "v4":
-        order = ["working"] + [k for k in props if k != "working"]
-        return {**ITEM_SCHEMA, "properties": {k: props[k] for k in order}}
-    return {**ITEM_SCHEMA, "properties": {k: v for k, v in props.items() if k != "working"},
-            "required": V5_REQUIRED}
+    """The output schema for a prompt version. Only v6 is in use (the older prompts were Claude-era experiments,
+    archived under the Git tag pre-cleanup-claude-era)."""
+    if version != "v6":
+        raise ValueError(f"unknown prompt version {version!r}; only v6 is in use")
+    return ITEM_SCHEMA
 
 
-# Fields that exist in prompt-v1 items (the first trial), so old files can still be checked.
-V1_REQUIRED = [k for k in ITEM_SCHEMA["required"] if k not in ("working", "r_solution")]
-# Fields of prompt-v5 items: everything except `working`.
-V5_REQUIRED = [k for k in ITEM_SCHEMA["required"] if k != "working"]
-
-
-def utc_now():
-    return datetime.now(timezone.utc)
+# Fields check_item() requires when a reply leaves out `r_solution` (and `working`), or only `working`. The checks
+# follow the fields a reply actually contains, so a reply without `working` is still checked instead of rejected
+# outright. (Kept unchanged from the Claude-era code, where prompts v1 and v5 produced such items; a reply that
+# omits these fields is treated the same way today.)
+REQUIRED_WITHOUT_R_SOLUTION = [k for k in ITEM_SCHEMA["required"] if k not in ("working", "r_solution")]
+REQUIRED_WITHOUT_WORKING = [k for k in ITEM_SCHEMA["required"] if k != "working"]
 
 
 # ---------------------------------------------------------------------------------------------
@@ -291,9 +227,11 @@ def select_slots(n, start=1):
 
 
 # ---------------------------------------------------------------------------------------------
-# The single place where a request is built (used by trial AND batch)
+# The single place where the text sent to the teacher is built
 # ---------------------------------------------------------------------------------------------
 def build_request(slot, prompt):
+    """The system text and the user message for one slot. The teacher client (open_teacher_test.py) sends these,
+    with the output schema appended to the system text."""
     user = prompt[("USER", None)].format(
         item_id=slot["item_id"], category=slot["category"], category_text=prompt[("CAT", slot["category"])],
         subtopic=slot["subtopic"], difficulty=slot["difficulty"], difficulty_text=prompt[("DIFF", slot["difficulty"])],
@@ -301,29 +239,10 @@ def build_request(slot, prompt):
         answer_type_text=prompt[("TYPE", slot["answer_type"])].format(preferred_letter=slot["preferred_letter"] or "any letter"),
     )
     return {
-        "model": MODEL,
-        "max_tokens": MAX_TOKENS,
         "system": prompt[("SYSTEM", None)],
         "messages": [{"role": "user", "content": user}],
-        # Structured output (a JSON schema) plus the effort level. Thinking is left at its default
-        # (adaptive: the model decides how much to think). Temperature cannot be set on this model.
-        "output_config": {"effort": EFFORT, "format": {"type": "json_schema", "schema": schema_for(PROMPT_VERSION)}},
     }
 
-
-def est_input_tokens(params):
-    """Deliberately generous upper estimate: one token per 3 characters."""
-    chars = len(params["system"]) + sum(len(m["content"]) for m in params["messages"]) + len(json.dumps(schema_for(PROMPT_VERSION)))
-    return math.ceil(chars / 3.0)
-
-
-def cost_usd(in_tok, out_tok, batch=False):
-    c = (in_tok * PRICE_IN_PER_MTOK + out_tok * PRICE_OUT_PER_MTOK) / 1_000_000
-    return c * BATCH_FACTOR if batch else c
-
-
-def worst_case(params, batch=False):
-    return cost_usd(est_input_tokens(params), MAX_TOKENS, batch)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -351,11 +270,12 @@ def check_item(item, slot, stop_reason, r_keyed=False):
     so it does not judge the model's typed number: its decimals, tolerance and format are repaired by that
     step instead of being treated as failures."""
     problems = []
-    legacy = "r_solution" not in item  # an item written by prompt v1 (no working, no r_solution)
+    legacy = "r_solution" not in item  # a reply with no r_solution field (Claude-era prompt v1 wrote such items)
     if stop_reason == "max_tokens":
         problems.append("cut off at max_tokens")
-    # v2-v4 items have `working`; v5 items do not (see schema_for). Which fields to require follows the item.
-    required = V1_REQUIRED if legacy else (ITEM_SCHEMA["required"] if "working" in item else V5_REQUIRED)
+    # Which fields to require follows the item (see REQUIRED_WITHOUT_R_SOLUTION above).
+    required = (REQUIRED_WITHOUT_R_SOLUTION if legacy else
+                (ITEM_SCHEMA["required"] if "working" in item else REQUIRED_WITHOUT_WORKING))
     for k in required:
         if k not in item:
             problems.append(f"missing field {k}")
@@ -459,36 +379,9 @@ def first_text(message):
     return ""
 
 
-# ---------------------------------------------------------------------------------------------
-# Output folders (dated, never overwritten - README Section 12)
-# ---------------------------------------------------------------------------------------------
-def new_output_dir(kind):
-    paths = yaml.safe_load((REPO / "configs" / "paths.yaml").read_text())
-    root = Path(paths["teacher_outputs"])
-    date = utc_now().strftime("%Y-%m-%d")
-    nn = 1
-    while True:
-        d = root / f"{date}_sonnet-5-5_benchmark-{kind}{nn:02d}"
-        if not d.exists():
-            d.mkdir(parents=True)
-            return d
-        nn += 1
-
-
-def run_meta(kind, n, cap, sha):
-    return {
-        "run_kind": kind, "started_utc": utc_now().isoformat(timespec="seconds"), "items_requested": n,
-        "model_id": MODEL, "effort": EFFORT, "thinking_mode": "adaptive (API default; cannot be disabled on this model)",
-        "sampling": "API defaults (temperature/top_p cannot be set on this model)", "max_tokens": MAX_TOKENS,
-        "prompt_file": str(PROMPT_FILE.relative_to(REPO)), "prompt_version": PROMPT_VERSION, "prompt_sha256": sha,
-        "prices_usd_per_mtok": {"input": PRICE_IN_PER_MTOK, "output": PRICE_OUT_PER_MTOK, "batch_factor": BATCH_FACTOR},
-        "cap_usd": cap, "max_attempts": MAX_ATTEMPTS,
-        "number_key_source": "R output of r_solution (the model's typed key is kept as model_canonical_answer)",
-    }
-
 
 # ---------------------------------------------------------------------------------------------
-# Commands
+# Commands (all free: no model call)
 # ---------------------------------------------------------------------------------------------
 def cmd_plan(args):
     slots = select_slots(args.n, args.start)
@@ -499,332 +392,6 @@ def cmd_plan(args):
     print("\ncategories:", dict(Counter(s["category"] for s in slots)))
     print("difficulty:", dict(Counter(s["difficulty"] for s in slots)))
     print("answer types:", dict(Counter(s["answer_type"] for s in slots)))
-
-
-def preflight(slots, prompt, cap, batch):
-    """Print the money picture and return (ok, worst_total). Nothing is sent."""
-    reqs = [build_request(s, prompt) for s in slots]
-    w_each = max(worst_case(r, batch) for r in reqs)
-    w_total = sum(worst_case(r, batch) for r in reqs)
-    typical = len(slots) * cost_usd(TYPICAL_IN, TYPICAL_OUT, batch)
-    print(f"Model {MODEL}, effort {EFFORT}, max_tokens {MAX_TOKENS}, {'BATCH' if batch else 'standard'} pricing")
-    print(f"Estimated input tokens per call (generous): about {est_input_tokens(reqs[0])}")
-    print(f"Worst case for ONE call (all {MAX_TOKENS} output tokens used): ${w_each:.4f}")
-    print(f"Worst case for all {len(slots)} calls: ${w_total:.2f}")
-    print(f"Typical expectation (about {TYPICAL_IN} in / {TYPICAL_OUT} out per question): ${typical:.2f}")
-    print(f"(A question that fails the checks is regenerated, up to {MAX_ATTEMPTS} attempts in all. Retries are not in "
-          f"the worst case above; the live cap check stops the run before spending past the cap.)")
-    print(f"Your cap: ${cap:.2f}")
-    ok = w_total <= cap
-    print("Cap check:", "OK, even the worst case fits under the cap" if ok else
-          "FAILED, the worst case could exceed the cap; lower --n or max_tokens, or raise --cap-usd")
-    return ok, w_total, reqs
-
-
-def run_attempts(client, slot, req, rscript, resp_f, calls, rejected, state, cap_usd,
-                 first_attempt=1, workspace_ids=None):
-    """Get ONE question for one slot, asking again if it fails the automatic checks.
-
-    HOW IT WORKS: each attempt is a fresh API call with the SAME prompt (we deliberately do not tell the model
-    what was wrong, so the share of first attempts that pass stays an honest measure of the prompt). An attempt
-    passes when process_reply finds no hard problems. After MAX_ATTEMPTS attempts in total the last one is kept
-    and marked final_status "failed". Every attempt's reply is saved, and every failed attempt is added to
-    `rejected` so nothing is thrown away unseen.
-
-    The run must stop (state["stopped"] is set and we return) on a refusal, on a request-level error such as a
-    suspended model, or when the next call could push spending past the cap. `state["spent"]` is the money
-    spent so far across all slots.
-
-    Returns the row to keep for this slot, or None if no reply came back."""
-    import anthropic
-
-    last_row = None
-    for attempt in range(first_attempt, MAX_ATTEMPTS + 1):
-        if state["spent"] + worst_case(req) > cap_usd:
-            state["stopped"] = (f"stopped before {slot['item_id']} attempt {attempt}: spent ${state['spent']:.4f} "
-                                f"+ worst case would exceed the cap")
-            print(state["stopped"])
-            break
-        t0 = time.time()
-        try:
-            raw = client.messages.with_raw_response.create(**req)
-            msg = raw.parse()
-        except (anthropic.BadRequestError, anthropic.AuthenticationError,
-                anthropic.PermissionDeniedError, anthropic.NotFoundError) as e:
-            state["stopped"] = f"stopped at {slot['item_id']}: {type(e).__name__}: {e}"
-            print(state["stopped"])
-            break
-        except anthropic.APIError as e:
-            calls.append({"item_id": slot["item_id"], "attempt": attempt, "error": f"{type(e).__name__}: {e}"})
-            print(f"{slot['item_id']}: error {type(e).__name__}, continuing")
-            continue
-        ws = raw.headers.get("anthropic-workspace-id")
-        if ws and workspace_ids is not None:
-            workspace_ids.add(ws)
-        u = msg.usage
-        c = cost_usd(u.input_tokens, u.output_tokens)
-        state["spent"] += c
-        msg_dump = msg.model_dump(mode="json")
-        refused = msg.stop_reason == "refusal"
-        # A refusal is a normal HTTP 200 reply with no content, not an error and not bad JSON; process_reply
-        # reports it as a refusal instead of trying to parse it (trial 4 did, and showed 20 misleading problems).
-        item, hard, soft = process_reply(msg, slot, rscript)
-        call = {"item_id": slot["item_id"], "attempt": attempt, "request_id": getattr(msg, "_request_id", None),
-                "stop_reason": msg.stop_reason,
-                # The WHOLE stop_details object exactly as the API sent it (None if the reply has none),
-                # because its fields can be null and new fields may be added.
-                "stop_details": msg_dump.get("stop_details"),
-                # Which kinds of block came back, e.g. ["thinking", "text"]: shows whether the model thought.
-                "content_blocks": [b.type for b in msg.content],
-                "input_tokens": u.input_tokens, "output_tokens": u.output_tokens, "cost_usd": round(c, 6),
-                "seconds": round(time.time() - t0, 1), "problems": hard, "soft_flags": soft}
-        calls.append(call)
-        resp_f.write(json.dumps({"item_id": slot["item_id"], "attempt": attempt, "response": msg_dump},
-                                ensure_ascii=False) + "\n")
-        resp_f.flush()
-        if refused:
-            print(f"{slot['item_id']}: REFUSED. stop_details={json.dumps(call['stop_details'])} "
-                  f"request_id={call['request_id']} in {u.input_tokens} out {u.output_tokens} ${c:.4f}  "
-                  f"[total ${state['spent']:.4f}]")
-            # Stop now (a refusal usually repeats for every item), but only AFTER this call's entry and raw
-            # reply are saved above; the code after the loop still writes the run log and item files.
-            state["stopped"] = f"stopped at {slot['item_id']}: refusal, stop_details={json.dumps(call['stop_details'])}"
-            break
-        status = "OK" if not hard else "HARD: " + "; ".join(hard)
-        if soft:
-            status += "  SOFT: " + "; ".join(soft)
-        print(f"{slot['item_id']} [try {attempt}]: in {u.input_tokens} out {u.output_tokens} ${c:.4f} "
-              f"({call['seconds']}s) {status}  [total ${state['spent']:.4f}]")
-        row = {**slot, **(item or {}), "problems": hard, "soft_flags": soft, "attempts": attempt}
-        if not hard:
-            row["final_status"] = "ok"
-            return row
-        rejected.append(row)
-        last_row = row
-    return {**last_row, "final_status": "failed"} if last_row is not None else None
-
-
-def cmd_trial(args):
-    import anthropic
-
-    prompt, sha = load_prompt()
-    slots = select_slots(args.n, args.start)
-    ok, w_total, reqs = preflight(slots, prompt, args.cap_usd, batch=False)
-    if args.dry_run:
-        print("\n--- First request exactly as it would be sent (dry run: nothing was sent) ---")
-        print("SYSTEM:\n" + reqs[0]["system"])
-        print("\nUSER:\n" + reqs[0]["messages"][0]["content"])
-        print("\noutput_config:", json.dumps({"effort": EFFORT, "format": f"json_schema (schema_for {PROMPT_VERSION})"}))
-        print("Output fields, in order:", ", ".join(schema_for(PROMPT_VERSION)["properties"]))
-        return
-    if not ok:
-        sys.exit(2)
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        sys.exit("ANTHROPIC_API_KEY is not set in this environment. Nothing was sent.")
-    rscript = rscript_path()  # find R BEFORE any money is spent: the keys of number questions come from R
-
-    out = new_output_dir("trial")
-    meta = run_meta("trial", args.n, args.cap_usd, sha)
-    meta["first_item_number"] = args.start
-    print(f"\nOutput folder: {out}\n")
-    client = anthropic.Anthropic(max_retries=2)
-    calls, items, rejected, workspace_ids = [], [], [], set()
-    state = {"spent": 0.0, "stopped": None}
-    with open(out / "responses.jsonl", "w", encoding="utf-8") as resp_f:
-        for slot, req in zip(slots, reqs):
-            row = run_attempts(client, slot, req, rscript, resp_f, calls, rejected, state, args.cap_usd,
-                               workspace_ids=workspace_ids)
-            if row is not None:
-                items.append(row)
-            if state["stopped"]:
-                break
-    spent, stopped = state["spent"], state["stopped"]
-
-    usable = [i for i in items if i["final_status"] == "ok"]
-    first_try = [i for i in usable if i["attempts"] == 1]
-    soft_items = [i for i in items if i["soft_flags"]]
-    retry_calls = sum(1 for c in calls if c.get("attempt", 1) > 1)
-    meta.update({"finished_utc": utc_now().isoformat(timespec="seconds"), "calls": calls,
-                 "workspace_ids_seen": sorted(workspace_ids), "stopped_early_reason": stopped,
-                 "total_input_tokens": sum(c.get("input_tokens", 0) for c in calls),
-                 "total_output_tokens": sum(c.get("output_tokens", 0) for c in calls),
-                 "total_cost_usd": round(spent, 6), "items_parsed": len(items),
-                 "usable_items": len(usable), "usable_on_first_attempt": len(first_try),
-                 "failed_after_all_attempts": len(items) - len(usable), "retry_calls": retry_calls,
-                 "rejected_attempts": len(rejected), "items_with_soft_flags": len(soft_items),
-                 "items_with_problems": len(items) - len(usable)})
-    (out / "batch_log.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-    with open(out / "items.jsonl", "w", encoding="utf-8") as f:
-        for it in items:
-            f.write(json.dumps(it, ensure_ascii=False) + "\n")
-    with open(out / "rejected_attempts.jsonl", "w", encoding="utf-8") as f:
-        for it in rejected:
-            f.write(json.dumps(it, ensure_ascii=False) + "\n")
-    # A small review copy inside the repository (backed up by Git).
-    review = REPO / "results" / "benchmark_trial"
-    review.mkdir(parents=True, exist_ok=True)
-    shutil.copy(out / "items.jsonl", review / f"{out.name}_items.jsonl")
-    shutil.copy(out / "batch_log.json", review / f"{out.name}_log.json")
-    if rejected:
-        shutil.copy(out / "rejected_attempts.jsonl", review / f"{out.name}_rejected_attempts.jsonl")
-    per_usable = f"${spent / len(usable):.4f}" if usable else "n/a"
-    print(f"\nDone. {len(items)} slot(s) finished: {len(usable)} usable ({len(first_try)} on the first attempt), "
-          f"{len(items) - len(usable)} still failing after {MAX_ATTEMPTS} attempts. Retry calls: {retry_calls}. "
-          f"Items with soft flags (look at these): {len(soft_items)}.")
-    print(f"Total cost ${spent:.4f} of cap ${args.cap_usd:.2f}; cost per usable item {per_usable}.")
-    print(f"Tokens: {meta['total_input_tokens']} in, {meta['total_output_tokens']} out. Workspace id(s): {meta['workspace_ids_seen']}")
-    print(f"Saved in {out} and a review copy in {review}")
-
-
-def cmd_submit(args):
-    import anthropic
-    from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
-    from anthropic.types.messages.batch_create_params import Request
-
-    prompt, sha = load_prompt()
-    slots = select_slots(args.n, args.start)
-    if args.first:
-        slots = slots[: args.first]
-    ok, w_total, reqs = preflight(slots, prompt, args.cap_usd, batch=True)
-    if args.dry_run or not ok:
-        return
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        sys.exit("ANTHROPIC_API_KEY is not set in this environment. Nothing was sent.")
-    out = new_output_dir("batch")
-    client = anthropic.Anthropic(max_retries=2)
-    batch = client.messages.batches.create(requests=[
-        Request(custom_id=s["item_id"], params=MessageCreateParamsNonStreaming(**r)) for s, r in zip(slots, reqs)])
-    manifest = run_meta("batch", len(slots), args.cap_usd, sha)
-    manifest.update({"batch_id": batch.id, "slots": slots, "output_dir": str(out), "first_item_number": args.start})
-    (out / "batch_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"Submitted batch {batch.id} with {len(slots)} requests. Status: {batch.processing_status}")
-    print(f"Manifest: {out / 'batch_manifest.json'}")
-    print("Watch it in the Console: Settings > Workspaces > (your workspace) > Batches. Then run:")
-    print(f"  python generate_benchmark.py fetch --manifest \"{out / 'batch_manifest.json'}\"")
-
-
-def cmd_fetch(args):
-    import anthropic
-
-    manifest_path = Path(args.manifest)
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("prompt_version") and manifest["prompt_version"] != PROMPT_VERSION:
-        print(f"Using the prompt version this batch was submitted with ({manifest['prompt_version']}), not {PROMPT_VERSION}.")
-        set_prompt(manifest["prompt_version"])
-    if manifest.get("effort"):
-        set_effort(manifest["effort"])   # regenerations must use the same effort as the batch
-    slots = {s["item_id"]: s for s in manifest["slots"]}
-    rscript = rscript_path()
-    client = anthropic.Anthropic(max_retries=2)
-    batch = client.messages.batches.retrieve(manifest["batch_id"])
-    rc = batch.request_counts
-    print(f"Batch {batch.id}: {batch.processing_status} (processing {rc.processing}, succeeded {rc.succeeded}, "
-          f"errored {rc.errored}, expired {rc.expired}, canceled {rc.canceled})")
-    if batch.processing_status != "ended":
-        print("Not finished yet. Run fetch again later (batches finish within 24 hours, usually much sooner).")
-        return
-    out = Path(manifest["output_dir"])
-    items, calls, rejected, spent = [], [], [], 0.0
-    with open(out / "responses.jsonl", "w", encoding="utf-8") as resp_f:
-        for r in client.messages.batches.results(batch.id):
-            iid = r.custom_id
-            if r.result.type != "succeeded":
-                calls.append({"item_id": iid, "result": r.result.type})
-                continue
-            msg = r.result.message
-            u = msg.usage
-            c = cost_usd(u.input_tokens, u.output_tokens, batch=True)
-            spent += c
-            msg_dump = msg.model_dump(mode="json")
-            # In a batch a refusal also comes back as a "succeeded" result; process_reply reports it, not parses it.
-            item, hard, soft = process_reply(msg, slots[iid], rscript)
-            calls.append({"item_id": iid, "attempt": 1, "message_id": msg_dump.get("id"), "stop_reason": msg.stop_reason,
-                          "stop_details": msg_dump.get("stop_details"), "content_blocks": [b.type for b in msg.content],
-                          "input_tokens": u.input_tokens, "output_tokens": u.output_tokens, "cost_usd": round(c, 6),
-                          "problems": hard, "soft_flags": soft})
-            resp_f.write(json.dumps({"item_id": iid, "attempt": 1, "response": msg_dump}, ensure_ascii=False) + "\n")
-            row = {**slots[iid], **(item or {}), "problems": hard, "soft_flags": soft, "attempts": 1,
-                   "final_status": "failed" if hard else "ok"}
-            if hard:
-                rejected.append(row)
-            items.append(row)
-
-    # Regenerate the failures with ordinary (standard-price) calls, up to MAX_ATTEMPTS attempts per question.
-    retry_spent, stopped = 0.0, None
-    if args.retry_failed:
-        have = {i["item_id"]: i for i in items}
-        todo = [(slots[iid], have[iid]["attempts"] + 1 if iid in have else 1) for iid in sorted(slots)
-                if iid not in have or have[iid]["final_status"] != "ok"]
-        print(f"{len(todo)} question(s) failed or are missing; regenerating them with standard calls "
-              f"(cap ${args.cap_usd:.2f}).")
-        if todo:
-            if not os.environ.get("ANTHROPIC_API_KEY"):
-                sys.exit("ANTHROPIC_API_KEY is not set in this environment. The batch results were not saved; run again.")
-            prompt, _ = load_prompt()
-            state = {"spent": 0.0, "stopped": None}
-            with open(out / "responses.jsonl", "a", encoding="utf-8") as resp_f:
-                for slot, first in todo:
-                    row = run_attempts(client, slot, build_request(slot, prompt), rscript, resp_f, calls, rejected,
-                                       state, args.cap_usd, first_attempt=first)
-                    if row is not None:
-                        have[slot["item_id"]] = row
-                    if state["stopped"]:
-                        break
-            items, retry_spent, stopped = list(have.values()), state["spent"], state["stopped"]
-    items.sort(key=lambda i: i["item_id"])
-    usable = [i for i in items if i["final_status"] == "ok"]
-    manifest.update({"fetched_utc": utc_now().isoformat(timespec="seconds"), "calls": calls,
-                     "total_input_tokens": sum(c.get("input_tokens", 0) for c in calls),
-                     "total_output_tokens": sum(c.get("output_tokens", 0) for c in calls),
-                     "total_cost_usd_batch": round(spent, 6), "retry_cost_usd_standard": round(retry_spent, 6),
-                     "stopped_early_reason": stopped, "items_parsed": len(items), "usable_items": len(usable),
-                     "usable_on_first_attempt": sum(1 for i in usable if i["attempts"] == 1),
-                     "items_with_soft_flags": sum(1 for i in items if i["soft_flags"]),
-                     "rejected_attempts": len(rejected), "items_with_problems": len(items) - len(usable)})
-    (out / "batch_log.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    with open(out / "items.jsonl", "w", encoding="utf-8") as f:
-        for it in items:
-            f.write(json.dumps(it, ensure_ascii=False) + "\n")
-    with open(out / "rejected_attempts.jsonl", "w", encoding="utf-8") as f:
-        for it in rejected:
-            f.write(json.dumps(it, ensure_ascii=False) + "\n")
-    review = REPO / "results" / "benchmark_trial"   # a small copy inside the repository (backed up by Git)
-    review.mkdir(parents=True, exist_ok=True)
-    for name, dest in (("items.jsonl", "_items.jsonl"), ("batch_log.json", "_log.json"),
-                       ("rejected_attempts.jsonl", "_rejected_attempts.jsonl")):
-        if (out / name).stat().st_size > 0 or name != "rejected_attempts.jsonl":
-            shutil.copy(out / name, review / f"{out.name}{dest}")
-    first_ok = manifest["usable_on_first_attempt"]
-    print(f"Fetched {len(items)} items, {len(usable)} usable ({first_ok} on the first attempt, "
-          f"{len(items) - len(usable)} still failing); items with soft flags: {manifest['items_with_soft_flags']}; "
-          f"batch cost ${spent:.4f}" + (f", regeneration cost ${retry_spent:.4f}" if args.retry_failed else "")
-          + f". Saved in {out}; copies in {review}")
-
-
-def cmd_replay(args):
-    """Run the checks and the R-key step over replies already saved in a responses.jsonl. Free: no API call.
-    Use it to see what a changed checker would have done to a past trial."""
-    from anthropic.types import Message
-
-    rscript = rscript_path()
-    slots = {s["item_id"]: s for s in blueprint(args.n)}
-    n = n_hard = n_soft = 0
-    for line in open(args.responses, encoding="utf-8"):
-        rec = json.loads(line)
-        slot = slots.get(rec["item_id"])
-        if slot is None:
-            continue
-        n += 1
-        item, hard, soft = process_reply(Message.model_validate(rec["response"]), slot, rscript)
-        n_hard += bool(hard)
-        n_soft += bool(soft)
-        key = ""
-        if item is not None and item.get("key_source") == "r":
-            key = f" key {item['canonical_answer']} (R {item['r_value']}, model typed {item['model_canonical_answer']})"
-        if hard or soft or args.all:
-            print(f"{slot['item_id']} [{slot['category']}]{key}" + ("  HARD: " + "; ".join(hard) if hard else "")
-                  + ("  SOFT: " + "; ".join(soft) if soft else ""))
-    print(f"\n{n} replies replayed: {n_hard} with hard problems (would be regenerated), {n_soft} with soft flags.")
 
 
 def _question_text(item, mask_digits):
@@ -906,7 +473,7 @@ def cmd_check(args):
             n_bad += 1
             print(f"{item['item_id']}: " + "; ".join(problems))
     print(f"\n{n_bad} item(s) flagged by the automatic checks. These checks catch only some errors; "
-          "the answer keys still need to be verified by running R or recomputing (see README Phase 3).")
+          "the answer keys still need to be verified by running R or recomputing (see docs/workflow.md Phase 3).")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1034,8 +601,9 @@ def apply_r_key(item, rscript):
 
 
 def process_reply(msg, slot, rscript):
-    """Turn one API reply into (item, hard_problems, soft_flags), the single path used by trial, fetch and replay.
-    hard problems mean "regenerate this question"; soft flags mean "keep it, but a person should look"."""
+    """Turn one teacher reply into (item, hard_problems, soft_flags). `msg` is any object with `.stop_reason` and
+    `.content` (a list of blocks with `.type` and `.text`); open_teacher_test.py builds such a stand-in from each
+    cluster reply. hard problems mean "regenerate this question"; soft flags mean "keep it, but a person should look"."""
     if msg.stop_reason == "refusal":
         return None, ["refused by the API (stop_reason refusal); see stop_details"], []
     try:
@@ -1118,13 +686,11 @@ def cmd_verify(args):
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"\nSummary: {counts}   (wrote {dest})")
     print("ok = R agreed with the key; FLAGGED = R disagreed or the check is broken; not_machine_checkable = no "
-          "code to run (multiple-choice and conceptual items), these need the other checks in README Phase 3.")
+          "code to run (multiple-choice and conceptual items), these need the other checks in docs/workflow.md Phase 3.")
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--prompt", default=PROMPT_VERSION, choices=["v1", "v2", "v3", "v4", "v5", "v6"], help="which prompt file to use (default v6)")
-    ap.add_argument("--effort", default=EFFORT, choices=["low", "medium", "high", "xhigh", "max"], help="how hard the model thinks (default medium)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("verify", help="run R to test the answer keys of an items.jsonl file (free)")
     p.add_argument("--items", required=True)
@@ -1132,43 +698,18 @@ def main():
     p = sub.add_parser("check", help="re-run the automatic checks on an items.jsonl file (free)")
     p.add_argument("--items", required=True)
     p.set_defaults(fn=cmd_check)
-    p = sub.add_parser("plan", help="print the blueprint (no API call)")
+    p = sub.add_parser("plan", help="print the blueprint (free)")
     p.add_argument("--n", type=int, default=20)
     p.add_argument("--start", type=int, default=1, help="first question number to include (21 = start at BM0021)")
     p.set_defaults(fn=cmd_plan)
-    p = sub.add_parser("trial", help="write n questions with ordinary calls and a hard dollar cap")
-    p.add_argument("--n", type=int, default=20)
-    p.add_argument("--start", type=int, default=1, help="first question number to include (21 = start at BM0021)")
-    p.add_argument("--cap-usd", type=float, default=3.00)
-    p.add_argument("--dry-run", action="store_true", help="show the cost picture and one request; send nothing")
-    p.set_defaults(fn=cmd_trial)
-    p = sub.add_parser("submit", help="send the requests to the Batch API (half price)")
-    p.add_argument("--n", type=int, default=1000)
-    p.add_argument("--start", type=int, default=1, help="first question number to include (21 = start at BM0021)")
-    p.add_argument("--first", type=int, default=None, help="only submit the first N slots (for a tiny test batch)")
-    p.add_argument("--cap-usd", type=float, default=30.0)
-    p.add_argument("--dry-run", action="store_true")
-    p.set_defaults(fn=cmd_submit)
-    p = sub.add_parser("fetch", help="download the results of a submitted batch")
-    p.add_argument("--manifest", required=True)
-    p.add_argument("--retry-failed", action="store_true", help="regenerate failed or missing questions with standard calls")
-    p.add_argument("--cap-usd", type=float, default=5.0, help="money cap for the regeneration calls only")
-    p.set_defaults(fn=cmd_fetch)
-    p = sub.add_parser("dupcheck", help="does a new question look like an earlier trial question? (free)")
+    p = sub.add_parser("dupcheck", help="does a new question look like an earlier question? (free)")
     p.add_argument("--items", required=True, help="the items.jsonl to check")
     p.add_argument("--against", required=True, nargs="+", help="earlier items files or glob patterns")
     p.add_argument("--dup", type=float, default=0.80, help="same-numbers similarity that counts as a duplicate")
     p.add_argument("--template", type=float, default=0.80, help="numbers-masked similarity that counts as the same template")
     p.add_argument("--top", type=int, default=0, help="also list the N closest matches (to calibrate the thresholds)")
     p.set_defaults(fn=cmd_dupcheck)
-    p = sub.add_parser("replay", help="re-run the checks and the R-key step on saved API replies (free)")
-    p.add_argument("--responses", required=True, help="a responses.jsonl file from an earlier run")
-    p.add_argument("--n", type=int, default=20, help="how many slots of the blueprint to match against")
-    p.add_argument("--all", action="store_true", help="also list items with no problems")
-    p.set_defaults(fn=cmd_replay)
     args = ap.parse_args()
-    set_prompt(args.prompt)
-    set_effort(args.effort)
     args.fn(args)
 
 

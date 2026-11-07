@@ -19,7 +19,7 @@ WHAT THE SCRIPT DOES (in plain steps)
 5. Writes three small files to results/pythia_probe/: one record per generation (.jsonl),
    a per-model summary (.csv), and the model/tokenizer facts (.json).
 
-This script never calls the Claude API, so it costs $0. It does not train or change any model.
+This script calls no paid service, so it costs $0. It does not train or change any model.
 Run it with the virtual environment's Python (see recovery/python_env.md), for example:
     C:\\masters_project_large\\envs\\probe\\Scripts\\python.exe code\\evaluation\\pythia_probe.py
 Useful flags: --models 70m 160m   --dtype float32   --limit-prompts 2   --sampling
