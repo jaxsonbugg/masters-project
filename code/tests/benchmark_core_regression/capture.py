@@ -21,6 +21,8 @@ WHAT IS RECORDED
               ties, negative zero, exponent notation, unsafe R code) run through process_reply() the same way
               open_teacher_test.py does it (a stand-in message object). Needs R.
   checks    - check_item() on items with r_keyed False and True.
+  absent_r_solution - number replies whose `r_solution` FIELD is missing entirely (added 2026-11-11). Records a
+              known loophole, kept on purpose: such a reply passes with the model's own key. See absent_r_solution().
   verify    - verify_item() and the `verify` command's output file on a small items file. Needs R.
   items     - optional (--items): the same reply, check and verify steps on every item of an existing items.jsonl.
 
@@ -191,6 +193,39 @@ def verify_items(slots):
     return rows
 
 
+def absent_r_solution(slots, rscript):
+    """Number replies in which the `r_solution` FIELD IS MISSING ALTOGETHER (not present-but-empty, which is the
+    separate case "number without r_solution (hard)" above).
+
+    DOCUMENTED BEHAVIOR, KEPT ON PURPOSE (a known loophole, docs/methodology/workflow.md Section 10.2):
+    check_item() treats a reply without an `r_solution` field as an old prompt-v1 item. It then requires only the
+    v1 fields, skips the "number answer without r_solution" and "explanation too short" checks, and process_reply()
+    keeps the model's own typed key (key_source "model") instead of a key computed by R. So such a number question
+    passes with no hard problem. `verify` still flags it ("no r_solution, so R cannot recompute this key").
+    This fixture records that behavior so any later change to it is deliberate and visible; it does not fix it."""
+    num = find_slot(slots, category="numerical", answer_type="number")
+    q3 = "Two dice are rolled. Find the probability. Round to 3 decimal places."
+    full = base_item(num, question=q3, r_solution="cat(dbinom(2, 5, 0.5))", canonical_answer="0.313",
+                     answer_tolerance=0.0005, explanation="The binomial probability is 0.3125, so the answer is 0.313.")
+    shapes = {
+        "no r_solution and no working field (prompt-v1 shape)":
+            {k: v for k, v in full.items() if k not in ("r_solution", "working")},
+        "no r_solution field, working present":
+            {k: v for k, v in full.items() if k != "r_solution"},
+        "no r_solution field, typed key contradicts the explanation":
+            {**{k: v for k, v in full.items() if k != "r_solution"}, "canonical_answer": "0.800"},
+    }
+    out = []
+    for name, reply in shapes.items():
+        assert "r_solution" not in reply
+        out.append({"case": name, "slot": num["item_id"],
+                    "process_reply": process(num, json.dumps(reply), "end_turn", rscript),
+                    "check_item_r_keyed_false": gb.check_item(dict(reply), num, "end_turn", r_keyed=False),
+                    "check_item_r_keyed_true": gb.check_item(dict(reply), num, "end_turn", r_keyed=True),
+                    "verify_item": list(gb.verify_item({"item_id": "A", **reply}, rscript))})
+    return out
+
+
 def process(slot, text, stop_reason, rscript):
     item, hard, soft = gb.process_reply(message(text, stop_reason), slot, rscript)
     return {"item": item, "hard": hard, "soft": soft}
@@ -246,6 +281,7 @@ def snapshot(items_path=None):
         "replies": [{"case": name, "slot": slot["item_id"], **process(slot, text, stop, rscript)}
                     for name, slot, text, stop in reply_cases(main)],
         "checks": check_cases(main),
+        "absent_r_solution": absent_r_solution(main, rscript),
     }
     vrows = verify_items(main)
     snap["verify_item"] = [{"item_id": r["item_id"], "result": list(gb.verify_item(dict(r), rscript))} for r in vrows]

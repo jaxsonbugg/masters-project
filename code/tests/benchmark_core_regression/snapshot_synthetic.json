@@ -1,4 +1,104 @@
 {
+ "absent_r_solution": [
+  {
+   "case": "no r_solution and no working field (prompt-v1 shape)",
+   "check_item_r_keyed_false": [],
+   "check_item_r_keyed_true": [],
+   "process_reply": {
+    "hard": [],
+    "item": {
+     "answer_tolerance": 0.0005,
+     "answer_type": "number",
+     "canonical_answer": "0.313",
+     "category": "numerical",
+     "choices": [],
+     "difficulty": "intro",
+     "explanation": "The binomial probability is 0.3125, so the answer is 0.313.",
+     "key_source": "model",
+     "question": "Two dice are rolled. Find the probability. Round to 3 decimal places.",
+     "r_check": "",
+     "subtopic": "binomial probability"
+    },
+    "soft": []
+   },
+   "slot": "BM0001",
+   "verify_item": [
+    "FLAGGED",
+    [
+     "no r_solution, so R cannot recompute this key"
+    ],
+    null
+   ]
+  },
+  {
+   "case": "no r_solution field, working present",
+   "check_item_r_keyed_false": [],
+   "check_item_r_keyed_true": [],
+   "process_reply": {
+    "hard": [],
+    "item": {
+     "answer_tolerance": 0.0005,
+     "answer_type": "number",
+     "canonical_answer": "0.313",
+     "category": "numerical",
+     "choices": [],
+     "difficulty": "intro",
+     "explanation": "The binomial probability is 0.3125, so the answer is 0.313.",
+     "key_source": "model",
+     "question": "Two dice are rolled. Find the probability. Round to 3 decimal places.",
+     "r_check": "",
+     "subtopic": "binomial probability",
+     "working": "work shown here"
+    },
+    "soft": []
+   },
+   "slot": "BM0001",
+   "verify_item": [
+    "FLAGGED",
+    [
+     "no r_solution, so R cannot recompute this key"
+    ],
+    null
+   ]
+  },
+  {
+   "case": "no r_solution field, typed key contradicts the explanation",
+   "check_item_r_keyed_false": [
+    "key 0.8 differs from the last number in the explanation (0.313)"
+   ],
+   "check_item_r_keyed_true": [
+    "key 0.8 differs from the last number in the explanation (0.313)"
+   ],
+   "process_reply": {
+    "hard": [
+     "key 0.8 differs from the last number in the explanation (0.313)"
+    ],
+    "item": {
+     "answer_tolerance": 0.0005,
+     "answer_type": "number",
+     "canonical_answer": "0.800",
+     "category": "numerical",
+     "choices": [],
+     "difficulty": "intro",
+     "explanation": "The binomial probability is 0.3125, so the answer is 0.313.",
+     "key_source": "model",
+     "question": "Two dice are rolled. Find the probability. Round to 3 decimal places.",
+     "r_check": "",
+     "subtopic": "binomial probability",
+     "working": "work shown here"
+    },
+    "soft": []
+   },
+   "slot": "BM0001",
+   "verify_item": [
+    "FLAGGED",
+    [
+     "no r_solution, so R cannot recompute this key"
+    ],
+    null
+   ]
+  }
+ ],
  "checks": [
   {
    "case": "decimals mismatch",

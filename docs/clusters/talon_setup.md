@@ -17,7 +17,7 @@ us nothing, one job may run at most 3 days, and we have 500 GB of storage (more 
 
 The Redhawk pipeline job 2511641 has finished, but its results have **not been reviewed yet** (`docs/logs/compute_log.md`, entry 7). It is no longer a
 comparison baseline. The planned precision comparison is **4-bit versus BF16, both on Talon** (`docs/methodology/workflow.md` Section 2.1), so hardware does not
-differ between the two runs. Redhawk stays the tested fallback: **nothing under `configs/redhawk/` was changed**.
+differ between the two runs. Redhawk stays the tested fallback. **Its executable logic is unchanged since the Talon work began**; the only edits under `configs/redhawk/` are three comment lines that were repointed when `docs/` was reorganized on 2026-11-07 (`docs/progress_update.md`, 2026-11-07 and 2026-11-11).
 
 ## 2. What is known and what is not
 

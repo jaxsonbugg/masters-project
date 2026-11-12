@@ -25,8 +25,8 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 1 | 2026-10-07 | This PC (CPU) | n/a | Pythia base-model probe | none (CPU) | 0 | PASS |
 | 2 | 2026-11-04 | Redhawk login node | n/a | Read-only cluster probe (`probe_cluster.sh`, two runs) and `probe_cluster_part2.sh` | none | 0 | PASS (first run incomplete, rerun) |
 | 3 | 2026-11-04 21:47 | Redhawk scheduler | none created | `sbatch --test-only` for the pipeline request | none | 0 | Accepted; estimated start 2026-11-17 |
-| 4 | 2026-11-04 | Redhawk `gpu` partition | 2510636 | Compile llama.cpp b11960 | CPU compile job | not recorded | FAIL (compiler) |
-| 5 | 2026-11-04 | Redhawk `gpu` partition | 2510641 | Recompile llama.cpp with named gcc 12.2 | CPU compile job | not recorded | Build PASS; job's final check falsely failed |
+| 4 | 2026-11-04 | Redhawk `batch` partition (requested) | 2510636 | Compile llama.cpp b11960 | CPU compile job | not recorded | FAIL (compiler) |
+| 5 | 2026-11-04 | Redhawk `batch` partition (requested) | 2510641 | Recompile llama.cpp with named gcc 12.2 | CPU compile job | not recorded | Build PASS; job's final check falsely failed |
 | 6 | 2026-11-05 ~09:33 | Redhawk `mualhpcp38` | 2510690 | Qwen pipeline (stage A, B, main) | 2 x V100, 84 s | ~0.05 | FAIL_INFRA at stage A (log-wording check) |
 | 7 | 2026-11-05/06 | Redhawk | 2511641 | Qwen pipeline, resubmitted | 2 x V100, to fill in | to fill in | **NOT REVIEWED** |
 | 8 | 2026-11-06 | Talon login node | n/a | Read-only probe (`run_probe_local.sh`) and follow-up reads | none | 0 | PASS |
@@ -60,6 +60,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 ### 4. Job 2510636: llama.cpp compile, 2026-11-04
 - **Purpose:** build llama.cpp tag b11960 (commit `8642541b...`) for the V100 (`sm_70`).
 - **Script:** `configs/redhawk/build_llamacpp.sbatch`, submitted by `prep_cluster.sh`.
+- **Partition:** `batch`, as **requested** by the script's `#SBATCH --partition=batch` line (version at commit `3cbbaf2`; 8 CPUs, 16 GB, 1.5 h limit, no GPU). `prep_cluster.sh` runs `sbatch configs/redhawk/build_llamacpp.sbatch` with no partition override. The partition the job actually ran in was **not observed**: Slurm accounting is off, and the job's own log on Redhawk has not been checked.
 - **Outcome:** FAIL: `ggml-cpu.c: fatal error: stdatomic.h: No such file or directory`. CMake used the system C compiler (gcc 4.8.5) because the `gcc-12.2.0` module provides no `cc`.
 - **Fix:** name the compilers explicitly (`docs/progress_update.md`, 2026-11-04).
 - **Times and wall time:** not recorded.
@@ -67,6 +68,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 
 ### 5. Job 2510641: llama.cpp recompile, 2026-11-04
 - **Purpose:** rebuild with gcc 12.2.0 named for C, C++ and CUDA host code.
+- **Script and partition:** `configs/redhawk/build_llamacpp.sbatch`, submitted by `rebuild_llamacpp.sh` (commit `bcedc66`) with no partition override. The script **requests** `#SBATCH --partition=batch` (8 CPUs, 16 GB, 1.5 h limit, no GPU). The partition actually used was **not observed**, for the same reasons as job 2510636.
 - **Outcome:** the build succeeded (all libraries, including the 198 MB GPU library). The job still ended in error because its final flag check ran `llama-server --help` on a node without the NVIDIA driver library, so every flag looked "missing".
 - **Follow-up:** the build was then verified without recompiling (`verify_build.sh`, record in `build_verified.txt`).
 - **Times:** not recorded.

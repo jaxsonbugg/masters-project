@@ -71,6 +71,14 @@ def main():
         for s, n in zip(saved["items"], new.get("items", [])):
             chk(f"item {s['item_id']}", s, n)
         chk("number of items", len(saved["items"]), len(new.get("items", [])))
+    # The documented loophole (capture.absent_r_solution; docs/methodology/workflow.md Section 10.2), stated in
+    # words: a number reply WITHOUT an `r_solution` field passes with the model's own key; `verify` flags it.
+    absent = {c["case"]: c for c in new.get("absent_r_solution", [])}
+    for case in ("no r_solution and no working field (prompt-v1 shape)", "no r_solution field, working present"):
+        c = absent.get(case)
+        ok = (c is not None and c["process_reply"]["hard"] == [] and c["process_reply"]["item"]["key_source"] == "model"
+              and c["verify_item"][0] == "FLAGGED")
+        chk(f"documented behavior kept: {case} passes with the model's key; verify flags it", True, ok)
     extra = sorted(set(new) - set(saved))
     chk("no unexpected new parts", [], extra)
     total = sum(1 for _ in saved) + len(saved["replies"]) + len(saved.get("items", []))

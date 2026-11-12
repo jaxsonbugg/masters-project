@@ -16,6 +16,8 @@ env/
 cache/
 .cache/
 logs/
+# ...except the project's own Markdown logs folder (compute and cost logs), added 2026-11-07
+!docs/logs/
 *.log
 
 # Secrets and API keys
