@@ -230,6 +230,13 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - ***NVLink pairing:** checked and recorded, not forced.*
 - ***Context length:** 20,480 for now, finalized from the Stage T truncation rates before the precision test.*
 
+*GPU-counting fix, 2026-11-12. `serve_and_run.sh` now asks `nvidia-smi` only about the GPUs in `CUDA_VISIBLE_DEVICES` (`-i <ids>`).*
+- *This covers the count check, the memory-size check, the 2-second memory monitor and the model-on-every-GPU check.*
+- *The script stops if `CUDA_VISIBLE_DEVICES` is not set.*
+- *A 2-GPU job records `NVLINK_PAIR` in its result file (yes, or no with the link type), and warns without stopping if the pair is not linked.*
+- *The probe `record` step now writes `GPUS_VISIBLE` and `GPUS_ASSIGNED` instead of the misleading `GPUS_SEEN`.*
+- *The test fake now behaves like a real Talon node: four GPUs always visible, the other GPUs busy, and job 196's real link table.*
+
 1. **Email** the questions in section 2 (you may already have). Until answered, pricing, allocation, quotas and access limits stay UNVERIFIED.
 2. **Check reachability and verify the host key, then connect.** Run `Test-NetConnection mualhphp01.hpc.miamioh.edu -Port 22` (connect the Miami VPN if it times out). **Do not
    just type "yes" at the first SSH prompt:** display the server's host-key fingerprints, get Research Computing's own fingerprints by email or phone, compare them, and only then

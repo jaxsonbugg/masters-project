@@ -32,11 +32,15 @@ if [ "$MODE" = record ]; then
   grep -q '^PROBE_END' "$LOG" || die "the probe job did not finish (no PROBE_END in $LOG). Read the log."
   NGPU="$(grep -c '^PROBE_GPU GPU [0-9]' "$LOG" || true)"
   [ "$NGPU" -ge 1 ] || die "the probe job saw no GPU (no 'GPU 0:' line in $LOG): the request was accepted but gave no GPU. Read the log; ask Research Computing."
+  # GPUs VISIBLE (nvidia-smi -L) and GPUs ASSIGNED (CUDA_VISIBLE_DEVICES) are different numbers on Talon: job 196 was assigned one
+  # GPU but saw all four (OBSERVED 2026-11-12). Only the assigned GPUs belong to the job.
+  CVD="$(sed -n 's/^CUDA_VISIBLE_DEVICES=//p' "$LOG" | head -n 1)"
+  if [ -n "$CVD" ] && [ "$CVD" != unset ]; then NASSIGNED="$(awk -F, '{ print NF }' <<<"$CVD")"; else NASSIGNED="unknown"; fi
   GPU_NAME="$(sed -n 's/^PROBE_GPU GPU 0: \(.*\) (UUID.*/\1/p' "$LOG" | head -n 1)"
   DRIVER="$(sed -n 's/^PROBE_DRIVER_LINE //p' "$LOG" | head -n 1 | tr -s ' ')"
   NET_HF="$(sed -n 's/^PROBE_NET huggingface //p' "$LOG" | head -n 1)"; NET_PYPI="$(sed -n 's/^PROBE_NET pypi //p' "$LOG" | head -n 1)"
   WHEEL="$(sed -n 's/^PROBE_WHEEL //p' "$LOG" | head -n 1)"
-  { echo "PART2_OK=yes"; echo "JOB=$JOB"; echo "GPU_STYLES_ACCEPTED=$STYLES"; echo "SPEC_USED=$SPEC"; echo "GPUS_SEEN=$NGPU"
+  { echo "PART2_OK=yes"; echo "JOB=$JOB"; echo "GPU_STYLES_ACCEPTED=$STYLES"; echo "SPEC_USED=$SPEC"; echo "GPUS_VISIBLE=$NGPU"; echo "GPUS_ASSIGNED=$NASSIGNED"; echo "CUDA_VISIBLE_DEVICES=${CVD:-unset}"
     echo "GPU_NAME=$GPU_NAME"; echo "DRIVER_LINE=$DRIVER"; echo "COMPUTE_NODE_HUGGINGFACE=$NET_HF"; echo "COMPUTE_NODE_PYPI=$NET_PYPI"
     echo "VLLM_WHEEL=$WHEEL"; echo "RECORDED_UTC=$(date -u +%FT%TZ)"; } > "$VER"
   echo "Recorded in $VER:"; sed 's/^/  /' "$VER"

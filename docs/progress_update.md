@@ -609,3 +609,21 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Criteria:** the same pre-registered non-inferiority criteria as FP8 against BF16.
 - **If nothing passes:** the 4-bit arm is **dropped** rather than delaying the pilot.
 - **Where it is written:** `docs/methodology/workflow.md` Section 2.1 and the pilot plan (Stage 1.3). The candidates found on 2026-11-12 are checked at that stage, not now.
+
+### GPU-counting fix for the Talon scripts (2026-11-12, $0, no cluster access)
+- **Why:** job 196 showed that Slurm on Talon tells a job its GPUs only through `CUDA_VISIBLE_DEVICES`; `nvidia-smi` still lists all four GPUs of the node. Our Talon stage script used `nvidia-smi` to count GPUs, check their memory size, sample their memory every 2 seconds and decide whether the model was loaded on every GPU, so on the real node it would have counted and measured GPUs used by other people.
+- **Fix:**
+  - **Helpers:** two new helpers in `configs/talon/common.sh`, `assigned_gpu_ids` (stops if `CUDA_VISIBLE_DEVICES` is not set) and `gpu_pair_link` (reads the link type between two GPUs from `nvidia-smi topo -m`).
+  - **Stage script:** in `configs/talon/serve_and_run.sh`, every `nvidia-smi` query uses `-i` with the assigned GPUs. The count check now compares `CUDA_VISIBLE_DEVICES` with `GPU_COUNT`. A 2-GPU job records `NVLINK_PAIR` (yes, or no with the link type), warns without stopping if the GPUs are not a linked pair (decided in the settings review), and writes `GPU_IDS`, `GPU_INDEXES` and `NVLINK_PAIR` into its result file. The `nvidia-smi` header is now printed into the job log, so the CUDA version is captured in Stage A.
+  - **Probe:** `configs/talon/probe_talon_part2.sh record` writes `GPUS_VISIBLE` and `GPUS_ASSIGNED` instead of `GPUS_SEEN`.
+- **Tests:**
+  - **The fake:** the fake `nvidia-smi` now behaves like a real Talon node: four GPUs always visible, `-i` honored, GPUs not assigned to the job busy with other work, and job 196's real link table. The test harness sets `CUDA_VISIBLE_DEVICES` the way Slurm does, deliberately not starting at GPU 0 (job 196 got GPU 1).
+  - **New checks (4):**
+    - a job without `CUDA_VISIBLE_DEVICES` stops;
+    - a 1-GPU job on a busy 4-GPU node measures only its own GPU;
+    - GPUs 2,3 record an NVLink pair (NV12);
+    - GPUs 1,2 record `no (SYS)` and still run.
+  - **Changed expectations (2):** wording "assigned" instead of "visible", and the default 2-GPU job is on GPUs 2 and 3, not 0 and 1.
+  - **Results:** Talon shell parts pass with 45, 19 and 63 checks.
+  - **Control:** the same tests run against the old, unfixed `serve_and_run.sh` fail 31 of 45 in part 1 (it sees all four GPUs and refuses a 2-GPU job). On the real node, Stage A would have stopped before sending a question. The fixed version was restored and checked byte for byte.
+- **Next:** the final settings review, which sets `SETTINGS_REVIEWED=yes`. The repository copy on Talon is still at commit `4d24384` and must be refreshed before Stage A.

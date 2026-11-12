@@ -173,6 +173,29 @@ slurm_seconds_left() {  # seconds left in this job, or -1 if unknown
   parse_slurm_time "$(squeue -h -j "${SLURM_JOB_ID:-0}" -o %L 2>/dev/null | head -n 1)"
 }
 
+# --- Which GPUs belong to THIS job? ------------------------------------------------------------------------------------------
+# OBSERVED 2026-11-12 (job 196): Slurm on Talon tells a job its GPUs only through CUDA_VISIBLE_DEVICES (job 196 got "1"); it does
+# NOT hide the node's other GPUs, so a plain `nvidia-smi` lists all four, including GPUs that other people's jobs are using.
+# vLLM and PyTorch respect CUDA_VISIBLE_DEVICES; our own nvidia-smi checks must too, so every query is limited with -i <ids>.
+# assigned_gpu_ids prints the comma-separated ids (indexes or UUIDs) and stops if Slurm did not set them.
+assigned_gpu_ids() {
+  local ids="${CUDA_VISIBLE_DEVICES:-}"
+  { [ -n "$ids" ] && [ "$ids" != "NoDevFiles" ]; } || die "CUDA_VISIBLE_DEVICES is not set, so this job does not know which GPUs Slurm assigned to it. Was it submitted with a GPU request (submit_pipeline.sh adds one)? On Talon nvidia-smi alone lists every GPU of the node, so it cannot be used instead."
+  echo "$ids"
+}
+count_ids() {  # count_ids "1,3" -> 2
+  awk -F, '{ print NF }' <<<"$1"
+}
+# gpu_pair_link A B: how GPUs with indexes A and B are connected, read from the `nvidia-smi topo -m` matrix: NV<n> = NVLink with n
+# links (fast), SYS / NODE / PHB / PXB / PIX = PCIe paths (slower). Prints "unknown" if the matrix cannot be read.
+# On Talon GPUs 0-1 and 2-3 are NVLink pairs (NV12); other pairs are SYS (OBSERVED 2026-11-12, job 196).
+gpu_pair_link() {
+  nvidia-smi topo -m 2>/dev/null | awk -v a="GPU$1" -v b="GPU$2" '
+    !hdr && $1 == "GPU0" && $2 ~ /^GPU/ { for (i = 1; i <= NF; i++) col[$i] = i; hdr = 1; next }
+    hdr && $1 == a { c = col[b]; if (c) { print $(c + 1); found = 1 }; exit }
+    END { if (!found) print "unknown" }'
+}
+
 # --- Is the model really on the GPUs? Evidence = what nvidia-smi MEASURED, never the wording of the server log. -----------------
 # gpus_hold_model CSV MIN_MIB WANT: uses the LATEST sample of each GPU in the monitor's CSV (columns timestamp,gpu,used,total,util).
 # Prints one line per GPU. Returns 0 only if exactly WANT GPUs were sampled and each has at least MIN_MIB in use.

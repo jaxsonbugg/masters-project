@@ -490,7 +490,7 @@ Dates are placeholders until the program's real deadlines are known.
   - the GPU memory per card: resolved 2026-11-12, each H100 NVL has 95,830 MiB (job 196);
   - the CUDA version supported by driver 610.57.04, still to be read;
   - CPUs and memory per job: a job gets 1 CPU unless it asks, so choose `--cpus-per-task` and `--mem`;
-  - the Talon scripts must use only the GPUs in `CUDA_VISIBLE_DEVICES`, because Slurm does not hide the other GPUs on the node from a job;
+  - the Talon scripts must use only the GPUs in `CUDA_VISIBLE_DEVICES`, because Slurm does not hide the other GPUs on the node from a job: resolved 2026-11-12, all GPU checks and the memory monitor are limited to the assigned GPUs, and 2-GPU jobs record NVLink pairing;
   - total GPU-hours allowed;
   - GPU count and tensor parallelism (decided by the throughput benchmark).
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds

@@ -50,15 +50,27 @@ if [[ "$*" == *"--test-only"* ]]; then
 fi
 echo "Submitted batch job ${FAKE_JOBID:-4444}"
 EOF
+  # A fake nvidia-smi that behaves like a real Talon node (OBSERVED 2026-11-12, job 196): the node has FOUR GPUs and nvidia-smi
+  # lists all of them whatever the job was assigned; `-i <ids>` limits a query; GPUs NOT assigned to the job are busy with other
+  # people's work (FAKE_OTHER_USED MiB in use), so a script that forgets -i sees the wrong count and the wrong memory.
   cat > "$T/bin/nvidia-smi" <<'EOF'
 #!/bin/bash
-n="${FAKE_GPUS:-2}"; tot="${FAKE_TOTAL:-95830}"; args="$*"
-if [ "$args" = "-L" ]; then for i in $(seq 0 $((n-1))); do echo "GPU $i: NVIDIA H100 NVL (UUID: GPU-$i)"; done; exit 0; fi
-case "$args" in
-  *"--query-gpu=memory.total"*) for i in $(seq 1 "$n"); do echo "$tot"; done ;;
-  *"--query-gpu=index,name,memory.total,driver_version"*) echo "index, name, memory.total [MiB], driver_version"; for i in $(seq 0 $((n-1))); do echo "$i, NVIDIA H100 NVL, $tot MiB, 610.57.04"; done ;;
+tot="${FAKE_TOTAL:-95830}"; ids="0,1,2,3"; args=("$@")
+for ((k = 0; k < ${#args[@]}; k++)); do [ "${args[k]}" = "-i" ] && ids="${args[k+1]}"; done
+mine=",${CUDA_VISIBLE_DEVICES:-},"
+used_of() { if [[ "$mine" == *",$1,"* ]]; then echo "$2"; else echo "${FAKE_OTHER_USED:-50000}"; fi; }
+IFS=, read -r -a sel <<<"$ids"; last="${sel[${#sel[@]}-1]}"
+case "$*" in
+  "-L") for i in 0 1 2 3; do echo "GPU $i: NVIDIA H100 NVL (UUID: GPU-$i)"; done ;;
+  "topo -m") printf '        GPU0\tGPU1\tGPU2\tGPU3\tNIC0\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\n'
+    printf 'GPU0\t X \tNV12\tSYS\tSYS\tSYS\t0-31\t0\t\tN/A\n'; printf 'GPU1\tNV12\t X \tSYS\tSYS\tSYS\t0-31\t0\t\tN/A\n'
+    printf 'GPU2\tSYS\tSYS\t X \tNV12\tPXB\t32-63\t1\t\tN/A\n'; printf 'GPU3\tSYS\tSYS\tNV12\t X \tPXB\t32-63\t1\t\tN/A\n' ;;
+  *"--query-gpu=index,name,uuid"*) for i in "${sel[@]}"; do echo "$i, NVIDIA H100 NVL, GPU-$i"; done ;;
+  *"--query-gpu=memory.total"*) for i in "${sel[@]}"; do echo "$tot"; done ;;
+  *"--query-gpu=index,name,memory.total,driver_version"*) echo "index, name, memory.total [MiB], driver_version"; for i in "${sel[@]}"; do echo "$i, NVIDIA H100 NVL, $tot MiB, 610.57.04"; done ;;
   *"--query-gpu=timestamp,index,memory.used"*) ts="$(date +'%Y/%m/%d %H:%M:%S').000"
-    for i in $(seq 0 $((n-1))); do u="${FAKE_USED:-70000}"; [ "$i" -eq $((n-1)) ] && [ -n "${FAKE_USED_LAST:-}" ] && u="$FAKE_USED_LAST"; echo "$ts, $i, $u, $tot, 50"; done ;;
+    for i in "${sel[@]}"; do u="${FAKE_USED:-70000}"; [ "$i" = "$last" ] && [ -n "${FAKE_USED_LAST:-}" ] && u="$FAKE_USED_LAST"; echo "$ts, $i, $(used_of "$i" "$u"), $tot, 50"; done ;;
+  "") echo "| NVIDIA-SMI 610.57.04    Driver Version: 610.57.04    CUDA Version: (fake) |" ;;
 esac
 exit 0
 EOF
@@ -99,8 +111,13 @@ EOF
 }
 JOBN=2000
 sub() {  # sub <wrapper> [VAR=value ...]  -> runs a wrapper like Slurm would, sets RC and OUT
-  local w="$1"; shift; JOBN=$((JOBN+1))
-  OUT="$(env SLURM_JOB_ID=$JOBN "$@" bash "$T/repo/configs/talon/$w" 2>&1)"; RC=$?
+  # Like Slurm on Talon, the job is told its GPUs through CUDA_VISIBLE_DEVICES. FAKE_GPUS=n = how many GPUs were ASSIGNED (default 2);
+  # the fake node always has four. The default assignments avoid starting at GPU 0, as on Talon (job 196 got GPU 1); an explicit
+  # CUDA_VISIBLE_DEVICES=... argument wins because it comes later in the env list.
+  local w="$1"; shift; JOBN=$((JOBN+1)); local n=2 a cvd
+  for a in "$@"; do case "$a" in FAKE_GPUS=*) n="${a#FAKE_GPUS=}" ;; esac; done
+  case "$n" in 1) cvd=1 ;; 2) cvd=2,3 ;; 3) cvd=1,2,3 ;; *) cvd=0,1,2,3 ;; esac
+  OUT="$(env SLURM_JOB_ID=$JOBN CUDA_VISIBLE_DEVICES="$cvd" "$@" bash "$T/repo/configs/talon/$w" 2>&1)"; RC=$?
 }
 RES="$T/tl/teacher_outputs/stage_results"
 val() { sed -n "s/^$2=//p" "$1" | tail -n 1; }
@@ -136,7 +153,7 @@ chk "Stage A exits 0 with RESULT: PASS" '[ $RC -eq 0 ] && grep -q "RESULT: PASS 
 chk "the UNVERIFIED Talon facts are printed" 'grep -q "UNVERIFIED (ask Miami Research Computing" <<<"$OUT" && grep -q "pricing and charges" <<<"$OUT"'
 chk "the 20,480-token context note is printed" 'grep -q "far below Qwen" <<<"$OUT" && grep -q "128K" <<<"$OUT"'
 chk "result file records the layout and the fingerprints" '[ "$(val $RES/stageA.txt RESULT)" = PASS ] && [ "$(val $RES/stageA.txt GPU_COUNT)" = 2 ] && [ "$(val $RES/stageA.txt TENSOR_PARALLEL)" = 2 ] && grep -q "^LAYOUT_FP=2/2/1/8/0.19.1/$REV/" $RES/stageA.txt'
-chk "the model-on-every-GPU check ran on measured memory (needs 51500/2/2 = 12875 MiB per GPU)" 'grep -q "model is on all 2 GPU(s)" <<<"$OUT" && grep -q "gpu 1 in_use_MiB 70000 (needs at least 12875)" <<<"$OUT"'
+chk "the model-on-every-GPU check ran on measured memory (needs 51500/2/2 = 12875 MiB per GPU)" 'grep -q "model is on all 2 GPU(s)" <<<"$OUT" && grep -q "gpu 3 in_use_MiB 70000 (needs at least 12875)" <<<"$OUT"'
 chk "vLLM was started with the layout and BF16 (args reached the server)" 'grep -q -- "--tensor-parallel-size 2 --max-model-len 20480 --max-num-seqs 8 --reasoning-parser qwen3 --dtype bfloat16" $T/tl/teacher_outputs/job_logs/vllm_server_2*_A.log'
 SA="$(ls -d $T/tl/teacher_outputs/*talon-bf16_smokeA* 2>/dev/null | head -n 1)"
 chk "the run folder is under talon_outputs and named talon-bf16" '[ -n "$SA" ] && [ -f "$SA/responses.jsonl" ]'
@@ -145,7 +162,14 @@ chk "the run log records the layout as metadata for the throughput report" 'grep
 chk "nothing was written under the Redhawk outputs folder name" '! ls -d $T/tl/teacher_outputs/*redhawk* >/dev/null 2>&1'
 cp $RES/stageA.txt $RES/stageA.keep
 echo "[A2] GPU and memory checks for 1, 2 and 4 GPUs"
-sub talon_smoke_a.sbatch FAKE_GPUS=1; chk "1 visible GPU for a 2-GPU layout stops the job" '[ $RC -ne 0 ] && grep -q "expected exactly 2 visible GPU(s)" <<<"$OUT"'
+sub talon_smoke_a.sbatch FAKE_GPUS=1; chk "1 assigned GPU for a 2-GPU layout stops the job" '[ $RC -ne 0 ] && grep -q "expected exactly 2 assigned GPU(s)" <<<"$OUT"'
+sub talon_smoke_a.sbatch CUDA_VISIBLE_DEVICES=; chk "a job without CUDA_VISIBLE_DEVICES stops (nvidia-smi alone lists the whole node)" '[ $RC -ne 0 ] && grep -q "CUDA_VISIBLE_DEVICES is not set" <<<"$OUT"'
+sub talon_smoke_a.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 FAKE_OTHER_USED=93000
+chk "on a 4-GPU node a 1-GPU job (GPU 1) counts and measures ONLY its own GPU, though all 4 are visible and the others are busy" '[ $RC -eq 0 ] && grep -q "gpu 1 in_use_MiB" <<<"$OUT" && ! grep -q "gpu [023] in_use_MiB" <<<"$OUT" && [ "$(val $RES/stageA.txt GPU_IDS)" = 1 ] && [ "$(awk -F", " "NR > 1 { print \$2 }" "$(ls -t $T/tl/teacher_outputs/job_logs/gpu_memory_*.csv | head -n 1)" | sort -u)" = 1 ]'
+sub talon_smoke_a.sbatch
+chk "a 2-GPU job on GPUs 2,3 records an NVLink pair (NV12)" '[ $RC -eq 0 ] && [ "$(val $RES/stageA.txt NVLINK_PAIR)" = "yes (NV12)" ] && grep -q "NVLink pair: yes (NV12)" <<<"$OUT"'
+sub talon_smoke_a.sbatch CUDA_VISIBLE_DEVICES=1,2
+chk "a 2-GPU job on GPUs 1,2 (no NVLink) warns, records NVLINK_PAIR=no (SYS) and still runs" '[ $RC -eq 0 ] && [ "$(val $RES/stageA.txt NVLINK_PAIR)" = "no (SYS)" ] && grep -q "not an NVLink pair" <<<"$OUT"'
 sub talon_smoke_a.sbatch FAKE_USED_LAST=200; chk "model missing from the last GPU (200 MiB): FAIL_INFRA, exit 3" '[ $RC -eq 3 ] && grep -q "the model is not on all 2 GPU(s)" <<<"$OUT" && [ "$(val $RES/stageA.txt RESULT)" = FAIL_INFRA ]'
 sub talon_smoke_a.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1; chk "a 1-GPU layout (TP 1) passes; needs 25750 MiB on the GPU" '[ $RC -eq 0 ] && grep -q "needs at least 25750" <<<"$OUT" && [ "$(val $RES/stageA.txt GPU_COUNT)" = 1 ]'
 sub talon_smoke_a.sbatch FAKE_GPUS=4 GPU_COUNT=4 TENSOR_PARALLEL=4; chk "a 4-GPU layout (TP 4) passes and checks all 4 GPUs" '[ $RC -eq 0 ] && grep -q "model is on all 4 GPU(s)" <<<"$OUT" && grep -q "gpu 3 in_use_MiB" <<<"$OUT"'
@@ -263,7 +287,7 @@ printf 'PROBE_DRIVER_LINE | NVIDIA-SMI 560.35  Driver Version: 560.35  CUDA Vers
 OUT="$(env FAKE_JOB_RUNNING=1 bash configs/talon/probe_talon_part2.sh record 2>&1)"; RC=$?
 chk "record refuses while the probe job is still in the queue" '[ $RC -ne 0 ] && grep -q "still in the queue" <<<"$OUT"'
 OUT="$(bash configs/talon/probe_talon_part2.sh record 2>&1)"; RC=$?
-chk "record writes talon_verified.txt with PART2_OK, accepted styles, GPU name and network facts" '[ $RC -eq 0 ] && grep -q "^PART2_OK=yes" talon_verified.txt && grep -q "^GPU_STYLES_ACCEPTED=gres$" talon_verified.txt && grep -q "^GPU_NAME=NVIDIA H100 80GB HBM3$" talon_verified.txt && grep -q "^COMPUTE_NODE_PYPI=200" talon_verified.txt'
+chk "record writes talon_verified.txt with PART2_OK, accepted styles, GPU name and network facts" '[ $RC -eq 0 ] && grep -q "^PART2_OK=yes" talon_verified.txt && grep -q "^GPU_STYLES_ACCEPTED=gres$" talon_verified.txt && grep -q "^GPU_NAME=NVIDIA H100 80GB HBM3$" talon_verified.txt && grep -q "^GPUS_VISIBLE=1$" talon_verified.txt && grep -q "^GPUS_ASSIGNED=unknown$" talon_verified.txt && grep -q "^COMPUTE_NODE_PYPI=200" talon_verified.txt'
 echo "[PR2] probe_talon.sh is READ-ONLY, finishes even when every cluster command is missing, and labels its evidence"
 PSRC="$REPO/configs/talon/probe_talon.sh"
 CODE="$(grep -v '^[[:space:]]*#' "$PSRC")"

@@ -22,13 +22,14 @@
 #
 # WHAT MUST PASS BEFORE ANYTHING IS SENT (each stops the job with a plain message):
 #   - the settings were reviewed by a person; the layout values are present and agree (GPU_COUNT = TP x REPLICAS);
-#   - exactly GPU_COUNT GPUs are visible and each reports at least GPU_MIN_TOTAL_MIB;
+#   - Slurm assigned exactly GPU_COUNT GPUs (CUDA_VISIBLE_DEVICES; on Talon nvidia-smi alone lists every GPU of the node) and
+#     each assigned GPU reports at least GPU_MIN_TOTAL_MIB; a 2-GPU job records whether it got an NVLink pair (not required);
 #   - every weight file matches the recorded SHA-256 manifest (re-hashed here, not trusted from the download) and the model
 #     folder is the pinned revision;
 #   - vLLM is the pinned version and `vllm serve --help` lists every flag this stage uses;
 #   - the stage gate (A needs nothing; B needs a passing A with the same layout; T needs a passing A with the same engine and
 #     weights; main needs a passing B with the same layout).
-# AFTER THE LOAD: nvidia-smi must show at least half of one GPU's share of the weights in use on each of the GPU_COUNT GPUs, and
+# AFTER THE LOAD: nvidia-smi must show at least half of one GPU's share of the weights in use on each of the GPU_COUNT ASSIGNED GPUs, and
 # the server must list the served model name. No pass/fail rests on the wording of the server log (only error WORDS can fail).
 #
 # TWO KINDS OF FAILURE, KEPT APART (validation is mandatory in every stage):
@@ -59,16 +60,35 @@ load_modules
 
 # ---- 1. the GPUs ----------------------------------------------------------------------------------------------------
 command -v nvidia-smi >/dev/null || die "nvidia-smi not found: this is not a GPU node"
-GPU_LIST="$(nvidia-smi -L)"
-N_GPU="$(grep -c '^GPU ' <<<"$GPU_LIST" || true)"
-[ "$N_GPU" = "$GPU_COUNT" ] || die "expected exactly $GPU_COUNT visible GPU(s) (GPU_COUNT), found $N_GPU. Check the GPU request the job was submitted with (submit_pipeline.sh builds it from the settings). Visible: $GPU_LIST"
-grep -qi 'H100' <<<"$GPU_LIST" || warn "GPUs do not look like H100s: $GPU_LIST"
+# Only the GPUs Slurm ASSIGNED to this job count. On Talon `nvidia-smi` on its own lists all four GPUs of the node, including GPUs
+# that other people's jobs are using (OBSERVED 2026-11-12, job 196), so every query here is limited with -i to the assigned ids.
+GPU_IDS="$(assigned_gpu_ids)"
+N_ASSIGNED="$(count_ids "$GPU_IDS")"
+[ "$N_ASSIGNED" = "$GPU_COUNT" ] || die "expected exactly $GPU_COUNT assigned GPU(s) (GPU_COUNT), but CUDA_VISIBLE_DEVICES='$GPU_IDS' lists $N_ASSIGNED. Check the GPU request the job was submitted with (submit_pipeline.sh builds it from the settings)."
+GPU_LIST="$(nvidia-smi -i "$GPU_IDS" --query-gpu=index,name,uuid --format=csv,noheader)" || die "nvidia-smi could not query the assigned GPU(s) '$GPU_IDS'."
+N_GPU="$(grep -c . <<<"$GPU_LIST" || true)"
+[ "$N_GPU" = "$GPU_COUNT" ] || die "nvidia-smi reports $N_GPU of the assigned GPU(s) '$GPU_IDS', expected $GPU_COUNT: $GPU_LIST"
+grep -qi 'H100' <<<"$GPU_LIST" || warn "the assigned GPUs do not look like H100s: $GPU_LIST"
 while read -r mib; do
   [ "${mib:-0}" -ge "$GPU_MIN_TOTAL_MIB" ] || die "a GPU reports only $mib MiB, expected at least $GPU_MIN_TOTAL_MIB (GPU_MIN_TOTAL_MIB; each Talon H100 NVL reports 95,830 MiB, observed in job 196)"
-done < <(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits)
+done < <(nvidia-smi -i "$GPU_IDS" --query-gpu=memory.total --format=csv,noheader,nounits)
+GPU_INDEXES="$(cut -d, -f1 <<<"$GPU_LIST" | tr -d ' ' | paste -sd, -)"
+# NVLink pairing for 2-GPU jobs: recorded, not required (decided in the settings review, 2026-11-12). Slurm does not promise a
+# linked pair; tensor parallelism across a PCIe path still works, only slower, so this is a measured fact next to the timings.
+NVLINK_PAIR="not applicable ($GPU_COUNT GPU(s))"
+if [ "$GPU_COUNT" = 2 ]; then
+  LINK="$(gpu_pair_link "${GPU_INDEXES%%,*}" "${GPU_INDEXES##*,}")"
+  case "$LINK" in
+    NV*) NVLINK_PAIR="yes ($LINK)" ;;
+    unknown) NVLINK_PAIR="unknown (nvidia-smi topo -m could not be read)" ;;
+    *) NVLINK_PAIR="no ($LINK)"; warn "the two assigned GPUs ($GPU_INDEXES) are not an NVLink pair (link: $LINK). The job continues; timings from it are recorded with NVLINK_PAIR=no." ;;
+  esac
+fi
 echo "=== node $(hostname), job $JOB, stage $STAGE, $(date -u +%FT%TZ) ==="
+echo "assigned GPU(s): CUDA_VISIBLE_DEVICES=$GPU_IDS (indexes $GPU_INDEXES); NVLink pair: $NVLINK_PAIR"
 echo "$GPU_LIST"
-nvidia-smi --query-gpu=index,name,memory.total,driver_version --format=csv
+nvidia-smi -i "$GPU_IDS" --query-gpu=index,name,memory.total,driver_version --format=csv
+nvidia-smi 2>/dev/null | head -n 4 || true   # the header line shows the CUDA version the driver supports (not yet recorded for Talon)
 echo "layout: $GPU_COUNT GPU(s), tensor parallel $TENSOR_PARALLEL, replicas $REPLICAS, max sequences $MAX_NUM_SEQS, max length per sequence $MAX_MODEL_LEN"
 echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; used only to match the Redhawk run."
 
@@ -149,7 +169,7 @@ write_result() {  # $1 = PASS | PASS_QUALITY_WARN | FAIL_INFRA, $2 = reason. Smo
   [ "$STAGE" != main ] || f="$RESULT_DIR/main_job${JOB}.txt"
   { echo "RESULT=$1"; echo "REASON=$2"; echo "INFRA=$INFRA_STATE"; echo "QUALITY_REPLIES=$QUALITY_REPLIES"; echo "REPLIES=$REPLIES"
     echo "QUALITY_ALL=$QUALITY_ALL"; echo "GPU_COUNT=$GPU_COUNT"; echo "TENSOR_PARALLEL=$TENSOR_PARALLEL"; echo "REPLICAS=$REPLICAS"
-    echo "MAX_NUM_SEQS=$MAX_NUM_SEQS"; echo "CLIENT_CONCURRENCY=${CLIENT_CONCURRENCY:-sweep: $SWEEP_CONCURRENCY}"; echo "MAX_MODEL_LEN=$MAX_MODEL_LEN"
+    echo "GPU_IDS=$GPU_IDS"; echo "GPU_INDEXES=$GPU_INDEXES"; echo "NVLINK_PAIR=$NVLINK_PAIR"; echo "MAX_NUM_SEQS=$MAX_NUM_SEQS"; echo "CLIENT_CONCURRENCY=${CLIENT_CONCURRENCY:-sweep: $SWEEP_CONCURRENCY}"; echo "MAX_MODEL_LEN=$MAX_MODEL_LEN"
     echo "VLLM_VERSION=$ACTUAL_VERSION"; echo "MODEL_REV=$MODEL_REV"; echo "WEIGHTS_MANIFEST_SHA256=$MANIFEST_SHA"
     echo "ENGINE_FP=$ENGINE_FP"; echo "LAYOUT_FP=$LAYOUT_FP"; echo "MIN_FREE_MIB=$MINFREE"; echo "JOB=$JOB"; echo "LOGTAG=$TAGID"
     echo "NODE=$(hostname)"; echo "UTC=$(date -u +%FT%TZ)"; echo "RUN_DIR=$RUN_DIR"; echo "RUN_DIRS=$RUN_DIRS"; } > "$f.tmp"
@@ -166,10 +186,10 @@ echo "Starting vllm serve on 127.0.0.1:$PORT ..."
   --tensor-parallel-size "$TENSOR_PARALLEL" --max-model-len "$MAX_MODEL_LEN" --max-num-seqs "$MAX_NUM_SEQS" \
   --reasoning-parser qwen3 --dtype bfloat16 > "$SERVER_LOG" 2>&1 &
 SERVER=$!
-# GPU memory sampled every 2 seconds, for the report and for the "is the model on every GPU" check below.
+# GPU memory of the ASSIGNED GPUs only, sampled every 2 seconds, for the report and for the "is the model on every GPU" check below.
 echo "timestamp,gpu,mem_used_mib,mem_total_mib,util_pct" > "$MEMLOG"
 ( while true; do
-    nvidia-smi --query-gpu=timestamp,index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits >> "$MEMLOG" 2>/dev/null || true
+    nvidia-smi -i "$GPU_IDS" --query-gpu=timestamp,index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits >> "$MEMLOG" 2>/dev/null || true
     sleep 2
   done ) &
 MON=$!
