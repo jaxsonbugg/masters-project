@@ -657,3 +657,13 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **Control:** the old `serve_and_run.sh` against the new fake stops with "vLLM is 3.12, not the pinned ...", the same failure seen on Talon.
 - **Side note:** FlashInfer's prebuilt kernels are not installed, so vLLM will use another attention method. Stage A records which one. The open vLLM issue #63505 concerned FlashInfer, but whether that matters here is not established.
 - **Next:** refresh the Talon copy again, then re-run `prep_talon.sh` with `QT_PREP_AGAIN=yes` (the environment is reused; the download starts).
+
+### Talon: vLLM 0.32.0 environment and Qwen3.6-27B BF16 weights installed and verified (2026-11-12, no GPU used)
+- **What:** after the version-check fix, Jaxson refreshed the Talon copy to `5dca92a` (build-then-swap; the previous copy is kept as `repo_old_c2914a5`) and re-ran `prep_talon.sh` with `QT_PREP_AGAIN=yes`.
+- **Result:**
+  - **Weights:** all 29 weight files of `Qwen/Qwen3.6-27B` @ `6a9e13bd` downloaded in about 82 seconds and match the sizes and SHA-256 hashes Hugging Face publishes for that commit (`OK: weights verified`).
+  - **Fingerprints:** the manifest SHA-256 is `8e3e1fc0...`. The environment's package list (199 packages; vllm 0.32.0, torch 2.13.0 with CUDA 13.0, transformers 5.19.0, Python 3.12.5) has SHA-256 `96977b7f...`.
+  - **Storage:** the home quota is now about 83 GB of 480 GB.
+- **Recorded in:** `docs/logs/compute_log.md` entry 11, and the new rebuild recipe `recovery/talon_qwen_weights.md`, which the project rule requires for anything stored outside the repository.
+- **Settings:** `WEIGHTS_MIB` stays 53,011, against the 53,220 MiB measured (0.4%, normal disk accounting). It only feeds estimates, and changing a reviewed setting would need a new review.
+- **Next:** Stage A, the first GPU job with the real model. It needs Jaxson's approval and a layout choice.

@@ -32,6 +32,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 8 | 2026-11-06 | Talon login node | n/a | Read-only probe (`run_probe_local.sh`) and follow-up reads | none | 0 | PASS |
 | 9 | 2026-11-11 ~21:18 | Talon login node | none created | Repository copy to `~/talon_project/repo` (commit `4d24384`) and GPU request-style test (`sbatch --test-only`, 4 forms) | none | 0 | PASS (all 4 forms accepted) |
 | 10 | 2026-11-12 02:35 | Talon `talon`, `mualhpgp01` | 196 | GPU probe job (`probe_gpu_job.sbatch`), `--gres=gpu:1` | 1 x H100 NVL, ~1 s | ~0.0003 | PASS (see the GPU-visibility finding) |
+| 11 | 2026-11-12 ~05:30 | Talon login node | none (background process) | vLLM 0.32.0 environment and Qwen3.6-27B BF16 weights download and verification (`prep_talon.sh`, attempt 2) | none (no GPU) | 0 | PASS (attempt 1 stopped by our version check; nothing downloaded) |
 
 **GPU-hours used to date: about 0.05** (Redhawk job 6), plus about 0.0003 for Talon job 196, plus Redhawk job 7 once it is reviewed.
 
@@ -134,3 +135,17 @@ This is the record of every cluster job, scheduler test and measured local run i
   - **Internet from the compute node:** Hugging Face HTTP 200 and PyPI HTTP 200, so compute nodes can download.
   - **vLLM wheel check:** skipped, because the vLLM version is not pinned yet.
 - **Outcome:** PASS. It also produced the GPU-visibility and CPU findings above, which feed the settings review and a script fix.
+
+### 11. Talon: vLLM environment and BF16 weights, 2026-11-12 (login node, no GPU, no Slurm job)
+- **Purpose:** install the pinned engine and download the pinned teacher weights (Stage 1, step 3 of the pilot plan). Approved by Jaxson, who ran it.
+- **What ran:** `QT_CONFIRM_STORAGE=yes QT_ALLOW_HOME=yes bash -l configs/talon/prep_talon.sh` from `~/talon_project/repo`. It checked the copied files (scripts parse, no carriage returns, prompt SHA-256 `348db6ff...`), then ran `fetch_talon.sh` in the background on the login node.
+- **Attempt 1** (repository at `c2914a5`): quota check passed; the environment installed; then it **stopped** at our own version check, which read "3.12" from the output of `vllm --version`. That command crashes on a node without a GPU ("Failed to infer device type"). Nothing was downloaded. Fixed in `5dca92a` (the version is now read from Python's package records); see the progress log.
+- **Attempt 2** (repository at `5dca92a`, `QT_PREP_AGAIN=yes`):
+  - **Environment:** reused. The package list was recorded at 2026-11-12T05:32:27Z: 199 packages, Python 3.12.5, `vllm==0.32.0`, `torch==2.13.0` (CUDA 13.0 build), `transformers==5.19.0`. The `venv_pip_freeze.txt` SHA-256 is `96977b7fd97d9e886930fa2c2a423e64651bf0354bbe892646e6ab27f4f9867a`.
+  - **Download:** `Qwen/Qwen3.6-27B` @ `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`, 29 files in **about 82 seconds**. That is about 54 GB, so roughly 0.65 GB/s from the login node, without a Hugging Face token.
+  - **Verification:** all 29 files match the sizes Hugging Face publishes for that commit, and every large file matches its published SHA-256.
+  - **Manifest:** `weights_manifest.sha256` (29 files) has SHA-256 `8e3e1fc0103c85a66c1516343b645a80d667e47a8152b8b38a24e67e218d1d33`. The total is 53,220 MiB (the setting `WEIGHTS_MIB` is 53,011; a 0.4% difference, left unchanged).
+  - **Ended with:** `OK: weights verified`.
+- **Storage afterwards:** weights 52 GB and environment 8.5 GB. The home quota stands at **82,982 MiB of the 480 GB soft limit** (about 17%), with about 108,000 files.
+- **Rebuild recipe:** `recovery/talon_qwen_weights.md`.
+- **GPU time:** none.
