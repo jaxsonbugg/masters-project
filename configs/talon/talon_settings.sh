@@ -99,13 +99,15 @@ SWEEP_CONCURRENCY="${SWEEP_CONCURRENCY-1 4 8 16}"
 # 128K the model card advises for keeping thinking quality: do not read these results as the model's best.
 MAX_MODEL_LEN="${MAX_MODEL_LEN-20480}"
 
-# ---- Talon facts that are NOT verified (printed by every script that touches Talon) ---------------------------------------
-# Research Computing told Jaxson in a meeting on 2026-11-06 (verbal, NOT yet in writing): the account and user name are the same as
-# Redhawk's, using Talon costs nothing, the storage limit is 500 GB (more on request), one job may run at most 3 days, and the
-# scheduler may choose the node. Those are TOLD BY RESEARCH COMPUTING, so they are listed below with that caveat until written.
+# ---- Talon facts: what is confirmed in writing, and what is not (the unverified ones are printed by every script that touches Talon) ----
+# CONFIRMED IN WRITING (email from Dr. Mueller of Research Computing, 2026-11-12; docs/clusters/research_computing_correspondence.md): Talon is
+# free to use; the only limit is the time per job (3 days), with no GPU-hour cap; all 4 GPUs of a node may be used at once, and one GPU per job
+# (--gres=gpu:1) is recommended; a running job is never cut short, but the fair-share policy built into Slurm lengthens start-up waits as more
+# users join and after heavy use.
+# TOLD BY RESEARCH COMPUTING in the meeting of 2026-11-06 (verbal): the account and user name are the same as Redhawk's, the storage limit is
+# 500 GB (more on request), and the scheduler may choose the node.
 TALON_UNVERIFIED_FACTS=(
-  "pricing and charges for GPU time (told in the 2026-11-06 meeting: Talon costs nothing; verbal, not yet in writing)"
-  "the total GPU-hours we may use (no figure given) and whether a faculty research credit is involved"
-  "per-user GPU limits (none are configured in Slurm; the 3-day job limit and the 500 GB home quota were seen in the scheduler and in the quota display, but are not in writing)"
+  "whether GPUs on more than one node may be used at once (the written answer of 2026-11-12 says all 4 GPUs of a node; the 8- and 16-GPU lines of the throughput report assume several nodes)"
+  "storage beyond 500 GB, and the account's lifetime and renewal (not asked yet)"
   "usage and data policies (the meeting said nothing changes without written notice, and our use looked fine; nothing is in writing)"
 )

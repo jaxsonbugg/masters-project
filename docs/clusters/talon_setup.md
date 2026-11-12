@@ -13,7 +13,7 @@ Why it matters to this project: Talon is now the project's **primary cluster** f
 2026-11-06; Redhawk is the fallback). The project includes generating **200,000 teacher examples** with Qwen3.6-27B. On Redhawk that is not practical: a
 27-billion-parameter model barely fits on two small V100s even squeezed to 4 bits, and Redhawk's queue estimated a start about 13 days out for a single
 whole-node job (2026-11-04). Its generation speed has not been measured yet. Talon's H100s can hold the full-precision model and serve many requests at once. **TOLD BY RESEARCH COMPUTING (meeting, 2026-11-06; verbal, not yet in writing):** using Talon costs
-us nothing, one job may run at most 3 days, and we have 500 GB of storage (more must be requested). How many GPU-hours we may use in total is **UNVERIFIED**.
+us nothing, one job may run at most 3 days, and we have 500 GB of storage (more must be requested). **CONFIRMED IN WRITING 2026-11-12 (Dr. Mueller):** Talon is free, and the only limit is the time per job; there is no GPU-hour cap (`docs/clusters/research_computing_correspondence.md`).
 
 The Redhawk pipeline job 2511641 has finished, but its results have **not been reviewed yet** (`docs/logs/compute_log.md`, entry 7). It is no longer a
 comparison baseline. The planned precision comparison is **4-bit versus BF16, both on Talon** (`docs/methodology/workflow.md` Section 2.1), so hardware does not
@@ -46,8 +46,9 @@ Four labels say HOW we know something. A weaker source never promotes something 
 | Modules, OS, glibc, Python, containers (login node) | Rocky Linux 9.8, glibc 2.34; the system Python is 3.9.25 (too old for vLLM, which needs 3.11 or newer); module `miniforge3-python3.12` exists (puts `/software/miniforge3-python3.12/bin` first on PATH; that folder holds `conda`, `pip` and `python3.12`); also modules cuda-11.7, cuda-12.2, gcc-12/14; apptainer, singularity, podman, git, curl, wget present; no `pip3`, no `nvidia-smi` on the login node | **OBSERVED** 2026-11-06 (probe 2-4) for the login node |
 | Driver, CUDA, NVLink, internet from compute nodes | **Login node:** huggingface.co, pypi.org and download.pytorch.org all answered HTTP 200 within 0.3 s. **Compute node, job 196:** driver 610.57.04; GPUs 0-1 and 2-3 are NVLink pairs (`NV12`), other pairs `SYS`; Hugging Face 200 and PyPI 200; CUDA version not printed by the probe's grep | login node **OBSERVED** 2026-11-06 (probe 7); compute node, driver, NVLink and internet **OBSERVED** 2026-11-12 (job 196); CUDA version **UNVERIFIED** (still to read). The login shell sets `http_proxy` and `https_proxy` to `webproxy.mcs.miamioh.edu:80` (with `127.0.0.1` and `localhost` exempt), so the login node's internet goes THROUGH the university proxy; whether GPU nodes can use it is **UNVERIFIED** |
 | Storage (paths, quotas, purge rules) | `/home` (network disk, 63 TB, 86% full, shared with Redhawk); `/scratch` (network disk, 4.5 TB, 88% full, only 580 GB free, shared by everyone); `/shared`; `/localscratch` (1 TB, local to the login node only). The usage display is `quota -s -v -f /home` (the login script `/etc/profile.d/quota.sh` runs a shorter form). It showed **17,336 MB used, a soft limit of 480 GB and a hard limit of 500 GB** on `/home`, which matches the 500 GB we were told | layout and quota **OBSERVED** 2026-11-06. The 500 GB applies to the home file system, which Redhawk and Talon share. Whether a group folder under `/shared` counts differently is not needed now and is **UNVERIFIED** |
-| Pricing and charges | using Talon costs us nothing; the scheduler's job accounting is switched off (`AccountingStorageType = (null)`, "Slurm accounting storage is disabled"), so it records no accounts, no fair-share and no usage | no cost: **TOLD** 2026-11-06 (verbal); accounting off: **SLURM-REPORTED** (probe 5e), consistent with it. No account or QOS name is needed in jobs |
-| Allocation (total GPU-hours), GPU quotas, per-user limits | no figure given; no per-user limit is configured in Slurm (no QOS, all priority weights 0) | configuration **SLURM-REPORTED** 2026-11-06 (probe 5e); any written policy is **UNVERIFIED** |
+| Pricing and charges | using Talon costs us nothing; the scheduler's job accounting is switched off (`AccountingStorageType = (null)`, "Slurm accounting storage is disabled"), so it records no accounts, no fair-share and no usage | no cost: **CONFIRMED IN WRITING** 2026-11-12 (Dr. Mueller: "Yes, it's free."; before that only **TOLD** verbally on 2026-11-06); accounting off: **SLURM-REPORTED** (probe 5e). No account or QOS name is needed in jobs |
+| Allocation (total GPU-hours), GPU quotas, per-user limits | **no GPU-hour limit: "The only limit is the time per job"** (3 days). All 4 GPUs of a node may be used at once; one GPU per job (`--gres=gpu:1`) is recommended. Using GPUs on several nodes at once is not stated. No per-user limit is configured in Slurm (no QOS, all priority weights 0) | **CONFIRMED IN WRITING** 2026-11-12 (email from Dr. Mueller); configuration also **SLURM-REPORTED** 2026-11-06 (probe 5e); several nodes at once **UNVERIFIED** |
+| Fair-share and interruption | Slurm's fair-share policy decides who starts first, so start-up waits grow as more users join and may grow after heavy use. A running job is never cut short | **CONFIRMED IN WRITING** 2026-11-12 (email from Dr. Mueller). Not yet observed: Talon was nearly empty on 2026-11-12 (jobs started within a second) |
 | Access requirements and policies (usage, data) | the meeting said nothing changes without written notice to Jaxson, and that the planned use is fine | **TOLD BY RESEARCH COMPUTING** 2026-11-06 (verbal); nothing is in writing, so the policies themselves stay **UNVERIFIED** |
 | Contact | Dr. Mueller (Research Computing) | **TOLD** 2026-11-06 |
 | Maintenance window and availability | at the probe (2026-11-06 22:06 UTC): no reservations, no down or drained nodes, all four nodes up | **SLURM-REPORTED** 2026-11-06 (probe 5c); a snapshot, and the nodes were mostly busy (see below) |
@@ -182,7 +183,7 @@ be 6,250 / 16 = 390 hours, about 16 days. These numbers are made up to show the 
 
 **What the projection is not.** It uses 32 questions of one prompt family. The real 200,000 questions may be longer or shorter, jobs lose time to queue
 waits and time limits, model loading repeats per job, and failed examples must be re-asked. Treat it as a planning estimate with a wide error bar. The
-"if N GPUs were available" lines are arithmetic only; Talon's allocation and GPU quota are **UNVERIFIED**.
+"if N GPUs were available" lines are arithmetic only. Research Computing confirmed in writing (2026-11-12) that there is no GPU-hour cap and that all 4 GPUs of a node may be used at once; whether GPUs on several nodes may be used at once is not stated, and the 8- and 16-GPU lines assume it.
 
 ## 7. The 20,480-token context is a comparison setting, not the model's best
 
@@ -204,7 +205,7 @@ needs, and these get their own plan and approval later:
 - **Verification by sampling** (R answer checks and hand review of a sample), and a policy for rejected examples.
 - **An answer-length and thinking-budget policy**, because thinking tokens dominate cost and time.
 - **Output format and storage size** (200,000 examples of thousands of tokens each is gigabytes).
-- **GPU-hour accounting against the allocation** (UNVERIFIED), and a way to stop safely at the limit.
+- **A fair share of the cluster.** There is no GPU-hour cap (confirmed in writing 2026-11-12), but the fair-share policy lengthens waits after heavy use, so the work is submitted in restartable chunks and needs a way to stop safely between them.
 
 ## 9. After your Talon account is activated: exact steps
 
@@ -220,6 +221,11 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - *a job gets 1 CPU unless it asks for more, so `--cpus-per-task` must be set;*
 - *the job's memory limit is unknown, so `--mem` must be set;*
 - *GPUs 0-1 and 2-3 are NVLink pairs, so a 2-GPU job should get a linked pair.*
+
+*Written answers from Research Computing, 2026-11-12 (`docs/clusters/research_computing_correspondence.md`):*
+- *Talon is free, and the only limit is the time per job (3 days): there is no GPU-hour cap.*
+- *All 4 GPUs of a node may be used at once. One GPU per job (`--gres=gpu:1`) is recommended, which is our layout, so up to 4 single-GPU jobs can run side by side.*
+- *A running job is never cut short, but start-up waits may grow under the fair-share policy.*
 
 *Settings review, 2026-11-12 (Jaxson). `SETTINGS_REVIEWED` stays `no` until the GPU-counting fix is in.*
 - ***Engine:** `vllm==0.32.0`.*
@@ -243,7 +249,7 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - *The probe `record` step now writes `GPUS_VISIBLE` and `GPUS_ASSIGNED` instead of the misleading `GPUS_SEEN`.*
 - *The test fake now behaves like a real Talon node: four GPUs always visible, the other GPUs busy, and job 196's real link table.*
 
-1. **Email** the questions in section 2 (you may already have). Until answered, pricing, allocation, quotas and access limits stay UNVERIFIED.
+1. **Email** the questions in section 2. Done 2026-11-12: the written answers are in `docs/clusters/research_computing_correspondence.md` (free, no GPU-hour cap, 4 GPUs of a node at once, jobs never cut short). Still unasked: storage beyond 500 GB and the account's lifetime and renewal.
 2. **Check reachability and verify the host key, then connect.** Run `Test-NetConnection mualhphp01.hpc.miamioh.edu -Port 22` (connect the Miami VPN if it times out). **Do not
    just type "yes" at the first SSH prompt:** display the server's host-key fingerprints, get Research Computing's own fingerprints by email or phone, compare them, and only then
    accept the key once (the procedure is in `recovery/talon_ssh_access.md`). Record the host, VPN yes/no and Duo method there.

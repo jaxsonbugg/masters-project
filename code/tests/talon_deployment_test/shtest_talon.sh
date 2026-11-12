@@ -160,7 +160,7 @@ sub talon_smoke_b.sbatch CLIENT_CONCURRENCY=; chk "Stage B needs CLIENT_CONCURRE
 echo "[A1] Stage A, healthy, 2 GPUs (TP 2)"
 sub talon_smoke_a.sbatch; echo "$OUT" | tail -n 6
 chk "Stage A exits 0 with RESULT: PASS" '[ $RC -eq 0 ] && grep -q "RESULT: PASS (stage A)" <<<"$OUT"'
-chk "the UNVERIFIED Talon facts are printed" 'grep -q "UNVERIFIED (ask Miami Research Computing" <<<"$OUT" && grep -q "pricing and charges" <<<"$OUT"'
+chk "the UNVERIFIED Talon facts are printed" 'grep -q "UNVERIFIED (ask Miami Research Computing" <<<"$OUT" && grep -q "usage and data policies" <<<"$OUT" && ! grep -q "pricing and charges" <<<"$OUT"'
 chk "the 20,480-token context note is printed" 'grep -q "far below Qwen" <<<"$OUT" && grep -q "128K" <<<"$OUT"'
 chk "result file records the layout and the fingerprints" '[ "$(val $RES/stageA.txt RESULT)" = PASS ] && [ "$(val $RES/stageA.txt GPU_COUNT)" = 2 ] && [ "$(val $RES/stageA.txt TENSOR_PARALLEL)" = 2 ] && grep -q "^LAYOUT_FP=2/2/1/8/0.19.1/$REV/" $RES/stageA.txt'
 chk "the model-on-every-GPU check ran on measured memory (needs 51500/2/2 = 12875 MiB per GPU)" 'grep -q "model is on all 2 GPU(s)" <<<"$OUT" && grep -q "gpu 3 in_use_MiB 70000 (needs at least 12875)" <<<"$OUT"'

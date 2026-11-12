@@ -464,7 +464,7 @@ Dates are placeholders until the program's real deadlines are known.
 
 | Risk | Mitigation |
 |---|---|
-| GPU time and queue waits on Talon (shared nodes, 3-day job limit, total GPU-hours allowed unknown) | Throughput stage T measures examples per GPU-hour before the big runs; the 200k run is split into resumable jobs under 3 days; run 50k across all sizes first |
+| GPU time and queue waits on Talon (shared nodes, 3-day job limit; Research Computing confirmed in writing on 2026-11-12 that there is no GPU-hour cap, but the fair-share policy lengthens waits after heavy use) | Throughput stage T measures examples per GPU-hour before the big runs; the 200k run is split into resumable jobs under 3 days, using up to 4 single-GPU jobs side by side (allowed); run 50k across all sizes first |
 | Talon unavailable or the settings wrong | Redhawk llama.cpp pipeline kept as a fallback, with its executable logic unchanged (only three comment lines were repointed on 2026-11-07); every Talon script is a draft until reviewed |
 | Shared 500 GB home quota (Redhawk and Talon together) | `fetch_talon.sh` reads the quota and refuses a download that would pass the soft limit; ask Research Computing for more space before the 200k run |
 | Same teacher writes the benchmark and the training data | Section 4: separate prompts and IDs, freeze first, decontamination, independent verification, stated limitations |
@@ -491,7 +491,9 @@ Dates are placeholders until the program's real deadlines are known.
   - the CUDA version supported by driver 610.57.04: resolved 2026-11-12, CUDA 13.3 (Stage A job 204);
   - CPUs and memory per job: a job gets 1 CPU unless it asks, so choose `--cpus-per-task` and `--mem`;
   - the Talon scripts must use only the GPUs in `CUDA_VISIBLE_DEVICES`, because Slurm does not hide the other GPUs on the node from a job: resolved 2026-11-12, all GPU checks and the memory monitor are limited to the assigned GPUs, and 2-GPU jobs record NVLink pairing;
-  - total GPU-hours allowed;
+  - total GPU-hours allowed: resolved 2026-11-12, no cap (the only limit is the 3-day time per job; Research Computing, in writing);
+  - whether GPUs on more than one node may be used at once (the written answer says all 4 GPUs of a node);
+  - storage beyond 500 GB, and the account's lifetime and renewal (not asked yet);
   - GPU count and tensor parallelism (decided by the throughput benchmark).
 - [ ] **Teacher thinking budget** (decide before the precision test). In Stage A about 95% of Qwen's output tokens were thinking: 4,537 output tokens for a one-line binomial question, of which about 250 were the answer. Qwen3.6-27B can run with thinking on or off, and thinking changes both answer quality and the GPU time per example (and therefore the 200,000-example projection). The options are: thinking on as now (the model card's recommended setting), a cap on thinking length, or thinking off for training-data generation. Whatever is chosen is part of the teacher setup and is fixed before the precision test.
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds

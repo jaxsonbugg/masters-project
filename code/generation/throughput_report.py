@@ -38,8 +38,10 @@ USAGE
 Exit code: 0 = report printed, no layout over the threshold; 2 = at least one layout has truncation or reasoning
 exhaustion above the threshold (printed as a finding, never hidden); 1 = a run folder could not be read.
 
-Talon's pricing, allocation and GPU quota are UNVERIFIED (ask Miami Research Computing); the "if N GPUs were available"
-lines below only show how the arithmetic scales and are not a statement about what the account will be given.
+Research Computing confirmed in writing (2026-11-12) that Talon is free, that there is no GPU-hour cap (the only limit is the 3-day
+time per job) and that all 4 GPUs of a node may be used at once. Whether GPUs on several nodes may be used at once is UNVERIFIED (ask
+Miami Research Computing), so the "if N GPUs were available" lines below only show how the arithmetic scales; the 8- and 16-GPU
+lines assume several nodes.
 """
 import argparse
 import json
@@ -54,11 +56,14 @@ TARGET_EXAMPLES = 200_000
 CONTEXT_NOTE = (
     "CONTEXT NOTE: these runs use 20,480 tokens per sequence (3,000 input cap + 16,384 output cap + headroom). That is far\n"
     "below Qwen's native 262,144 tokens and below the 128K its model card advises for keeping thinking quality. It was chosen\n"
-    "only so the Talon run matches the Redhawk run. Treat every number here as valid for THAT setting only."
+    "as an interim setting (first chosen to match the old Redhawk run); the final value is fixed after these truncation\n"
+    "rates are read. Treat every number here as valid for THAT setting only."
 )
 UNVERIFIED_NOTE = (
-    "UNVERIFIED (ask Miami Research Computing): Talon pricing, allocation, GPU quota and access limits. The scaling lines\n"
-    "show arithmetic only."
+    "CONFIRMED IN WRITING (Dr. Mueller, 2026-11-12): Talon is free; the only limit is the time per job (3 days); all 4 GPUs of a node\n"
+    "may be used at once; running jobs are never cut short, but start-up waits can grow under the fair-share policy.\n"
+    "UNVERIFIED (ask Miami Research Computing): whether GPUs on more than one node may be used at once. The scaling lines show\n"
+    "arithmetic only; the 8- and 16-GPU lines assume several nodes."
 )
 
 
@@ -202,7 +207,7 @@ def main(argv=None):
         print("\nFINDINGS (not hidden):")
         for f in flagged:
             print("  -", f)
-        print("A layout with findings above the threshold should not be called comparable to the Redhawk run.")
+        print("A layout with findings above the threshold should not be called comparable to the other runs.")
         return 2
     print("\nNo layout is above the truncation / reasoning-exhaustion threshold.")
     return 0

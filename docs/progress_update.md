@@ -703,3 +703,23 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **BM9002:** `not_machine_checkable`, as expected for a multiple-choice item.
 - **What this does and does not show:** the Talon replies work with our R-key and check code, so the pipeline from teacher to checked item runs end to end. Two items prove the plumbing, not the failure rate; that comes from the 100-slot deployment test and the benchmark run.
 - **Files:** the small result copies are in `results/open_teacher_test/` (committed, labeled development test material).
+
+### Research Computing's written answers recorded (2026-11-12, $0, no cluster access)
+- **What:** Jaxson emailed four questions to Dr. Lee and Dr. Mueller (2:26 PM), and Dr. Mueller replied the same day (4:37 PM). These are the first written answers; the earlier ones were verbal. The exchange is kept, quoted exactly, in the new `docs/clusters/research_computing_correspondence.md`.
+- **Answers:**
+  - **GPU hours:** the only limit is the time per job (3 days); there is no GPU-hour cap.
+  - **GPUs at once:** all 4 GPUs of a node may be used; one GPU per job (`--gres=gpu:1`) is recommended, which is our layout.
+  - **Interruption:** a running job is never cut short, but start-up waits may grow under Slurm's fair-share policy as more users join.
+  - **Cost:** free.
+- **What it changes:**
+  - **The 200,000-example plan is not blocked by an allowance.** The practical limit is queue waits. Up to 4 single-GPU jobs side by side would bring the roughly 51 GPU-days to about 13 days of clock time, and the 50,000-example fallback to about 3 days.
+  - **Waits.** Talon was nearly empty on 2026-11-12, so start-up waits may be longer later; the work is submitted in restartable chunks.
+- **Still open:**
+  - whether GPUs on **several nodes** may be used at once (the 8- and 16-GPU lines of the throughput report assume it);
+  - **storage beyond 500 GB** and the **account's lifetime and renewal** (not asked yet);
+  - **usage and data policies** in writing.
+- **Where it was recorded:**
+  - **`configs/talon/talon_settings.sh`:** only comments and the printed list of unverified facts changed (it now lists the three open items above). No setting value changed, so `SETTINGS_REVIEWED=yes` stands.
+  - **`code/generation/throughput_report.py`:** its notes. Also its context note, which still said the 20,480-token limit was chosen to match the Redhawk run (the same outdated wording fixed in the Stage A script).
+  - **`docs/clusters/talon_setup.md`**, `recovery/talon_ssh_access.md` and `docs/methodology/workflow.md` (the risk table and open decisions).
+- **Tests:** one Talon test expected the removed "pricing and charges" line in the printed list; it now expects "usage and data policies" and that the pricing item is gone. Results are in the commit message.
