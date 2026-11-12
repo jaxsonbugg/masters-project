@@ -551,3 +551,7 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - short-text items kept tightly constrained, with open-ended ones needing a rubric and semantic grading;
   - the teacher in thinking mode with the model-card sampling.
 - **Not yet started:** the cluster work, the paid verifier calls and the code changes. Each cluster step and each paid call needs Jaxson's approval first.
+
+### `.gitignore` exceptions for `docs/logs/` and `docs/models/` (2026-11-11)
+- **What went wrong:** when `docs/` was split into topic folders on 2026-11-07, two of the new folder names matched old ignore rules. `logs/` was meant for large raw log folders and `models/` for model weights. The moved files stayed tracked, because they were moved with `git mv`, but `git add` refused to update them, and any **new** file in those folders would have been silently left out of Git. This was found while committing the 2026-11-11 corrections.
+- **Fix:** exceptions `!docs/logs/` and `!docs/models/` were added right after those rules. `git check-ignore` confirms that both folders are tracked again, while `logs/` and `models/` folders elsewhere are still ignored, and weight files (`*.safetensors`, `*.bin`, `*.pt`) stay ignored everywhere, including in `docs/models/`.
