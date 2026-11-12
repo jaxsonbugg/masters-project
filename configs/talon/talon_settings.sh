@@ -29,9 +29,11 @@ TALON_NODELIST="${TALON_NODELIST-}"          # OPTIONAL node choice, blank = any
                                               # must run on identical hardware (docs/clusters/talon_setup.md, section "Choosing a node").
 TALON_ACCOUNT="${TALON_ACCOUNT-}"            # blank = none. SLURM-REPORTED 2026-11-06 (probe 5e): job accounting is switched off, so there are no accounts to name
 TALON_QOS="${TALON_QOS-}"                    # blank = none. SLURM-REPORTED 2026-11-06: no QOS limits are configured
-TALON_GPU_STYLE="${TALON_GPU_STYLE-}"        # UNVERIFIED: gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N); blank = a person must choose.
-                                              # Research Computing's own example (2026-11-06) uses --gres=gpu:2, so gres is the likely answer, but
-                                              # nothing has been tested yet: probe_talon_part2.sh (sbatch --test-only) checks it, with approval.
+TALON_GPU_STYLE="${TALON_GPU_STYLE-gres}"    # gres (--gres=gpu[:type]:N) or gpus (--gpus[=type:]N). ACCEPTED BY SLURM 2026-11-11 (probe_talon_part2.sh,
+                                              # sbatch --test-only, no job created): all four forms were accepted on partition talon (--gres=gpu:1,
+                                              # --gres=gpu:nvidia_h100_nvl:1, --gpus=1, --gpus=nvidia_h100_nvl:1), estimated start immediate on
+                                              # mualhpgp01.mpi. gres chosen because Research Computing's own example (2026-11-06) uses --gres=gpu:2.
+                                              # Acceptance is not delivery: what a job actually receives is shown by the 5-minute probe job (step 2).
 TALON_GPU_TYPE="${TALON_GPU_TYPE-nvidia_h100_nvl}"   # SLURM-REPORTED 2026-11-06 (probe 5b): the GPU's name in the scheduler's configuration; blank = untyped
 TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # UNVERIFIED: any other option, for example --cpus-per-task=16. SLURM-REPORTED: nodes have 64 cores, 515 GB RAM and are
                                               # shared between jobs (a 64-core request, like Research Computing's example, waits for a completely empty node)

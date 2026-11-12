@@ -30,6 +30,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 6 | 2026-11-05 ~09:33 | Redhawk `mualhpcp38` | 2510690 | Qwen pipeline (stage A, B, main) | 2 x V100, 84 s | ~0.05 | FAIL_INFRA at stage A (log-wording check) |
 | 7 | 2026-11-05/06 | Redhawk | 2511641 | Qwen pipeline, resubmitted | 2 x V100, to fill in | to fill in | **NOT REVIEWED** |
 | 8 | 2026-11-06 | Talon login node | n/a | Read-only probe (`run_probe_local.sh`) and follow-up reads | none | 0 | PASS |
+| 9 | 2026-11-11 ~21:18 | Talon login node | none created | Repository copy to `~/talon_project/repo` (commit `4d24384`) and GPU request-style test (`sbatch --test-only`, 4 forms) | none | 0 | PASS (all 4 forms accepted) |
 
 **GPU-hours used to date: about 0.05** (job 6), plus job 7 once it is reviewed.
 
@@ -99,4 +100,15 @@ This is the record of every cluster job, scheduler test and measured local run i
   - home folder shared with Redhawk: 500 GB hard quota, about 17 GB used.
 
   Evidence labels and the full table are in `docs/clusters/talon_setup.md` Section 2.
+- **GPU time:** none.
+
+### 9. Talon repository copy and GPU request-style test, 2026-11-11 about 21:18 UTC (no job created)
+- **Purpose:** put the committed code on Talon and find which GPU request forms the scheduler accepts (Stage 1, step 1 of the pilot plan).
+- **Repository copy** (run by Jaxson in Git Bash on this PC): `git archive --format=tar HEAD | ssh talon 'test ! -e ~/talon_project/repo && mkdir -p ~/talon_project/repo && tar -x -C ~/talon_project/repo'`.
+  - **What was copied:** commit `4d24384`, to `/home/buggjm/talon_project/repo` (the `talon_repo` path). Untracked files such as `data/taxonomy/` are not included.
+  - **Line endings:** `git archive` on this PC writes text files with Windows line endings, so the v6 prompt matches its pinned SHA-256 `348db6ff...`. Shell scripts get Unix line endings, which `.gitattributes` forces. The guard refuses to overwrite an existing copy, so a later update must replace the folder deliberately.
+- **Test:** `bash configs/talon/probe_talon_part2.sh` (check-only mode) ran `sbatch --test-only --nodes=1 --time=00:10:00 --partition=talon` with each of four GPU request forms. `--test-only` makes the scheduler validate a request and estimate its start without creating a job; the job numbers it prints (188 to 191) are hypothetical.
+- **Result:** all four forms **ACCEPTED**: `--gres=gpu:1`, `--gres=gpu:nvidia_h100_nvl:1`, `--gpus=1`, `--gpus=nvidia_h100_nvl:1`. Each was estimated to start immediately (2026-11-11T21:18) on `mualhpgp01.mpi`.
+  - **Setting chosen:** `TALON_GPU_STYLE=gres` in `configs/talon/talon_settings.sh`, matching Research Computing's example.
+  - **What this does not show:** acceptance says nothing about whether a job actually receives a working H100. That is the next step, the 5-minute probe job, which needs separate approval.
 - **GPU time:** none.
