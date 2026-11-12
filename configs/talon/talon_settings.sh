@@ -35,7 +35,8 @@ TALON_GPU_STYLE="${TALON_GPU_STYLE-gres}"    # gres (--gres=gpu[:type]:N) or gpu
                                               # mualhpgp01.mpi. gres chosen because Research Computing's own example (2026-11-06) uses --gres=gpu:2.
                                               # Acceptance is not delivery: what a job actually receives is shown by the 5-minute probe job (step 2).
 TALON_GPU_TYPE="${TALON_GPU_TYPE-nvidia_h100_nvl}"   # SLURM-REPORTED 2026-11-06 (probe 5b): the GPU's name in the scheduler's configuration; blank = untyped
-TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # UNVERIFIED: any other option, for example --cpus-per-task=16. SLURM-REPORTED: nodes have 64 cores, 515 GB RAM and are
+TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # OBSERVED 2026-11-12 (job 196): a job that does not request CPUs gets ONE core (nproc=1) and its memory
+                                              # limit is unknown, so set --cpus-per-task and --mem here (values chosen in the settings review). Example: --cpus-per-task=16. SLURM-REPORTED: nodes have 64 cores, 515 GB RAM and are
                                               # shared between jobs (a 64-core request, like Research Computing's example, waits for a completely empty node)
 TIME_SMOKE="${TIME_SMOKE-}"                  # wall-time requests. TOLD BY RESEARCH COMPUTING 2026-11-06: one job may run at most 3 days (72:00:00);
                                               # the probe shows the scheduler's MaxTime for comparison. Format [D-]HH:MM:SS

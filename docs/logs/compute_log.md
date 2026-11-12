@@ -31,8 +31,9 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 7 | 2026-11-05/06 | Redhawk | 2511641 | Qwen pipeline, resubmitted | 2 x V100, to fill in | to fill in | **NOT REVIEWED** |
 | 8 | 2026-11-06 | Talon login node | n/a | Read-only probe (`run_probe_local.sh`) and follow-up reads | none | 0 | PASS |
 | 9 | 2026-11-11 ~21:18 | Talon login node | none created | Repository copy to `~/talon_project/repo` (commit `4d24384`) and GPU request-style test (`sbatch --test-only`, 4 forms) | none | 0 | PASS (all 4 forms accepted) |
+| 10 | 2026-11-12 02:35 | Talon `talon`, `mualhpgp01` | 196 | GPU probe job (`probe_gpu_job.sbatch`), `--gres=gpu:1` | 1 x H100 NVL, ~1 s | ~0.0003 | PASS (see the GPU-visibility finding) |
 
-**GPU-hours used to date: about 0.05** (job 6), plus job 7 once it is reviewed.
+**GPU-hours used to date: about 0.05** (Redhawk job 6), plus about 0.0003 for Talon job 196, plus Redhawk job 7 once it is reviewed.
 
 ## Entries
 
@@ -112,3 +113,24 @@ This is the record of every cluster job, scheduler test and measured local run i
   - **Setting chosen:** `TALON_GPU_STYLE=gres` in `configs/talon/talon_settings.sh`, matching Research Computing's example.
   - **What this does not show:** acceptance says nothing about whether a job actually receives a working H100. That is the next step, the 5-minute probe job, which needs separate approval.
 - **GPU time:** none.
+
+### 10. Talon job 196: the GPU probe job, 2026-11-12 02:35 UTC (2026-11-11 evening, local time)
+- **Purpose:** see what a real Talon GPU job receives (Stage 1, step 2 of the pilot plan). Approved by Jaxson, who ran it.
+- **Submission:** `QT_SUBMIT=yes bash configs/talon/probe_talon_part2.sh` from `~/talon_project/repo` (commit `4d24384`). The four `--test-only` checks were repeated (all accepted), then the job was submitted with `--nodes=1 --time=00:10:00 --partition=talon --gres=gpu:1`. It was recorded with `probe_talon_part2.sh record`, which wrote `talon_verified.txt` on Talon.
+- **Timing:**
+  - submitted 02:35:32 UTC;
+  - started 02:35:33 UTC on `mualhpgp01`, so the queue wait was about 1 s;
+  - ended 02:35:34 UTC, so the wall time was about 1 s;
+  - GPU-hours: 1 GPU x about 1 s = about 0.0003.
+- **What the job received:**
+  - **GPU type and memory:** NVIDIA H100 NVL, **95,830 MiB of memory per GPU** (about 94 GB). This settles the "80 GB or 94 GB" question.
+  - **Driver:** 610.57.04. The CUDA version line (`nvidia-smi | grep "CUDA Version"`) printed nothing, so **the CUDA version is still not recorded.** This driver's header format may differ; read it directly in the next GPU job.
+  - **GPUs actually assigned:** `CUDA_VISIBLE_DEVICES=1`, so Slurm assigned **one** GPU (index 1).
+  - **GPU visibility (important):** `nvidia-smi` nevertheless listed all **four** GPUs of the node. Slurm on Talon does not hide the other GPUs from a job; it only sets `CUDA_VISIBLE_DEVICES`, which programs such as vLLM and PyTorch respect. So `GPUS_SEEN=4` in `talon_verified.txt` counts visible GPUs, not assigned ones. Our Talon scripts count and sample GPUs with `nvidia-smi` (`serve_and_run.sh`), so they would include GPUs used by other people; this must be fixed before Stage A.
+  - **GPU links:** GPU 0 and GPU 1 are joined by NVLink (`NV12`), as are GPU 2 and GPU 3. Other pairs talk over PCIe and the link between the two processor sockets (`SYS`). A 2-GPU tensor-parallel job runs best on a linked pair.
+  - **CPUs:** `nproc` = **1**. A job that does not ask for CPUs gets one core, too few for vLLM, so jobs must request `--cpus-per-task` explicitly.
+  - **Memory:** `free` showed the whole node, 503 GB total and 478 GB available. That is not the job's own memory limit, which is still unknown; request `--mem` explicitly.
+  - **Disk and libraries:** local `/tmp` is 500 GB with 497 GB free; glibc 2.34.
+  - **Internet from the compute node:** Hugging Face HTTP 200 and PyPI HTTP 200, so compute nodes can download.
+  - **vLLM wheel check:** skipped, because the vLLM version is not pinned yet.
+- **Outcome:** PASS. It also produced the GPU-visibility and CPU findings above, which feed the settings review and a script fix.

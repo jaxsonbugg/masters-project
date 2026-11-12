@@ -567,3 +567,17 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Recorded in:** `docs/logs/compute_log.md` entry 9, and `docs/clusters/talon_setup.md` (the facts table and the Section 9 status).
 - **Why `git archive`:** it sends exactly the committed files. On this PC it gives text files Windows line endings, which is what the v6 prompt's pinned SHA-256 was computed on, and gives shell scripts Unix line endings (forced by `.gitattributes`).
 - **Next:** the 5-minute GPU probe job, which needs approval because it uses GPU time. It shows the GPU actually received, the driver and CUDA version, and whether compute nodes reach Hugging Face and PyPI.
+
+### Talon bring-up, step 2: the GPU probe job (job 196, 2026-11-12 02:35 UTC, about 0.0003 GPU-hours)
+- **What:** with Jaxson's approval, one small job requested one H100 (`--gres=gpu:1`, partition `talon`, 10-minute limit). It loaded no model and wrote only its own log. It started after about 1 s in the queue on `mualhpgp01` and finished in about 1 s.
+- **Facts gained** (recorded in `docs/logs/compute_log.md` entry 10 and `docs/clusters/talon_setup.md`):
+  - each H100 NVL has 95,830 MiB (about 94 GB);
+  - driver 610.57.04;
+  - GPUs 0-1 and 2-3 are NVLink pairs;
+  - compute nodes reach Hugging Face and PyPI;
+  - local `/tmp` has 500 GB.
+- **Findings that change the scripts:**
+  - **(1) GPU isolation is by `CUDA_VISIBLE_DEVICES` only.** The job was assigned one GPU (`CUDA_VISIBLE_DEVICES=1`) but `nvidia-smi` showed all four. The probe's `GPUS_SEEN=4` counts visible GPUs, not assigned ones. `configs/talon/serve_and_run.sh` counts and samples GPUs with `nvidia-smi`, so it would also measure GPUs used by other people. It must be fixed to use only the assigned GPUs before Stage A.
+  - **(2) A job gets one CPU unless it asks, and its memory limit is unknown.** `--cpus-per-task` and `--mem` must be set (`TALON_EXTRA_SBATCH`).
+  - **(3) The CUDA version line was empty.** It is still to be read.
+- **Not changed yet:** the script fix and the CPU and memory values are decided with Jaxson in the settings review. `SETTINGS_REVIEWED` stays `no`.

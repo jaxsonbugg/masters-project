@@ -477,7 +477,10 @@ Dates are placeholders until the program's real deadlines are known.
   - the vLLM version pin;
   - `TALON_GPU_STYLE` (whether `--gres` or `--gpus` requests are accepted);
   - whether compute nodes have internet access (a proxy is set on the login node);
-  - the GPU memory per card (H100 NVL: 94 GB expected);
+  - the GPU memory per card: resolved 2026-11-12, each H100 NVL has 95,830 MiB (job 196);
+  - the CUDA version supported by driver 610.57.04, still to be read;
+  - CPUs and memory per job: a job gets 1 CPU unless it asks, so choose `--cpus-per-task` and `--mem`;
+  - the Talon scripts must use only the GPUs in `CUDA_VISIBLE_DEVICES`, because Slurm does not hide the other GPUs on the node from a job;
   - total GPU-hours allowed;
   - GPU count and tensor parallelism (decided by the throughput benchmark).
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds
