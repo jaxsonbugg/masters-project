@@ -75,7 +75,7 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 | Teacher | Qwen3.6-27B (Apache 2.0 license), BF16 weights served by vLLM on Talon (Section 2.1) |
 | Student size | Pythia 70M, 160M, 410M, 1B: deduped variants, final `step143000` checkpoints, pinned by commit SHA (`docs/models/model_versions.md`) |
 | Distillation set size | 1k, 10k, 50k, 100k, 200k (stretch). **50k is the fallback single size** |
-| Verifier | A different-family frontier model, to be decided (most likely ChatGPT or Claude used as a checker, never as a source of training text) |
+| Verifier | An open-weight model from a different family than Qwen, relatively inexpensive, from a provider whose terms allow using its verdicts to filter training data (not OpenAI or Anthropic). DeepSeek is the likely front-runner (its terms explicitly allow distillation); Mistral is another candidate. Run through a paid API on a triaged subset only; chosen and validated once the first real data exists (Section 2.3, Section 4) |
 | Benchmark | Frozen held-out set of about 1,000 statistics and R questions |
 | Compute | Talon (Miami, 4 nodes x 4 NVIDIA H100 NVL) for generation, training and evaluation; Redhawk (Miami, V100) as the fallback |
 
@@ -97,7 +97,17 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 - **Redhawk (fallback):** llama.cpp tag `b11960` (commit `8642541b...`) serving a 4-bit GGUF file (`unsloth/Qwen3.6-27B-GGUF` @ `82d411ac...`, `Qwen3.6-27B-Q4_K_M.gguf`, SHA-256 `5ed60d0a...`) on two 16 GB V100s. Pins are in `configs/redhawk/common.sh`.
 - **Sampling** (the model card's recommended thinking-mode settings, identical on both clusters): temperature 1.0, top_p 0.95, top_k 20, min_p 0, presence penalty 0. The output limit is 16,384 tokens per call, thinking included. The context is 20,480 tokens per sequence, which is a comparison setting and not the model's maximum (`docs/clusters/talon_setup.md` Section 7).
 
-**Planned deployment comparison (4-bit vs BF16, both on Talon).** Before the full benchmark run, the same development slots are answered twice on Talon: once with the BF16 weights and once with a 4-bit version. The comparison measures whether compressing the teacher to 4 bits changes the share of usable questions and correct keys, and how much faster it is. It is done on one cluster, so hardware does not differ between the two runs. The Talon 4-bit backend (format and engine) is not built yet (Section 10). Redhawk's 4-bit run is no longer a comparison point; Redhawk is a fallback only.
+**Choosing the teacher precision (decided 2026-11-11; protocol pre-registered before it runs).** *Precision* is how many bits store each of the model's numbers: BF16 uses 16, FP8 uses 8, a 4-bit version uses 4. Fewer bits mean a smaller, faster model, and possibly a slightly worse one.
+- **One precision is used for all generation.** The benchmark and every training set come from the same teacher setup. Mixing precisions across data sizes would add a second difference between the conditions being compared.
+- **What is compared.** BF16 (the reference), FP8 and 4-bit, all on Talon and all served by vLLM, so neither the engine nor the hardware differs. This replaces the earlier plan to compare Redhawk's 4-bit file with Talon's BF16.
+- **Two endpoints, measured on the same development slots (BM8xxx, never benchmark or training):**
+  - **Usability:** the item is usable on the first attempt, and a number item also has an R-verified key.
+  - **Answer correctness:** checked on a stratified sample, by R where possible and otherwise by the validated verifier, with every disagreement adjudicated by hand. Usability alone is not enough, because a well-formatted answer with runnable R can still misread the question.
+- **The statistics.** Two comparisons against BF16 (FP8 vs BF16, 4-bit vs BF16) with a multiplicity adjustment (Holm, or Bonferroni at one-sided α = 0.025 each). This is a non-inferiority test: a lower precision passes if the confidence interval for its paired difference from BF16 stays above −3 percentage points on **both** endpoints.
+  - The 3-point margin is provisional. Before the run, it must be justified in writing as the largest loss of teacher quality that would not change the study's conclusions, not only by the GPU time it saves.
+  - Sample sizes are computed before the run, at an assumed share of slots where the two precisions disagree. They are re-estimated from a 100-slot first run.
+- **Decision rule.** Use the lowest-compute precision that is non-inferior to BF16 on both endpoints. If neither FP8 nor 4-bit passes, use BF16. The chosen precision's projected total GPU time must fit the timeline, run in resumable jobs shorter than the 3-day limit.
+- **Worked example (hypothetical numbers).** On 1,000 paired slots, BF16 is usable on 88% and 4-bit on 87.2%, a difference of −0.8 points. If the adjusted lower confidence bound is −2.6 (above −3) for usability, and the correctness sample gives a lower bound of −2.1, then 4-bit passes both endpoints and is chosen. A lower bound of −3.4 on either endpoint would mean 4-bit fails.
 
 **Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, or the Phase 7 pass rate is poor, the first step is the same model with a higher precision or more thinking, not a different model. The alternatives ranked in `docs/models/teacher_model_evaluations.md` stay documented but are not the plan.
 
@@ -105,7 +115,13 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 
 The project began with Claude Sonnet 5.5 as the teacher, through the paid Claude API. Anthropic's commercial terms bar using outputs "to train competing AI models". When asked directly, Anthropic support confirmed that Claude outputs may not be used to train the Pythia students. The project therefore switched to an open-weight teacher, and Claude can no longer write either training data or benchmark questions.
 
-**What the Claude trials were.** Between 2026-10-07 and 2026-10-15, Claude wrote eight 20-question trials and one 100-question batch: 120 trial questions in total, never part of the frozen benchmark. The total spend was **$1.44** (`docs/logs/cost_log.md`). The trials developed and tested the question-generation pipeline that Qwen now uses unchanged:
+**What the Claude trials were.** Between 2026-10-07 and 2026-10-15 there were nine trial runs and two Batch runs, all on the same slot blueprint:
+- **Six 20-question trials**, one per prompt version v1 to v6, all on slots BM0001 to BM0020. The v4 run was refused by the API and returned no items.
+- **Three 1-question probes.** One was rejected with an access error and returned nothing.
+- **A 2-question test batch** (BM0021 and BM0022).
+- **The 100-question batch** (BM0021 to BM0120).
+
+Together they produced 204 items covering 120 distinct question slots (BM0001 to BM0120). None of them is part of the frozen benchmark. The total spend was **$1.44** (`docs/logs/cost_log.md`). The trials developed and tested the question-generation pipeline that Qwen now uses unchanged:
 
 - **Prompt v1 to v6.**
   - v1 put the key before any working: 3 of its 8 numeric keys were wrong.
@@ -126,6 +142,27 @@ The project began with Claude Sonnet 5.5 as the teacher, through the paid Claude
 - `git ls-tree -r --name-only pre-cleanup-claude-era` lists every file at that point.
 
 The raw replies and run logs also remain outside the repository in `C:\masters_project_large\data\teacher_outputs\` (folders named `*_sonnet-5-5_*`). The prompt file `data/prompts/benchmark_generation_v6.md` still says in its human-only header that it was written for Claude. It is kept byte for byte because its SHA-256 (`348db6ff...`) is pinned in the Redhawk and Talon job scripts.
+
+### 2.3 The verifier (chosen later, validated before use)
+
+**What and why.** Qwen writes the questions and answers, so checking Qwen with Qwen is not independent. The *verifier* is a second language model, from a different family, that checks the items our own checks (R, the re-solve) cannot settle.
+
+**Requirements (hard gates):**
+- open weights;
+- relatively inexpensive;
+- provider terms that allow using its verdicts to filter training data (DeepSeek's terms explicitly allow distillation);
+- not OpenAI or Anthropic;
+- a different model family from Qwen.
+
+**Candidates:** DeepSeek (the likely front-runner) and Mistral, with others from `docs/models/teacher_model_evaluations.md`. It runs through a paid API, so its expected cost is stated before every run and every call is logged in `docs/logs/cost_log.md`.
+
+**When.** The verifier is chosen after the first real data exists: the outputs of the precision test (Section 2.1). The choice is recorded in `docs/models/verifier_selection.md`.
+
+**Validation before it is trusted.**
+- **Connectivity test (about 20 items).** This checks only that the API works, the JSON verdicts parse and costs are logged.
+- **Reliability test (100 to 200 reference items).** The set mixes independently checked correct answers with deliberately wrong ones: wrong numbers, wrong keys, plausible misconceptions. It is built from development items, never the benchmark.
+- **What is measured:** the **false-acceptance rate** (a wrong answer accepted), the false-rejection rate and the abstention rate.
+- **The priority is low false acceptance,** because the verifier exists to remove wrong training examples. A threshold is declared before the test. A verifier that misses it is not used, and the next candidate is tested.
 
 ---
 
@@ -169,23 +206,37 @@ The raw replies and run logs also remain outside the repository in `C:\masters_p
 
 1. **Separate generation prompts.** The benchmark is written only with `data/prompts/benchmark_generation_v6.md`. Training data will use its own prompt file (for example `data/prompts/training_generation_v1.md`, to be written in Phase 4). That prompt asks for a different format: a worked answer ending in a marked final answer, in the `Question:` / `Answer:` template. Neither prompt is ever used for the other purpose.
 2. **Separate IDs and folders.**
-   - Benchmark questions carry IDs `BM0001` to `BM1000`. Development and smoke-test slots use `BM9001` and up and are never part of either set.
+   - Benchmark questions carry IDs `BM0001` to `BM1000`.
+   - The **development set** (about 200 items, `DV0001`+) is built with the same pipeline and the same checks, and is used for hyperparameter choice, troubleshooting and evaluation debugging (safeguard 8).
+   - Precision-test slots use `BM8xxx`. Smoke-test slots use `BM9001` and up. Neither is ever part of the benchmark or the training data.
    - Training examples get their own prefix (for example `TR000001`) and their own dated run folders.
    - The code refuses to mix smoke and main slots, and the same rule will be added for training slots.
 3. **Freeze first.** The benchmark is finished, hashed (SHA-256) and stored read-only before any training example is generated. A changed hash means the benchmark was touched, and the run stops.
-4. **Variety before scale.** The slot design is changed so that no (category, subtopic, difficulty) combination repeats more than necessary. The taxonomy draft in `data/taxonomy/` (not yet committed) and a planned `variety.py` are the start of this. `dupcheck` (in `generate_benchmark.py`) compares every new question with earlier ones by text similarity, with numbers kept and with numbers masked, so near-copies are listed for review.
-5. **Decontamination of every training set.** Before a training set is used, every training example is compared with every benchmark question.
+4. **Variety before scale, with matching topic coverage.**
+   - **Shared taxonomy:** the benchmark, the development set and the training data use the **same taxonomy and target proportions**, so a poor benchmark score cannot simply mean the training data never covered the topic.
+   - **Independent sampling:** each set's questions, parameters, numbers and scenarios are sampled independently, from separate seeds. Subtopics are **not** split between the sets. (A separate benchmark with held-out subtopics, to test generalization, is a possible later study.)
+   - **Fewer repeats:** the slot design is changed so that no (category, subtopic, difficulty) combination repeats more than necessary. The taxonomy draft in `data/taxonomy/` (not yet committed) and a planned `variety.py` are the start of this. `dupcheck` (in `generate_benchmark.py`) compares every new question with earlier ones by text similarity, with numbers kept and with numbers masked, so near-copies are listed for review.
+5. **Decontamination of every training set.** Before a training set is used, every training example is compared with every benchmark question and every development-set question.
    - **n-gram overlap:** shared word sequences, for example any shared run of 8 or more words.
    - **Embedding similarity:** a sentence-embedding model turns each text into a vector, and a high cosine similarity means "says the same thing in other words".
 
    Matches above the threshold are removed from the **training** set, never from the benchmark (it is frozen). The thresholds and the counts removed are logged.
-6. **Independent answer verification.**
-   - (a) R computes every number key from the teacher's own code, so arithmetic slips cannot survive.
-   - (b) R checks test every code answer against the key and against deliberately wrong answers; a check that accepts a wrong answer is flagged as "vacuous".
-   - (c) A blind re-solve: a separate call answers the question without seeing the key, and disagreements go to a person.
-   - (d) A different-family frontier verifier (ChatGPT, Claude or another, to be decided) checks all multiple-choice and conceptual keys and a sample of the training data. Used as a checker only, it never writes training text.
-   - (e) Hand spot checks of a random sample.
-7. **Reporting rule.** Teacher accuracy is always reported with the caveat that the teacher wrote the benchmark, and the verifier's agreement rate is reported next to it.
+6. **Independent answer verification, triaged** (decided 2026-11-11).
+   - (a) **R computes every number key** from the teacher's own code, so arithmetic slips cannot survive. The `r_solution` field must be present in every reply. It must contain substantive executable R wherever R can compute the answer. Where R does not apply (for example a conceptual question), it is an explicit "not applicable" empty value, so the model is never pushed into writing meaningless R.
+   - (b) **R checks** test every code answer against the key and against deliberately wrong answers; a check that accepts a wrong answer is flagged as "vacuous".
+   - (c) **A blind re-solve by Qwen** answers each question without seeing the key. It is a **consistency check only**: two Qwen outputs can share the same misunderstanding, so an agreeing re-solve never counts as independent validation.
+   - (d) **Triage, then the verifier.** Items whose key R established and whose re-solve agrees need no LLM check. Everything R cannot settle goes to the different-family verifier (Section 2.3): every multiple-choice, conceptual, short-text and output-interpretation item, every soft flag, and every re-solve disagreement. Disagreements are adjudicated by hand. The verifier only checks; it never writes training text. Triage keeps the verifier's usage, and its cost at 200k examples, small.
+   - (e) **A manual audit** of a representative random sample of about **150 benchmark items**, stratified by category and **including items that passed every automated check**. It covers what R cannot: code that is consistent but answers a misread question.
+     - **What is reported:** the audit's error rate describes the benchmark **before** corrections, and the original results are kept.
+     - **The residual error rate:** a claim about it after corrections needs a fresh, independent random sample.
+7. **Reporting rule.** The benchmark is reported as **teacher-generated**, kept distinct from any externally sourced evaluation, together with its independent-key methods and audit error rate. Teacher accuracy is always reported with the caveat that the teacher wrote the benchmark, and the verifier's agreement rate is reported next to it.
+8. **Development set vs confirmatory evaluation** (decided 2026-11-11).
+   - **What the benchmark is for:** only **prespecified evaluations**. Hyperparameters are chosen, and the evaluation harness is debugged, on the **development set** only.
+   - **What is frozen first:** the hyperparameters, seed, evaluation protocol, scoring rules and analysis are frozen in a dated pre-registration **before** the training run that is evaluated.
+   - **After the first benchmark evaluation:** no performance-motivated change is allowed within the confirmatory experiment. Documented implementation bug fixes remain permitted; each is logged with its evidence, and the affected step is re-run.
+   - **Follow-up experiments** motivated by benchmark results are labeled **exploratory** everywhere, reported separately, and never replace the confirmatory findings.
+
+   **Why this matters, with an example:** suppose the 70M scores poorly and the learning rate is raised and the model retrained until the score improves. No benchmark question was ever trained on, but the benchmark has still been used to tune the experiment, so its score is no longer an honest test.
 
 **Worked example.**
 - Benchmark item BM0412 asks for P(X = 2) when X ~ Binomial(5, 0.4).
@@ -193,7 +244,7 @@ The raw replies and run logs also remain outside the repository in `C:\masters_p
 - A third training example asks for a Poisson probability with similar wording. It scores 0.55 and stays: it trains the same skill without copying the exam.
 
 **Limitations that remain, stated honestly.**
-- Shared blind spots cannot be removed completely. The verifier is a different model family, but frontier models make some of the same mistakes.
+- Shared blind spots cannot be removed completely. The verifier is a different model family, but large models make some of the same mistakes.
 - R checks the arithmetic, not whether the code answers the question as written. A misread question with consistent code gets a "correct" key.
 - Decontamination thresholds trade leakage against over-removal. Any threshold leaves some near-paraphrases in, and removes some harmless examples.
 - The benchmark measures skill *as Qwen frames it*. Results say how well students learn from this teacher, not how well they would do on an independent human-written exam.
@@ -229,11 +280,15 @@ The benchmark comes before the pilot because the pilot needs something frozen to
   - run smoke stage A;
   - run the throughput stage T.
 - [ ] Review the Redhawk pipeline job 2511641 (finished, results not yet checked) and record it in `docs/logs/compute_log.md`
-- [ ] 4-bit vs BF16 comparison on Talon (Section 2.1; the 4-bit backend still has to be built)
+- [ ] Require the `r_solution` and `working` fields in every reply ("not applicable" where R does not apply), then update the regression fixture (Section 4, safeguard 6a)
+- [ ] Choose the teacher precision (BF16, FP8 or 4-bit) with the pre-registered protocol in Section 2.1, before any benchmark generation
+- [ ] Choose and validate the verifier on the precision-test outputs (Section 2.3)
 - [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4), then re-run `dupcheck`
-- [ ] Blind re-solve command and other-family check for multiple-choice and conceptual items (R cannot check them)
+- [ ] Blind re-solve command (a consistency check) and the verification triage (Section 4, safeguard 6)
 - [ ] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. About a third of the trial items had small inconsistencies; no keys were affected.
-- [ ] Generate about 1,000 questions with Qwen on Talon; regenerate failures; `verify` and `dupcheck` the whole set
+- [ ] Generate about 1,000 benchmark questions and the ~200-item development set with Qwen on Talon at the chosen precision; regenerate failures; `verify` and `dupcheck` the whole set
+- [ ] Keep short-text items tightly constrained (a name, a term, a value); rewrite open-ended ones as multiple choice or drop them
+- [ ] Manual audit of about 150 random benchmark items (Section 4, safeguard 6e)
 - [ ] Make every answer key checkable, strongest check first (Section 4, safeguard 6)
 - [ ] **Freeze** the benchmark (hash it, store read-only) before any training data exists
 - [ ] Record every cluster job in `docs/logs/compute_log.md`
@@ -242,11 +297,13 @@ The benchmark comes before the pilot because the pilot needs something frozen to
 Goal: prove the whole pipeline on Talon at small scale and measure real GPU time before committing to the full grid. Plain-language walkthrough: `docs/methodology/pilot_plan.md`.
 - [x] Cluster access: Redhawk (2026-10-01), Talon (account active and probed 2026-11-06)
 - [ ] Write the training-data prompt (separate from the benchmark prompt, Section 4). Use one fixed template (`Question: ...` / `Answer: ...`) with short answers ending in a marked final answer. Every example ends with the end-of-text token, id 0, set explicitly because the 1B config names the wrong token. Reasons: `docs/models/pythia_behavior_analysis.md` Sections 3.2 and 5.
-- [ ] Generate about 1k training questions and teacher answers on Talon; decontaminate against the frozen benchmark
-- [ ] Light verification of the 1k set: run the R code, hand spot-check a sample (the full verifier stays in Phase 7)
-- [ ] Fine-tune Pythia 70M on the 1k set on Talon (Redhawk as the fallback)
-- [ ] Evaluate the untrained and fine-tuned 70M on the frozen benchmark; run the teacher on the benchmark once, so the retained-accuracy ratio and criterion 4b can be computed
-- [ ] Fix the evaluation protocol and the criterion-4b measurement protocol (Section 1.2, Section 10)
+- [ ] Generate about 1,250 training questions and teacher answers on Talon; R checks, triage, verifier on the uncertain items (a rehearsal for 200k)
+- [ ] Check every training example against the Pythia **2,048-token** limit (its `max_position_embeddings`): reject or deliberately shorten an over-length example, never truncate it silently; record the share affected
+- [ ] Decontaminate against the frozen benchmark and the development set; keep the final 1,000
+- [ ] Write the training script (Hugging Face `Trainer`, full fine-tune, every setting explicit) and its pre-pilot tests; a Talon training smoke run
+- [ ] Build and debug the evaluation harness on the development set only
+- [ ] Choose the hyperparameters on the development set; then freeze the hyperparameters, seed, evaluation protocol, scoring rules and analysis in a dated pre-registration (Section 4, safeguard 8)
+- [ ] Confirmatory run: fine-tune Pythia 70M once with the frozen settings; evaluate the untrained and fine-tuned 70M and the teacher on the frozen benchmark (retained accuracy, McNemar, criterion 4b)
 - [ ] Record GPU-hours, queue wait and peak GPU memory for every job in `docs/logs/compute_log.md`
 - [ ] Go/no-go review:
   - Does the pipeline run end to end?
@@ -267,7 +324,7 @@ Goal: prove the whole pipeline on Talon at small scale and measure real GPU time
 - [ ] Build nested subsets (1k, 10k, 50k, 100k, 200k as feasible; 50k minimum). The 200k generation plan is in `docs/clusters/talon_setup.md` Section 8.
 
 ### Phase 7: Verify teacher-generated data
-- [ ] Choose the verifier model and effort (ChatGPT, Claude or another frontier model); log any paid calls in `docs/logs/cost_log.md` with the expected cost stated first
+- [ ] Use the verifier chosen and validated in Phase 3 (Section 2.3); log every paid call in `docs/logs/cost_log.md` with the expected cost stated first
 - [ ] Have the verifier grade the teacher outputs
 - [ ] Objective numerical answers must be verified correct; R code should be improved where needed
 - [ ] Execute R code where possible to check that it runs and produces the stated output
@@ -401,7 +458,7 @@ Dates are placeholders until the program's real deadlines are known.
 | Risk | Mitigation |
 |---|---|
 | GPU time and queue waits on Talon (shared nodes, 3-day job limit, total GPU-hours allowed unknown) | Throughput stage T measures examples per GPU-hour before the big runs; the 200k run is split into resumable jobs under 3 days; run 50k across all sizes first |
-| Talon unavailable or the settings wrong | Redhawk llama.cpp pipeline kept as a fallback, unchanged; every Talon script is a draft until reviewed |
+| Talon unavailable or the settings wrong | Redhawk llama.cpp pipeline kept as a fallback, with its executable logic unchanged (only three comment lines were repointed on 2026-11-07); every Talon script is a draft until reviewed |
 | Shared 500 GB home quota (Redhawk and Talon together) | `fetch_talon.sh` reads the quota and refuses a download that would pass the soft limit; ask Research Computing for more space before the 200k run |
 | Same teacher writes the benchmark and the training data | Section 4: separate prompts and IDs, freeze first, decontamination, independent verification, stated limitations |
 | Teacher answer keys wrong in ways R cannot see | Blind re-solve, other-family verifier, hand checks; report teacher accuracy with the caveat |
@@ -414,8 +471,8 @@ Dates are placeholders until the program's real deadlines are known.
 
 ### 10.2 Open decisions
 
-- [ ] **Verifier:** which frontier model (ChatGPT, Claude or another) and at what effort; any paid use is logged in `docs/logs/cost_log.md`
-- [ ] **Talon 4-bit vs BF16 comparison:** which 4-bit format and engine (for example a 4-bit GGUF with llama.cpp, or a 4-bit or FP8 checkpoint with vLLM), which slots, and which measures decide it
+- [ ] **Verifier model, budget and false-acceptance threshold** (Section 2.3). Gates are decided (open weights, terms allow it, not OpenAI or Anthropic, different family); the model is chosen once the precision-test outputs exist.
+- [ ] **Teacher precision details** (Section 2.1): whether official FP8 and 4-bit (AWQ or GPTQ) Qwen3.6-27B checkpoints exist with vLLM support and a usable license; the written rationale for the 3-point margin; the sample sizes.
 - [ ] **Talon settings still unverified:**
   - the vLLM version pin;
   - `TALON_GPU_STYLE` (whether `--gres` or `--gpus` requests are accepted);
@@ -424,23 +481,36 @@ Dates are placeholders until the program's real deadlines are known.
   - total GPU-hours allowed;
   - GPU count and tensor parallelism (decided by the throughput benchmark).
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds
-- [ ] **Require `r_solution` in every reply (decide before the benchmark run).**
-  - **The gap:** `check_item` in `generate_benchmark.py` decides which fields to require by looking at what a reply contains. A reply that leaves out the `r_solution` field entirely is checked under the old prompt-v1 rules. So a number question with no R code would pass, keeping the model's own typed key instead of a key computed by R. That undoes the main protection described in Section 2.2.
-  - **Why it is still there:** the 2026-11-06 cleanup kept this behavior on purpose, because the refactor had to be proven identical.
-  - **Recommended fix:** require `r_solution` (and `working`) for all v6 replies, then re-save the regression snapshot. Only the cases that test missing fields should change.
+- [x] **Require `r_solution` in every reply** (decided 2026-11-11). The field must always be present. It holds substantive R wherever R can compute the answer, and an explicit "not applicable" empty value otherwise. The legacy path that accepted a reply without the field is removed, and the `absent_r_solution` regression fixture is updated deliberately (Section 4, safeguard 6a).
 - [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.
 - [ ] **Claude-era outputs outside the repository:** the raw Sonnet replies in `C:\masters_project_large\data\teacher_outputs\*_sonnet-5-5_*` are not in Git and were not touched. Keep them as part of the archive, or delete them (owner's decision; the items themselves are preserved in the Git tag `pre-cleanup-claude-era`).
 - [ ] **Benchmark blueprint** (proposal in Section 3, to confirm with Dr. Lee)
 - [ ] **Training-data template and answer length.** Proposed from the Pythia probe: one fixed `Question:`/`Answer:` template, short answers with a marked final answer, end-of-text id 0 on every example, loss on the answer and end token only. To confirm in the pilot and with Dr. Lee.
-- [ ] **Evaluation protocol** for all students and baselines: prompt format, stop rule (such as the first blank line or `Question:`), max new tokens, greedy decoding. Declared before any results.
+- [ ] **Evaluation protocol** for all students and baselines. Decided parts (2026-11-11):
+  - **Engine:** vLLM for the students and the teacher, on the same H100 NVL type.
+  - **Students:** loaded in float16, greedy decoding.
+  - **Stopping:** the end token (id 0) is the primary stop, with a maximum number of new tokens as the backstop. Prompt plus new tokens must stay within 2,048 tokens. An invented follow-up `Question:` is cut off and recorded. There is **no** blank-line stop, because a blank line can fall before the `Final answer:` line.
+  - **Extraction:** the answer is read from the `Final answer:` line, and a missing line is recorded as a format failure, separately from a wrong answer.
+  - **Teacher:** thinking mode with the model-card sampling, graded on its final-answer line.
+  - **Still open:** the maximum number of new tokens. Frozen before any benchmark result (Section 4, safeguard 8).
 - [ ] **Criterion-4b measurement protocol:** GPU, engine version, batch size and concurrency, max new tokens, warm-up, repetitions
 - [ ] Whether to add a multiple-choice slice to the benchmark scored by answer likelihood. This works for base models without generation and would be reported separately from generation accuracy.
-- [ ] Grading method for free-text answers
-- [ ] Fine-tuning approach: full fine-tune or LoRA (full fine-tuning is cleaner for small models)
+- [ ] **Grading of short-text answers.**
+  - **Constrained answers** (a function name, a single term) use a normalized match against the key plus listed accepted variants. Benchmark short-text items are kept constrained.
+  - **Any open-ended item** that remains needs a predeclared rubric, independently checked reference answers, the verifier as a semantic grader, and manual adjudication. Exact string matching would undercount correct answers worded differently.
+- [x] **Fine-tuning approach** (decided 2026-11-11): full fine-tune with the Hugging Face `Trainer`, every setting explicit, the same for all four sizes. Chosen after a review of the transformers 5.19 documentation and source. The review's main requirements:
+  - pad with `<|padding|>` (id 1), never with the end token (id 0), so the real end token keeps its training signal;
+  - build our own labels (question tokens masked, answer and end token kept);
+  - `save_only_model=False`, so a run can be resumed;
+  - pin `accelerate`.
+
+  Pre-pilot tests check the label masking, the precision, the equivalence of gradient accumulation on gradients and parameter updates, resume, and the 2,048-token limit.
 - [ ] Number of seeds per condition
 - [ ] Exact validity thresholds (default 90% well-formed and 90% R code runs), confirmed in the pilot
 - [ ] Which data sizes to run beyond 50k, based on measured GPU time
-- [ ] Training precision recipe for Phase 8: mixed precision (AMP), gradient and optimizer-state precision, BF16 or FP16. Decided once the Talon environment is set up.
+- [x] **Training precision recipe** (decided 2026-11-11, for all sizes):
+  - **Training:** load the model in **float32** and train with BF16 mixed precision (`bf16=True`). Master weights, gradients and AdamW states stay in float32, and the matrix math runs in BF16. Loading in float16 and training with `bf16=True` would keep weights, gradients and optimizer states in float16, which is not real mixed precision and loses small updates.
+  - **Evaluation:** students are still loaded in float16 (`docs/models/model_versions.md` Section 3).
 - [ ] Peak GPU memory of all four students in training (pilot), to choose the 1B setup if one GPU is too small
 
 **Known cluster facts** (details and evidence labels in `docs/clusters/cluster_selection.md` and `docs/clusters/talon_setup.md`):

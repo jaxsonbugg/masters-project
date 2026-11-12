@@ -286,9 +286,7 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 ### Preparation and submission scripts built; a flawed check found and fixed (2026-11-04, still $0)
 - **Decision:** Jaxson approved finishing the Redhawk preparation and submitting the pipeline now, to take a place in the queue (the scheduler is first-come-first-served and estimated a start about 13 days out). Talon (H100) access is being pursued in parallel by email (see below).
 - **Built (local, tested):** `configs/redhawk/prep_cluster.sh` does the whole login-node preparation in one command (checks the copied files and the prompt hash, clones llama.cpp at the pinned commit, submits the compile job, starts the 17 GB download in the background) so only one password + Duo login is needed; `configs/redhawk/submit_pipeline.sh` re-checks that the build and the weights are really done, shows the scheduler's estimate, and submits the pipeline only then. `shtest.sh` part 5 covers both (21 checks); parts 1-4 were rerun.
-- **A flawed check, found and fixed:** the "no carriage returns" checks I reported earlier used `grep -c $'
-'`, which in Git Bash does not detect carriage returns (it returned 0 for a file that really had them). Every earlier "0" was therefore meaningless. The files were re-counted with `tr -cd '
-' | wc -c`, which counts the bytes themselves: all scripts and tests under `configs/redhawk/` and `code/tests/` have 0 carriage returns, so nothing pushed was broken. The one file with Windows line endings is the older `generate_benchmark.py`, which Python reads without trouble. The prep script now uses the `tr` count and checks only shell scripts. I also caught my own repair script inserting a real carriage-return byte into that check; fixed and verified byte by byte.
+- **A flawed check, found and fixed:** the "no carriage returns" checks I reported earlier used `grep -c $''`, which in Git Bash does not detect carriage returns (it returned 0 for a file that really had them). Every earlier "0" was therefore meaningless. The files were re-counted with `tr -cd '' | wc -c`, which counts the bytes themselves: all scripts and tests under `configs/redhawk/` and `code/tests/` have 0 carriage returns, so nothing pushed was broken. The one file with Windows line endings is the older `generate_benchmark.py`, which Python reads without trouble. The prep script now uses the `tr` count and checks only shell scripts. I also caught my own repair script inserting a real carriage-return byte into that check; fixed and verified byte by byte.
 - **Talon findings (Miami pages, read 2026-11-04):** Talon has four GPU nodes with four H100 GPUs each. Faculty can request accounts directly and sponsor student accounts through the Research Cluster Account Sponsorships page ("Request New Sponsorship", a faculty sponsor is required; approval time not stated). Questions go to ResComp@MiamiOH.edu; Jens Mueller, Director of High Performance Computing Services (muellej@miamioh.edu), is the contact for additional capacity. No Talon-specific request steps or GPU-hour limits are published.
 
 ### First Redhawk compile failed; cause found and fixed (2026-11-04, still $0)
@@ -389,7 +387,7 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
     - timeline, risks and open decisions.
   - **`CLAUDE.md`:** now holds the working rules from README Section 12, rewritten for the Qwen era. It points to `docs/workflow.md` as the source of truth, and the cost rule became two rules: a compute log and a cost log.
 - **Logs:**
-  - **`docs/cost_log.md`:** condensed to one line per paid run (13 Claude-era rows, $1.44); the per-trial arithmetic is in the tagged version.
+  - **`docs/cost_log.md`:** condensed to one line per paid run (12 Claude-era rows, $1.44; corrected 2026-11-11, this said 13); the per-trial arithmetic is in the tagged version.
   - **`docs/compute_log.md` (new):** records every cluster job and measured local run: times, node, GPUs, GPU-hours, peak memory, outcome. Backfilled entries:
     - the Pythia probe;
     - the Redhawk probes and the scheduler test;
@@ -482,3 +480,74 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - The regression test first failed on exactly that one line of the `verify` output; the exit code and the written file were identical.
   - The snapshot was then re-saved. The scratchpad snapshot of the 100 Claude batch items was re-saved the same way.
 - **Tests:** all suites rerun after the move, all passing with unchanged counts: Python 46 / 23 / 15; Redhawk shell 31/10/11/10/39; Talon shell 41/19/61; regression 51 and 153 parts.
+
+## 2026-11-11
+
+### Corrections to the 2026-11-06/07 cleanup ($0, no cluster access, no paid call)
+- **Why:** a review of the cleanup found six problems that the cleanup itself introduced. Only those were fixed. No methodology, validation rule or design was changed, and no preexisting issue was touched.
+- **1. Carriage-return commands restored in this log.**
+  - The 2026-11-04 entry "Preparation and submission scripts built; a flawed check found and fixed" quotes two commands that contain a literal carriage-return byte: `grep -c $'<CR>'` and `tr -cd '<CR>'`. A carriage return is the invisible "\r" character that Windows line endings add.
+  - When the 2026-11-07 entry was appended, the file was read with Python's universal-newline mode. That mode turns a lone carriage return into a line break, so the commands were split across three lines.
+  - The two original bytes were restored from the tag `pre-cleanup-claude-era`. Every entry written before the cleanup (the first 355 lines) is again byte-identical to the tag.
+  - From now on this file is edited byte by byte (or with the editor), never with a universal-newline read.
+- **2. Claude trial counts corrected.** `docs/methodology/workflow.md` Section 2.2 said "eight 20-question trials and one 100-question batch: 120 trial questions in total". `docs/methodology/pilot_plan.md` said "120 questions in total". The original run logs and item files under the tag show:
+  - **six 20-question trials** (prompts v1 to v6); the v4 run was refused and returned no items;
+  - **three 1-question probes**; one was rejected with an access error and returned nothing;
+  - **a 2-question test batch**;
+  - **the 100-question batch.**
+
+  That is **204 items** covering **120 distinct slots** (BM0001 to BM0120). Both documents now say so.
+- **3. Cost-log row count.** The 2026-11-06 entry said the condensed cost log has 13 Claude-era rows. It has **12** (the original ledger had 14 rows: the 12 paid runs plus a $0 setup row and a $0 Pythia probe row). Corrected in place, with a note.
+- **4. Partition of compile jobs 2510636 and 2510641.** The new compute log listed them under the Redhawk `gpu` partition. The job script `configs/redhawk/build_llamacpp.sbatch` requests `#SBATCH --partition=batch` (8 CPUs, 16 GB, 1.5 hours, no GPU) at both commits that submitted them: `3cbbaf2` (`prep_cluster.sh`) and `bcedc66` (`rebuild_llamacpp.sh`). Both submit commands run `sbatch` with no override. `docs/logs/compute_log.md` now says `batch` (**requested**), and states that the partition actually used was **not observed**: Slurm accounting is off, and the jobs' logs on Redhawk were not checked.
+- **5. Redhawk wording clarified.** `docs/clusters/talon_setup.md` said "nothing under `configs/redhawk/` was changed", and the risk table in `docs/methodology/workflow.md` said "unchanged". Since 2026-11-07, three comment lines there differ.
+  - **How it was verified:** `git diff pre-cleanup-claude-era -- configs/redhawk` shows exactly those three comment lines and no other changed line. With comment lines removed, `common.sh`, `prep_cluster.sh` and `submit_pipeline.sh` are identical to the tag (and to `fbe29e2`, where the Talon work began).
+  - **New wording:** both places now say the executable logic is unchanged and only comments were repointed.
+- **6. Regression fixture for a reply with no `r_solution` field.**
+  - **What was added:** a new `absent_r_solution` part in `code/tests/benchmark_core_regression/capture.py`, and two named checks in `test_regression.py`. The existing case "number without r_solution" has the field present but empty, which takes a different code path. The new cases are three number replies in which the field is missing entirely.
+  - **What it records (the behavior is kept, the loophole is not fixed):** such a reply passes `process_reply` with no hard problem and keeps the model's own key. `verify` flags it. The only remaining check is the key against the last number in the explanation.
+  - **Proof it is the original behavior:** the same three replies give identical results with the pre-cleanup `generate_benchmark.py` from the tag.
+  - **Proof nothing else changed:** the re-saved snapshot differs from the previous one only by the added part; every earlier part is identical.
+  - **Documentation:** the open decision in `docs/methodology/workflow.md` Section 10.2 now points to the fixture.
+- **Tests:** see the summary below.
+
+### Pilot plan decided: Pythia 70M on 1k examples, end to end (2026-11-11, $0, no cluster access)
+- **Why:** Jaxson wants to run the whole pipeline once at the smallest scale (Pythia 70M, 1,000 training examples) so the identical process can then be repeated for larger sizes and data sets. A ten-stage plan was agreed, from Talon bring-up to a go/no-go review. The decisions below are recorded in `docs/methodology/workflow.md`, `docs/methodology/pilot_plan.md` and `docs/models/model_versions.md`.
+- **Benchmark:** the pilot is scored on the real ~1,000-question benchmark, generated, verified and frozen before any training data. It is reported as **teacher-generated**.
+- **Teacher precision:**
+  - **One precision for all generation**, chosen on Talon before the benchmark is written: BF16 (the reference), FP8 or 4-bit, all served by vLLM.
+  - **Decision rule:** the lowest-compute option that is non-inferior to BF16 by a 3-point margin on both usability and independently checked answer correctness, with a multiplicity adjustment for the two comparisons.
+  - **The margin:** provisional. Its scientific rationale must be written down before the run.
+  - **Cost of the stricter margin:** estimated at 0.4 to 9 extra hours of generation over a 5-point margin, depending on the unmeasured Talon speed. That is within the one day Jaxson set as the threshold for choosing 3 points.
+- **Verification:**
+  - **The teacher checking itself:** R computes keys where it can. A Qwen blind re-solve is a consistency check only.
+  - **Everything R cannot settle:** a triage step sends it to an open-weight verifier from a different family, which is not OpenAI or Anthropic and whose terms allow this use (DeepSeek is the likely choice, Mistral another candidate). It runs through a paid API, logged in the cost log.
+  - **Choosing and testing the verifier:** chosen once the precision-test outputs exist. It is tested on 100 to 200 reference items, including deliberately wrong answers, with a declared false-acceptance threshold.
+  - **Manual audit:** Jaxson audits about 150 random benchmark items, stratified by category and including items that passed every check. A claim about the error rate after corrections needs a fresh sample.
+- **Development set and confirmatory rule:**
+  - **What the development set is for:** a separate ~200-item development set (DV) is used for hyperparameter choice and for debugging the evaluation.
+  - **Freezing:** everything is frozen in a dated pre-registration before the evaluated training run.
+  - **After the first benchmark evaluation:** only documented bug fixes are allowed. Follow-up experiments prompted by the scores are labeled exploratory and never replace the confirmatory results.
+- **Topic coverage:** the benchmark, development set and training data share one taxonomy and target proportions. Questions, numbers and scenarios are sampled independently, and subtopics are not split between the sets. A held-out-subtopic benchmark is a possible later study.
+- **`r_solution`:**
+  - **The field:** required in every reply. The legacy path that accepted a missing field will be removed.
+  - **Its content:** substantive R only where R can compute the answer, and an explicit "not applicable" otherwise.
+  - **The regression fixture:** updated deliberately when this is implemented.
+- **Training:**
+  - **Method:** Hugging Face `Trainer`, full fine-tune, every setting explicit. Chosen after a review of the transformers 5.19 documentation and source.
+  - **Requirements from that review:**
+    - load in float32 with BF16 mixed precision;
+    - pad with `<|padding|>` (id 1), never the end token;
+    - build our own labels;
+    - `save_only_model=False`, so a run can resume;
+    - pin `accelerate`.
+  - **Pre-pilot tests:** the label masking; the precision; gradient-accumulation equivalence on gradients and updates, with unequal lengths; resume; and the length limit.
+  - **Training precision recipe:** float32 weights with BF16 mixed precision, recorded in `docs/models/model_versions.md` Section 3. This closes that open item.
+- **Context limit:** `max_position_embeddings` is 2048 in all four pinned Pythia configs (read today). Examples over 2,048 tokens are rejected or deliberately shortened, never silently truncated, and the evaluation prompt plus new tokens must fit too.
+- **Evaluation:**
+  - vLLM for the students and the teacher, on the same GPU type;
+  - the end token as the main stop, with a token cap as backstop;
+  - no blank-line stop, because it could cut off the `Final answer:` line;
+  - a missing final-answer line counted as a format failure;
+  - short-text items kept tightly constrained, with open-ended ones needing a rubric and semantic grading;
+  - the teacher in thinking mode with the model-card sampling.
+- **Not yet started:** the cluster work, the paid verifier calls and the code changes. Each cluster step and each paid call needs Jaxson's approval first.

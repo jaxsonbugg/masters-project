@@ -38,7 +38,7 @@ Because of what Step 0 showed, every question gets a **short canonical answer** 
 
 ### What the Claude-era trials taught us
 
-Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and tested with Claude in small trials (120 questions in total, $1.44, none of them in the benchmark; archived under the Git tag `pre-cleanup-claude-era`, summary in `docs/methodology/workflow.md` Section 2.2). Qwen now uses the same pipeline and the same prompt (v6, SHA-256 `348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4`). Four lessons carry over:
+Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and tested with Claude in small runs (six 20-question trials, three 1-question probes, a 2-question test batch and a 100-question batch: 204 items covering 120 distinct question slots, $1.44, none of them in the benchmark; archived under the Git tag `pre-cleanup-claude-era`, summary in `docs/methodology/workflow.md` Section 2.2). Qwen now uses the same pipeline and the same prompt (v6, SHA-256 `348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4`). Four lessons carry over:
 
 - **R writes the number keys.** In the first trial, 3 of the 8 numerical keys the model typed were wrong even when its own working was right. Example: a question asked for a correlation; the working computed 36 / sqrt(40 x 60) = 0.735, but the typed key said 0.8. Now the model writes R code that recomputes the answer, our `verify` command runs that code on this computer, and R's printed number becomes the key. The model's typed number is kept only for comparison.
 - **Rounding comes last.** The chance of exactly 2 heads in 5 fair tosses is exactly 0.3125. The usual rule rounds it to 0.313, but R's `round(0.3125, 3)` gives 0.312 (R rounds an exact tie toward the even digit). So R prints the exact value, the key has the decimals the question asks for, and grading allows an error of half the last decimal place, so a student who rounds a tie either way is marked right.
@@ -50,7 +50,11 @@ Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and te
 1. **Fix slot variety.** Change the slot design so no combination repeats more than necessary (more subtopics, varied settings and contexts), then re-run `dupcheck`, which compares every question with every earlier one by text similarity, once with numbers kept and once with numbers masked, and lists near-copies for review. Success looks like few or no flagged pairs on a development batch.
 2. **Bring up Talon.** Pin the vLLM version (vLLM is the program that loads the model onto the GPUs and answers requests; the model card requires 0.19.0 or later), settle how jobs request GPUs, review the settings file, run a scheduler acceptance test, download the BF16 weights, then run smoke stage A (a few questions, to see that everything works) and the throughput stage T (how many tokens per second Talon delivers). The exact steps are in `docs/clusters/talon_setup.md` Section 9. Talon's nodes are shared between jobs and a job may run for at most 3 days, so long runs are split into pieces that can be restarted.
 3. **Review the Redhawk fallback run.** Redhawk job 2511641 (the Qwen pipeline with the 4-bit model) has finished but nobody has looked at its results. It is reviewed and recorded in `docs/logs/compute_log.md`, because it shows whether the fallback deployment works.
-4. **Compare 4-bit and BF16 on Talon.** BF16 is a 16-bit number format, about 2 bytes per parameter: the full Qwen weights are about 53,011 MiB. A 4-bit version stores about half a byte per parameter: the 4-bit file used on Redhawk is 16.8 GB, roughly a third of the size, and usually faster. Compression can also cost accuracy. So the same development slots are answered twice on Talon, once with each version, and we compare the share of usable questions, the share of correct keys, and the speed. If 4-bit is just as good, it could speed up the 200,000-example generation; if not, BF16 stays. Both runs are on Talon so the hardware is the same. The Talon 4-bit setup is not built yet.
+4. **Choose the teacher precision on Talon** (decided 2026-11-11; protocol in `docs/methodology/workflow.md` Section 2.1).
+   - **What precision means here:** BF16 is a 16-bit number format, about 2 bytes per parameter, so the full Qwen weights are about 53,011 MiB. FP8 uses about 1 byte per parameter and a 4-bit version about half a byte; both are smaller and usually faster, but compression can cost quality.
+   - **One precision for everything:** whichever is chosen is used for the benchmark and for every training set, so the data sizes are never written by different teacher setups.
+   - **How it is tested:** all three are run on the same development slots on Talon, served by the same engine. FP8 and 4-bit are each compared with BF16 on two things: usable questions, and answer correctness checked independently on a sample.
+   - **The rule:** the cheapest one that is not worse than BF16 by more than 3 percentage points on both (a margin whose scientific justification is written down first) is chosen.
 
 ### Generating and checking the benchmark
 
@@ -60,8 +64,11 @@ Qwen then writes about 1,000 questions on Talon. Each question that fails the au
 
 1. **Run the code.** For numeric answers and R code questions, R computes the key or runs the check. An R check must accept the key and reject three deliberately wrong answers; one that accepts a wrong answer is flagged. A computer running R does not share Qwen's blind spots.
 2. **Blind re-solve.** A separate Qwen call solves each question without being shown the key. Where it disagrees with the key, we look by hand. This catches careless errors but not systematic ones.
-3. **A different model family.** A frontier model trained by a different company checks all multiple-choice and conceptual keys and a sample of the rest. Which one is still to be decided (ChatGPT, Claude or another). It is used only as a checker and never writes training text or questions. Its calls are paid, so the expected cost is stated before the run and every call is logged in `docs/logs/cost_log.md`.
-4. **Your own spot-check** of a sample, which is also how you learn what the questions look like and how the leftover error rate is measured.
+3. **A different model family, only where needed.** Items R cannot settle go to a *verifier*: an open-weight model from a different family than Qwen, inexpensive, and from a provider whose terms allow this use (not OpenAI or Anthropic). DeepSeek is the likely choice, because its terms explicitly allow distillation; Mistral is another candidate.
+   - **Which items it gets:** every multiple-choice, conceptual and output-interpretation item, every soft flag and every re-solve disagreement. A *triage* step selects these, so the verifier only sees what our own checks cannot settle, which keeps its usage small even at 200,000 examples.
+   - **When it is chosen:** once the first real data exists (the precision test). It is tested first on 100 to 200 reference items, some deliberately wrong, to measure how often it accepts a wrong answer.
+   - **Its role:** it only checks, and never writes training text or questions. Its calls are paid, so the expected cost is stated first and every call is logged in `docs/logs/cost_log.md`.
+4. **Your own audit of about 150 random benchmark items**, stratified by category and including items that passed every check. This covers what R cannot: code that is consistent but answers a misread question. It also measures the leftover error rate. If errors are found and fixed, a new random sample is needed to claim anything about the error rate after the fixes.
 
 Even after all this we report that the teacher's score on its own exam is probably a bit optimistic, with the verifier's agreement rate next to it. The benchmark is then frozen (hashed and stored read-only) before any training example exists.
 
@@ -80,18 +87,30 @@ The teacher writes about 1,000 new questions on statistics and R, each with a wo
 
 We record the token counts the engine reports for every response and the GPU time of every generation job, because together they give the true GPU time per example, which is what the full-scale projection needs. Then we:
 
-- **Lightly verify** the set: run the R code to see that it actually works, and hand-check a sample. The full verifier check is Phase 7 of the project, not needed for a 1,000 example pilot.
+- **Verify** the set the same way as the benchmark, at small scale: run the R code, triage, and send the uncertain items to the verifier. This is a rehearsal that measures the real triage rate and cost per item before 200,000 examples.
+- **Check the length.** Pythia can only read 2,048 tokens at once (its `max_position_embeddings`). Every example (question, working, final answer and end token) is measured with the Pythia tokenizer. One that is too long is rejected or deliberately shortened, never cut off silently, because cutting would remove the final answer or the end token. The share affected is recorded.
 - Drop anything that fails. Because some items will fail, we generate 10 to 25% more than we need.
 
 If this set passes, it later becomes the 1,000 example subset of the bigger training sets, so the GPU time is not spent twice.
 
 ## Step 4: train the 70M student
 
-We take the original Pythia 70M model (the pinned checkpoint described in `model_versions.md`) and fine-tune it on the 1,000 examples on Talon (Redhawk as the fallback). The training precision recipe used for the pilot (for example mixed precision in BF16, which the H100 supports) is recorded with the run; the final recipe for the full grid is fixed in Phase 8 (`model_versions.md` Section 3). We record in `docs/logs/compute_log.md` how long the job took, how many GPUs it held, the GPU-hours (GPUs x hours: one GPU for 30 minutes is 0.5 GPU-hours), the peak GPU memory and the queue wait. Peak memory matters because it helps predict how the 1B model and the larger data sets will fit.
+We take the original Pythia 70M model (the pinned checkpoint described in `model_versions.md`) and fine-tune it on the 1,000 examples on Talon (Redhawk as the fallback). Training uses the Hugging Face `Trainer` (a standard, well-tested training loop) with every setting written out. The model is loaded in float32 and trained with BF16 mixed precision, which the H100 supports; this recipe, decided 2026-11-11, is the same for all four sizes (`model_versions.md` Section 3). Before this run, the hyperparameters are chosen on the development set, never on the benchmark. We record in `docs/logs/compute_log.md` how long the job took, how many GPUs it held, the GPU-hours (GPUs x hours: one GPU for 30 minutes is 0.5 GPU-hours), the peak GPU memory and the queue wait. Peak memory matters because it helps predict how the 1B model and the larger data sets will fit.
 
 ## Step 5: take the exam
 
-We run the frozen benchmark through three models and compare their scores. The protocol is fixed in advance (same prompt format, cut each output at the first blank line or at a new `Question:`, at most a set number of new tokens, greedy decoding, meaning the model always picks its single most likely next token), because Step 0 showed untrained models do not stop by themselves and their scores swing with the prompt format:
+We run the frozen benchmark through three models and compare their scores. The protocol is fixed in advance. It uses:
+- the same prompt format for every model;
+- **the end-of-text token as the main stop**, with a maximum number of new tokens as a backstop (prompt plus new tokens within 2,048);
+- cutting off any invented follow-up `Question:`;
+- greedy decoding, meaning the model always picks its single most likely next token;
+- reading the answer from the `Final answer:` line.
+
+It deliberately does **not** stop at the first blank line, because a model may put a blank line between its working and the final answer. A response with no `Final answer:` line counts as a format failure, recorded separately from a wrong answer. All of this is fixed because Step 0 showed untrained models do not stop by themselves and their scores swing with the prompt format.
+
+**The benchmark is used only for this prespecified evaluation.** The hyperparameters and the evaluation code are chosen and debugged on a separate development set of about 200 items, and frozen in a dated pre-registration before the training run that is evaluated. After the benchmark scores are seen, only documented bug fixes are allowed. Any further experiment prompted by the scores is labeled exploratory and never replaces these results.
+
+The three models are:
 
 - **Untrained Pythia 70M**: the starting point. Any improvement has to be measured against this.
 - **Fine-tuned Pythia 70M**: did training on 1,000 examples help?

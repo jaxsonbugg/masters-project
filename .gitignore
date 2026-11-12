@@ -6,6 +6,8 @@
 *.ckpt
 *.gguf
 models/
+# ...except the project's own Markdown folder about the models (docs/models/), added 2026-11-11
+!docs/models/
 checkpoints/
 
 # Environments and caches

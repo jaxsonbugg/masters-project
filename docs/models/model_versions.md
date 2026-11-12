@@ -32,6 +32,11 @@ Architecture (same sources):
 | 410M | 24 | 1024 | 16 | 302,311,424 |
 | 1B | 16 | 2048 | 8 | 805,736,448 |
 
+**Context length: 2,048 tokens for all four sizes.** `max_position_embeddings` is 2048 in each pinned `step143000/config.json` (read 2026-11-11 from the local copies). The model has learned positions only up to 2,048 tokens, so this is a **hard limit** for training and evaluation:
+- **Training:** every example (prompt, working, `Final answer:` line and end token) must fit. An over-length example is rejected or deliberately shortened, never silently truncated.
+- **Evaluation:** the prompt plus the maximum number of new tokens must stay within 2,048 (`docs/methodology/workflow.md` Phase 4).
+(The 2048 in the 1B row above is a different number: the 1B model's hidden size.)
+
 Notes:
 - The Hugging Face API reports the 1B repo as 1,011,782,144 F16 plus 67,108,864 U8 entries. This differs by 512 from the model card's 1,011,781,632. The cause is not known; the model card number is used as the official count and the difference is to be checked when the models are loaded.
 - The model cards for 70M and 1B say "branch `143000`", which appears to be a typo for `step143000`.
@@ -57,7 +62,7 @@ Three separate concepts. Never merge them in docs, configs or code comments.
 |---|---|---|
 | 1. Checkpoint storage dtype | How the original Hugging Face weights are serialized on disk | Observed, not chosen. Files are kept exactly as downloaded: no conversion, no re-saving, no modification |
 | 2. Runtime load dtype | The dtype weights are loaded into for baseline evaluation | `torch.float16` for all four sizes, passed explicitly in every load call. Not taken from `config.json` |
-| 3. Training precision configuration | AMP/mixed precision, gradient precision, optimizer-state precision, loss scaling, BF16 or FP16 | Not decided. Set and documented separately in Phase 8, for the Talon H100 training environment (Redhawk V100 as the fallback), once that environment is built |
+| 3. Training precision configuration | AMP/mixed precision, gradient precision, optimizer-state precision, loss scaling, BF16 or FP16 | **Decided 2026-11-11, for all sizes:** load the model in **float32** for training and use BF16 mixed precision (`bf16=True` in the Hugging Face `Trainer`). Master weights, gradients and AdamW states stay float32; matrix math runs in BF16 under autocast; no loss scaling (BF16 does not need it). Loading in float16 and then using `bf16=True` would keep weights, gradients and optimizer states in float16, which is not real mixed precision. Runs on the Talon H100s (BF16 is supported); the Redhawk V100s lack BF16, so a fallback run there would need FP16 with loss scaling, a logged deviation |
 
 Fine-tuning is **not** described as "pure FP16 training". Only the loading of model weights in FP16 is decided.
 
@@ -213,4 +218,4 @@ Public sources: [Redhawk cluster page](https://www.miamioh.edu/research/research
 - **Storage.** Redhawk and Talon share one home folder, `/home/buggjm`, with a 500 GB hard and 480 GB soft quota (about 17 GB used on 2026-11-06). The two clusters work in separate subfolders (`docs/methodology/workflow.md` Section 8).
 - **Precision hardware fact.** V100 GPUs (Redhawk) have no native BF16 support and H100 GPUs (Talon) do. Together with memory (about 53,011 MiB of BF16 weights cannot fit in a Redhawk node's 2 x 16 GB), this is why the BF16 teacher runs on Talon and Redhawk uses the 4-bit file.
 - **Student sizes against GPU memory.** The four Pythia checkpoints total about 4.6 GB for the downloaded safetensors, small against the home quota. FP16 weights are about 0.14, 0.32, 0.81 and 2.02 GB for 70M, 160M, 410M and 1B, so baseline evaluation fits even in one 16 GB V100. The planned approach does not need internet on the compute nodes: model files are downloaded on a login node or copied from this PC with `scp`, then re-checked with `sha256sum`.
-- Training memory depends on the training precision recipe (concept 3), which is not decided here.
+- Training memory depends on the training precision recipe (concept 3). With float32 weights and AdamW, that is roughly 16 bytes per parameter before activations, about 1.1 GB for 70M and about 16 GB for 1B. This is an estimate; the pilot measures peak memory.
