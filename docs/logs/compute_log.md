@@ -176,7 +176,7 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **The answers (read from `responses.jsonl`):**
   - **BM9001** (numerical, intro): P(exactly 2 heads in 5 flips with p = 0.6), 3 decimals. Key 0.230, `r_solution` `cat(dbinom(2, size = 5, prob = 0.6))`. The exact value is 0.2304, so the key is correct.
   - **BM9002** (conceptual, intro): the meaning of a p-value of 0.03, multiple choice, correct letter C (the slot's preferred letter). Option C is the standard definition, and the other three are standard misreadings. `r_solution` is empty, as intended for a conceptual item.
-  - **Not yet done:** R scoring (the `score` step, which needs R on the PC).
+  - **R scoring, done the same day on the PC** (`open_teacher_test.py score`, then `generate_benchmark.py verify`): 2 of 2 slots format valid and passed every automatic check on the first attempt; none cut off. BM9001's key came from R (`r_value` 0.2304, rounded half up to **0.230**), the same as the number the model typed, with no soft flag. `verify` reported it `ok`. BM9002 is `not_machine_checkable`, as expected for a multiple-choice item (it needs the different-family verifier). The small result copies are in `results/open_teacher_test/`.
 - **Tokens (one question at a time, so these are single-stream speeds):**
   - **BM9001:** 1,362 tokens in, 4,537 out (13,174 characters of thinking, 866 of answer), about **30 tokens/s**.
   - **BM9002:** 1,240 in, 3,025 out (10,902 characters of thinking, 1,375 of answer), about **29 tokens/s**.

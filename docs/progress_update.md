@@ -694,3 +694,12 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **New open decision** (`docs/methodology/workflow.md` Section 10.2): the teacher's **thinking budget**. Thinking dominates the tokens, so it dominates GPU time. It must be fixed before the precision test.
 - **Recorded in:** `docs/logs/compute_log.md` entry 12, `docs/clusters/talon_setup.md`, `docs/models/model_versions.md` and `docs/methodology/workflow.md`.
 - **Next:** score the two replies with R on the PC, then Stage T (throughput) to measure speed at several concurrency levels, and decide how to proceed.
+
+### Stage A replies scored with R on the PC (2026-11-12, free)
+- **What:** the run folder of job 204 was copied from Talon to `C:\masters_project_large\data	eacher_outputs6-11-12_qwen3-6-27b-talon-bf16_smokeA01` and scored with `open_teacher_test.py score`, then `generate_benchmark.py verify`. This was the first time Qwen replies on Talon went through the same pipeline code as every other generated question.
+- **Result:**
+  - **Scoring:** 2 of 2 replies format valid and passed every automatic check on the first attempt, with none cut off. The output tokens per item were median 4,537 and mean 3,781.
+  - **BM9001:** the key was taken from R (`r_value` 0.2304, rounded to **0.230**) and matched the model's typed answer. `verify` reported `ok`.
+  - **BM9002:** `not_machine_checkable`, as expected for a multiple-choice item.
+- **What this does and does not show:** the Talon replies work with our R-key and check code, so the pipeline from teacher to checked item runs end to end. Two items prove the plumbing, not the failure rate; that comes from the 100-slot deployment test and the benchmark run.
+- **Files:** the small result copies are in `results/open_teacher_test/` (committed, labeled development test material).

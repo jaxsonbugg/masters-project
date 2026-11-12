@@ -1,0 +1,73 @@
+{
+  "use": "dev_test_only",
+  "test": "Qwen3.6-27B deployment test (docs/methodology/workflow.md Section 2.1)",
+  "backend": "talon",
+  "model": "qwen3.6-27b-bf16",
+  "precision": "BF16 safetensors (Qwen/Qwen3.6-27B), UNVERIFIED until the probe pins the revision",
+  "weights": "Qwen/Qwen3.6-27B @ UNVERIFIED-revision (resolved to a commit hash at probe time)",
+  "engine": "vLLM (exact version recorded by the job script in meta; UNVERIFIED until the probe)",
+  "extra_params": {
+    "chat_template_kwargs": {
+      "enable_thinking": true
+    }
+  },
+  "sampling": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 0.0
+  },
+  "max_tokens": 16384,
+  "slot_set": "dev_smoke",
+  "slot_ids": [
+    "BM9001",
+    "BM9002"
+  ],
+  "n_slots": 2,
+  "prompt_file": "data/prompts/benchmark_generation_v6.md",
+  "prompt_version": "v6",
+  "prompt_sha256": "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4",
+  "adapter_change": "ITEM_SCHEMA JSON appended to the system message after 'Output schema (JSON Schema):'; no constrained decoding (response_format not sent)",
+  "attempts_per_slot": 1,
+  "meta": {
+    "engine": "vllm",
+    "vllm_version": "0.32.0",
+    "model_repo": "Qwen/Qwen3.6-27B",
+    "model_rev": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "gpu_count": "1",
+    "tensor_parallel": "1",
+    "replicas": "1",
+    "max_num_seqs": "1",
+    "max_model_len": "20480",
+    "load_seconds": "242",
+    "weights_manifest_sha256": "8e3e1fc0103c85a66c1516343b645a80d667e47a8152b8b38a24e67e218d1d33",
+    "slurm_job": "204",
+    "node": "mualhpgp02.hpc.miamioh.edu",
+    "stage": "A",
+    "queue_submit_time": "2026-11-12T10:37:58",
+    "queue_start_time": "2026-11-12T10:37:59",
+    "queue_wait_seconds": "1"
+  },
+  "sessions": [
+    {
+      "started_utc": "2026-11-12T15:44:09+00:00",
+      "base_url": "http://127.0.0.1:60335/v1",
+      "todo": 2,
+      "already_done": 0,
+      "errored_not_retried": [],
+      "retry_errors": false,
+      "concurrency": 1,
+      "host": "mualhpgp02.hpc.miamioh.edu",
+      "slurm_job": "204",
+      "finished_utc": "2026-11-12T15:48:26+00:00",
+      "wall_seconds": 256.1,
+      "calls": 2,
+      "ok": 2,
+      "errors": 0,
+      "out_tokens": 7562,
+      "in_tokens": 2602,
+      "aggregate_output_tok_per_s": 29.52
+    }
+  ]
+}
