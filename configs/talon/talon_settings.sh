@@ -15,7 +15,8 @@
 # purpose: the environment cannot override them, so a draft cannot be un-drafted by accident.
 
 # ---- the review flag -----------------------------------------------------------------------------------------------
-SETTINGS_REVIEWED=no     # change to yes ONLY after the probe output has been copied in below and a person has read this file
+SETTINGS_REVIEWED=yes    # REVIEWED by Jaxson Bugg on 2026-11-12 (settings review with the probe and job 196 values copied in).
+                         # Set back to no if a value below is changed without a new review.
 
 # ---- how to reach Talon ----------------------------------------------------------------------------------------------
 TALON_SSH_ALIAS="${TALON_SSH_ALIAS-talon}"   # the alias in ~/.ssh/config (host mualhphp01.hpc.miamioh.edu, user buggjm, same account as Redhawk, VPN needed

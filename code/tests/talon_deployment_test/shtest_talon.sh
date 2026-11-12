@@ -24,7 +24,7 @@ setup() {
   cp -r "$REPO/code" "$REPO/configs" "$T/repo/"; cp -r "$REPO/data/prompts" "$T/repo/data/"
   sed -i "s|^talon_root: .*|talon_root: $T/tl|; s|^talon_repo: .*|talon_repo: $T/repo|; s|^talon_models: .*|talon_models: $T/tl/models|; s|^talon_outputs: .*|talon_outputs: $T/tl/teacher_outputs|" "$T/repo/configs/paths.yaml"
   SETF="$T/repo/configs/talon/talon_settings.sh"
-  cp "$SETF" "$T/settings_draft.sh"
+  sed 's/^SETTINGS_REVIEWED=yes/SETTINGS_REVIEWED=no/' "$SETF" > "$T/settings_draft.sh"   # a DRAFT copy for the guard tests (the real file is reviewed)
   sed -i 's/^SETTINGS_REVIEWED=no/SETTINGS_REVIEWED=yes/' "$SETF"     # a person "reviewed" the test copy; the draft copy is kept for the guard tests
   echo "export PATH=\"$(dirname "$PYEXE"):\$PATH\"" > "$T/tl/venv/bin/activate"
   printf '#!/bin/bash\nexit 0\n' > "$T/bin/module"
@@ -131,7 +131,7 @@ draft
 sub talon_smoke_a.sbatch; chk "Stage A refuses as a DRAFT" '[ $RC -ne 0 ] && grep -q "DRAFT: these Talon scripts were written before any Talon login" <<<"$OUT"'
 sub talon_smoke_a.sbatch SETTINGS_REVIEWED=yes; chk "SETTINGS_REVIEWED=yes in the environment does not un-draft it" '[ $RC -ne 0 ] && grep -q "DRAFT" <<<"$OUT"'
 sub talon_pipeline.sbatch; chk "the pipeline refuses as a DRAFT" '[ $RC -ne 0 ] && grep -q "DRAFT" <<<"$OUT"'
-chk "the shipped settings file really says SETTINGS_REVIEWED=no" 'grep -q "^SETTINGS_REVIEWED=no" "$REPO/configs/talon/talon_settings.sh"'
+chk "the shipped settings file was reviewed by a person (SETTINGS_REVIEWED=yes, with name and date)" 'grep -q "^SETTINGS_REVIEWED=yes .*REVIEWED by .* on 20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]" "$REPO/configs/talon/talon_settings.sh"'
 reviewed
 echo "[D2] paths: UNSET talon keys stop the job; Talon may never share a folder with Redhawk"
 cp "$T/repo/configs/paths.yaml" "$T/paths.bak"
@@ -410,6 +410,7 @@ chk "an empty answer is UNKNOWN" '[ "$(hq)" = UNKNOWN ]'
 printf 'Disk quotas for user x (uid 1):\n     Filesystem   space   quota   limit   grace   files   quota   limit   grace\nshorthost:/h   2048K   1G   2G   10   20   30\n' > "$T/quota_real.txt"
 chk "a short file-system name with the numbers on the same line is read too (2048K = 2 MiB)" '[ "$(hq)" = "2 1024 2048" ]'
 chk "the fetch script uses the home quota and refuses to pass the soft limit" 'grep -q "home_quota_mib /home" "$REPO/configs/talon/fetch_talon.sh" && grep -q "would pass the soft quota" "$REPO/configs/talon/fetch_talon.sh"'
+chk "the fetch script records every installed package version (pip freeze) after the vLLM version check" 'grep -q "pip freeze --all" "$REPO/configs/talon/fetch_talon.sh" && [ "$(grep -n "pip freeze --all" "$REPO/configs/talon/fetch_talon.sh" | cut -d: -f1)" -gt "$(grep -n "pip installed vLLM" "$REPO/configs/talon/fetch_talon.sh" | cut -d: -f1)" ]'
 echo "[H1] file hygiene of the real repository's Talon folder"
 BAD=""; for f in "$REPO"/configs/talon/*.sh "$REPO"/configs/talon/*.sbatch; do [ "$(tr -cd '\r' < "$f" | wc -c)" = 0 ] || BAD="$BAD $f"; bash -n "$f" || BAD="$BAD $f(syntax)"; done
 chk "every Talon script has no carriage return and parses" '[ -z "$BAD" ]'

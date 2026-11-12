@@ -60,6 +60,12 @@ pip install --quiet --upgrade pip
 pip install --quiet "vllm==$VLLM_VERSION" huggingface_hub httpx pyyaml
 GOT="$("$QT_VENV/bin/vllm" --version 2>&1 | grep -Eo '[0-9]+\.[0-9]+(\.[0-9]+)?[A-Za-z0-9.+-]*' | head -n 1 || true)"
 [ "$GOT" = "$VLLM_VERSION" ] || die "pip installed vLLM '$GOT', not the pinned $VLLM_VERSION"
+# Record EVERY installed package version (decided 2026-11-12). vLLM is pinned, but pip chooses the versions of what it pulls in
+# (PyTorch, transformers, CUDA libraries, ...); this list puts the exact environment on record for the whole project.
+FREEZE="$QT_ROOT/venv_pip_freeze.txt"
+{ echo "# recorded $(date -u +%FT%TZ); $("$QT_VENV/bin/python" -V 2>&1); vllm $GOT"; pip freeze --all; } > "$FREEZE"
+echo "installed packages: $(grep -vc '^#' "$FREEZE") recorded in $FREEZE (sha256 $(sha256sum "$FREEZE" | cut -d' ' -f1))"
+grep -iE '^(torch|transformers|vllm)==' "$FREEZE" | sed 's/^/  /' || true
 HF="$(command -v hf || command -v huggingface-cli || true)"
 [ -n "$HF" ] || die "neither 'hf' nor 'huggingface-cli' was installed by pip"
 
