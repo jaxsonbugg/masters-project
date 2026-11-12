@@ -488,11 +488,12 @@ Dates are placeholders until the program's real deadlines are known.
   - `TALON_GPU_STYLE`: resolved 2026-11-11, `gres` (both styles accepted by Slurm);
   - whether compute nodes have internet access (a proxy is set on the login node);
   - the GPU memory per card: resolved 2026-11-12, each H100 NVL has 95,830 MiB (job 196);
-  - the CUDA version supported by driver 610.57.04, still to be read;
+  - the CUDA version supported by driver 610.57.04: resolved 2026-11-12, CUDA 13.3 (Stage A job 204);
   - CPUs and memory per job: a job gets 1 CPU unless it asks, so choose `--cpus-per-task` and `--mem`;
   - the Talon scripts must use only the GPUs in `CUDA_VISIBLE_DEVICES`, because Slurm does not hide the other GPUs on the node from a job: resolved 2026-11-12, all GPU checks and the memory monitor are limited to the assigned GPUs, and 2-GPU jobs record NVLink pairing;
   - total GPU-hours allowed;
   - GPU count and tensor parallelism (decided by the throughput benchmark).
+- [ ] **Teacher thinking budget** (decide before the precision test). In Stage A about 95% of Qwen's output tokens were thinking: 4,537 output tokens for a one-line binomial question, of which about 250 were the answer. Qwen3.6-27B can run with thinking on or off, and thinking changes both answer quality and the GPU time per example (and therefore the 200,000-example projection). The options are: thinking on as now (the model card's recommended setting), a cap on thinking length, or thinking off for training-data generation. Whatever is chosen is part of the teacher setup and is fixed before the precision test.
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds
 - [x] **Require `r_solution` in every reply** (decided 2026-11-11). The field must always be present. It holds substantive R wherever R can compute the answer, and an explicit "not applicable" empty value otherwise. The legacy path that accepted a reply without the field is removed, and the `absent_r_solution` regression fixture is updated deliberately (Section 4, safeguard 6a).
 - [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.

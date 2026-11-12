@@ -153,7 +153,7 @@ Filled in 2026-10-06 from the local probe environment (`C:\masters_project_large
 | safetensors | 0.8.0 |
 | tokenizers | 0.23.2 |
 | Hugging Face Hub | 1.33.0 (installed as a dependency; the model files were downloaded with `curl`, not this library) |
-| CUDA | none locally. Redhawk has the module `cuda-12.2` (used to build llama.cpp). The Talon CUDA version is not recorded here yet. The training environment on Talon (primary) or Redhawk (fallback) will need a CUDA build of PyTorch and its own record |
+| CUDA | none locally. Redhawk has the module `cuda-12.2` (used to build llama.cpp). Talon: driver 610.57.04 supports CUDA up to 13.3 (`nvidia-smi` "CUDA UMD Version", Stage A job 204, 2026-11-12); the vLLM environment uses PyTorch 2.13.0 built for CUDA 13.0. The training environment on Talon (primary) or Redhawk (fallback) will need a CUDA build of PyTorch and its own record |
 
 ## 6. Teacher: Qwen3.6-27B
 

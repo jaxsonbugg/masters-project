@@ -33,8 +33,9 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 9 | 2026-11-11 ~21:18 | Talon login node | none created | Repository copy to `~/talon_project/repo` (commit `4d24384`) and GPU request-style test (`sbatch --test-only`, 4 forms) | none | 0 | PASS (all 4 forms accepted) |
 | 10 | 2026-11-12 02:35 | Talon `talon`, `mualhpgp01` | 196 | GPU probe job (`probe_gpu_job.sbatch`), `--gres=gpu:1` | 1 x H100 NVL, ~1 s | ~0.0003 | PASS (see the GPU-visibility finding) |
 | 11 | 2026-11-12 ~05:30 | Talon login node | none (background process) | vLLM 0.32.0 environment and Qwen3.6-27B BF16 weights download and verification (`prep_talon.sh`, attempt 2) | none (no GPU) | 0 | PASS (attempt 1 stopped by our version check; nothing downloaded) |
+| 12 | 2026-11-12 15:37 | Talon `talon`, `mualhpgp02` | 204 | **Stage A smoke test**: Qwen3.6-27B BF16 on vLLM 0.32.0, 2 development questions | 1 x H100 NVL, ~10.5 min | ~0.17 | PASS (answers read: sensible) |
 
-**GPU-hours used to date: about 0.05** (Redhawk job 6), plus about 0.0003 for Talon job 196, plus Redhawk job 7 once it is reviewed.
+**GPU-hours used to date: about 0.22:** about 0.05 (Redhawk job 6), about 0.0003 (Talon job 196) and about 0.17 (Talon job 204), plus Redhawk job 7 once it is reviewed.
 
 ## Entries
 
@@ -149,3 +150,36 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Storage afterwards:** weights 52 GB and environment 8.5 GB. The home quota stands at **82,982 MiB of the 480 GB soft limit** (about 17%), with about 108,000 files.
 - **Rebuild recipe:** `recovery/talon_qwen_weights.md`.
 - **GPU time:** none.
+
+### 12. Talon job 204: Stage A smoke test, 2026-11-12 (cluster local time 10:37; UTC 15:37)
+- **Purpose:** the first run of the teacher on a GPU: does Qwen3.6-27B (BF16) load on one H100 under vLLM 0.32.0, answer two development questions, and produce replies we can save and check? Approved by Jaxson, who submitted it with `QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1 REPLICAS=1 MAX_NUM_SEQS=1 CLIENT_CONCURRENCY=1 bash configs/talon/submit_pipeline.sh smoke_a`.
+- **Software:** repository copy at commit `58c2dc3`. vLLM 0.32.0, torch 2.13.0 (CUDA 13.0 build), transformers 5.19.0, Python 3.12.5. Model `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; weights manifest SHA-256 `8e3e1fc0...`.
+- **Request:** `--nodes=1 --partition=talon --gres=gpu:nvidia_h100_nvl:1 --time=01:00:00 --cpus-per-task=16 --mem=120G`, one GPU on `mualhpgp02`.
+- **Timing:**
+  - **Submitted and started:** submitted 10:37:58 and started 10:37:59 (cluster local time; this is UTC 15:37, inferred from the result file's UTC stamp), so the queue wait was **1 s**.
+  - **Ended:** the result file is stamped 15:48:27 UTC, so the wall time was about **10 min 28 s**.
+  - **GPU-hours:** 1 GPU x 628 s = about **0.17**.
+  - **Weight check:** about 2 min 20 s for the job to re-hash the 29 weight files against the manifest and start the server.
+  - **Server load:** the server was ready after **242 s**. This includes a one-time `torch.compile` step of 35 s, which vLLM caches in `~/.cache/vllm` (about 35 MB). Later loads may be faster.
+  - **The two questions:** BM9001 took 151.3 s and BM9002 took 104.8 s, asked one at a time.
+- **What the job saw (job log):**
+  - **GPU:** assigned `CUDA_VISIBLE_DEVICES=0` (index 0), NVLink pairing not applicable.
+  - **CUDA:** `nvidia-smi` header: driver 610.57.04, **CUDA UMD version 13.3**. This closes the open "CUDA version" item.
+  - **Peak GPU memory:** 89,607 MiB used of 95,830, with 6,223 MiB free. vLLM reserves a fixed share of the GPU at start, so this is expected.
+  - **Server log:** zero error words.
+- **Engine choices vLLM made (server log, not our settings):**
+  - **Attention:** main attention uses **FlashAttention 3** (`FLASH_ATTN`, chosen out of FLASH_ATTN, FLASHINFER, TRITON_ATTN and FLEX_ATTENTION).
+  - **FlashInfer:** still used for the model's GDN (linear-attention) prefill kernel and for top-p/top-k sampling. Its precompiled kernels are missing, so vLLM warns that the GDN kernel is JIT-compiled on first use. The job passed.
+  - **Other defaults:** chunked prefill with `max_num_batched_tokens=8192`, prefix caching on (Mamba cache mode `align`), attention block size 784.
+  - **The vLLM issue #63505** concerned a race in the FlashInfer attention backend. This run does not use that backend for attention. It is not settled that the bug is irrelevant, since FlashInfer is still used in the two places above.
+- **Outcome:** `RESULT: PASS (stage A)`; validation: infrastructure PASS, 2 of 2 slots with a reply, 2 strictly valid JSON, 2 with separate reasoning, 0 quality findings. The result file records `GPU_IDS=0`, `NVLINK_PAIR=not applicable (1 GPU(s))`, `LAYOUT_FP=1/1/1/1/0.32.0/6a9e13bd.../8e3e1fc0.../20480`.
+- **The answers (read from `responses.jsonl`):**
+  - **BM9001** (numerical, intro): P(exactly 2 heads in 5 flips with p = 0.6), 3 decimals. Key 0.230, `r_solution` `cat(dbinom(2, size = 5, prob = 0.6))`. The exact value is 0.2304, so the key is correct.
+  - **BM9002** (conceptual, intro): the meaning of a p-value of 0.03, multiple choice, correct letter C (the slot's preferred letter). Option C is the standard definition, and the other three are standard misreadings. `r_solution` is empty, as intended for a conceptual item.
+  - **Not yet done:** R scoring (the `score` step, which needs R on the PC).
+- **Tokens (one question at a time, so these are single-stream speeds):**
+  - **BM9001:** 1,362 tokens in, 4,537 out (13,174 characters of thinking, 866 of answer), about **30 tokens/s**.
+  - **BM9002:** 1,240 in, 3,025 out (10,902 characters of thinking, 1,375 of answer), about **29 tokens/s**.
+  - **Share of thinking:** about 95% of the output is thinking.
+- **Output folder:** `/home/buggjm/talon_project/teacher_outputs/2026-11-12_qwen3-6-27b-talon-bf16_smokeA01` (`responses.jsonl`, `run_log.json`, `gpu_peak.txt`); development slots only, marked test material, never benchmark data.
+- **Related progress entry:** "Talon Stage A passed" (2026-11-12).

@@ -675,3 +675,22 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **Not final:** Stage T measures 1 GPU against 2 GPUs. The chain A, B, main must use one layout, so if Stage T picks another, Stage A is re-run (10 to 20 minutes).
 - **Wording fix:** `serve_and_run.sh` printed that 20,480 tokens per sequence was "used only to match the Redhawk run". Redhawk is no longer a comparison point, so the note and the matching comment in `talon_settings.sh` now say it is an interim value: Stage T measures how often answers are cut off, and the final value is fixed before the precision test. Only a printed note and a comment changed; no setting value changed, so the reviewed settings stand.
 - **Tests:** Talon shell parts pass with 45, 19 and 65 checks.
+
+### Talon Stage A passed: the teacher runs on one H100 (job 204, 2026-11-12, about 0.17 GPU-hours)
+- **What:** with Jaxson's approval, one job on `mualhpgp02` loaded Qwen3.6-27B (BF16, `6a9e13bd`) with vLLM 0.32.0 on one H100 and answered two development questions (BM9001, BM9002), one at a time.
+- **Result:** `RESULT: PASS (stage A)`. Both replies were valid JSON with the thinking separated out, with 0 quality findings and no server errors.
+- **The answers were read:** both are sensible.
+  - **BM9001:** a binomial question (2 heads in 5 flips, p = 0.6, 3 decimals) with key 0.230. The exact value is 0.2304, so it is correct.
+  - **BM9002:** a multiple-choice question on the meaning of a p-value, with the correct definition as option C and three standard misreadings as the others.
+  - **Limit of this check:** it shows no sign of the garbled output reported in vLLM issue #63505, but two questions cannot rule it out. The R-side scoring (the `score` step) has not been run yet.
+- **Numbers:**
+  - **Timing:** queue wait 1 s; wall time about 10 min 28 s; weight check plus start about 2 min 20 s; server ready after 242 s (including a one-time compile step); questions took 151 s and 105 s.
+  - **GPU memory:** peak 89,607 of 95,830 MiB (vLLM reserves a fixed share).
+  - **Speed:** about 30 output tokens per second for one question at a time, and about 95% of Qwen's output was thinking (4,537 tokens for a one-line question).
+- **Facts that were open and are now settled:**
+  - **CUDA version:** 13.3 (driver 610.57.04). The environment's PyTorch is the CUDA 13.0 build, which runs fine.
+  - **Attention method:** FlashAttention 3 for main attention. FlashInfer is still used for the model's linear-attention prefill and for sampling, and its precompiled kernels are missing, so a kernel is compiled the first time. vLLM also chose chunked prefill (8,192 tokens), prefix caching on, and an attention block size of 784 on its own.
+  - **Layout:** 1 GPU works, so the layout question for Stage T is whether 2 GPUs are worth it.
+- **New open decision** (`docs/methodology/workflow.md` Section 10.2): the teacher's **thinking budget**. Thinking dominates the tokens, so it dominates GPU time. It must be fixed before the precision test.
+- **Recorded in:** `docs/logs/compute_log.md` entry 12, `docs/clusters/talon_setup.md`, `docs/models/model_versions.md` and `docs/methodology/workflow.md`.
+- **Next:** score the two replies with R on the PC, then Stage T (throughput) to measure speed at several concurrency levels, and decide how to proceed.

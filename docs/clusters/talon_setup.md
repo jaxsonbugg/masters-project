@@ -230,6 +230,12 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - ***NVLink pairing:** checked and recorded, not forced.*
 - ***Context length:** 20,480 for now, finalized from the Stage T truncation rates before the precision test.*
 
+*Stage A passed, 2026-11-12 (job 204, 1 H100 on `mualhpgp02`, about 0.17 GPU-hours; `docs/logs/compute_log.md` entry 12).*
+- *Qwen3.6-27B BF16 loads on one H100 in 242 s (the first load includes a one-time 35 s compile step), with about 6 GB of GPU memory to spare after vLLM's own reservation.*
+- *The CUDA version is 13.3 (driver 610.57.04).*
+- *vLLM chose FlashAttention 3 for the main attention.*
+- *One question at a time runs at about 30 tokens per second, and about 95% of the output is thinking.*
+
 *GPU-counting fix, 2026-11-12. `serve_and_run.sh` now asks `nvidia-smi` only about the GPUs in `CUDA_VISIBLE_DEVICES` (`-i <ids>`).*
 - *This covers the count check, the memory-size check, the 2-second memory monitor and the model-on-every-GPU check.*
 - *The script stops if `CUDA_VISIBLE_DEVICES` is not set.*
