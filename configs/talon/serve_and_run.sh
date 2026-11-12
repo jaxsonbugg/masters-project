@@ -90,7 +90,7 @@ echo "$GPU_LIST"
 nvidia-smi -i "$GPU_IDS" --query-gpu=index,name,memory.total,driver_version --format=csv
 nvidia-smi 2>/dev/null | head -n 4 || true   # the header line shows the CUDA version the driver supports (not yet recorded for Talon)
 echo "layout: $GPU_COUNT GPU(s), tensor parallel $TENSOR_PARALLEL, replicas $REPLICAS, max sequences $MAX_NUM_SEQS, max length per sequence $MAX_MODEL_LEN"
-echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; used only to match the Redhawk run."
+echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; an interim setting: Stage T measures how often answers are cut off at this length, and the final value is fixed before the precision test (docs/methodology/workflow.md, settings review 2026-11-12)."
 
 # ---- 2. queue wait, from Slurm itself (not from an assumed variable) -------------------------------------------------
 SUBMIT="unknown"; STARTED="unknown"; WAIT="unknown"

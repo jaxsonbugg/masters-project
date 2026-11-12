@@ -93,9 +93,10 @@ CLIENT_CONCURRENCY="${CLIENT_CONCURRENCY-}"  # how many requests the CLIENT keep
 # Stage T sweep: the client concurrencies tried inside one server start, space separated. Values above MAX_NUM_SEQS only
 # measure queueing and are still recorded.
 SWEEP_CONCURRENCY="${SWEEP_CONCURRENCY-1 4 8 16}"
-# Per-sequence context. 20,480 = 3,000 input cap + 16,384 output cap + headroom, chosen ONLY so the Talon comparison matches
-# the Redhawk run. It is far below Qwen's native 262,144 tokens and below the 128K the model card advises for
-# keeping thinking quality: do not read these results as the model's best.
+# Per-sequence context. 20,480 = 3,000 input cap + 16,384 output cap + headroom. It was first chosen to match the old Redhawk run, which
+# is no longer a comparison point, so it is now an INTERIM value: Stage T measures how often answers are cut off at this length, and the
+# final value is fixed before the precision test (settings review, 2026-11-12). It is far below Qwen's native 262,144 tokens and below the
+# 128K the model card advises for keeping thinking quality: do not read these results as the model's best.
 MAX_MODEL_LEN="${MAX_MODEL_LEN-20480}"
 
 # ---- Talon facts that are NOT verified (printed by every script that touches Talon) ---------------------------------------

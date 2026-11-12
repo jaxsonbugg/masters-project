@@ -667,3 +667,11 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Recorded in:** `docs/logs/compute_log.md` entry 11, and the new rebuild recipe `recovery/talon_qwen_weights.md`, which the project rule requires for anything stored outside the repository.
 - **Settings:** `WEIGHTS_MIB` stays 53,011, against the 53,220 MiB measured (0.4%, normal disk accounting). It only feeds estimates, and changing a reviewed setting would need a new review.
 - **Next:** Stage A, the first GPU job with the real model. It needs Jaxson's approval and a layout choice.
+
+### Stage A layout chosen: 1 GPU; outdated context wording fixed (2026-11-12, no cluster access)
+- **What Jaxson checked first:** a read-only look at Talon's load. Node `mualhpgp02` was idle, `mualhpgp01` was fully allocated on CPUs (64 of 64), and nodes `mualhpgp03` and `mualhpgp04` were shared (56 of 128 CPUs in use between them), with one user's 7-task array job (`164_*`, about 2 days into a 3-day limit) on them. The GPU counts per job were not printed (the column was cut off), so the free-GPU count is not known.
+- **Decision:** run Stage A on **1 GPU** (`GPU_COUNT=1`, `TENSOR_PARALLEL=1`, `REPLICAS=1`, `MAX_NUM_SEQS=1`, `CLIENT_CONCURRENCY=1`).
+  - **Why:** it is the simplest and cheapest layout and the likeliest to start at once; BF16 (53 GB) fits one H100 (94 GB). It also keeps BF16, FP8 and 4-bit on the same layout in the precision test, and a single GPU type and layout makes the criterion-4b timing comparison simpler.
+  - **Not final:** Stage T measures 1 GPU against 2 GPUs. The chain A, B, main must use one layout, so if Stage T picks another, Stage A is re-run (10 to 20 minutes).
+- **Wording fix:** `serve_and_run.sh` printed that 20,480 tokens per sequence was "used only to match the Redhawk run". Redhawk is no longer a comparison point, so the note and the matching comment in `talon_settings.sh` now say it is an interim value: Stage T measures how often answers are cut off, and the final value is fixed before the precision test. Only a printed note and a comment changed; no setting value changed, so the reviewed settings stand.
+- **Tests:** Talon shell parts pass with 45, 19 and 65 checks.
