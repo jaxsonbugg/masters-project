@@ -52,11 +52,11 @@ echo "Submitted batch job ${FAKE_JOBID:-4444}"
 EOF
   cat > "$T/bin/nvidia-smi" <<'EOF'
 #!/bin/bash
-n="${FAKE_GPUS:-2}"; tot="${FAKE_TOTAL:-81559}"; args="$*"
-if [ "$args" = "-L" ]; then for i in $(seq 0 $((n-1))); do echo "GPU $i: NVIDIA H100 80GB HBM3 (UUID: GPU-$i)"; done; exit 0; fi
+n="${FAKE_GPUS:-2}"; tot="${FAKE_TOTAL:-95830}"; args="$*"
+if [ "$args" = "-L" ]; then for i in $(seq 0 $((n-1))); do echo "GPU $i: NVIDIA H100 NVL (UUID: GPU-$i)"; done; exit 0; fi
 case "$args" in
   *"--query-gpu=memory.total"*) for i in $(seq 1 "$n"); do echo "$tot"; done ;;
-  *"--query-gpu=index,name,memory.total,driver_version"*) echo "index, name, memory.total [MiB], driver_version"; for i in $(seq 0 $((n-1))); do echo "$i, NVIDIA H100 80GB HBM3, $tot MiB, 560.35"; done ;;
+  *"--query-gpu=index,name,memory.total,driver_version"*) echo "index, name, memory.total [MiB], driver_version"; for i in $(seq 0 $((n-1))); do echo "$i, NVIDIA H100 NVL, $tot MiB, 610.57.04"; done ;;
   *"--query-gpu=timestamp,index,memory.used"*) ts="$(date +'%Y/%m/%d %H:%M:%S').000"
     for i in $(seq 0 $((n-1))); do u="${FAKE_USED:-70000}"; [ "$i" -eq $((n-1)) ] && [ -n "${FAKE_USED_LAST:-}" ] && u="$FAKE_USED_LAST"; echo "$ts, $i, $u, $tot, 50"; done ;;
 esac
@@ -241,9 +241,11 @@ chk "all checks pass; options include partition, typed gres for 2 GPUs and the w
 chk "only a --test-only call reached sbatch" '[ "$(grep -c . "$FAKE_SBATCH_LOG")" = 1 ] && grep -q -- "--test-only" "$FAKE_SBATCH_LOG"'
 chk "the UNVERIFIED facts are printed by the submit script too" 'grep -q "UNVERIFIED (ask Miami Research Computing" <<<"$OUT"'
 : > "$FAKE_SBATCH_LOG"; subm QT_SUBMIT=yes TALON_GPU_STYLE=gres TALON_GPU_TYPE=
-chk "QT_SUBMIT=yes submits the pipeline wrapper with untyped gres and records the job" '[ $RC -eq 0 ] && grep -q "Submitted pipeline job 4444" <<<"$OUT" && grep -v -- "--test-only" "$FAKE_SBATCH_LOG" | grep -q -- "--gres=gpu:2 --time=12:00:00 configs/talon/talon_pipeline.sbatch" && grep -q "JOB=4444 KIND=pipeline" "$T/tl/submit_log.txt"'
+chk "QT_SUBMIT=yes submits the pipeline wrapper with untyped gres and records the job" '[ $RC -eq 0 ] && grep -q "Submitted pipeline job 4444" <<<"$OUT" && grep -v -- "--test-only" "$FAKE_SBATCH_LOG" | grep -q -- "--gres=gpu:2 --time=12:00:00 --cpus-per-task=32 --mem=240G configs/talon/talon_pipeline.sbatch" && grep -q "JOB=4444 KIND=pipeline" "$T/tl/submit_log.txt"'
 : > "$FAKE_SBATCH_LOG"; KIND=throughput subm QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=
-chk "the throughput kind uses its own wall time and GPU count, and needs no CLIENT_CONCURRENCY" '[ $RC -eq 0 ] && grep -q -- "--gres=gpu:h100:1 --time=02:00:00 configs/talon/talon_throughput.sbatch" "$FAKE_SBATCH_LOG"'
+chk "the throughput kind uses its own wall time and GPU count, and needs no CLIENT_CONCURRENCY" '[ $RC -eq 0 ] && grep -q -- "--gres=gpu:h100:1 --time=02:00:00 --cpus-per-task=16 --mem=120G configs/talon/talon_throughput.sbatch" "$FAKE_SBATCH_LOG"'
+chk "CPUs and memory scale with the GPU count (2 GPUs: 32 cores, 240G; 1 GPU: 16 cores, 120G)" 'grep -q -- "--cpus-per-task=16 --mem=120G" "$FAKE_SBATCH_LOG"'
+ready; subm CPUS_PER_GPU=; chk "refused when CPUS_PER_GPU is blank" '[ $RC -ne 0 ] && grep -q "CPUS_PER_GPU is" <<<"$OUT"'
 KIND=bogus subm; chk "an unknown kind is refused" '[ $RC -ne 0 ] && grep -q "unknown kind" <<<"$OUT"'
 echo "[PR1] probe_talon_part2.sh: which GPU request forms are accepted, one probe job, then the record"
 cd "$T/repo" || exit 1

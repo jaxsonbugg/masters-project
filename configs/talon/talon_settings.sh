@@ -35,14 +35,21 @@ TALON_GPU_STYLE="${TALON_GPU_STYLE-gres}"    # gres (--gres=gpu[:type]:N) or gpu
                                               # mualhpgp01.mpi. gres chosen because Research Computing's own example (2026-11-06) uses --gres=gpu:2.
                                               # Acceptance is not delivery: what a job actually receives is shown by the 5-minute probe job (step 2).
 TALON_GPU_TYPE="${TALON_GPU_TYPE-nvidia_h100_nvl}"   # SLURM-REPORTED 2026-11-06 (probe 5b): the GPU's name in the scheduler's configuration; blank = untyped
-TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # OBSERVED 2026-11-12 (job 196): a job that does not request CPUs gets ONE core (nproc=1) and its memory
-                                              # limit is unknown, so set --cpus-per-task and --mem here (values chosen in the settings review). Example: --cpus-per-task=16. SLURM-REPORTED: nodes have 64 cores, 515 GB RAM and are
-                                              # shared between jobs (a 64-core request, like Research Computing's example, waits for a completely empty node)
-TIME_SMOKE="${TIME_SMOKE-}"                  # wall-time requests. TOLD BY RESEARCH COMPUTING 2026-11-06: one job may run at most 3 days (72:00:00);
-                                              # the probe shows the scheduler's MaxTime for comparison. Format [D-]HH:MM:SS
-TIME_THROUGHPUT="${TIME_THROUGHPUT-}"
-TIME_PIPELINE="${TIME_PIPELINE-}"
-TIME_MAIN="${TIME_MAIN-}"
+# CPUs and memory, requested IN PROPORTION TO THE GPUs (decided in the settings review, 2026-11-12). OBSERVED 2026-11-12 (job 196): a job
+# that does not ask for CPUs gets ONE core, and its memory limit is otherwise unknown. A node has 64 cores, about 503 GB of usable RAM and
+# 4 GPUs, shared between users, so a quarter of a node per GPU is a fair share: build_sbatch_opts requests
+# --cpus-per-task=CPUS_PER_GPU x GPU_COUNT and --mem=MEM_PER_GPU_GB x GPU_COUNT (a 1-GPU job: 16 cores, 120G; 2 GPUs: 32 cores, 240G).
+CPUS_PER_GPU="${CPUS_PER_GPU-16}"
+MEM_PER_GPU_GB="${MEM_PER_GPU_GB-120}"
+TALON_EXTRA_SBATCH="${TALON_EXTRA_SBATCH-}"  # any OTHER sbatch option, space separated (CPUs and memory are set above). Blank = none.
+# Wall-time requests (decided in the settings review, 2026-11-12). A job ends as soon as it finishes, so the limit is an upper bound and
+# a safety net, not a cost: short limits for the tests start easily on a busy cluster and surface a hang within the hour; generation
+# runs can resume, so a 24-hour job that runs out continues in a new job. TOLD BY RESEARCH COMPUTING 2026-11-06 and SLURM-REPORTED:
+# one job may run at most 3 days. Format [D-]HH:MM:SS.
+TIME_SMOKE="${TIME_SMOKE-01:00:00}"          # Stage A and Stage B smoke tests
+TIME_THROUGHPUT="${TIME_THROUGHPUT-04:00:00}"  # Stage T, one GPU layout per job
+TIME_PIPELINE="${TIME_PIPELINE-1-00:00:00}"  # the one-job pipeline (A, B, main)
+TIME_MAIN="${TIME_MAIN-1-00:00:00}"          # a main run alone, or its resume
 TALON_MIN_MAIN_SECONDS="${TALON_MIN_MAIN_SECONDS-7200}"   # UNVERIFIED guess: the pipeline will not start the main run with less time left
 
 # ---- software ---------------------------------------------------------------------------------------------------------
@@ -54,16 +61,24 @@ MOD_EXTRA="${MOD_EXTRA-}"                    # UNVERIFIED: any other module need
 TALON_ENGINE_MODE="${TALON_ENGINE_MODE-venv}"   # venv = a Python virtual environment with vLLM installed by pip.
                                                 # container = Apptainer/Singularity image: NOT IMPLEMENTED in this draft (decide after the probe)
 QT_BASE_PYTHON="${QT_BASE_PYTHON-/software/miniforge3-python3.12/bin/python3.12}"   # OBSERVED 2026-11-06: prints "Python 3.12.5" (vLLM needs 3.11+)
-VLLM_VERSION="${VLLM_VERSION-}"              # UNVERIFIED: exact pin; the model card requires vllm>=0.19.0. Blank = a person must choose
+VLLM_VERSION="${VLLM_VERSION-0.32.0}"        # DECIDED 2026-11-12 (settings review): one pin for ALL teacher generation. Final release of 2026-10-18 (not an rc);
+                                             # supports the model (Qwen3_5ForConditionalGeneration; the card asks >=0.19.0); PyPI wheel built for CUDA 13.0 with
+                                             # torch 2.13.0 (driver 610.57.04 is from the R610 branch, CUDA up to about 13.3: inferred, Stage A confirms); Python
+                                             # >=3.11,<3.15; requires transformers >=5.16.1,<5.20. 0.33.0 (2026-11-02) not chosen: 10 days old, built from an rc.
+                                             # Watch vLLM issue #63505 (garbled output on a model of the same architecture family, 0.31/0.32, not seen on H100):
+                                             # Stage A must check that the answers make sense, not only that replies arrive.
 SGLANG_NOTE="SGLang (>=0.5.10) is the model card's other engine; it is a fallback if vLLM cannot be installed, not built here."
 
 # ---- the model: BF16 safetensors from Hugging Face, pinned to one commit ---------------------------------------------------
 MODEL_REPO="${MODEL_REPO-Qwen/Qwen3.6-27B}"  # from the model card read 2026-11-05
-MODEL_REV="${MODEL_REV-6a9e13bd6fc8f0983b9b99948120bc37f49c13e9}"   # OBSERVED 2026-11-06 (probe 8): the current commit on Hugging Face (last modified
-                                             # 2026-04-24). A COMMIT HASH, never a branch name. A person confirms it when reviewing this file.
+MODEL_REV="${MODEL_REV-6a9e13bd6fc8f0983b9b99948120bc37f49c13e9}"   # CONFIRMED 2026-11-12 (settings review). Commit of 2026-04-24. A COMMIT HASH,
+                                             # never a branch name. The head of main moved on 2026-11-07 to 8f33b98937c6031bb49e713dee3e8e185aafd26f, which
+                                             # changes only chat_template.jinja and tokenizer_config.json (no weights): KNOWN AND NOT ADOPTED, so the tested
+                                             # prompt envelope stays exactly the same.
 WEIGHTS_MIB="${WEIGHTS_MIB-53011}"           # OBSERVED 2026-11-06 (probe 8): the 29 files of that commit total 55.6 GB = 53,011 MiB; prep records the real total
 SERVED_NAME="${SERVED_NAME-qwen3.6-27b-bf16}"   # must equal BACKENDS["talon"]["model"] in code/generation/open_teacher_test.py
-GPU_MIN_TOTAL_MIB="${GPU_MIN_TOTAL_MIB-70000}"  # UNVERIFIED: an 80 GB-class H100 reports about 81,500 MiB; the 94 GB variant about 95,800
+GPU_MIN_TOTAL_MIB="${GPU_MIN_TOTAL_MIB-90000}"  # OBSERVED 2026-11-12 (job 196): each Talon H100 NVL reports 95,830 MiB; a GPU reporting less than
+                                                # 90,000 MiB is not one of these cards (wrong node or partition), so the job stops
 
 # ---- GPU layout: NO PREFERRED DEFAULT (the throughput benchmark chooses it; see docs/clusters/talon_setup.md) --------------------------
 # GPU_COUNT must equal TENSOR_PARALLEL x REPLICAS. TENSOR_PARALLEL = how many GPUs one copy of the model is split across.

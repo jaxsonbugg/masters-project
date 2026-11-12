@@ -148,6 +148,10 @@ build_sbatch_opts() {
   case "$kind" in smoke) t="$TIME_SMOKE" ;; throughput) t="$TIME_THROUGHPUT" ;; pipeline) t="$TIME_PIPELINE" ;; main) t="$TIME_MAIN" ;; *) die "unknown job kind '$kind'" ;; esac
   [ -n "$t" ] || die "the wall-time setting for '$kind' jobs (TIME_*) is blank in $QT_SETTINGS_FILE: set it from the partition's real limit (probe_talon.sh)."
   SB_OPTS+=(--time="$t")
+  # CPUs and memory in proportion to the GPUs (a job that does not ask gets ONE core: OBSERVED 2026-11-12, job 196)
+  [[ "${CPUS_PER_GPU:-}" =~ ^[1-9][0-9]*$ ]] || die "CPUS_PER_GPU is '${CPUS_PER_GPU:-}', not a positive whole number: set it in $QT_SETTINGS_FILE."
+  [[ "${MEM_PER_GPU_GB:-}" =~ ^[1-9][0-9]*$ ]] || die "MEM_PER_GPU_GB is '${MEM_PER_GPU_GB:-}', not a positive whole number: set it in $QT_SETTINGS_FILE."
+  SB_OPTS+=(--cpus-per-task="$((CPUS_PER_GPU * GPU_COUNT))" --mem="$((MEM_PER_GPU_GB * GPU_COUNT))G")
   if [ -n "$TALON_EXTRA_SBATCH" ]; then read -r -a extra <<<"$TALON_EXTRA_SBATCH"; SB_OPTS+=("${extra[@]}"); fi
   return 0
 }

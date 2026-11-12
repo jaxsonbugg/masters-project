@@ -64,7 +64,7 @@ N_GPU="$(grep -c '^GPU ' <<<"$GPU_LIST" || true)"
 [ "$N_GPU" = "$GPU_COUNT" ] || die "expected exactly $GPU_COUNT visible GPU(s) (GPU_COUNT), found $N_GPU. Check the GPU request the job was submitted with (submit_pipeline.sh builds it from the settings). Visible: $GPU_LIST"
 grep -qi 'H100' <<<"$GPU_LIST" || warn "GPUs do not look like H100s: $GPU_LIST"
 while read -r mib; do
-  [ "${mib:-0}" -ge "$GPU_MIN_TOTAL_MIB" ] || die "a GPU reports only $mib MiB, expected at least $GPU_MIN_TOTAL_MIB (GPU_MIN_TOTAL_MIB; an 80 GB-class H100 reports about 81,500)"
+  [ "${mib:-0}" -ge "$GPU_MIN_TOTAL_MIB" ] || die "a GPU reports only $mib MiB, expected at least $GPU_MIN_TOTAL_MIB (GPU_MIN_TOTAL_MIB; each Talon H100 NVL reports 95,830 MiB, observed in job 196)"
 done < <(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits)
 echo "=== node $(hostname), job $JOB, stage $STAGE, $(date -u +%FT%TZ) ==="
 echo "$GPU_LIST"

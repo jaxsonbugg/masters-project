@@ -166,11 +166,12 @@ Filled in 2026-10-06 from the local probe environment (`C:\masters_project_large
 | Item | Value |
 |---|---|
 | Repository | [Qwen/Qwen3.6-27B](https://huggingface.co/Qwen/Qwen3.6-27B) |
-| Pinned revision (commit SHA) | `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9` |
+| Pinned revision (commit SHA) | `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9` (2026-04-24; confirmed 2026-11-12). The head of `main` moved on 2026-11-07 to `8f33b98937c6031bb49e713dee3e8e185aafd26f`, which changes only `chat_template.jinja` and `tokenizer_config.json`, not the weights. It is known and **not adopted**, so the tested prompt envelope stays fixed |
 | Weights | 29 files, about 53,011 MiB in total (read 2026-11-06; the download step records the real total) |
-| Engine | vLLM, the program that loads the model onto the GPUs and answers requests. **Version to be pinned**; the model card requires vLLM 0.19.0 or later |
+| Engine | vLLM, the program that loads the model onto the GPUs and answers requests (an *inference engine*). **Pinned 2026-11-12: `vllm==0.32.0`** (final release of 2026-10-18; the model card requires 0.19.0 or later). Its PyPI wheel is built for CUDA 13.0 with `torch==2.13.0`, needs Python 3.11 to 3.14 and requires `transformers>=5.16.1,<5.20`. Talon's driver 610.57.04 belongs to the R610 branch, which supports CUDA up to about 13.3 (inferred from the branch; Stage A confirms). The pin applies to all teacher generation; changing it is a logged deviation. Watch vLLM issue #63505 (garbled output on the same architecture family on 0.31 and 0.32, not seen on H100): Stage A checks that the answers make sense |
 | Python for the engine | module `miniforge3-python3.12` (Python 3.12.5); Talon's system Python 3.9 is too old for vLLM |
 | Settings file | `configs/talon/talon_settings.sh`, explained in `docs/clusters/talon_setup.md` |
+| Other precisions (for the precision test, Stage 1.3) | **FP8:** official `Qwen/Qwen3.6-27B-FP8`, Apache-2.0, about 30.9 GB; fine-grained FP8 (e4m3, block size 128). Its April commit matching our BF16 pin is `e89b16ebf1988b3d6befa7de50abc2d76f26eb09`; its head moved on 2026-11-07 to `a56219b8202864dc6d3e565be5ff1eea01f54cb4` (the same template-only change). **4-bit:** Qwen publishes no official 4-bit version of Qwen3.6-27B. Community Apache-2.0 options are `cyankiwi/Qwen3.6-27B-AWQ-INT4` (AWQ, about 20.4 GB), `btbtyler09/Qwen3.6-27B-GPTQ-4bit` (GPTQ, group size 32, `desc_act` off, about 21 GB, perplexity about 2% above BF16) and `Lorbus/Qwen3.6-27B-int4-AutoRound` (about 18 GB). vLLM 0.30+ ignores GPTQ activation ordering, so a `desc_act=True` GPTQ checkpoint would be served wrongly. Whether a community checkpoint is acceptable as the 4-bit arm is an open decision. (Researched 2026-11-12 from Hugging Face and vLLM sources) |
 
 ### Redhawk (fallback): 4-bit GGUF served by llama.cpp
 

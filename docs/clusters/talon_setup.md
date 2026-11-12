@@ -221,6 +221,15 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - *the job's memory limit is unknown, so `--mem` must be set;*
 - *GPUs 0-1 and 2-3 are NVLink pairs, so a 2-GPU job should get a linked pair.*
 
+*Settings review, 2026-11-12 (Jaxson). `SETTINGS_REVIEWED` stays `no` until the GPU-counting fix is in.*
+- ***Engine:** `vllm==0.32.0`.*
+- ***Model revision:** `6a9e13bd` kept (the newer head changes only template files).*
+- ***CPUs and memory:** 16 cores and 120 GB per GPU, scaled with the GPU count.*
+- ***Wall times:** smoke 1 h, throughput 4 h, generation runs 24 h (they resume in a new job).*
+- ***GPU-memory guard:** 90,000 MiB.*
+- ***NVLink pairing:** checked and recorded, not forced.*
+- ***Context length:** 20,480 for now, finalized from the Stage T truncation rates before the precision test.*
+
 1. **Email** the questions in section 2 (you may already have). Until answered, pricing, allocation, quotas and access limits stay UNVERIFIED.
 2. **Check reachability and verify the host key, then connect.** Run `Test-NetConnection mualhphp01.hpc.miamioh.edu -Port 22` (connect the Miami VPN if it times out). **Do not
    just type "yes" at the first SSH prompt:** display the server's host-key fingerprints, get Research Computing's own fingerprints by email or phone, compare them, and only then

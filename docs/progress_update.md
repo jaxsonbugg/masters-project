@@ -581,3 +581,18 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **(2) A job gets one CPU unless it asks, and its memory limit is unknown.** `--cpus-per-task` and `--mem` must be set (`TALON_EXTRA_SBATCH`).
   - **(3) The CUDA version line was empty.** It is still to be read.
 - **Not changed yet:** the script fix and the CPU and memory values are decided with Jaxson in the settings review. `SETTINGS_REVIEWED` stays `no`.
+
+### Talon settings review (2026-11-12, $0, no cluster access)
+- **Decided with Jaxson, in `configs/talon/talon_settings.sh`:**
+  - **CPUs and memory per job:** `CPUS_PER_GPU=16` and `MEM_PER_GPU_GB=120`. `build_sbatch_opts` in `configs/talon/common.sh` now requests `--cpus-per-task` and `--mem` in proportion to the GPU count, because a job that does not ask gets one core (job 196). A 1-GPU job asks for 16 cores and 120G; a 4-GPU job for 64 cores and 480G, within the node's about 503 GB.
+  - **Wall times:** smoke 01:00:00, throughput 04:00:00, pipeline and main runs 1-00:00:00 each, resumed in a new job if needed. Short limits start easily and surface a hang quickly. A job ends when it finishes, so the limit is a safety net, not a cost.
+  - **GPU-memory guard:** `GPU_MIN_TOTAL_MIB=90000`. Each Talon card reports 95,830 MiB, so anything smaller is the wrong hardware.
+  - **NVLink pairing:** for 2-GPU jobs it is checked and recorded, not forced (part of the coming GPU-counting fix).
+  - **Context length:** stays 20,480 for the smoke and throughput stages. It is finalized from the Stage T truncation rates before the precision test.
+  - **Engine:** `vllm==0.32.0`. It is a final release of 2026-10-18 that supports the model. Its CUDA 13.0 build fits driver 610 (inferred). It requires `transformers>=5.16.1,<5.20`, which matches our 5.19.0. 0.33.0 was rejected as only 10 days old and built from a release candidate. Stage A must check answer quality because of vLLM issue #63505.
+  - **Model revision:** `6a9e13bd` kept. The head of `main` moved on 2026-11-07 to `8f33b989`, which changes only template files. It is recorded and not adopted.
+- **Also found:**
+  - an official FP8 checkpoint exists;
+  - **no official 4-bit release exists**, only community Apache-2.0 quantizations. Whether one is acceptable as the precision test's 4-bit arm is now an open decision (`docs/methodology/workflow.md` Section 10.2). Details are in `docs/models/model_versions.md` Section 6.
+- **Tests:** the Talon fake `nvidia-smi` now reports the real Talon card (NVIDIA H100 NVL, 95,830 MiB, driver 610.57.04); before, it reported an 80 GB H100, which the new guard correctly rejects. Two submit-test expectations now include the CPU and memory options, and two checks were added (scaling, and refusal of a blank value). Talon shell parts: 41, 19 and 63 pass.
+- **Next:** the GPU-counting fix (use only the GPUs in `CUDA_VISIBLE_DEVICES`, and record NVLink pairing). Then the final review that sets `SETTINGS_REVIEWED=yes`.

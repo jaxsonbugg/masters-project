@@ -93,7 +93,7 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 **What and why.** Qwen3.6-27B is a 27-billion-parameter reasoning model with open weights under the Apache 2.0 license, which allows training other models on its outputs. It was the first choice of the open-weight evaluation in `docs/models/teacher_model_evaluations.md` (license, math and code quality, fit with our prompt, ability to run on Miami hardware).
 
 **Deployment.**
-- **Talon (primary):** vLLM serving the full BF16 weights. BF16 is a 16-bit number format, so the model runs as released, without compression. Repository `Qwen/Qwen3.6-27B`, revision `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`, about 53,011 MiB of weights. The vLLM version is still to be pinned (the model card requires vLLM 0.19.0 or later). Settings are in `configs/talon/talon_settings.sh`, explained in `docs/clusters/talon_setup.md`.
+- **Talon (primary):** vLLM serving the full BF16 weights. BF16 is a 16-bit number format, so the model runs as released, without compression. Repository `Qwen/Qwen3.6-27B`, revision `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`, about 53,011 MiB of weights. Engine pinned 2026-11-12: `vllm==0.32.0` (the model card requires 0.19.0 or later; details in `docs/models/model_versions.md` Section 6). Settings are in `configs/talon/talon_settings.sh`, explained in `docs/clusters/talon_setup.md`.
 - **Redhawk (fallback):** llama.cpp tag `b11960` (commit `8642541b...`) serving a 4-bit GGUF file (`unsloth/Qwen3.6-27B-GGUF` @ `82d411ac...`, `Qwen3.6-27B-Q4_K_M.gguf`, SHA-256 `5ed60d0a...`) on two 16 GB V100s. Pins are in `configs/redhawk/common.sh`.
 - **Sampling** (the model card's recommended thinking-mode settings, identical on both clusters): temperature 1.0, top_p 0.95, top_k 20, min_p 0, presence penalty 0. The output limit is 16,384 tokens per call, thinking included. The context is 20,480 tokens per sequence, which is a comparison setting and not the model's maximum (`docs/clusters/talon_setup.md` Section 7).
 
@@ -266,7 +266,7 @@ The raw replies and run logs also remain outside the repository in `C:\masters_p
   - arithmetic is wrong at every size;
   - the 1B config names the wrong stop token.
 - [x] Teacher: Qwen3.6-27B, decided 2026-11-06 after Anthropic ruled out Claude (Section 2.1, `docs/models/teacher_model_evaluations.md`)
-- [ ] Pin the vLLM version for the Talon deployment and record it in `docs/models/model_versions.md`
+- [x] Pin the vLLM version for the Talon deployment: `vllm==0.32.0`, decided 2026-11-12 and recorded in `docs/models/model_versions.md`
 
 ### Phase 3: Create the evaluation benchmark
 The benchmark comes before the pilot because the pilot needs something frozen to score against. It is the real, full-size benchmark for the whole project.
@@ -472,10 +472,13 @@ Dates are placeholders until the program's real deadlines are known.
 ### 10.2 Open decisions
 
 - [ ] **Verifier model, budget and false-acceptance threshold** (Section 2.3). Gates are decided (open weights, terms allow it, not OpenAI or Anthropic, different family); the model is chosen once the precision-test outputs exist.
-- [ ] **Teacher precision details** (Section 2.1): whether official FP8 and 4-bit (AWQ or GPTQ) Qwen3.6-27B checkpoints exist with vLLM support and a usable license; the written rationale for the 3-point margin; the sample sizes.
+- [ ] **Teacher precision details** (Section 2.1).
+  - **FP8:** an official FP8 checkpoint exists (`Qwen/Qwen3.6-27B-FP8`).
+  - **4-bit:** **no official 4-bit release exists.** Decide whether a community Apache-2.0 4-bit checkpoint (AWQ, GPTQ or AutoRound, listed in `docs/models/model_versions.md` Section 6) is acceptable as the 4-bit arm, and which one.
+  - **Still to write:** the rationale for the 3-point margin, and the sample sizes.
 - [ ] **Talon settings still unverified:**
-  - the vLLM version pin;
-  - `TALON_GPU_STYLE` (whether `--gres` or `--gpus` requests are accepted);
+  - the vLLM version pin: resolved 2026-11-12, `vllm==0.32.0`;
+  - `TALON_GPU_STYLE`: resolved 2026-11-11, `gres` (both styles accepted by Slurm);
   - whether compute nodes have internet access (a proxy is set on the login node);
   - the GPU memory per card: resolved 2026-11-12, each H100 NVL has 95,830 MiB (job 196);
   - the CUDA version supported by driver 610.57.04, still to be read;
