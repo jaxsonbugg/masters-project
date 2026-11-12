@@ -633,3 +633,27 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Storage location:** weights and the Python environment go in the home folder (`~/talon_project`, run with `QT_ALLOW_HOME=yes`). Research Computing said the 500 GB home quota is ours to use, and `/scratch` has no per-user folder and an unknown purge policy. Usage on 2026-11-12: 17,338 MB of the 480 GB soft limit, and 10,658 files against a limit of about 4.3 billion. This step installs BF16 only; FP8 and 4-bit come at the precision test.
 - **Reproducibility addition:** `configs/talon/fetch_talon.sh` now saves the complete installed-package list (`pip freeze --all`) to `~/talon_project/venv_pip_freeze.txt` and prints its SHA-256. vLLM is pinned, but pip chooses PyTorch, transformers and the rest, so this records the exact environment.
 - **Tests:** the test harness now builds its DRAFT copy by setting the flag back to `no`. The check "the shipped file says no" became "the shipped file was reviewed, with name and date". A new check confirms the package list is saved after the vLLM version check. Talon shell parts pass with 45, 19 and 64 checks.
+
+### Talon: repository refreshed, first download attempt stopped by our own version check, fixed (2026-11-12, no GPU used)
+- **Refresh:** Jaxson replaced the Talon copy with commit `c2914a5`.
+  - **His safer order:** build and check in `repo_new` first, then swap, so the old copy was untouched until every step had passed. The old copy is kept as `~/talon_project/repo_old_4d24384`.
+  - **Probe record:** re-run in the new format: `GPUS_VISIBLE=4`, `GPUS_ASSIGNED=1`, `CUDA_VISIBLE_DEVICES=1`.
+- **Download attempt 1** (`prep_talon.sh` with `QT_CONFIRM_STORAGE=yes QT_ALLOW_HOME=yes`):
+  - **The file checks passed:** scripts parse, no carriage returns, prompt SHA-256 `348db6ff...`.
+  - **The quota check passed:** 17,338 MiB used, about 78,011 MiB more needed, soft limit 491,520 MiB.
+  - **The Python environment was installed:** `vllm 0.32.0`, `torch 2.13.0+cu130` (CUDA 13.0), `transformers 5.19.0`, `flashinfer_python 0.7.0.post1`, read from Python's package records.
+  - **Then it stopped:** "pip installed vLLM '3.12', not the pinned 0.32.0". **Nothing was downloaded.**
+- **Cause, from a read-only diagnosis:** the install is fine. It is the real prebuilt vLLM, with all compiled parts present (for example `_C_stable_libtorch.abi3.so`, 79 MB).
+  - **What `vllm --version` does on a login node:** it prints two warnings ("FlashInfer kernels are disabled ...", "Failed to import from vllm._C ...") and then **crashes** with "RuntimeError: Failed to infer device type". vLLM works out the hardware before anything else, and a login node has no GPU.
+  - **Why the check read "3.12":** it took the first number-like text from that output, from a file path containing `python3.12`. The same fragile parsing was in the Stage A script (`serve_and_run.sh`).
+  - **Same lesson as Redhawk job 2510690:** a check written against assumed output, and a test fake that printed what the check expected.
+- **Fix:**
+  - **The helper:** a new `installed_vllm_version` in `configs/talon/common.sh` reads the version from Python's package records (`importlib.metadata`), which works on any node.
+  - **Where it is used:** both `fetch_talon.sh` and `serve_and_run.sh` use it.
+  - **The fake:** the test `vllm` now behaves like the real one on a node without a GPU (the warnings, then the crash, and no version line). The fake venv Python answers the package query.
+  - **A new static check:** no Talon script runs the vLLM program to read its version.
+- **Tests:**
+  - Talon shell parts pass with 45, 19 and 65 checks.
+  - **Control:** the old `serve_and_run.sh` against the new fake stops with "vLLM is 3.12, not the pinned ...", the same failure seen on Talon.
+- **Side note:** FlashInfer's prebuilt kernels are not installed, so vLLM will use another attention method. Stage A records which one. The open vLLM issue #63505 concerned FlashInfer, but whether that matters here is not established.
+- **Next:** refresh the Talon copy again, then re-run `prep_talon.sh` with `QT_PREP_AGAIN=yes` (the environment is reused; the download starts).

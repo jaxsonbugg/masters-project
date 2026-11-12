@@ -58,7 +58,7 @@ echo "== Python environment with vllm==$VLLM_VERSION =="
 source "$QT_VENV/bin/activate"
 pip install --quiet --upgrade pip
 pip install --quiet "vllm==$VLLM_VERSION" huggingface_hub httpx pyyaml
-GOT="$("$QT_VENV/bin/vllm" --version 2>&1 | grep -Eo '[0-9]+\.[0-9]+(\.[0-9]+)?[A-Za-z0-9.+-]*' | head -n 1 || true)"
+GOT="$(installed_vllm_version || true)"   # package records: `vllm --version` crashes on a login node without a GPU (2026-11-12)
 [ "$GOT" = "$VLLM_VERSION" ] || die "pip installed vLLM '$GOT', not the pinned $VLLM_VERSION"
 # Record EVERY installed package version (decided 2026-11-12). vLLM is pinned, but pip chooses the versions of what it pulls in
 # (PyTorch, transformers, CUDA libraries, ...); this list puts the exact environment on record for the whole project.

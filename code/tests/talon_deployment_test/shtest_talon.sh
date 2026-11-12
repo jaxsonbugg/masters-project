@@ -27,6 +27,9 @@ setup() {
   sed 's/^SETTINGS_REVIEWED=yes/SETTINGS_REVIEWED=no/' "$SETF" > "$T/settings_draft.sh"   # a DRAFT copy for the guard tests (the real file is reviewed)
   sed -i 's/^SETTINGS_REVIEWED=no/SETTINGS_REVIEWED=yes/' "$SETF"     # a person "reviewed" the test copy; the draft copy is kept for the guard tests
   echo "export PATH=\"$(dirname "$PYEXE"):\$PATH\"" > "$T/tl/venv/bin/activate"
+  # The venv's Python: answers the package-records question for vLLM with FAKE_VLLM_VERSION; everything else goes to the real Python.
+  printf '#!/bin/bash\nif [ "${1:-}" = "-c" ] && [[ "${2:-}" == *version*vllm* ]]; then echo "${FAKE_VLLM_VERSION:-0.19.1}"; exit 0; fi\nexec "%s" "$@"\n' "$PYEXE" > "$T/tl/venv/bin/python"
+  chmod +x "$T/tl/venv/bin/python"
   printf '#!/bin/bash\nexit 0\n' > "$T/bin/module"
   cat > "$T/bin/scontrol" <<'EOF'
 #!/bin/bash
@@ -76,7 +79,14 @@ exit 0
 EOF
   cat > "$T/tl/venv/bin/vllm" <<'EOF'
 #!/bin/bash
-if [ "${1:-}" = "--version" ]; then echo "${FAKE_VLLM_VERSION:-0.19.1}"; exit 0; fi
+# Like the real vLLM 0.32.0 on the Talon login node (OBSERVED 2026-11-12): warnings, then a crash, and no version line at all.
+if [ "${1:-}" = "--version" ]; then
+  echo "FlashInfer kernels are disabled: flashinfer-cubin is not installed and nvcc (CUDA_HOME, CUDA_PATH, PATH or /usr/local/cuda) or ninja (PATH) is missing."
+  echo "Failed to import from vllm._C: ModuleNotFoundError(\"No module named 'vllm._C'\")"
+  echo '  File "/home/x/venv/lib/python3.12/site-packages/vllm/config/device.py", line 55, in __post_init__'
+  echo "RuntimeError: Failed to infer device type, please set the environment variable VLLM_LOGGING_LEVEL=DEBUG"
+  exit 1
+fi
 if [ "${1:-}" = serve ]; then
   for a in "$@"; do if [ "$a" = "--help=all" ] || [ "$a" = "--help" ]; then cat "$FAKE_VHELP"; exit 0; fi; done
   port=""; prev=""; for a in "$@"; do [ "$prev" = "--port" ] && port="$a"; prev="$a"; done
@@ -410,6 +420,7 @@ chk "an empty answer is UNKNOWN" '[ "$(hq)" = UNKNOWN ]'
 printf 'Disk quotas for user x (uid 1):\n     Filesystem   space   quota   limit   grace   files   quota   limit   grace\nshorthost:/h   2048K   1G   2G   10   20   30\n' > "$T/quota_real.txt"
 chk "a short file-system name with the numbers on the same line is read too (2048K = 2 MiB)" '[ "$(hq)" = "2 1024 2048" ]'
 chk "the fetch script uses the home quota and refuses to pass the soft limit" 'grep -q "home_quota_mib /home" "$REPO/configs/talon/fetch_talon.sh" && grep -q "would pass the soft quota" "$REPO/configs/talon/fetch_talon.sh"'
+chk "no Talon script reads the vLLM version by running vllm --version (it crashes without a GPU; package records are used)" '! grep -qE "(VLLM_BIN|bin/vllm)\"? --version" "$REPO/configs/talon/fetch_talon.sh" "$REPO/configs/talon/serve_and_run.sh" && grep -q "installed_vllm_version" "$REPO/configs/talon/fetch_talon.sh" && grep -q "installed_vllm_version" "$REPO/configs/talon/serve_and_run.sh"'
 chk "the fetch script records every installed package version (pip freeze) after the vLLM version check" 'grep -q "pip freeze --all" "$REPO/configs/talon/fetch_talon.sh" && [ "$(grep -n "pip freeze --all" "$REPO/configs/talon/fetch_talon.sh" | cut -d: -f1)" -gt "$(grep -n "pip installed vLLM" "$REPO/configs/talon/fetch_talon.sh" | cut -d: -f1)" ]'
 echo "[H1] file hygiene of the real repository's Talon folder"
 BAD=""; for f in "$REPO"/configs/talon/*.sh "$REPO"/configs/talon/*.sbatch; do [ "$(tr -cd '\r' < "$f" | wc -c)" = 0 ] || BAD="$BAD $f"; bash -n "$f" || BAD="$BAD $f(syntax)"; done

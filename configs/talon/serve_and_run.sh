@@ -119,8 +119,8 @@ echo "Hashing the weights (a few minutes)..."
 MANIFEST_SHA="$(sha256sum "$QT_MANIFEST" | cut -d' ' -f1)"
 VLLM_BIN="$QT_VENV/bin/vllm"
 [ -x "$VLLM_BIN" ] || die "vllm not installed at $VLLM_BIN (run prep_talon.sh)"
-ACTUAL_VERSION="$("$VLLM_BIN" --version 2>&1 | grep -Eo '[0-9]+\.[0-9]+(\.[0-9]+)?[A-Za-z0-9.+-]*' | head -n 1 || true)"
-[ -n "$ACTUAL_VERSION" ] || die "could not read the vLLM version from '$VLLM_BIN --version'"
+ACTUAL_VERSION="$(installed_vllm_version || true)"   # package records, not `vllm --version` (it prints warnings first; see common.sh)
+[ -n "$ACTUAL_VERSION" ] || die "could not read the installed vLLM version from Python's package records in $QT_VENV"
 [ "$ACTUAL_VERSION" = "$VLLM_VERSION" ] || die "vLLM is $ACTUAL_VERSION, not the pinned $VLLM_VERSION"
 # UNVERIFIED list: confirmed against the real `vllm serve --help` by probe_talon_part2.sh before this file may be marked reviewed.
 REQUIRED_VLLM_FLAGS=(--served-model-name --host --port --tensor-parallel-size --max-model-len --max-num-seqs --reasoning-parser --dtype)

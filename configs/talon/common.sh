@@ -173,6 +173,16 @@ slurm_seconds_left() {  # seconds left in this job, or -1 if unknown
   parse_slurm_time "$(squeue -h -j "${SLURM_JOB_ID:-0}" -o %L 2>/dev/null | head -n 1)"
 }
 
+# --- Which vLLM version is installed? -------------------------------------------------------------------------------------------
+# Read from Python's package records (importlib.metadata), never by running `vllm --version`. OBSERVED 2026-11-12 on the Talon
+# login node: `vllm --version` first prints warnings ("FlashInfer kernels are disabled ...", "Failed to import from vllm._C ...")
+# and then crashes with "RuntimeError: Failed to infer device type", because vLLM works out the hardware before it does anything
+# and a login node has no GPU. The first version check scraped the first number-like text from that output and read "3.12" from
+# a file path. The package records give the exact installed version on any node, with or without a GPU.
+installed_vllm_version() {
+  "$QT_VENV/bin/python" -c 'import importlib.metadata as m; print(m.version("vllm"))' 2>/dev/null
+}
+
 # --- Which GPUs belong to THIS job? ------------------------------------------------------------------------------------------
 # OBSERVED 2026-11-12 (job 196): Slurm on Talon tells a job its GPUs only through CUDA_VISIBLE_DEVICES (job 196 got "1"); it does
 # NOT hide the node's other GPUs, so a plain `nvidia-smi` lists all four, including GPUs that other people's jobs are using.
