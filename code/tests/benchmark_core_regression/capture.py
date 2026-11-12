@@ -88,7 +88,7 @@ def reply_cases(slots):
     mc = find_slot(slots, category="conceptual")
     oi = find_slot(slots, category="output_interpretation")
     rg = find_slot(slots, category="r_generation")
-    q3 = "Two dice are rolled. Find the probability. Round to 3 decimal places."
+    q3 = "In five independent Bernoulli trials, each with success probability 0.5, find the probability of exactly two successes. Round to 3 decimal places."
     mcq = dict(question="Which statement about a p-value is correct?", choices=["a", "b", "c", "d"], canonical_answer="B")
     J = lambda it: json.dumps(it)
     cases = [
@@ -204,7 +204,7 @@ def absent_r_solution(slots, rscript):
     passes with no hard problem. `verify` still flags it ("no r_solution, so R cannot recompute this key").
     This fixture records that behavior so any later change to it is deliberate and visible; it does not fix it."""
     num = find_slot(slots, category="numerical", answer_type="number")
-    q3 = "Two dice are rolled. Find the probability. Round to 3 decimal places."
+    q3 = "In five independent Bernoulli trials, each with success probability 0.5, find the probability of exactly two successes. Round to 3 decimal places."
     full = base_item(num, question=q3, r_solution="cat(dbinom(2, 5, 0.5))", canonical_answer="0.313",
                      answer_tolerance=0.0005, explanation="The binomial probability is 0.3125, so the answer is 0.313.")
     shapes = {
