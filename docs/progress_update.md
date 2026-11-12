@@ -596,3 +596,16 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **no official 4-bit release exists**, only community Apache-2.0 quantizations. Whether one is acceptable as the precision test's 4-bit arm is now an open decision (`docs/methodology/workflow.md` Section 10.2). Details are in `docs/models/model_versions.md` Section 6.
 - **Tests:** the Talon fake `nvidia-smi` now reports the real Talon card (NVIDIA H100 NVL, 95,830 MiB, driver 610.57.04); before, it reported an 80 GB H100, which the new guard correctly rejects. Two submit-test expectations now include the CPU and memory options, and two checks were added (scaling, and refusal of a blank value). Talon shell parts: 41, 19 and 63 pass.
 - **Next:** the GPU-counting fix (use only the GPUs in `CUDA_VISIBLE_DEVICES`, and record NVLink pairing). Then the final review that sets `SETTINGS_REVIEWED=yes`.
+
+### Rule for the 4-bit precision arm (2026-11-12, decision only, no testing)
+- **Decision (Jaxson):** keep a 4-bit arm in the teacher-precision test, using a **community-quantized** Qwen3.6-27B checkpoint, because Qwen publishes no official 4-bit release.
+- **Conditions before download:** the candidate is used only if all of the following are verified:
+  - **provenance:** prefer a reproducible quantization made **directly from the official BF16 weights**, with **no additional fine-tuning**;
+  - **license:** compatible with this use;
+  - **quantization method:** documented;
+  - **vLLM `0.32.0`:** works on H100.
+- **Recorded with the results:** the exact quantization configuration (method, bits, group size, symmetry, calibration data, tool and version, commit).
+- **How the comparison is described:** as one between **specific model deployments**, not as a general comparison of bit widths.
+- **Criteria:** the same pre-registered non-inferiority criteria as FP8 against BF16.
+- **If nothing passes:** the 4-bit arm is **dropped** rather than delaying the pilot.
+- **Where it is written:** `docs/methodology/workflow.md` Section 2.1 and the pilot plan (Stage 1.3). The candidates found on 2026-11-12 are checked at that stage, not now.

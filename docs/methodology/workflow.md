@@ -106,6 +106,13 @@ A student, meaning one (model size, data size) pair, is a **successful specializ
 - **The statistics.** Two comparisons against BF16 (FP8 vs BF16, 4-bit vs BF16) with a multiplicity adjustment (Holm, or Bonferroni at one-sided α = 0.025 each). This is a non-inferiority test: a lower precision passes if the confidence interval for its paired difference from BF16 stays above −3 percentage points on **both** endpoints.
   - The 3-point margin is provisional. Before the run, it must be justified in writing as the largest loss of teacher quality that would not change the study's conclusions, not only by the GPU time it saves.
   - Sample sizes are computed before the run, at an assumed share of slots where the two precisions disagree. They are re-estimated from a 100-slot first run.
+- **The 4-bit arm (decided 2026-11-12).** Qwen publishes no official 4-bit release of Qwen3.6-27B, so the 4-bit arm uses a **community-quantized** checkpoint. It is kept only if all of the following are verified before download:
+  - **Provenance:** prefer a reproducible checkpoint quantized **directly from the official BF16 weights**, with **no additional fine-tuning**.
+  - **License:** compatible with this use.
+  - **Quantization method:** documented.
+  - **vLLM `0.32.0` compatibility on H100:** confirmed. For example, a GPTQ checkpoint with `desc_act=True` is served incorrectly by vLLM 0.30 and later.
+
+  The exact quantization configuration is recorded with the results: method, bits, group size, symmetric or asymmetric, calibration data, the quantization tool and its version, and the repository commit. The comparison is reported as one between **specific model deployments** (this checkpoint served this way), not as a universal comparison of 4 bits against 16. It uses the **same pre-registered non-inferiority criteria** as FP8 against BF16. **If no candidate passes the provenance and compatibility checks, the 4-bit arm is dropped rather than delaying the pilot;** the test then compares FP8 with BF16 only. Candidates found on 2026-11-12, still to be checked: `cyankiwi/Qwen3.6-27B-AWQ-INT4`, `btbtyler09/Qwen3.6-27B-GPTQ-4bit`, `Lorbus/Qwen3.6-27B-int4-AutoRound` (`docs/models/model_versions.md` Section 6).
 - **Decision rule.** Use the lowest-compute precision that is non-inferior to BF16 on both endpoints. If neither FP8 nor 4-bit passes, use BF16. The chosen precision's projected total GPU time must fit the timeline, run in resumable jobs shorter than the 3-day limit.
 - **Worked example (hypothetical numbers).** On 1,000 paired slots, BF16 is usable on 88% and 4-bit on 87.2%, a difference of −0.8 points. If the adjusted lower confidence bound is −2.6 (above −3) for usability, and the correctness sample gives a lower bound of −2.1, then 4-bit passes both endpoints and is chosen. A lower bound of −3.4 on either endpoint would mean 4-bit fails.
 
@@ -474,7 +481,7 @@ Dates are placeholders until the program's real deadlines are known.
 - [ ] **Verifier model, budget and false-acceptance threshold** (Section 2.3). Gates are decided (open weights, terms allow it, not OpenAI or Anthropic, different family); the model is chosen once the precision-test outputs exist.
 - [ ] **Teacher precision details** (Section 2.1).
   - **FP8:** an official FP8 checkpoint exists (`Qwen/Qwen3.6-27B-FP8`).
-  - **4-bit:** **no official 4-bit release exists.** Decide whether a community Apache-2.0 4-bit checkpoint (AWQ, GPTQ or AutoRound, listed in `docs/models/model_versions.md` Section 6) is acceptable as the 4-bit arm, and which one.
+  - **4-bit:** no official release exists; the rule for a community checkpoint is decided (Section 2.1). Still open: which candidate, if any, passes the checks (done at Stage 1.3, before download).
   - **Still to write:** the rationale for the 3-point margin, and the sample sizes.
 - [ ] **Talon settings still unverified:**
   - the vLLM version pin: resolved 2026-11-12, `vllm==0.32.0`;
