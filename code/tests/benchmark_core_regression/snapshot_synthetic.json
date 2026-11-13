@@ -3392,7 +3392,7 @@
  },
  "verify_command": {
   "returncode": 0,
-  "stdout": "V2 [numerical]: KEY MISMATCH: key 0.8 but R computes 0.7348\nV3 [numerical]: NOTE (soft flag from generation): a soft note\nV5 [r_generation]: r_check is vacuous: it accepts the wrong answer NULL\nV6 [conceptual]: not machine-checkable (needs a blind re-solve / other-family check)\n\nSummary: {'ok': 3, 'FLAGGED': 2, 'not_machine_checkable': 1}   (wrote <verified file>)\nok = R agreed with the key; FLAGGED = R disagreed or the check is broken; not_machine_checkable = no code to run (multiple-choice and conceptual items), these need the other checks in docs/methodology/workflow.md Phase 3.\n",
+  "stdout": "V2 [numerical]: KEY MISMATCH: key 0.8 but R computes 0.7348\nV3 [numerical]: NOTE (soft flag from generation): a soft note\nV5 [r_generation]: r_check is vacuous: it accepts the wrong answer NULL\nV6 [conceptual]: not machine-checkable (covered by the benchmark screen and manual audit)\n\nSummary: {'ok': 3, 'FLAGGED': 2, 'not_machine_checkable': 1}   (wrote <verified file>)\nok = R agreed with the key; FLAGGED = R disagreed or the check is broken; not_machine_checkable = no code to run (multiple-choice and conceptual items), these need the other checks in docs/methodology/workflow.md Phase 3.\n",
   "written": [
    {
     "answer_tolerance": 0.0005,

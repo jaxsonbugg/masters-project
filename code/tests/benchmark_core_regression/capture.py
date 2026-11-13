@@ -29,11 +29,17 @@ WHAT IS RECORDED
 HOW TO RUN (with the project's Python; R must be installed, see configs/paths.yaml)
   python capture.py --out snapshot.json                     the synthetic snapshot
   python capture.py --out snap_b2.json --items <items.jsonl> also an existing items file
+
+R SAFETY (added 2026-11-12). Model-written R may only run inside the R sandbox (docs/methodology/workflow.md
+Section 4, safeguard 10), which is not built yet. The synthetic snapshot uses only R code written by us, so it sets
+the test-only switch MP_TRUSTED_TEST_R=1 for itself. The --items mode reads model output and is refused until the
+sandbox exists.
 """
 
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -254,6 +260,13 @@ def item_as_reply(item):
 
 
 def snapshot(items_path=None):
+    if items_path:
+        # An items file holds MODEL output, whose R code may only run inside the R sandbox (workflow.md Section 4,
+        # safeguard 10). The sandbox is not built yet, so this refuses unless it exists.
+        gb.require_r_sandbox()
+    # The synthetic fixtures below are R code we wrote ourselves, not model output: the one case the test-only
+    # switch is for. It is set inside this process (and inherited by the `verify` subprocess) only.
+    os.environ[gb.TRUSTED_TEST_SWITCH] = "1"
     rscript = gb.rscript_path()
     all_slots = gb.blueprint(9132)
     main = gb.select_slots(1000, 1)

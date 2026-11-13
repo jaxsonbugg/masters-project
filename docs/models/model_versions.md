@@ -203,9 +203,28 @@ These are the model card's recommended settings for thinking mode. *Temperature*
 
 Worked example of the limits: if Qwen thinks for 9,000 tokens and then writes a 600-token answer, the call used 9,600 of its 16,384 output tokens; a reply that needs more than 16,384 tokens of thinking plus answer is cut off and cannot be used. Because sampling at temperature 1.0 is random, rerunning the same slot gives a different question; that is why teacher outputs are never overwritten.
 
-**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, or the Phase 7 pass rate is poor, the first step is the same Qwen model at a higher precision or with more thinking, not a different model (`docs/methodology/workflow.md` Section 2.1).
+**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, the first step is the same Qwen model at a higher precision or with more thinking, not a different model (`docs/methodology/workflow.md` Section 2.1).
 
 **Recording rule.** Every batch of teacher outputs is recorded with the UTC date and time generated, the cluster and job ID, the model repository and revision, the weight format (BF16 or the 4-bit file), the engine and its version, the chat template, the sampling settings, the prompt file and its SHA-256, and the files produced. Put the date in the file or folder name. Never overwrite a dated batch. Cluster jobs and their GPU time go in `docs/logs/compute_log.md`; storage locations are in `docs/methodology/workflow.md` Section 8.
+
+## 6a. The grader and the R sandbox (pins to be filled in; added 2026-11-12)
+
+**The grader** is Codex, a frontier model run through the Codex command-line tool. It grades benchmark answers and screens benchmark questions, and it is never used for training (`docs/methodology/workflow.md` Section 2.3). A language model behind a command-line tool can change without notice, so every grading batch records the setup it used. The setup is fixed before the confirmatory evaluation:
+
+| Item | Value |
+|---|---|
+| Codex CLI version | not installed yet |
+| Model and reasoning setting | to be recorded from the first usage-pilot batch |
+| Grading instructions | `data/prompts/grading_v1.md` (to be written in pilot Stage 7), pinned by SHA-256 |
+| Plan | the owner's workspace subscription (usage counts against its allowance) |
+
+**The R sandbox** runs all model-written R (`docs/methodology/workflow.md` Section 4, safeguard 10). R must be the same version as the one that has computed keys so far, so the keys do not change:
+
+| Item | Value |
+|---|---|
+| R version | 4.3.1 (the same as the Windows R in `configs/paths.yaml`) |
+| Environment | WSL2, Ubuntu 24.04, bubblewrap; not set up yet |
+| Limits | memory, CPU seconds, wall time, output size, processes: set and tested at setup |
 
 ## 7. Cluster notes (public documentation checked 2026-10-01; read-only probes 2026-11-04 on Redhawk and 2026-11-06 on Talon)
 

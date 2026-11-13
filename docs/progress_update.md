@@ -741,3 +741,42 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 
   A fix to that pattern is noted for the generation-code stage and needs approval first. The teacher thinking-budget decision (`docs/methodology/workflow.md` Section 10.2) stays open; the cut-off rate is one input to it.
 - **Recorded in:** `docs/logs/compute_log.md` entries 13 and 14, and `docs/clusters/talon_setup.md`.
+
+### Redesign: training data is no longer checked for correctness; the benchmark is; Codex grades it (2026-11-12)
+- **What changed, and why.** The study's main test is whether distillation lets a small student *approach its teacher*, not whether it produces a perfect student. Checking the teacher's training data for correctness is therefore no longer part of the workflow.
+  - **Training data:** Qwen-generated training examples are retained without correctness-based filtering. Their correctness is unknown and may vary by question category. This is an intentional property of the experimental design, and the students are evaluated independently on a frozen benchmark. Format, duplicate, decontamination and 2,048-token checks still apply.
+  - **The benchmark** is the measuring instrument, so it keeps a quality procedure:
+    - R recomputes the number keys and runs the R checks;
+    - Codex screens every question for ambiguity, missing information or invalid assumptions, and Jaxson reviews every flag;
+    - a stratified 150-item manual audit;
+    - then the freeze.
+
+    It is described as *independently checked where computationally possible, screened for ambiguity, and audited on a stratified 150-item sample*, never as "all verified".
+  - **Grading:** one grader, **Codex**, judges every model's benchmark answers (the teacher's and the students') against the reference key, blind to which model answered. It works in isolated batches outside the repository.
+    - **How it is checked:** about 40 known-truth calibration answers, a human audit of about 180 answers in the pilot (60 per model), and a deterministic cross-check.
+    - **Thresholds and failure rules** are fixed on development data before any benchmark grading. A failure on the benchmark is reported as such, and the grading instructions are never changed after benchmark results are seen.
+  - **What Codex may and may not do:** it is used only for evaluation and the benchmark screen, never for training data, filtering, hyperparameters or the teacher setup. Its usage counts against the workspace plan's allowance (credits may be needed), so it is logged in the cost log and is measured first in a usage pilot.
+  - **Hyperparameters** are chosen on the development set by held-out loss (primary) and teacher-answer match (supplementary), with no Codex.
+  - **Teacher precision:** both endpoints are kept, usability and independently checked correctness (by R, and by hand). The paired sample sizes are calculated before the run, and a **feasibility gate** makes BF16 the default if the hand-judging load is impractical; the 3-point margin is never widened.
+  - **R safety:** model-written R may now run only in a sandbox (WSL2 + bubblewrap: no network, no Windows drives, resource limits, tested by a self-test). Until the sandbox is built, `generate_benchmark.py` refuses every R run (fail closed), except the repository's own synthetic test fixtures (the switch `MP_TRUSTED_TEST_R=1`). Honest note: the two Stage A replies scored earlier today ran in Windows R behind the pattern screen only, before this rule existed.
+- **What was retired:**
+  - the external different-family verifier (DeepSeek or Mistral);
+  - the triage step;
+  - the blind re-solve;
+  - the old Phase 7 (verifying the training data).
+
+  None of these had been built, so no code was deleted. Their text is kept verbatim in the new `docs/archive/retired_verification_2026-11-12.md`, and the whole repository before the change is under the new annotated tag `pre-verification-removal`.
+- **Deviation from the pre-registration (criterion 1).** The old wording was "R code items are graded by execution". It is now "graded by the grader against the reference key, with the execution check reported as a cross-check" (`docs/methodology/workflow.md` Section 1.3). No student result existed. Criterion 3's "R code runs" is still measured by execution, in the sandbox.
+- **Files changed:**
+  - **Docs:** `README.md`; `CLAUDE.md` (new rules on training data vs benchmark, the grader, untrusted R, the archive); `docs/methodology/workflow.md` (Sections 1.1, new 1.3, 2, 2.1, a new 2.3 "The grader", 3, 4 with safeguards 6-10, 5, 6, 8, 9, 10); `docs/methodology/pilot_plan.md` (rewritten for the new design, with a revised order of work); `docs/logs/cost_log.md` (Codex, allowance, credits); `docs/models/model_versions.md` (new Section 6a: grader and sandbox pins, to be filled); `docs/models/teacher_model_evaluations.md` (a dated note); `docs/clusters/talon_setup.md` Section 8; `docs/clusters/research_computing_correspondence.md`.
+  - **Code and tests:**
+    - `code/generation/generate_benchmark.py`: `require_r_sandbox()`, called by `rscript_path()` and `run_r()`, plus the `not_machine_checkable` message now naming the screen and the audit;
+    - `code/tests/benchmark_core_regression/capture.py`: sets the switch for the synthetic snapshot only; its `--items` mode (model output) is refused until the sandbox exists;
+    - `code/tests/benchmark_core_regression/snapshot_synthetic.json`: regenerated; the only difference is that one message;
+    - `code/tests/qwen_deployment_test/test_suite.py`: two new checks that `score` and `verify` refuse without the sandbox;
+    - `code/tests/qwen_deployment_test/README.md`.
+  - **Config:** `configs/paths.yaml`: `verified_data` is renamed `training_data` (`...\data\training_sets`; the empty old folder is left in place), and an empty `r_sandbox` block is added.
+  - **New file:** `docs/archive/retired_verification_2026-11-12.md`.
+  - **Unchanged:** the prompt (SHA-256 `348db6ff...`), every Talon and Redhawk script, and `open_teacher_test.py`.
+- **Tests:** every suite passed before and after the change (see the commit). The regression snapshot differs from the old one in exactly one line, the message above.
+- **Next:** set up the R sandbox (needs CPU virtualization enabled in the UEFI/BIOS and WSL2 installed), then the teacher-precision sample-size calculation and feasibility gate.

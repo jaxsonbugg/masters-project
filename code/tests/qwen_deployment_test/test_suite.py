@@ -1,7 +1,9 @@
 """Local test suite for code/generation/open_teacher_test.py (see README.md in this folder).
 A fake model server stands in for llama-server (and vLLM). Nothing here touches Redhawk, Talon or the network.
 Usage: python test_suite.py [work_dir]      (work_dir defaults to a new temporary folder that is deleted at the end)
-Needs R (path in configs/paths.yaml) for the scoring checks."""
+Needs R (path in configs/paths.yaml) for the scoring checks. Model-written R may only run in the R sandbox, which is
+not built yet; the fake server's replies are R code we wrote ourselves, so section [2] sets the test-only switch
+MP_TRUSTED_TEST_R=1 after checking that `score` and `verify` refuse without it."""
 import hashlib, json, os, re, shutil, subprocess, sys, tempfile, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -114,6 +116,17 @@ check("validate exits 0 on a clean smoke run", rc == 0 and "VALIDATE_RESULT infr
 rs = rows(d)
 check("every row is dev_test_only and has a slot id and an attempt", all(r["use"] == "dev_test_only" and r["item_id"] and r["attempt"] == 1 for r in rs))
 check("separate reasoning was captured", any("reasoning_content" in json.dumps(r) for r in rs))
+# Model-written R may only run in the R sandbox (workflow.md Section 4, safeguard 10), which is not built yet, so
+# without the test-only switch `score` and `verify` must refuse before doing anything (fail closed).
+ENV_NO_SWITCH = {k: v for k, v in os.environ.items() if k != "MP_TRUSTED_TEST_R"}
+r0 = subprocess.run([PY, OTT, "--out-root", str(R1), "score", "--run", str(d)], capture_output=True, text=True,
+                    encoding="utf-8", errors="replace", env=ENV_NO_SWITCH)
+check("score refuses to run R without the R sandbox (fail closed, nothing written)",
+      r0.returncode != 0 and "Refusing to run R" in r0.stdout + r0.stderr and not (d / "items.jsonl").exists(),
+      (r0.stdout + r0.stderr)[-300:])
+# From here on the switch is set: the fake server's replies are R code we wrote ourselves (make_item above),
+# not model output, which is the only case the switch is for.
+os.environ["MP_TRUSTED_TEST_R"] = "1"
 rc, out = cli(R1, "score", "--run", str(d))
 check("score (with R) parses both replies and passes every check", rc == 0 and "passed every automatic check on the first attempt 2/2" in out, out[-500:])
 items = [json.loads(l) for l in (d / "items.jsonl").read_text(encoding="utf-8").splitlines()]
@@ -121,6 +134,10 @@ num = [i for i in items if i["answer_type"] == "number"][0]
 check("the number key came from R (0.3125 rounded half up to 0.313)", num["key_source"] == "r" and num["canonical_answer"] == "0.313", num.get("canonical_answer"))
 vr = subprocess.run([PY, GEN, "verify", "--items", str(d / "items.jsonl")], capture_output=True, text=True, encoding="utf-8")
 check("the existing `verify` command accepts the scored items", "ok" in vr.stdout and vr.returncode == 0, vr.stdout[-300:] + vr.stderr[-300:])
+vr0 = subprocess.run([PY, GEN, "verify", "--items", str(d / "items.jsonl")], capture_output=True, text=True,
+                     encoding="utf-8", errors="replace", env=ENV_NO_SWITCH)
+check("verify refuses to run R without the R sandbox (fail closed)",
+      vr0.returncode != 0 and "Refusing to run R" in vr0.stdout + vr0.stderr, (vr0.stdout + vr0.stderr)[-300:])
 
 # ------------------------------------------------------------------ 3. validate: infrastructure vs model quality
 print("\n[3] validate separates INFRASTRUCTURE failures (exit 1) from MODEL-QUALITY findings (exit 2)")

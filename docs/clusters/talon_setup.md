@@ -202,7 +202,7 @@ needs, and these get their own plan and approval later:
 - **Sharding into chunks** sized to the job time limit, with **checkpoint and resume at scale** and no double-spending of GPU time.
 - **Several server replicas side by side and job arrays** to use all 16 GPUs (this draft supports `REPLICAS=1` only).
 - **A deduplication and decontamination pass** against the benchmark, so no benchmark question can leak into training data.
-- **Verification by sampling** (R answer checks and hand review of a sample), and a policy for rejected examples.
+- **Data checks without correctness filtering** (decided 2026-11-12): format, duplicates, decontamination and the 2,048-token limit, and a policy for rejected examples. Training examples are retained without correctness-based filtering (`docs/methodology/workflow.md` Section 4, safeguard 9).
 - **An answer-length and thinking-budget policy**, because thinking tokens dominate cost and time.
 - **Output format and storage size** (200,000 examples of thousands of tokens each is gigabytes).
 - **A fair share of the cluster.** There is no GPU-hour cap (confirmed in writing 2026-11-12), but the fair-share policy lengthens waits after heavy use, so the work is submitted in restartable chunks and needs a way to stop safely between them.

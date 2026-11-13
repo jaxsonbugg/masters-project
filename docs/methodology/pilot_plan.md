@@ -1,6 +1,11 @@
 # Pilot Plan: a 1k Example, 70M Model, End-to-End Run (Phases 3 and 4)
 
-Prepared 2026-10-06; rewritten 2026-11-07 for the current plan (teacher Qwen3.6-27B on Miami's Talon cluster, Redhawk as the fallback). This document explains in plain language what the pilot does and why, in the order things happen. The status of each step lives in the Phase 3 and Phase 4 checklists in `docs/methodology/workflow.md` Section 5. Cluster jobs and GPU time are recorded in `docs/logs/compute_log.md`; any paid call (only the verifier could be one) is recorded in `docs/logs/cost_log.md`.
+Prepared 2026-10-06; rewritten 2026-11-07 for the current plan (teacher Qwen3.6-27B on Miami's Talon cluster, Redhawk as the fallback); revised 2026-11-12, when the checking of training data for correctness was dropped and Codex became the grader. This document explains in plain language what the pilot does and why, in the order things happen. The status of each step lives in the Phase 3 and Phase 4 checklists in `docs/methodology/workflow.md` Section 5. Cluster jobs and GPU time are recorded in `docs/logs/compute_log.md`. Codex usage (the grader, the only service that is not free) is recorded in `docs/logs/cost_log.md`.
+
+**The one idea behind the 2026-11-12 revision.** The study's main test is whether distillation lets a small student *approach its teacher*, not whether it produces a perfect student. So the two kinds of data are treated differently.
+- **The training data** is the teacher's output, used as it is. Qwen-generated training examples are retained without correctness-based filtering; their correctness is unknown and may vary by question category. That is intentional, and the students are evaluated independently on a frozen benchmark.
+- **The benchmark** is the measuring instrument, so it is checked as carefully as is reasonably possible (Step 1).
+- **One grader** scores everyone's answers on it: Codex, a frontier model.
 
 ## The big idea
 
@@ -29,7 +34,7 @@ Before writing any benchmark or training data, we watched the four Pythia models
 
 ## Step 1 (Phase 3): build the benchmark first
 
-The **benchmark** is the final exam: about 1,000 statistics and R questions with known correct answers. We build it before anything else, for two reasons.
+The **benchmark** is the final exam: about 1,000 statistics and R questions, each with a reference answer (the *key*) that is checked as carefully as is reasonably possible (below). We build it before anything else, for two reasons.
 
 1. **It must be fixed in advance.** If we looked at results and then changed the exam, we could unknowingly make it easier for our model. So we **freeze** it: compute a checksum (a SHA-256 hash, a short fingerprint of the file that changes if even one character changes), store it, and mark the file read-only.
 2. **It must be separate from the training data.** If the student trains on questions that also appear on the exam, a high score only shows memorization, not skill. This is called **contamination** or leakage. We prevent it by writing the exam and the training data with separate prompts and separate IDs, and by running a **decontamination** check afterward (Step 3).
@@ -40,9 +45,9 @@ Because of what Step 0 showed, every question gets a **short canonical answer** 
 
 Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and tested with Claude in small runs (six 20-question trials, three 1-question probes, a 2-question test batch and a 100-question batch: 204 items covering 120 distinct question slots, $1.44, none of them in the benchmark; archived under the Git tag `pre-cleanup-claude-era`, summary in `docs/methodology/workflow.md` Section 2.2). Qwen now uses the same pipeline and the same prompt (v6, SHA-256 `348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4`). Four lessons carry over:
 
-- **R writes the number keys.** In the first trial, 3 of the 8 numerical keys the model typed were wrong even when its own working was right. Example: a question asked for a correlation; the working computed 36 / sqrt(40 x 60) = 0.735, but the typed key said 0.8. Now the model writes R code that recomputes the answer, our `verify` command runs that code on this computer, and R's printed number becomes the key. The model's typed number is kept only for comparison.
+- **R writes the number keys.** In the first trial, 3 of the 8 numerical keys the model typed were wrong even when its own working was right. Example: a question asked for a correlation; the working computed 36 / sqrt(40 x 60) = 0.735, but the typed key said 0.8. Now the model writes R code that recomputes the answer, our scripts run that code (from now on only inside the R sandbox, below), and R's printed number becomes the key. The model's typed number is kept only for comparison.
 - **Rounding comes last.** The chance of exactly 2 heads in 5 fair tosses is exactly 0.3125. The usual rule rounds it to 0.313, but R's `round(0.3125, 3)` gives 0.312 (R rounds an exact tie toward the even digit). So R prints the exact value, the key has the decimals the question asks for, and grading allows an error of half the last decimal place, so a student who rounds a tie either way is marked right.
-- **Some keys no automatic check can catch.** In one multiple-choice item the key claimed a confidence interval gets wider when the degrees of freedom go from 17.4 to 18; R's own numbers show it gets slightly narrower. Nothing in the code path touches a multiple-choice statement. Those items need a **blind re-solve** and a **different-family verifier** (below).
+- **Some keys no automatic check can catch.** In one multiple-choice item the key claimed a confidence interval gets wider when the degrees of freedom go from 17.4 to 18; R's own numbers show it gets slightly narrower. Nothing in the code path touches a multiple-choice statement. Items like this are why every benchmark question is also screened for problems and a sample is audited by hand (below).
 - **Duplicates.** The slot design (a *slot* is a description of one question to write, such as "numerical / binomial probability / intro / number answer") has only 138 distinct category, subtopic and difficulty combinations for 1,000 slots, so 86% of slots repeat a combination, about 7 questions per combination on average. Given the same combination again, the model writes a near-copy of an earlier question (for example the same binomial setup with one number changed). A benchmark full of near-copies tests fewer skills than its size suggests.
 
 ### What has to happen before the 1,000-question run
@@ -53,24 +58,52 @@ Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and te
 4. **Choose the teacher precision on Talon** (decided 2026-11-11; protocol in `docs/methodology/workflow.md` Section 2.1).
    - **What precision means here:** BF16 is a 16-bit number format, about 2 bytes per parameter, so the full Qwen weights are about 53,011 MiB. FP8 uses about 1 byte per parameter and a 4-bit version about half a byte; both are smaller and usually faster, but compression can cost quality.
    - **One precision for everything:** whichever is chosen is used for the benchmark and for every training set, so the data sizes are never written by different teacher setups.
-   - **How it is tested:** all three are run on the same development slots on Talon, served by the same engine. FP8 and 4-bit are each compared with BF16 on two things: usable questions, and answer correctness checked independently on a sample.
-   - **The rule:** the cheapest one that is not worse than BF16 by more than 3 percentage points on both (a margin whose scientific justification is written down first) is chosen.
+   - **How it is tested:** all three are run on the same development slots on Talon, served by the same engine. FP8 and 4-bit are each compared with BF16 on two things:
+     - **usable questions**, measured automatically on every slot;
+     - **answer correctness**, checked independently on a sample: by R where the answer can be computed, and by you by hand otherwise.
+
+     Both are needed because a compressed model can write perfectly formatted answers that are more often wrong. No language model judges this test, because the precision decides how all the training data is made.
+   - **How many slots are needed, worked out first.** The test asks whether the cheaper precision is "not worse by more than 3 percentage points". How many paired slots that needs depends on how often the two precisions disagree, the *discordance*. If they disagree on 10% of slots, about 873 slots are needed at 80% power. The correctness half then needs roughly 873 slots × 3 precisions × 70% (the share R cannot check) ≈ 1,830 judgments by hand (the formula is in `docs/methodology/workflow.md` Section 2.1).
+   - **The feasibility gate.** Before any test output exists, you write down how many hand judgments are practical.
+     - **If the calculation needs more:** BF16 is used for everything. The cheaper precisions may still be run on a smaller sample, but only as an *exploratory* comparison that cannot change the choice.
+     - **The margin stays fixed:** the 3-point margin is never loosened to make the sample smaller.
+   - **The rule:** if the gate passes, the cheapest precision that is not worse than BF16 by more than 3 percentage points on both measures is chosen. The margin's scientific justification is written down first.
+5. **Set up the R sandbox.**
+   - **Why:** the R code in a teacher reply was written by a model, so it is treated as untrusted. It could by mistake delete files, read personal files or reach the internet.
+   - **How:** before any more model-written R is run, an isolated Linux environment (WSL2 with the bubblewrap sandbox) is set up on this PC. There, R runs with no network, no view of the Windows drives (so no repository, credentials or personal files), and limits on memory, time and output.
+   - **How it is tested:** a self-test tries each forbidden action from inside the sandbox and must see it fail.
+   - **Same answers:** R 4.3.1, the same version as now, so the keys come out identical.
+
+   Details are in `docs/methodology/workflow.md` Section 4, safeguard 10.
 
 ### Generating and checking the benchmark
 
-Qwen then writes about 1,000 questions on Talon. Each question that fails the automatic checks (for example thinking aloud in the question text, an answer that appears in its own question, or an R check that never tests the student's answer) is asked for again with the same prompt, up to 3 attempts. The prompt does not say what went wrong, so the first-attempt pass rate stays an honest measure of the prompt. Then `verify` and `dupcheck` run on the whole set.
+Qwen then writes about 1,000 questions on Talon. Each question that fails the automatic checks (for example thinking aloud in the question text, an answer that appears in its own question, or an R check that never tests the student's answer) is asked for again with the same prompt, up to 3 attempts. The prompt does not say what went wrong, so the first-attempt pass rate stays an honest measure of the prompt. Then `verify` (R, in the sandbox) and `dupcheck` run on the whole set.
 
-**The same-teacher risk.** Qwen writes the exam, later takes it to set the teacher score, and also writes the training data. Its answer keys may contain exactly the mistakes it would make when answering, and those mistakes could also appear in the training data, so a student would be rewarded for copying them. A new request to Qwen does not remember writing a question, which removes one kind of bias, but it is the same model with the same blind spots, so a fresh Qwen call cannot be trusted to catch everything. To limit the damage we check the answer keys in layers, strongest first:
+**Why the benchmark gets extra care.** Qwen writes the exam and later takes it. If one of its answer keys is wrong, every model that answers that question correctly is marked wrong, so a wrong key damages the measurement itself. The training data is different: there, a teacher mistake is simply part of what the student learns from, and that is accepted. So the benchmark, and only the benchmark, gets four layers of checks:
 
-1. **Run the code.** For numeric answers and R code questions, R computes the key or runs the check. An R check must accept the key and reject three deliberately wrong answers; one that accepts a wrong answer is flagged. A computer running R does not share Qwen's blind spots.
-2. **Blind re-solve.** A separate Qwen call solves each question without being shown the key. Where it disagrees with the key, we look by hand. This catches careless errors but not systematic ones.
-3. **A different model family, only where needed.** Items R cannot settle go to a *verifier*: an open-weight model from a different family than Qwen, inexpensive, and from a provider whose terms allow this use (not OpenAI or Anthropic). DeepSeek is the likely choice, because its terms explicitly allow distillation; Mistral is another candidate.
-   - **Which items it gets:** every multiple-choice, conceptual and output-interpretation item, every soft flag and every re-solve disagreement. A *triage* step selects these, so the verifier only sees what our own checks cannot settle, which keeps its usage small even at 200,000 examples.
-   - **When it is chosen:** once the first real data exists (the precision test). It is tested first on 100 to 200 reference items, some deliberately wrong, to measure how often it accepts a wrong answer.
-   - **Its role:** it only checks, and never writes training text or questions. Its calls are paid, so the expected cost is stated first and every call is logged in `docs/logs/cost_log.md`.
-4. **Your own audit of about 150 random benchmark items**, stratified by category and including items that passed every check. This covers what R cannot: code that is consistent but answers a misread question. It also measures the leftover error rate. If errors are found and fixed, a new random sample is needed to claim anything about the error rate after the fixes.
+1. **Run the code.**
+   - **Number answers:** R recomputes each key from the teacher's own code.
+   - **R code questions:** each R check must accept the key and reject deliberately wrong answers; one that accepts a wrong answer is flagged.
+   - **The limit:** this checks arithmetic and code behavior, not whether the teacher read the question correctly.
+2. **Codex screens every question** for ambiguity, missing information or invalid statistical assumptions. It sees the question only, not the answer.
+   - *Example:* "A sample of 30 observations has a sample standard deviation of 12. What is the exact probability that the sample mean exceeds 50?" is flagged, because neither the population distribution nor its mean is given.
+   - **What you do:** you look at every flagged question and fix it, replace it, or keep it with a note.
+3. **Your own audit of about 150 random benchmark items.**
+   - **The sample:** stratified by category, and including items that passed every check.
+   - **Per item:** you work out each answer yourself and record whether the key is right, the question is clear, and exactly one answer is correct.
+   - **What it tells us:** this covers what R cannot (consistent code for a misread question), and it estimates how many errors remain. If 0 of 150 are wrong, the error rate is probably below about 2%.
+   - **After fixes:** a new random sample is needed to claim anything about the error rate after the fixes.
+4. **Honest wording.** The benchmark's answers are described as *independently checked where computationally possible, screened for ambiguity, and audited on a stratified 150-item sample*, never as "all verified".
 
-Even after all this we report that the teacher's score on its own exam is probably a bit optimistic, with the verifier's agreement rate next to it. The benchmark is then frozen (hashed and stored read-only) before any training example exists.
+The benchmark is then frozen (hashed and stored read-only) before any training example exists. The development set (about 200 items) gets the same automatic checks, but not the screen or the audit, because it is not the measuring instrument.
+
+**What was dropped on 2026-11-12, and why.** The earlier plan had more layers:
+- a second Qwen call re-solving each question;
+- a paid "verifier" model from another company (DeepSeek or Mistral), checking the training data too;
+- a triage step choosing what the verifier saw.
+
+These existed to make the *training data* correct. The study no longer needs that, so they are retired (archived in `docs/archive/retired_verification_2026-11-12.md`).
 
 ## Step 2 (Phase 4): get the training environment working on Talon
 
@@ -87,15 +120,30 @@ The teacher writes about 1,000 new questions on statistics and R, each with a wo
 
 We record the token counts the engine reports for every response and the GPU time of every generation job, because together they give the true GPU time per example, which is what the full-scale projection needs. Then we:
 
-- **Verify** the set the same way as the benchmark, at small scale: run the R code, triage, and send the uncertain items to the verifier. This is a rehearsal that measures the real triage rate and cost per item before 200,000 examples.
-- **Check the length.** Pythia can only read 2,048 tokens at once (its `max_position_embeddings`). Every example (question, working, final answer and end token) is measured with the Pythia tokenizer. One that is too long is rejected or deliberately shortened, never cut off silently, because cutting would remove the final answer or the end token. The share affected is recorded.
-- Drop anything that fails. Because some items will fail, we generate 10 to 25% more than we need.
+- **Keep the teacher's answers as they are.** Qwen-generated training examples are retained without correctness-based filtering. Their correctness is unknown and may vary by question category. This is intentional: the question is how close the student gets to the teacher, mistakes included.
+- **Check everything except correctness:**
+  - the format (a complete, parseable reply for its slot);
+  - duplicates;
+  - decontamination (above).
+- **Check the length.** Pythia can only read 2,048 tokens at once (its `max_position_embeddings`).
+  - **How each example is measured:** the whole example (question, working, final answer and end token) is measured with the Pythia tokenizer.
+  - **What happens to one that is too long:** it is rejected or deliberately shortened, never cut off silently, because cutting would remove the final answer or the end token.
+  - **What is recorded:** the share affected.
+- **Set aside about 150 extra examples** that are never trained on. They measure the *held-out loss* that picks the training settings (Step 4).
+- Drop anything that fails a check. Because some items will fail, we generate 10 to 25% more than we need.
 
-If this set passes, it later becomes the 1,000 example subset of the bigger training sets, so the GPU time is not spent twice.
+If this set passes its checks, it later becomes the 1,000 example subset of the bigger training sets, so the GPU time is not spent twice.
 
 ## Step 4: train the 70M student
 
-We take the original Pythia 70M model (the pinned checkpoint described in `model_versions.md`) and fine-tune it on the 1,000 examples on Talon (Redhawk as the fallback). Training uses the Hugging Face `Trainer` (a standard, well-tested training loop) with every setting written out. The model is loaded in float32 and trained with BF16 mixed precision, which the H100 supports; this recipe, decided 2026-11-11, is the same for all four sizes (`model_versions.md` Section 3). Before this run, the hyperparameters are chosen on the development set, never on the benchmark. We record in `docs/logs/compute_log.md` how long the job took, how many GPUs it held, the GPU-hours (GPUs x hours: one GPU for 30 minutes is 0.5 GPU-hours), the peak GPU memory and the queue wait. Peak memory matters because it helps predict how the 1B model and the larger data sets will fit.
+We take the original Pythia 70M model (the pinned checkpoint described in `model_versions.md`) and fine-tune it on the 1,000 examples on Talon (Redhawk as the fallback). Training uses the Hugging Face `Trainer` (a standard, well-tested training loop) with every setting written out. The model is loaded in float32 and trained with BF16 mixed precision, which the H100 supports; this recipe, decided 2026-11-11, is the same for all four sizes (`model_versions.md` Section 3).
+
+**Choosing the training settings first.** *Hyperparameters* are the settings we pick ourselves, such as the learning rate (how big each adjustment to the weights is) and the number of epochs (how many times the model reads the training set). Before the real run, a small list of *candidates* is declared, each one combination of settings. Each candidate is trained on the 1,000 examples, and the winner is picked on the development set, never on the benchmark.
+- **The scorecard is the held-out loss:** how surprised each trained student is by the teacher's text on the 150 set-aside examples. Lower means closer to the teacher.
+- **Next to it, the teacher-answer match:** how often the student's final answer on the 200 development questions agrees with the teacher's. Numbers must be within the allowed rounding, multiple-choice answers must have the same letter, and R expressions are compared by what they do (each item's R check, run in the sandbox).
+- *Example:* candidates A, B and C reach losses of 1.42, 1.18 and 1.21, so B's settings are frozen and used for the real run.
+
+Codex is never used to choose settings. We record in `docs/logs/compute_log.md` how long the job took, how many GPUs it held, the GPU-hours (GPUs x hours: one GPU for 30 minutes is 0.5 GPU-hours), the peak GPU memory and the queue wait. Peak memory matters because it helps predict how the 1B model and the larger data sets will fit.
 
 ## Step 5: take the exam
 
@@ -107,6 +155,20 @@ We run the frozen benchmark through three models and compare their scores. The p
 - reading the answer from the `Final answer:` line.
 
 It deliberately does **not** stop at the first blank line, because a model may put a blank line between its working and the final answer. A response with no `Final answer:` line counts as a format failure, recorded separately from a wrong answer. All of this is fixed because Step 0 showed untrained models do not stop by themselves and their scores swing with the prompt format.
+
+**How the answers are graded.** One grader, Codex, scores every answer of every model, the teacher included (`docs/methodology/workflow.md` Section 2.3).
+- **What it judges:** for each answer it sees the question, the benchmark's key and the model's final answer, and judges whether they are equivalent. A correct answer written differently from the key, such as `sum(x, na.rm = TRUE) / sum(!is.na(x))` for `mean(x, na.rm = TRUE)`, still counts as correct.
+- **Blind grading:** the answers of all three models are mixed together under random labels, so Codex never knows which model wrote what.
+- **The isolated workspace:** each batch runs in an empty folder outside the repository, so Codex can see nothing but the batch.
+- **How it is checked:**
+  - about 40 answers whose truth is known in advance (20 right, 20 deliberately wrong) are hidden in the batches;
+  - you grade about 180 answers (60 per model) yourself without seeing Codex's verdict;
+  - simple rules (a number within tolerance, the multiple-choice letter, the R check) re-grade every item they can.
+
+  All three are reported next to the scores.
+- **Thresholds and failure rules are decided before the benchmark is graded.** How well Codex must do is decided on development data, together with what happens if it fails.
+  - **If it fails on development data:** the instructions are revised there, or a pre-registered fallback grading by rules and by hand becomes the main score.
+  - **If it fails on the benchmark:** the failure is reported as such. The pre-registered scores stay the primary result, and the instructions are never changed after benchmark results are seen.
 
 **The benchmark is used only for this prespecified evaluation.** The hyperparameters and the evaluation code are chosen and debugged on a separate development set of about 200 items, and frozen in a dated pre-registration before the training run that is evaluated. After the benchmark scores are seen, only documented bug fixes are allowed. Any further experiment prompted by the scores is labeled exploratory and never replaces these results.
 
@@ -129,11 +191,61 @@ We then answer these questions and write the results in `docs/methodology/workfl
 - How long did a training run take and how long was the queue, so how long will the full grid of 20 models take?
 - Is the storage plan safe? The shared home folder has a 480 GB soft quota (about 17 GB used so far).
 - Are the R-code and format success thresholds (90% each, `docs/methodology/workflow.md` Section 1.1) realistic for these models?
-- Did the answer keys hold up under the layered checks, or do we need a stronger process before scaling? What would the verifier cost at full scale?
+- How many benchmark questions did the screen flag, what error rate did the 150-item audit find, and is the benchmark good enough to keep?
+- Did Codex pass its validity thresholds, and did it agree with you and with the simple rules equally well for every model?
+- How much Codex usage did the screen and the grading take, and what does that project to for the full grid (about 25,000 answers)? Does it fit the plan's allowance?
 - Did the criterion-4b timing protocol give stable, repeatable numbers?
 
 If the answers are acceptable, we scale up. If not, we fix the weakest part first.
 
+## The order of work (revised 2026-11-12)
+
+1. **Talon bring-up.** Done so far: the probe, the BF16 download, the smoke test (Stage A) and the throughput test (Stage T). Remaining: the FP8 and 4-bit downloads, and the training environment.
+2. **Generation code:**
+   - `r_solution` and `working` required in benchmark replies;
+   - slot variety;
+   - the full-size generator;
+   - decontamination;
+   - the fix for the "No:" false alarm;
+   - **the R sandbox**.
+3. **Teacher precision:**
+   1. sample sizes and the feasibility gate;
+   2. the precision-test slots;
+   3. usability on all slots, and correctness on a sample (R in the sandbox, plus you);
+   4. the decision.
+4. **Benchmark and development set:**
+   1. generate;
+   2. R keys, `verify`, `dupcheck`;
+   3. Codex setup: you install it and confirm the terms; the batch tool is built and tested;
+   4. the Codex usage pilot;
+   5. the Codex screen, and your review of the flags;
+   6. the 150-item audit;
+   7. fixes;
+   8. freeze.
+5. **The 1k training set** plus about 150 held-out examples: format, length and decontamination checks, with no correctness filtering.
+6. **Training script and its tests.**
+7. **The evaluation harness, on the development set:**
+   - the deterministic graders;
+   - the "R code runs" check;
+   - the held-out loss and teacher match;
+   - Codex grading;
+   - grader validation and its thresholds;
+   - the calibration sets.
+8. **Choose the hyperparameters** on the development set, then freeze everything, including the grader setup and its failure rules.
+9. **The confirmatory run:**
+   1. train once;
+   2. three models answer the benchmark;
+   3. Codex grades them blind;
+   4. the calibration answers, the cross-check and your 180-answer audit;
+   5. the analysis.
+10. **The go/no-go review** (Step 6).
+
 ## Expected pilot cost
 
-Generation, training and evaluation run on Miami's clusters and cost **no money**; their cost is GPU-hours, which are logged per job in `docs/logs/compute_log.md` and summed there. The only possible paid item is the different-family verifier, which is still to be decided. Before any paid verifier run, its expected cost is written down, and afterward the actual cost is compared in `docs/logs/cost_log.md`.
+Generation, training and evaluation run on Miami's clusters and cost **no money**; their cost is GPU-hours, which are logged per job in `docs/logs/compute_log.md` and summed there.
+
+The one service that is not free is **Codex**, which screens the benchmark questions and grades the answers.
+- **What it costs:** it runs on your workspace subscription, so its use counts against the plan's included allowance, and work beyond that may need purchased credits. It is not assumed to be free.
+- **The usage pilot:** a small run on development items measures how much it uses per question.
+- **Before every run:** the expected usage is written down.
+- **Afterward:** the actual usage is logged in `docs/logs/cost_log.md`.

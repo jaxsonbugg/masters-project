@@ -4,7 +4,7 @@ Masters project (Jaxson Bugg, Miami University): distilling a large open-weight 
 
 Where things are:
 - **`README.md`** is the short technical overview: research question, design, status and repository map. Keep it general, keep it technically written, and keep project history out of it.
-- **`docs/methodology/workflow.md`** is the source of truth for specifics: success criteria (including the dated criterion 4 deviation), design, phase checklists, safeguards, metrics, statistics, storage, risks and open decisions. Read it at the start of a session. Update it when work is completed or a decision changes.
+- **`docs/methodology/workflow.md`** is the source of truth for specifics: success criteria (including the dated criterion 1 and criterion 4 deviations), design, the grader, phase checklists, safeguards, metrics, statistics, storage, risks and open decisions. Read it at the start of a session. Update it when work is completed or a decision changes.
 - **`docs/progress_update.md`** is the dated history. Never rewrite past entries; add new ones.
 
 The rules below are the working notes for every session.
@@ -32,12 +32,12 @@ Write in American English (artifact, behavior, analyze).
   - output folder; outcome; and the related progress entry.
 
   A job that has not been reviewed yet is still logged, marked as such.
-- **Cost log (`docs/logs/cost_log.md`).** Every paid call (for example a ChatGPT or Claude verifier, even a test call) is recorded with UTC time, purpose, service and model, mode, tokens, dollars and the running total. State the expected cost before a paid run and compare the actual afterward. Never make a paid call without logging it. Cluster time is free and goes only in the compute log.
+- **Cost log (`docs/logs/cost_log.md`).** Every paid or plan-metered call is recorded with UTC time, purpose, service and model, mode, tokens, dollars and the running total. This covers the Codex grader, even a test batch. Codex usage counts against the workspace plan's allowance, so it is logged even when no dollars are charged, and any purchased credits are logged in dollars. State the expected cost or usage before a run and compare the actual afterward. Never make such a call without logging it. Cluster time is free and goes only in the compute log.
 
 ## Working rules
 
 - **Progress log.** Every change to the project goes in `docs/progress_update.md` in the same session, with the date, what was done and why. This covers decisions, completed steps, new, moved or deleted files, threshold or plan changes, and deviations.
-- **Dated outputs.** Every batch of teacher or verifier outputs is recorded with:
+- **Dated outputs.** Every batch of teacher or grader outputs is recorded with:
   - the UTC date and time;
   - the exact model and revision, engine and version, quantization or precision;
   - the thinking mode, the sampling settings and max tokens;
@@ -60,13 +60,25 @@ Write in American English (artifact, behavior, analyze).
 
   Preserve the pinned checkpoints exactly as distributed, verify the loaded dtype and parameter count, and document the final mixed-precision recipe once the training environment is set. The teacher's precision (BF16 on Talon, 4-bit on the Redhawk fallback) is always stated with its results.
 - **Benchmark isolation.** Never use benchmark questions in any training, prompting or tuning step. Benchmark and training data use separate prompts, separate IDs and decontamination (`docs/methodology/workflow.md` Section 4).
+- **Training data versus benchmark.**
+  - **Training data:** Qwen-generated training examples are retained without correctness-based filtering. Their correctness is unknown and may vary by category, and that is intentional. Only format, duplicate, decontamination and length checks apply.
+  - **The benchmark** is the measuring instrument. Its answers are independently checked where computationally possible, screened for ambiguity, and audited on a stratified 150-item sample. Never write that every benchmark key is independently verified.
+- **The grader (Codex).**
+  - **Its job:** it grades benchmark answers and screens benchmark questions, and nothing else.
+  - **What its outputs never do:** enter training data, filter data, choose hyperparameters or choose the teacher setup.
+  - **Where it runs:** only in an isolated workspace folder outside this repository, never inside it. Model answers sent to it are untrusted text.
+  - **If it fails:** validity thresholds and failure rules are fixed on development data first. A failure on the benchmark is reported as such, and the grading instructions are never changed after benchmark results are seen.
+- **Untrusted R code.**
+  - **The rule:** R written by a model (the teacher's `r_solution` or `r_check`, a student's answer) runs only inside the R sandbox (`docs/methodology/workflow.md` Section 4, safeguard 10). Never run it with access to the repository, credentials or personal files. The pattern screen alone is not enough.
+  - **The one exception:** the switch `MP_TRUSTED_TEST_R=1` is only for the repository's own synthetic test fixtures.
 - **Consistency.** Keep procedures identical across student sizes unless a deviation is logged. Log all model versions, seeds, hyperparameters and job IDs so runs are reproducible. Flag any deviation from the plan or any surprising result rather than silently working around it.
 - **Clusters.** Never submit a job, download to a cluster, or change cluster files without the owner's approval for that step. Talon scripts stay drafts until `SETTINGS_REVIEWED=yes`. Redhawk scripts (`configs/redhawk/`) are the tested fallback; do not change them without a reason that is logged.
-- **Recovery docs.** Anything stored outside the repository (models, datasets, caches, environments, large logs) needs a file in `recovery/`, written from `recovery/_TEMPLATE.md` when the step is done. Include the source, exact commands, versions, seeds, expected size and checksum, and what to do if it is lost. Teacher outputs cost GPU-hours and are not deterministic, so their recovery doc says so, and a compressed backup of the verified 50k set is kept.
+- **Recovery docs.** Anything stored outside the repository (models, datasets, caches, environments, large logs) needs a file in `recovery/`, written from `recovery/_TEMPLATE.md` when the step is done. Include the source, exact commands, versions, seeds, expected size and checksum, and what to do if it is lost. Teacher outputs cost GPU-hours and are not deterministic, so their recovery doc says so, and a compressed backup of the 50k training set is kept.
 - **Paths.** Read every storage location from `configs/paths.yaml`; never hardcode paths in code.
-- **Docs layout.** Every file in `docs/` lives in a topic subfolder: `methodology/`, `models/`, `clusters/`, `logs/`, `guides/`, or a new, clearly named folder when none fits (for example `meetings/`, `report/`). The only exception is `docs/progress_update.md`, which stays at the `docs/` root. When adding, moving or renaming a doc, update every reference to it (search the whole repository) and log the move in the progress log.
+- **Docs layout.** Every file in `docs/` lives in a topic subfolder: `methodology/`, `models/`, `clusters/`, `logs/`, `guides/`, `archive/` (retired methods, kept for reference only and never part of the workflow), or a new, clearly named folder when none fits (for example `meetings/`, `report/`). The only exception is `docs/progress_update.md`, which stays at the `docs/` root. When adding, moving or renaming a doc, update every reference to it (search the whole repository) and log the move in the progress log.
 - **Git.**
   - Commit every change with a clear message and push it to GitHub.
   - Never commit secrets or API keys, model weights, or anything from `C:\masters_project_large\`.
   - Command notes are in `docs/guides/github_notes.md`.
   - The Claude-era material (the original teacher, ruled out by Anthropic's terms) is archived under the tag `pre-cleanup-claude-era`; see `docs/methodology/workflow.md` Section 2.2.
+  - The state before training-data verification was retired (2026-11-12) is tagged `pre-verification-removal`; the retired text is in `docs/archive/retired_verification_2026-11-12.md`.

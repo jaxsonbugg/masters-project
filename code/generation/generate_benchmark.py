@@ -28,12 +28,16 @@ HOW A QUESTION GETS MADE (plain steps)
    The model's own typed key is kept as model_canonical_answer; if the two disagree the item gets a soft
    flag. Example: the model typed 4.867, its code prints 4.25, so the key becomes 4.250.
    R fixes slips of arithmetic or typing. It cannot notice code that answers a different question than the
-   one written, which is why the soft flag and, later, a blind re-solve exist.
+   one written, which is why the soft flag exists and why benchmark questions are also screened and a sample
+   is audited by hand (docs/methodology/workflow.md Section 4, safeguard 6).
+6. Model-written R is untrusted, so it may run only inside the R sandbox (Section 4, safeguard 10). Until the
+   sandbox exists every R run is refused (require_r_sandbox), except for this repository's own synthetic test
+   fixtures (the switch MP_TRUSTED_TEST_R=1, which must never be used on model output).
 
 FREE COMMANDS (no model call; run with the project's virtual environment Python)
   python generate_benchmark.py plan --n 20 [--start 21]                 print the slots
   python generate_benchmark.py check --items <items.jsonl>              re-run the automatic checks
-  python generate_benchmark.py verify --items <items.jsonl>             run R to test the answer keys
+  python generate_benchmark.py verify --items <items.jsonl>             run R to test the answer keys (sandbox only)
   python generate_benchmark.py dupcheck --items <new.jsonl> --against <earlier files or patterns>   near-duplicates
 """
 
@@ -41,6 +45,7 @@ import argparse
 import glob
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -482,10 +487,26 @@ def cmd_check(args):
 # WHY: in the first trial 3 of 8 numerical keys were wrong, and in one case the model's own written
 # explanation had the arithmetic slip, so asking the same model to re-read it would not help. R does
 # not share the model's blind spots in arithmetic, so we let R produce the number and compare it with
-# the key. The code R runs was written by the model, so it is run in a throwaway folder with a time
-# limit, and code that touches files, the network or the operating system is refused.
+# the key. The code R runs was written by the model, so it is untrusted: it may run only inside the R
+# sandbox (docs/methodology/workflow.md Section 4, safeguard 10: no network, no Windows drives, resource
+# limits). The sandbox is not built yet, so require_r_sandbox() refuses every run except the repository's
+# own synthetic test fixtures. The pattern list below is only an extra layer, never the protection itself.
 # ---------------------------------------------------------------------------------------------
-# R functions we never run (model-written code executes on this PC).
+TRUSTED_TEST_SWITCH = "MP_TRUSTED_TEST_R"  # set to "1" ONLY by the repository's own synthetic test harnesses
+
+
+def require_r_sandbox():
+    """Stop unless R may run here. Model-written R may only run inside the R sandbox, which does not exist yet,
+    so every run is refused unless MP_TRUSTED_TEST_R=1. That switch is reserved for the test fixtures in
+    code/tests/ (R code we wrote ourselves, not a model); it must never be set when running model output."""
+    if os.environ.get(TRUSTED_TEST_SWITCH) == "1":
+        return
+    sys.exit("Refusing to run R: model-written R may only run inside the R sandbox (docs/methodology/workflow.md "
+             "Section 4, safeguard 10), which is not set up yet. MP_TRUSTED_TEST_R=1 is reserved for the "
+             "repository's own synthetic test fixtures and must never be used on model output.")
+
+
+# R functions we never run (an extra layer; the sandbox is the real protection).
 UNSAFE_R = re.compile(
     r"\b(system2?|shell|shell\.exec|unlink|file\.remove|file\.rename|file\.create|file\.copy|dir\.create|"
     r"download\.file|url|socketConnection|setwd|Sys\.setenv|Sys\.setlocale|source|sys\.source|readline|readLines|"
@@ -496,6 +517,7 @@ KEY_TOL = 0.0006  # keys are rounded to 3 decimals, so a correct key is within 0
 
 
 def rscript_path():
+    require_r_sandbox()  # verify and score call this first, so they refuse before reading any data
     paths = yaml.safe_load((REPO / "configs" / "paths.yaml").read_text())
     p = Path(paths["rscript"])
     if not p.exists():
@@ -505,6 +527,7 @@ def rscript_path():
 
 def run_r(code, rscript):
     """Run R code in a temporary folder. Returns (ok, stdout_or_error_text)."""
+    require_r_sandbox()  # checked again here, so no caller can reach R without the guard
     if UNSAFE_R.search(code):
         return False, "refused: code uses a function that is not allowed (" + UNSAFE_R.search(code).group(1) + ")"
     with tempfile.TemporaryDirectory() as tmp:
@@ -679,7 +702,7 @@ def cmd_verify(args):
         if status == "FLAGGED":
             print(f"{item['item_id']} [{item['category']}]: " + "; ".join(issues))
         elif status == "not_machine_checkable":
-            print(f"{item['item_id']} [{item['category']}]: not machine-checkable (needs a blind re-solve / other-family check)")
+            print(f"{item['item_id']} [{item['category']}]: not machine-checkable (covered by the benchmark screen and manual audit)")
     dest = path.with_name(path.stem + "_verified.jsonl")
     with open(dest, "w", encoding="utf-8") as f:
         for row in out_rows:

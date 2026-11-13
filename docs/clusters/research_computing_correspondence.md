@@ -27,7 +27,7 @@ Miami's Research Computing runs Redhawk and Talon. This file keeps their written
 | GPU-hour limit | None; the only limit is the time per job (3 days) | The 200,000-example plan is not blocked by an allowance. The practical limit is how fast jobs start. |
 | GPUs at once | All 4 GPUs of a node; one GPU per job (`--gres=gpu:1`) is recommended | Our layout (1 GPU per job, `--gres=gpu:nvidia_h100_nvl:1`) is what Research Computing recommends. Up to 4 single-GPU jobs can run side by side on one node, which would bring the roughly 51 GPU-days for 200,000 examples down to about 13 days of clock time (about 3 days for the 50,000-example fallback). |
 | Priority and interruption | A running job is never cut short; later jobs may wait longer, under Slurm's fair-share policy | The work is submitted in restartable chunks. Start-up waits may grow after heavy use and as more users join, so a quiet cluster (as on 2026-11-12) is not a guarantee for later. |
-| Cost | Free, in writing | The cost log stays for paid calls only (such as the verifier). |
+| Cost | Free, in writing | The cost log stays for paid or metered calls only (since 2026-11-12, the Codex grader). |
 
 ## What is still not answered
 

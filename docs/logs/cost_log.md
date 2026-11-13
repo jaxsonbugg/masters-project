@@ -1,19 +1,30 @@
 # Cost Log
 
-This file records every dollar the project spends, meaning every paid API call, including test calls. Cluster time on Talon and Redhawk is free and goes in `docs/logs/compute_log.md` instead.
+This file records every dollar the project spends and every use of a metered service, including test calls. Cluster time on Talon and Redhawk is free and goes in `docs/logs/compute_log.md` instead.
 
-**When a paid call happens:**
-1. Before the run, state the expected cost and a hard cap.
+**When a paid or metered call happens:**
+1. Before the run, state the expected cost or usage and a hard cap.
 2. Afterwards, add one row here in the same session.
-3. Compare the actual cost with the expected cost in the note.
+3. Compare the actual cost or usage with the expected one in the note.
 
-The only paid service planned is the answer verifier (ChatGPT, Claude or another frontier model, to be decided; `docs/methodology/workflow.md` Section 10.2).
+**The service now planned (decided 2026-11-12): Codex, the grader** (`docs/methodology/workflow.md` Section 2.3). It screens the benchmark questions and grades the benchmark answers. It runs through the Codex command-line tool on the owner's **workspace subscription**, so it is not billed per call like an API. That does not make it free:
+- its use counts against the plan's included allowance;
+- work beyond the allowance may need purchased credits.
 
-**How a row's cost is computed.** API providers charge per *token* (a chunk of text, about three quarters of a word), with separate prices for tokens sent (input) and tokens written (output, including any hidden "thinking" tokens):
+**How a Codex batch is logged:**
+- one row per batch, with the purpose, the Codex CLI version and model, the reasoning setting, and the input and output tokens if Codex reports them;
+- the share of the allowance used, if the plan shows it;
+- in the cost column, **$0.00 when the batch stayed within the included allowance**, or the dollars of any credits used.
+
+A usage pilot on development items (about 100 screened questions and 100 graded answers) comes first, to measure usage per judgment and project the full runs.
+
+The verifier planned earlier (an external model checking the training data) was retired on 2026-11-12 and never made a call (`docs/archive/retired_verification_2026-11-12.md`).
+
+**How a row's cost is computed for a per-token API** (as in the Claude-era rows below). API providers charge per *token* (a chunk of text, about three quarters of a word), with separate prices for tokens sent (input) and tokens written (output, including any hidden "thinking" tokens):
 
 cost = (input tokens x input price + output tokens x output price) / 1,000,000
 
-For example, a verifier call with 1,500 input and 400 output tokens, at $2 and $10 per million tokens, costs (1,500 x 2 + 400 x 10) / 1,000,000 = $0.007. Take the token counts from the usage numbers the API returns; do not estimate them.
+For example, a call with 1,500 input and 400 output tokens, at $2 and $10 per million tokens, costs (1,500 x 2 + 400 x 10) / 1,000,000 = $0.007. Take the token counts from the usage numbers the service reports; do not estimate them. For Codex on the workspace plan the dollars are $0.00 unless credits are bought, but the tokens are still recorded, because they are what uses up the allowance.
 
 ## Ledger
 

@@ -4,12 +4,20 @@ large_root: C:\masters_project_large
 models_pythia: C:\masters_project_large\models\pythia
 models_finetuned: C:\masters_project_large\models\finetuned
 teacher_outputs: C:\masters_project_large\data\teacher_outputs
-verified_data: C:\masters_project_large\data\verified
+# Training sets (1k to 200k), retained without correctness-based filtering (docs/methodology/workflow.md Section 4,
+# safeguard 9). Renamed 2026-11-12 from verified_data (C:\masters_project_large\data\verified, an empty folder left in
+# place); the new folder is created when the first training set is built.
+training_data: C:\masters_project_large\data\training_sets
 cache: C:\masters_project_large\cache
 logs: C:\masters_project_large\logs
 envs: C:\masters_project_large\envs
-# R is installed outside the repository and is not on the PATH. Used to run answer-key checks.
+# R is installed outside the repository and is not on the PATH. It runs the R key step, R checks and (later) the
+# "R code runs" check. Model-written R may only run inside the R sandbox (workflow.md Section 4, safeguard 10), so
+# generate_benchmark.py refuses to use this path directly except for the repository's own synthetic test fixtures.
 rscript: C:\R-4.3.1\bin\Rscript.exe
+# The R sandbox (WSL2 + bubblewrap, R 4.3.1): not set up yet. Its settings (distribution name, R path, memory, CPU,
+# time, output and process limits) go here when it is built and tested; until then this stays empty.
+r_sandbox:
 # Redhawk cluster, the fallback (Linux paths, used by code and scripts that run on Redhawk; access: recovery/redhawk_ssh_access.md,
 # cluster facts: docs/clusters/cluster_selection.md Section 7).
 # CHOSEN 2026-11-04 from probe_cluster.sh: the home folder has a personal quota of 480 GB (500 GB hard limit) and 60 KB was
