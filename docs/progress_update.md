@@ -794,3 +794,33 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **If any is missed,** the failure is reported, the fallback scores carry the main conclusions, and the Codex scores are kept and labeled as having failed validation.
   - **No choice after the fact:** nobody picks a method after seeing which gives better student results, and the rubric is never revised after benchmark results are seen. Any re-grading with revised instructions is exploratory.
 - **Files:** `docs/methodology/workflow.md` (Section 2.3, the Phase 4 freeze item, Section 10.2), `docs/methodology/pilot_plan.md` (Step 5) and `CLAUDE.md` (the grader rule).
+
+### R sandbox set up: model-written R now runs only in a sealed box (2026-11-12)
+- **What and why:** the teacher's R code (`r_solution`, `r_check`), and later the students' R answers, was written by a model, so it is untrusted. It now runs only inside a sandbox on this PC (`docs/methodology/workflow.md` Section 4, safeguard 10):
+  - no network;
+  - no view of the C: drive, the repository or the Linux home folder;
+  - a read-only system;
+  - limits on memory, CPU time, wall time, file size, `/tmp` size, processes and output.
+
+  The old pattern screen (`UNSAFE_R`) stays as an extra layer only.
+- **How it was set up (Jaxson, with the commands in `recovery/r_sandbox.md`):**
+  - **WSL2 and Ubuntu:** `wsl --install -d Ubuntu-24.04` (WSL 3.0.5.0). No restart was needed, and virtualization was already on.
+  - **The VPN:** Ubuntu could not reach the internet while the Cisco AnyConnect VPN was connected, a known WSL2 limitation. The VPN was disconnected for the downloads only.
+  - **The software:** bubblewrap 0.9.0 from Ubuntu, and R 4.3.1 (2023-06-16, the same version as the Windows R) installed with rig.
+  - **Cut off from Windows:** `/etc/wsl.conf` switches off the C: drive and the launching of Windows programs, while keeping Ubuntu's own `systemd` and default-user settings. Checked after a restart: `/mnt/c` is empty and `cmd.exe` is not found.
+- **The runner:** the new `code/generation/r_sandbox.py`.
+  - **How a run works:** Windows passes the code to Ubuntu as text. There, `timeout` and `prlimit` set the limits, `bwrap` opens the box, and `Rscript --vanilla` runs the code in a size-limited `/tmp`.
+  - **The limits** (`configs/paths.yaml`): 4096 MB address space, 10 s CPU, 20 s wall, 1 MB output, 16 MB per file, 64 MB `/tmp`, 256 processes.
+  - **Why 4096 MB:** R hangs at startup under a 2048 MB address-space limit, because its math library reserves address space per thread. That address space is reserved, not used.
+- **The self-test** (`python code/generation/r_sandbox.py selftest`): 13 checks, all passing.
+  - **Positive controls:** BM9001's calculation prints 0.2304, and R is 4.3.1.
+  - **Each forbidden action fails:** a URL, a socket, a canary file planted in the Linux home folder, `/mnt/c`, writing outside `/tmp`, a 4.8 GB allocation, an endless loop, a background process outliving the run, 3 MB of output, and inherited environment variables.
+  - **Two problems found and fixed while building it:**
+    - the box's in-memory root folder was writable; it is now mounted read-only;
+    - a missing Ubuntu made the self-test crash instead of refusing (`wsl.exe` writes its error in UTF-16); it now refuses cleanly.
+- **Fail closed, no bypass:** `generate_benchmark.py` (`rscript_path`, `run_r`) runs every R call through the sandbox, after the self-test has passed once per process. Anything else is refused, including a path to a Windows R. The temporary test-only switch `MP_TRUSTED_TEST_R` is removed, and the tests now go through the sandbox too.
+- **Same results:** the regression snapshot, recorded with the Windows R, matches exactly through the sandbox (52 parts). So the sandbox gives identical R results, and no key changes.
+- **Tests:** the new self-test is added to the local test run. In `test_suite.py`, the two refusal checks now point the sandbox at a Linux system that does not exist, and check that `score` and `verify` refuse with nothing written.
+- **Files:**
+  - **new:** `code/generation/r_sandbox.py`, `recovery/r_sandbox.md`;
+  - **changed:** `code/generation/generate_benchmark.py`, `configs/paths.yaml`, `code/tests/benchmark_core_regression/capture.py`, `code/tests/qwen_deployment_test/test_suite.py` and its README, `docs/methodology/workflow.md` (safeguard 10 status, Phase 3, Section 8, Section 10.2), `docs/methodology/pilot_plan.md`, `docs/models/model_versions.md` (Section 6a), `README.md`, `CLAUDE.md`.

@@ -222,9 +222,9 @@ Worked example of the limits: if Qwen thinks for 9,000 tokens and then writes a 
 
 | Item | Value |
 |---|---|
-| R version | 4.3.1 (the same as the Windows R in `configs/paths.yaml`) |
-| Environment | WSL2, Ubuntu 24.04, bubblewrap; not set up yet |
-| Limits | memory, CPU seconds, wall time, output size, processes: set and tested at setup |
+| R version | 4.3.1 (2023-06-16), at `/opt/R/4.3.1`, installed with rig; the same version as the Windows R in `configs/paths.yaml` |
+| Environment | WSL 3.0.5.0, Ubuntu 24.04 LTS, bubblewrap 0.9.0; the C: drive and Windows programs are switched off in `/etc/wsl.conf` (set up 2026-11-12, `recovery/r_sandbox.md`) |
+| Limits per run | 4096 MB address space, 10 s CPU, 20 s wall, 1 MB output, 16 MB per file, 64 MB `/tmp`, 256 processes |
 
 ## 7. Cluster notes (public documentation checked 2026-10-01; read-only probes 2026-11-04 on Redhawk and 2026-11-06 on Talon)
 

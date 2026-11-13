@@ -11,10 +11,10 @@ real job scripts against it and check what they do.
 
 - `test_suite.py` (about 1 minute; needs R for the scoring checks): slot isolation (smoke slots BM9001-BM9004 versus main
   slots BM0021-BM0120), the two failure kinds of `validate` (infrastructure versus model quality), resume safety (no
-  overwrite, no repeat, lock file, settings must match), 8 calls at once with no repeats, scoring through R. Model-written
-  R may only run in the R sandbox (`docs/methodology/workflow.md` Section 4, safeguard 10), which is not built yet, so the
-  suite first checks that `score` and `verify` refuse without it. It then sets the test-only switch `MP_TRUSTED_TEST_R=1`,
-  because the fake server's replies are R code we wrote ourselves. Never set that switch for model output.
+  overwrite, no repeat, lock file, settings must match), 8 calls at once with no repeats, scoring through R. Every R run
+  goes through the R sandbox (`code/generation/r_sandbox.py`; `docs/methodology/workflow.md` Section 4, safeguard 10), so
+  the WSL2 sandbox must be set up (`recovery/r_sandbox.md`). The suite also checks that `score` and `verify` refuse when the
+  sandbox fails its self-test.
 - `shtest.sh` (a few minutes per part; four parts that can run at the same time): the Redhawk job scripts with fake
   `nvidia-smi`, `module`, `scontrol`, `squeue` and `llama-server`.
   - Parts 1-2, the single stages: GPU, weights, template and flag checks, the stage gates, the memory summary, queue wait,

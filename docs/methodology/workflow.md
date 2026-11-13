@@ -421,7 +421,7 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
       - **What it blocks:** no network; no Windows drives (automount is off, so the repository, credentials and personal files are not visible); and no access to anything except a temporary work folder.
       - **Its limits:** memory, CPU time, output size and number of processes, plus a hard time limit that is also enforced from the Windows side.
       - **How code goes in and out:** the code goes in on standard input, and the printed result comes back on standard output.
-    - **It fails closed.** If the sandbox is not set up, or its self-test fails, the scripts refuse to run R. They never fall back to running R directly. The one exception is the repository's own synthetic test fixtures, which we wrote ourselves, not a model; the switch `MP_TRUSTED_TEST_R=1` allows them, and it must never be used on model output.
+    - **It fails closed.** If the sandbox is not set up, or its self-test fails, the scripts refuse to run R. They never fall back to running R directly, not even for the repository's own tests.
     - **It is tested.** A self-test runs R code inside the sandbox that tries to:
       - open a URL;
       - read a planted "canary" file;
@@ -434,7 +434,11 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
 
       Each attempt must fail. The self-test runs before first use and before every batch.
     - **It gives the same answers.** R 4.3.1, the version used so far, is installed inside the sandbox, and the regression snapshot must reproduce identical R output through it.
-    - **Status.** To be set up in pilot Stage 2, with the rebuild steps in `recovery/r_sandbox.md` when it is done. Until then, no model-written R is run. The two Stage A replies scored on 2026-11-12 ran in Windows R behind the pattern screen only, before this rule existed.
+    - **Status: set up and tested on 2026-11-12** (`code/generation/r_sandbox.py`; rebuild steps in `recovery/r_sandbox.md`).
+      - **The setup:** WSL2 Ubuntu 24.04, bubblewrap 0.9.0, R 4.3.1.
+      - **The limits on each run:** 4096 MB of address space (R needs about 4 GB reserved just to start), 10 CPU seconds, 20 wall seconds, 1 MB of output, 16 MB per file, 64 MB of `/tmp`, and 256 processes.
+      - **The self-test:** all 13 checks pass. It found one gap while being built: the box's own root folder was writable, though in memory only. That root is now read-only.
+      - **Earlier runs:** the two Stage A replies scored earlier on 2026-11-12 ran in Windows R behind the pattern screen only, before this rule existed.
 
 **Worked example.**
 - Benchmark item BM0412 asks for P(X = 2) when X ~ Binomial(5, 0.4).
@@ -480,7 +484,7 @@ The benchmark comes before the pilot because the pilot needs something frozen to
   - run the throughput stage T.
 - [ ] Review the Redhawk pipeline job 2511641 (finished, results not yet checked) and record it in `docs/logs/compute_log.md`
 - [ ] Require the `r_solution` and `working` fields in every benchmark reply ("not applicable" where R does not apply), then update the regression fixture (Section 4, safeguard 6a)
-- [ ] **Set up the R sandbox** (WSL2 plus bubblewrap) and pass its security self-test before any further model-written R is run (Section 4, safeguard 10)
+- [x] **Set up the R sandbox** (WSL2 plus bubblewrap) and pass its security self-test before any further model-written R is run (Section 4, safeguard 10): done 2026-11-12, 13 of 13 checks
 - [ ] Choose the teacher precision (BF16, FP8 or 4-bit) with the pre-registered protocol in Section 2.1, before any benchmark generation. The sample-size calculation and the feasibility gate come first.
 - [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4), then re-run `dupcheck`
 - [ ] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. About a third of the trial items had small inconsistencies; no keys were affected.
@@ -652,7 +656,7 @@ Storage is split in two. **Small, important items live in the project repository
 | `cache/`, `logs/`, `envs/` | Caches, large logs, Python virtual environments (`recovery/python_env.md`) |
 | Codex grading workspace | A fresh folder per batch, outside the repository (its location is added to `configs/paths.yaml` when the batch tool is built) |
 
-**The R sandbox** is a WSL2 Ubuntu system on this PC, outside the repository (Section 4, safeguard 10; `recovery/r_sandbox.md` once it is set up).
+**The R sandbox** is a WSL2 Ubuntu system on this PC, outside the repository (Section 4, safeguard 10; `recovery/r_sandbox.md`).
 
 **Clusters.** Redhawk and Talon **share one home folder** (`/home/buggjm`). It has a 500 GB hard quota and a 480 GB soft quota; about 17 GB was in use on 2026-11-06.
 - Redhawk work lives in `/home/buggjm/masters_project`.
@@ -718,7 +722,7 @@ Dates are placeholders until the program's real deadlines are known.
     - the owner's cap on hand judgments for the feasibility gate.
 
     The sample sizes follow from these.
-- [ ] **R sandbox limits** (memory, CPU seconds, wall time, output size, processes), set and tested when the sandbox is built (Section 4, safeguard 10).
+- [x] **R sandbox limits** (decided and tested 2026-11-12): 4096 MB address space, 10 s CPU, 20 s wall, 1 MB output, 16 MB per file, 64 MB `/tmp`, 256 processes (Section 4, safeguard 10; `configs/paths.yaml`).
 - [ ] **Talon settings still unverified:**
   - the vLLM version pin: resolved 2026-11-12, `vllm==0.32.0`;
   - `TALON_GPU_STYLE`: resolved 2026-11-11, `gres` (both styles accepted by Slurm);

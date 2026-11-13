@@ -67,8 +67,8 @@ The full definitions, the original wording and the measurement protocol are in [
   - Question-generation pipeline: prompt v6, R-computed numeric keys, automatic validity checks, regeneration.
   - Redhawk llama.cpp deployment.
   - Talon bring-up: vLLM 0.32.0 pinned, BF16 weights downloaded and hashed, smoke test and throughput benchmark (about 6 GPU-hours per 1,000 examples on one H100).
+  - R sandbox for model-written code (WSL2 + bubblewrap + R 4.3.1), self-test 13/13.
 - **Next:**
-  - Set up the R sandbox.
   - Choose the teacher precision (BF16 against FP8 and a conditional community 4-bit checkpoint), with sample sizes and a feasibility gate fixed in advance.
   - Fix slot diversity (the near-duplicate questions found in testing).
 - **Then:**

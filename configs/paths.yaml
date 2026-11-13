@@ -11,13 +11,25 @@ training_data: C:\masters_project_large\data\training_sets
 cache: C:\masters_project_large\cache
 logs: C:\masters_project_large\logs
 envs: C:\masters_project_large\envs
-# R is installed outside the repository and is not on the PATH. It runs the R key step, R checks and (later) the
-# "R code runs" check. Model-written R may only run inside the R sandbox (workflow.md Section 4, safeguard 10), so
-# generate_benchmark.py refuses to use this path directly except for the repository's own synthetic test fixtures.
+# The Windows R (outside the repository, not on the PATH). Since 2026-11-12 no code runs model-written R here: every
+# R run goes through the R sandbox below (workflow.md Section 4, safeguard 10). Kept for reference and manual use.
 rscript: C:\R-4.3.1\bin\Rscript.exe
-# The R sandbox (WSL2 + bubblewrap, R 4.3.1): not set up yet. Its settings (distribution name, R path, memory, CPU,
-# time, output and process limits) go here when it is built and tested; until then this stays empty.
+# The R sandbox (code/generation/r_sandbox.py; recovery/r_sandbox.md): every model-written R run happens here, never in
+# the Windows R above. Set up 2026-11-12: WSL2 Ubuntu 24.04 (C: drive and Windows programs switched off in
+# /etc/wsl.conf), bubblewrap 0.9.0, R 4.3.1 installed with rig. The limits apply to every single R run.
 r_sandbox:
+  wsl_distro: Ubuntu-24.04
+  r_bin: /opt/R/4.3.1/bin/Rscript
+  r_version: "4.3.1"
+  memory_mb: 4096        # address-space limit (reserved, not used, memory). R 4.3.1 hangs at startup under 2048 here
+                         # because its math library reserves address space per thread; 4096 starts normally (tested
+                         # 2026-11-12). A key calculation itself uses well under 300 MB.
+  cpu_seconds: 10        # CPU time; a key calculation takes well under 1 s
+  wall_seconds: 20       # clock time, enforced in Linux (timeout) and again from Windows
+  output_bytes: 1000000  # standard output and standard error are each cut off above this
+  file_size_mb: 16       # largest single file R may write (only /tmp is writable)
+  tmp_size_mb: 64        # total size of the box's /tmp
+  max_processes: 256     # per user, so a "fork bomb" cannot take over the Linux system
 # Redhawk cluster, the fallback (Linux paths, used by code and scripts that run on Redhawk; access: recovery/redhawk_ssh_access.md,
 # cluster facts: docs/clusters/cluster_selection.md Section 7).
 # CHOSEN 2026-11-04 from probe_cluster.sh: the home folder has a personal quota of 480 GB (500 GB hard limit) and 60 KB was

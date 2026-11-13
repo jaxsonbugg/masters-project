@@ -68,7 +68,7 @@ Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and te
      - **If the calculation needs more:** BF16 is used for everything. The cheaper precisions may still be run on a smaller sample, but only as an *exploratory* comparison that cannot change the choice.
      - **The margin stays fixed:** the 3-point margin is never loosened to make the sample smaller.
    - **The rule:** if the gate passes, the cheapest precision that is not worse than BF16 by more than 3 percentage points on both measures is chosen. The margin's scientific justification is written down first.
-5. **Set up the R sandbox.**
+5. **Set up the R sandbox** (done 2026-11-12: self-test 13 of 13; `recovery/r_sandbox.md`).
    - **Why:** the R code in a teacher reply was written by a model, so it is treated as untrusted. It could by mistake delete files, read personal files or reach the internet.
    - **How:** before any more model-written R is run, an isolated Linux environment (WSL2 with the bubblewrap sandbox) is set up on this PC. There, R runs with no network, no view of the Windows drives (so no repository, credentials or personal files), and limits on memory, time and output.
    - **How it is tested:** a self-test tries each forbidden action from inside the sandbox and must see it fail.

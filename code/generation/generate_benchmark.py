@@ -30,9 +30,8 @@ HOW A QUESTION GETS MADE (plain steps)
    R fixes slips of arithmetic or typing. It cannot notice code that answers a different question than the
    one written, which is why the soft flag exists and why benchmark questions are also screened and a sample
    is audited by hand (docs/methodology/workflow.md Section 4, safeguard 6).
-6. Model-written R is untrusted, so it may run only inside the R sandbox (Section 4, safeguard 10). Until the
-   sandbox exists every R run is refused (require_r_sandbox), except for this repository's own synthetic test
-   fixtures (the switch MP_TRUSTED_TEST_R=1, which must never be used on model output).
+6. Model-written R is untrusted, so it runs only inside the R sandbox (r_sandbox.py; Section 4, safeguard 10).
+   The sandbox's self-test must pass first, or no R runs at all (require_r_sandbox).
 
 FREE COMMANDS (no model call; run with the project's virtual environment Python)
   python generate_benchmark.py plan --n 20 [--start 21]                 print the slots
@@ -45,15 +44,10 @@ import argparse
 import glob
 import hashlib
 import json
-import os
 import re
-import subprocess
 import sys
-import tempfile
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
-
-import yaml
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")  # so quotes and symbols print on Windows
@@ -487,23 +481,15 @@ def cmd_check(args):
 # WHY: in the first trial 3 of 8 numerical keys were wrong, and in one case the model's own written
 # explanation had the arithmetic slip, so asking the same model to re-read it would not help. R does
 # not share the model's blind spots in arithmetic, so we let R produce the number and compare it with
-# the key. The code R runs was written by the model, so it is untrusted: it may run only inside the R
-# sandbox (docs/methodology/workflow.md Section 4, safeguard 10: no network, no Windows drives, resource
-# limits). The sandbox is not built yet, so require_r_sandbox() refuses every run except the repository's
-# own synthetic test fixtures. The pattern list below is only an extra layer, never the protection itself.
+# the key. The code R runs was written by the model, so it is untrusted: it runs only inside the R
+# sandbox (r_sandbox.py; docs/methodology/workflow.md Section 4, safeguard 10: no network, no Windows
+# drives or home folder, resource limits). The sandbox's self-test must pass first, or nothing runs (fail
+# closed). The pattern list below is only an extra layer, never the protection itself.
 # ---------------------------------------------------------------------------------------------
-TRUSTED_TEST_SWITCH = "MP_TRUSTED_TEST_R"  # set to "1" ONLY by the repository's own synthetic test harnesses
-
-
 def require_r_sandbox():
-    """Stop unless R may run here. Model-written R may only run inside the R sandbox, which does not exist yet,
-    so every run is refused unless MP_TRUSTED_TEST_R=1. That switch is reserved for the test fixtures in
-    code/tests/ (R code we wrote ourselves, not a model); it must never be set when running model output."""
-    if os.environ.get(TRUSTED_TEST_SWITCH) == "1":
-        return
-    sys.exit("Refusing to run R: model-written R may only run inside the R sandbox (docs/methodology/workflow.md "
-             "Section 4, safeguard 10), which is not set up yet. MP_TRUSTED_TEST_R=1 is reserved for the "
-             "repository's own synthetic test fixtures and must never be used on model output.")
+    """Return the R sandbox after its self-test has passed (once per process); stop the program otherwise."""
+    import r_sandbox  # imported here so the commands that never run R do not need it
+    return r_sandbox.require()
 
 
 # R functions we never run (an extra layer; the sandbox is the real protection).
@@ -517,29 +503,20 @@ KEY_TOL = 0.0006  # keys are rounded to 3 decimals, so a correct key is within 0
 
 
 def rscript_path():
-    require_r_sandbox()  # verify and score call this first, so they refuse before reading any data
-    paths = yaml.safe_load((REPO / "configs" / "paths.yaml").read_text())
-    p = Path(paths["rscript"])
-    if not p.exists():
-        sys.exit(f"Rscript not found at {p}. Install R or fix `rscript` in configs/paths.yaml.")
-    return str(p)
+    """Return the R runner: the sandbox, after its self-test. (The name is kept from when this returned the path of
+    the Windows Rscript; `verify` and `score` call it first, so they stop before reading any data if it fails.)"""
+    return require_r_sandbox()
 
 
 def run_r(code, rscript):
-    """Run R code in a temporary folder. Returns (ok, stdout_or_error_text)."""
-    require_r_sandbox()  # checked again here, so no caller can reach R without the guard
+    """Run R code in the sandbox. Returns (ok, stdout_or_error_text). `rscript` must be the sandbox from
+    rscript_path(); anything else (for example a path to a Windows R) is refused, so no caller can bypass it."""
+    import r_sandbox
+    if not isinstance(rscript, r_sandbox.Sandbox):
+        sys.exit("Refusing to run R outside the R sandbox (docs/methodology/workflow.md Section 4, safeguard 10).")
     if UNSAFE_R.search(code):
         return False, "refused: code uses a function that is not allowed (" + UNSAFE_R.search(code).group(1) + ")"
-    with tempfile.TemporaryDirectory() as tmp:
-        (Path(tmp) / "code.R").write_text(code, encoding="utf-8")
-        try:
-            r = subprocess.run([rscript, "--vanilla", "code.R"], cwd=tmp, capture_output=True, text=True,
-                               timeout=20, encoding="utf-8", errors="replace")
-        except subprocess.TimeoutExpired:
-            return False, "R timed out after 20 s"
-    if r.returncode != 0:
-        return False, "R error: " + (r.stderr.strip().splitlines() or ["?"])[-1]
-    return True, r.stdout
+    return rscript.run(code)
 
 
 def r_string(s):
