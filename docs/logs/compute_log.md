@@ -34,8 +34,10 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 10 | 2026-11-12 02:35 | Talon `talon`, `mualhpgp01` | 196 | GPU probe job (`probe_gpu_job.sbatch`), `--gres=gpu:1` | 1 x H100 NVL, ~1 s | ~0.0003 | PASS (see the GPU-visibility finding) |
 | 11 | 2026-11-12 ~05:30 | Talon login node | none (background process) | vLLM 0.32.0 environment and Qwen3.6-27B BF16 weights download and verification (`prep_talon.sh`, attempt 2) | none (no GPU) | 0 | PASS (attempt 1 stopped by our version check; nothing downloaded) |
 | 12 | 2026-11-12 15:37 | Talon `talon`, `mualhpgp02` | 204 | **Stage A smoke test**: Qwen3.6-27B BF16 on vLLM 0.32.0, 2 development questions | 1 x H100 NVL, ~10.5 min | ~0.17 | PASS (answers read: sensible) |
+| 13 | 2026-11-12 16:13 | Talon `talon` | 207 | Stage T throughput test, first submission (cancelled by Jaxson to resubmit with a longer client time limit) | 1 x H100 NVL, ~5 min | ~0.08 | CANCELLED (server loaded in 130 s; no replies) |
+| 14 | 2026-11-12 16:18 | Talon `talon`, `mualhpgp02` | 209 | **Stage T throughput test**: Qwen3.6-27B BF16 on vLLM 0.32.0, 32 development questions at concurrency 1, 4, 8 and 16 | 1 x H100 NVL, ~2 h 22 min | ~2.37 | PASS with quality warnings (1 cut-off, 1 false alarm) |
 
-**GPU-hours used to date: about 0.22:** about 0.05 (Redhawk job 6), about 0.0003 (Talon job 196) and about 0.17 (Talon job 204), plus Redhawk job 7 once it is reviewed.
+**GPU-hours used to date: about 2.67:** about 0.05 (Redhawk job 6), about 0.0003 (Talon job 196), about 0.17 (Talon job 204), about 0.08 (Talon job 207, cancelled) and about 2.37 (Talon job 209), plus Redhawk job 7 once it is reviewed.
 
 ## Entries
 
@@ -183,3 +185,47 @@ This is the record of every cluster job, scheduler test and measured local run i
   - **Share of thinking:** about 95% of the output is thinking.
 - **Output folder:** `/home/buggjm/talon_project/teacher_outputs/2026-11-12_qwen3-6-27b-talon-bf16_smokeA01` (`responses.jsonl`, `run_log.json`, `gpu_peak.txt`); development slots only, marked test material, never benchmark data.
 - **Related progress entry:** "Talon Stage A passed" (2026-11-12).
+
+### 13. Talon job 207: Stage T, first submission, cancelled, 2026-11-12 (cluster local time 11:13; UTC 16:13)
+- **Purpose:** the throughput test (Stage T), submitted with the default client time limit.
+- **Why it was cancelled:** the estimate of the run's length was close to the default 90-minute client time limit (`QT_PY_TIMEOUT`). Jaxson cancelled the job and resubmitted it as job 209 with `QT_PY_TIMEOUT=150m`, so the run could not be cut off partway.
+- **Timing:**
+  - started 11:13:11 and cancelled 11:18:15 (cluster local time, UTC−5, so 16:13:11 to 16:18:15 UTC);
+  - about 5 min of wall time on 1 H100, which is about **0.08 GPU-hours**.
+- **What it did:** the server became ready after **130 s** (model load; `repo/qt_talon_T_207.log`). No question was answered before the cancel. Its output folder holds only `run.lock` and `run_log.json`, and contains no replies.
+- **Outcome:** CANCELLED by the owner; nothing to review.
+- **Related progress entry:** "Talon Stage T" (2026-11-12).
+
+### 14. Talon job 209: Stage T throughput test, 2026-11-12 (cluster local time 11:18; UTC 16:18)
+- **Purpose:** measure how many examples per GPU-hour Qwen3.6-27B (BF16, vLLM 0.32.0) produces on one H100. The 32 development questions of set T (BM9101 to BM9132; never benchmark or training slots) are sent once at each client concurrency (1, 4, 8 and 16 requests in flight) on one server start. This is the number that projects the 200,000-example generation.
+- **Settings:**
+  - `GPU_COUNT=1 TENSOR_PARALLEL=1 REPLICAS=1 MAX_NUM_SEQS=16`, sweep concurrency 1, 4, 8 and 16, and `QT_PY_TIMEOUT=150m`;
+  - the model-card sampling (temperature 1.0, top_p 0.95, top_k 20), max 16,384 output tokens, context 20,480;
+  - model `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; prompt v6 (`348db6ff...`).
+- **Node:** `mualhpgp02.hpc.miamioh.edu`, one GPU.
+- **Timing:**
+  - started 11:18:57 cluster local time (16:18:57 UTC); the submit time was not recorded separately. It was submitted right after job 207 was cancelled, so the queue wait was seconds.
+  - Ended: the result file is stamped **18:41:19 UTC**, so the wall time was about **2 h 22 min**, which on 1 H100 is about **2.37 GPU-hours**.
+  - The server was ready after **86 s** (model load; `repo/qt_talon_T_209.log`). That is faster than job 207's 130 s and Stage A's 242 s, because the compile cache and file cache were warm.
+- **GPU memory:** the lowest free memory on the assigned GPU was **5,485 MiB** (`MIN_FREE_MIB`), so the peak use was about 90,345 of 95,830 MiB. vLLM reserves a fixed share of the card at start, so this is expected.
+- **Throughput** (from `throughput_report.py` on the run folders):
+
+  | Client concurrency | Output tokens per second (total) | GPU-hours per 1,000 successful examples |
+  |---|---|---|
+  | 1 | 29.4 | 47.5 |
+  | 4 | 109.7 | 12.36 |
+  | 8 | 191.9 | 6.99 |
+  | 16 | 226.6 | 6.14 |
+
+  - **What the table means:** running more questions at once costs little extra time per question on an H100, so the total speed grows almost 8-fold from 1 to 16 requests in flight (226.6 / 29.4 = 7.7). The last step gains less (8 to 16: 6.99 to 6.14 GPU-hours per 1,000), partly because the final few long questions run nearly alone at the end of a batch (the "tail").
+  - **Per example:** about 4,850 output tokens on average, about 95% of them thinking.
+- **Projection at concurrency 16:** 6.14 GPU-hours per 1,000 examples × 200 = about **1,228 GPU-hours** for 200,000 examples. That is about 51 GPU-days, or about 13 days of clock time with 4 single-GPU jobs side by side (allowed by Research Computing, 2026-11-12). It is a planning estimate: 32 questions of one prompt family, with no queue waits, retries or reloads included.
+- **Outcome:** `RESULT=PASS_QUALITY_WARN`. The infrastructure passed. There are two quality findings:
+  - **BM9118** was cut off at the 16,384-token output limit (1 of 128 replies, about 0.8%). Thinking used up the budget, so the reply had no usable answer.
+  - **BM9115** was flagged as "thinking aloud" by the `\bno:` pattern in `check_item`. On reading the reply, this is a **false alarm**: the question contains a table whose row label is "No:". A fix (count `no:` only in lowercase, mid-sentence) is noted for the generation-code stage and needs approval before it is made.
+- **Output:**
+  - the dated Stage T run folders under `/home/buggjm/talon_project/teacher_outputs/` (one per concurrency level);
+  - the result file `teacher_outputs/stage_results/stageT.txt`.
+
+  These are development slots only, marked test material, never benchmark data.
+- **Related progress entry:** "Talon Stage T" (2026-11-12).

@@ -242,6 +242,13 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - *vLLM chose FlashAttention 3 for the main attention.*
 - *One question at a time runs at about 30 tokens per second, and about 95% of the output is thinking.*
 
+*Stage T passed with quality warnings, 2026-11-12 (job 209, 1 H100 on `mualhpgp02`, about 2.37 GPU-hours; `docs/logs/compute_log.md` entry 14; job 207 was a cancelled first submission, entry 13).*
+- *Speed on one H100: 29.4 output tokens per second with 1 request in flight, rising to 226.6 with 16 (about 7.7 times).*
+- *Cost: 6.14 GPU-hours per 1,000 examples at concurrency 16, so about 1,228 GPU-hours for 200,000 (about 13 days on 4 single-GPU jobs).*
+- *About 4,850 output tokens per example, about 95% of them thinking.*
+- *1 of 128 replies was cut off at 16,384 tokens (BM9118). One quality flag (BM9115) was a false alarm from a table row labeled "No:".*
+- *The model loaded in 86 s with warm caches.*
+
 *GPU-counting fix, 2026-11-12. `serve_and_run.sh` now asks `nvidia-smi` only about the GPUs in `CUDA_VISIBLE_DEVICES` (`-i <ids>`).*
 - *This covers the count check, the memory-size check, the 2-second memory monitor and the model-on-every-GPU check.*
 - *The script stops if `CUDA_VISIBLE_DEVICES` is not set.*

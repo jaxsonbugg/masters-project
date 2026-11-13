@@ -723,3 +723,21 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **`code/generation/throughput_report.py`:** its notes. Also its context note, which still said the 20,480-token limit was chosen to match the Redhawk run (the same outdated wording fixed in the Stage A script).
   - **`docs/clusters/talon_setup.md`**, `recovery/talon_ssh_access.md` and `docs/methodology/workflow.md` (the risk table and open decisions).
 - **Tests:** one Talon test expected the removed "pricing and charges" line in the printed list; it now expects "usage and data policies" and that the pricing item is gone. Results are in the commit message.
+
+### Talon Stage T: throughput measured on one H100 (jobs 207 and 209, 2026-11-12, about 2.45 GPU-hours)
+- **What:** Stage T sends the same 32 development questions (BM9101 to BM9132) to Qwen3.6-27B (BF16, vLLM 0.32.0, one H100) at 1, 4, 8 and 16 requests in flight, to measure how many examples one GPU-hour produces.
+  - **Job 207:** the first submission, cancelled after about 5 minutes (about 0.08 GPU-hours, no replies). The run was expected to come close to the default 90-minute client time limit, so Jaxson resubmitted it as job 209 with `QT_PY_TIMEOUT=150m`.
+- **Result:** `RESULT=PASS_QUALITY_WARN`. Job 209 ran about 2 h 22 min (about 2.37 GPU-hours) on `mualhpgp02`; the model loaded in 86 s.
+- **Speed:** total output speed rose from 29.4 tokens/s (1 in flight) to 226.6 tokens/s (16 in flight), about 7.7 times. GPU-hours per 1,000 examples fell from 47.5 to 6.14.
+  - **Why it is less than the mid-run tally suggested:** a mid-run count suggested about 10 times. The final 7.7 is lower because the last few long questions run nearly alone at the end of each batch.
+  - **Per example:** about 4,850 output tokens on average, about 95% of them thinking.
+- **What it means for the plan:**
+  - at 6.14 GPU-hours per 1,000 examples, 200,000 examples need about 1,228 GPU-hours: about 51 GPU-days, or about 13 days of clock time with 4 single-GPU jobs side by side;
+  - the 50,000-example fallback needs about a quarter of that;
+  - this is a planning estimate from 32 questions.
+- **Quality findings:**
+  - **BM9118:** cut off at the 16,384-token output limit (1 of 128 replies).
+  - **BM9115:** a false "thinking aloud" alarm. The `no:` pattern matched a table row labeled "No:".
+
+  A fix to that pattern is noted for the generation-code stage and needs approval first. The teacher thinking-budget decision (`docs/methodology/workflow.md` Section 10.2) stays open; the cut-off rate is one input to it.
+- **Recorded in:** `docs/logs/compute_log.md` entries 13 and 14, and `docs/clusters/talon_setup.md`.
