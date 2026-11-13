@@ -67,7 +67,7 @@ Write in American English (artifact, behavior, analyze).
   - **Its job:** it grades benchmark answers and screens benchmark questions, and nothing else.
   - **What its outputs never do:** enter training data, filter data, choose hyperparameters or choose the teacher setup.
   - **Where it runs:** only in an isolated workspace folder outside this repository, never inside it. Model answers sent to it are untrusted text.
-  - **If it fails:** validity thresholds and failure rules are fixed on development data first. A failure on the benchmark is reported as such, and the grading instructions are never changed after benchmark results are seen.
+  - **If it fails:** validity thresholds and a fallback grading method (rules plus blind owner grading) are frozen before the benchmark is evaluated, and the fallback is always computed. If any threshold is missed on the benchmark, the failure is reported, the fallback scores carry the main conclusions, and the Codex scores are kept and labeled. The grading instructions are never changed after benchmark results are seen.
 - **Untrusted R code.**
   - **The rule:** R written by a model (the teacher's `r_solution` or `r_check`, a student's answer) runs only inside the R sandbox (`docs/methodology/workflow.md` Section 4, safeguard 10). Never run it with access to the repository, credentials or personal files. The pattern screen alone is not enough.
   - **The one exception:** the switch `MP_TRUSTED_TEST_R=1` is only for the repository's own synthetic test fixtures.

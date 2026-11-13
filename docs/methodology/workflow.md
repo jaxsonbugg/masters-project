@@ -261,13 +261,21 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
   - **systematic bias:** the difference between models in how often Codex disagrees with the deterministic and human checks. This is judged mainly on the deterministic cross-check, which has hundreds of items per model, because 60 audited answers per model can only reveal large differences.
 
   The values stay blank until the development data exists.
-- **If Codex fails on development data.**
-  - **First:** the grading instructions are revised using development data only, and re-tested on development answers held back for that purpose, for at most a declared number of rounds.
-  - **If it still fails:** the pre-registered **fallback grading** becomes the primary score. Number, multiple-choice and R-expression items are graded by rules against the reference key, and short-text items are graded by the owner. This is decided before any benchmark answer is graded.
-- **If the checks fail on the benchmark.** If the calibration answers, the 180-answer audit or the cross-check miss a threshold, the result is **reported as a grader-validity failure**.
-  - The pre-registered Codex scores are still reported as the primary result, clearly flagged, with the human and deterministic results reported separately.
-  - The grading instructions are never changed after benchmark results have been seen, and any re-grading is **exploratory** (safeguard 8).
-  - An implementation bug, for example answers mapped to the wrong model, is a documented bug fix: it is logged with its evidence, and the affected step is re-run.
+- **The fallback grading method**, written into the pre-registration before any benchmark answer is graded, in full.
+  - **The rules:** number, multiple-choice and R-expression items are graded against the reference key by the deterministic rules above.
+  - **Short-text items** are graded by the owner, blind: answers from all models are pooled under the same anonymous IDs, against the reference key, using a written rubric.
+  - **Computed every time:** the fallback score is computed for every benchmark evaluation, whether or not it is needed, so it never has to be built after results are known.
+- **One rule decides which score is primary, and it is mechanical.** The validity checks are computed by a script, against the frozen thresholds, and recorded **before** the per-model accuracy table is produced.
+  - **All thresholds met:** the Codex scores are the primary result.
+  - **Any threshold missed:** this is a **grader-validity failure**. The main accuracy conclusions (criteria 1 and 2, and the analysis in Section 7) then use the **fallback scores**. The Codex scores are still kept, reported in full and labeled as having failed validation.
+  - **Why this cannot favor one method:** nobody chooses between the two methods after seeing which gives better student results. The thresholds and the fallback are both frozen in advance.
+- **If Codex fails on development data**, before any benchmark grading.
+  - **First:** the grading instructions may be revised using development data only, and re-tested on development answers held back for that purpose, for at most a declared number of rounds.
+  - **If it still fails:** the fallback becomes the primary method for the confirmatory evaluation from the start. Codex may still be run, but only as a reported secondary measure.
+- **If the checks fail on the benchmark.** The result is reported as a grader-validity failure, and the fallback scores carry the main conclusions (above).
+  - The grading instructions are never changed after benchmark results have been seen.
+  - Any re-grading with revised instructions is **exploratory** (safeguard 8) and never replaces either pre-registered score.
+- **An implementation bug,** for example answers mapped to the wrong model, is a documented bug fix: it is logged with its evidence, and the affected step is re-run. It is not a validity failure.
 
 **What the grader is allowed to touch.**
 - Codex grades benchmark answers and screens benchmark questions (safeguard 6c), and it does nothing else.
@@ -503,7 +511,7 @@ Goal: prove the whole pipeline on Talon at small scale and measure real GPU time
 - [ ] Choose the hyperparameters on the development set (Section 4, safeguard 8). Then freeze, in a dated pre-registration:
   - the hyperparameters and seed;
   - the evaluation protocol, scoring rules and analysis;
-  - the grader setup, its validity thresholds and failure rules, and the audit design.
+  - the grader setup, its validity thresholds, the fallback grading method and the rule that picks the primary score, and the audit design.
 - [ ] Confirmatory run:
   - fine-tune Pythia 70M once with the frozen settings;
   - evaluate the untrained and fine-tuned 70M and the teacher on the frozen benchmark;
@@ -698,7 +706,7 @@ Dates are placeholders until the program's real deadlines are known.
   - the grading instructions `grading_v1` and the batch size;
   - the owner's confirmation that OpenAI's terms allow this evaluation-only use;
   - the usage-pilot results and the projection for the full grid.
-- [ ] **Grader validity thresholds and failure rules** (Section 2.3), set on development data before any benchmark answer is graded.
+- [ ] **Grader validity thresholds, the fallback grading method (including the short-text rubric) and the primary-score rule** (Section 2.3), set on development data and frozen before any benchmark answer is graded.
 - [ ] **Grader audit design for the full grid** (beyond the pilot's 180 answers), set after the pilot.
 - [ ] **Teacher precision details** (Section 2.1).
   - **FP8:** an official FP8 checkpoint exists (`Qwen/Qwen3.6-27B-FP8`).

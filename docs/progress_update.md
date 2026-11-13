@@ -780,3 +780,17 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **Unchanged:** the prompt (SHA-256 `348db6ff...`), every Talon and Redhawk script, and `open_teacher_test.py`.
 - **Tests:** every suite passed before and after the change (see the commit). The regression snapshot differs from the old one in exactly one line, the message above.
 - **Next:** set up the R sandbox (needs CPU virtualization enabled in the UEFI/BIOS and WSL2 installed), then the teacher-precision sample-size calculation and feasibility gate.
+
+### Grader failure rule made consistent: a frozen fallback carries the conclusions if Codex fails (2026-11-12)
+- **The problem (found in review):** `docs/methodology/workflow.md` Section 2.3 gave two rules that contradicted each other.
+  - **On development data:** if Codex failed there, a fallback grading method became primary.
+  - **On the benchmark:** if Codex failed its validity checks there, its scores still stayed primary.
+
+  A grader that fails the confirmatory checks should not stay the authoritative measure of accuracy.
+- **The new single rule:**
+  - **The fallback:** deterministic rules against the reference key for number, multiple-choice and R-expression items, and blind owner grading of short-text items with a written rubric. It is fully specified and frozen before any benchmark answer is graded, and it is computed for every evaluation.
+  - **The check:** a script compares the validity checks with the frozen thresholds and records the result **before** the per-model accuracy table is produced.
+  - **If every threshold is met,** the Codex scores are primary.
+  - **If any is missed,** the failure is reported, the fallback scores carry the main conclusions, and the Codex scores are kept and labeled as having failed validation.
+  - **No choice after the fact:** nobody picks a method after seeing which gives better student results, and the rubric is never revised after benchmark results are seen. Any re-grading with revised instructions is exploratory.
+- **Files:** `docs/methodology/workflow.md` (Section 2.3, the Phase 4 freeze item, Section 10.2), `docs/methodology/pilot_plan.md` (Step 5) and `CLAUDE.md` (the grader rule).

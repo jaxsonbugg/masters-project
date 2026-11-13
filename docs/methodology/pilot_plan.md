@@ -168,7 +168,7 @@ It deliberately does **not** stop at the first blank line, because a model may p
   All three are reported next to the scores.
 - **Thresholds and failure rules are decided before the benchmark is graded.** How well Codex must do is decided on development data, together with what happens if it fails.
   - **If it fails on development data:** the instructions are revised there, or a pre-registered fallback grading by rules and by hand becomes the main score.
-  - **If it fails on the benchmark:** the failure is reported as such. The pre-registered scores stay the primary result, and the instructions are never changed after benchmark results are seen.
+  - **If it fails on the benchmark:** the failure is reported as such, and the main conclusions use the pre-registered fallback scores (rules for numbers, letters and R expressions, plus your blind grading of short-text answers). That fallback is computed every time anyway. Codex's scores are still reported, labeled as having failed. Which score counts is decided by the frozen thresholds alone, checked before anyone looks at the per-model results, so neither method can be picked for giving the "better" answer. The instructions are never changed after benchmark results are seen.
 
 **The benchmark is used only for this prespecified evaluation.** The hyperparameters and the evaluation code are chosen and debugged on a separate development set of about 200 items, and frozen in a dated pre-registration before the training run that is evaluated. After the benchmark scores are seen, only documented bug fixes are allowed. Any further experiment prompted by the scores is labeled exploratory and never replaces these results.
 
