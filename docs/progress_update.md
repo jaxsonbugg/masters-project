@@ -914,3 +914,22 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **An outdated message:** the "interim 20,480" note printed by `serve_and_run.sh` is out of date.
   - **Both** are to be fixed in the scripts.
 - **Files:** `code/generation/answer_check.py` (the parser fix and the extra sheet reason), its tests (now 44/44), `docs/logs/compute_log.md`, `docs/methodology/workflow.md`, `results/thinking_check/2026-11-19_stageK_job287/`, and the scored-item copies in `results/open_teacher_test/`.
+
+### Thinking mode decided: thinking on (2026-11-19)
+- **The final grading of the thinking check** (job 287), after Jaxson's check sheet.
+  - **His sheet:** 9 keys confirmed; Q29's key text was corrected to `rep(seq(1, 5), each = 2)` (its R check was already right, so no score changed); Q37 also accepts A and C (several options were true); Q27 was marked a bad question (wrong for both modes).
+  - **The results:**
+    - **usability:** thinking on 100%, thinking off 97.5%;
+    - **accuracy:** thinking on 89.2%, thinking off 85.8% (−3.4 points, interval −12.5 to +5.0), or 85.0% against 74.2% without the parser fix;
+    - **cost:** generation with thinking off was 7.3 times cheaper.
+  - **The rule's outcome:** all three numeric criteria held, but the **blocking** R-generation flag (Q38: thinking off put `set.seed` inside `replicate` on all 3 tries) required Jaxson's review.
+- **Jaxson's reviewed decision: thinking on** for all generation and for the teacher's benchmark run.
+  - **What it weighed:** the estimated quality cost of thinking off is about 3 to 7 points of answer accuracy (the measured 3.4 understates it, because 8 thinking-on answers were cut off at 16,384 and would mostly have been right), concentrated in tricky R details. The time it would save is about a week of cluster time at 200k, or about 1.5 days at 50k, with no GPU-hour cap.
+  - **Cut-offs do not argue against thinking on:** in the writing task thinking on was cut off 0 of 60 times (1 of 128 in Stage T), and a cut-off reply is regenerated. The answering cut-offs (8 of 120) matter only for the teacher's benchmark run, whose answer limit (for example 32,768) is a new open item in the evaluation protocol.
+- **Script fixes from the run** (`configs/talon/serve_and_run.sh`):
+  - the confidential-computing search no longer matches "ECC Mode";
+  - the out-of-date "interim 20,480" note now says the value is final.
+- **New open items:**
+  - answering prompt v2, which keeps the `Final answer:` line for R questions;
+  - the teacher's benchmark answer limit.
+- **Updated:** `docs/methodology/workflow.md` (Section 2.1, Phase 3, Section 10.2), `docs/methodology/pilot_plan.md`, `README.md`.

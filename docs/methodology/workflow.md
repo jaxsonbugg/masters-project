@@ -201,7 +201,19 @@ No student result existed when this change was made.
 - *Worked example (hypothetical numbers):* thinking on answers 86.7% correctly and thinking off 83.3% (3.4 points lower), with usable rates of 95% and 92.5%. Thinking-off generation costs 0.0102 GPU-hours per usable question against 0.0640, which is 6.3 times cheaper. All three conditions hold. If numerical questions dropped from 90% to 75%, the blocking flag would still hold thinking off back until the owner had looked.
 - **What it can and cannot tell us.** With 40 questions the overall accuracy is uncertain by roughly ±8 points, and much more within one category. The check can reveal a large drop; it cannot prove that the two modes are equal. It is reported as observational.
 - **The consequence.** Whichever mode wins is used for **all** generation **and** for the teacher's benchmark run, so the student-to-teacher ratio compares like with like.
-- **Status.** Built and tested locally on 2026-11-18 (stage K in `configs/talon/`, `open_teacher_test.py` `run --thinking`, `answer-set`, `answer`, and `answer_check.py`). The Talon run waits for the owner's separate approval.
+- **Status: done; decision THINKING ON (2026-11-19).** Talon job 287 (`docs/logs/compute_log.md` entry 15) ran cleanly: every run validated, thinking off was confirmed, and 40 of 40 positions were filled. It was graded after the owner's sheet (`results/thinking_check/2026-11-19_stageK_job287/`).
+  - **Results:**
+    - **usability:** thinking on 100% (40/40), thinking off 97.5% (39/40);
+    - **accuracy:** thinking on 89.2%, thinking off 85.8% (−3.4 points, question-level 95% interval −12.5 to +5.0). Without the parser fix: 85.0% against 74.2%;
+    - **cost:** thinking-off generation was 7.3 times cheaper per usable question (0.00044 against 0.00323 GPU-hours).
+  - **The pre-set rule's outcome:** all three numeric criteria held, but the R-generation category was flagged as **blocking** (100% against 87.5%, entirely question Q38). R interpretation was flagged without blocking (83.3% against 66.7%, mostly Q39). So the outcome was "thinking on unless the owner reviews the flag and records a decision".
+  - **The owner's reviewed decision: thinking on** for all generation and for the teacher's benchmark run.
+    - **The estimated quality cost of thinking off:** about 3 to 7 points of answer accuracy. The measured 3.4 understates it, because 8 thinking-on answers were cut off at 16,384 tokens and would mostly have been right with more room. That is roughly 35 to 70 more wrong worked answers per 1,000 training examples, concentrated in tricky R details. The plausible range is 0 to 13 points.
+    - **The time it would save:** about a week of cluster time at 200k, and about 1.5 days at 50k. With no GPU-hour cap, that did not outweigh keeping the teacher at its strongest, which is also Qwen's recommended setting.
+  - **Cut-offs:**
+    - **When writing,** thinking on was cut off 0 of 60 times (1 of 128 in Stage T), and a cut-off reply is regenerated. Generation therefore keeps 16,384 output tokens.
+    - **When answering,** it was cut off 8 of 120 times, on the two flawed questions and the two hardest math ones. The teacher's benchmark answer limit (for example Qwen's recommended 32,768) is therefore decided in the evaluation protocol (Section 10.2).
+  - **Follow-up:** answering prompt v2 must keep the `Final answer:` line for R-expression questions too, before the prompt is used again.
 
 **Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, the first step is the same model with a higher precision or more thinking, not a different model (BF16 is already the highest precision available, so since 2026-11-18 this means more thinking: thinking on if the thinking check chose off, or a longer output limit). The alternatives ranked in `docs/models/teacher_model_evaluations.md` stay documented but are not the plan.
 
@@ -532,8 +544,8 @@ The benchmark comes before the pilot because the pilot needs something frozen to
 - [x] Teacher precision: **BF16 for all generation**, decided 2026-11-18 without a precision test (FP8 and 4-bit not tested and not used; Section 2.1, item 1). Output limit 16,384 and context 20,480 fixed as final.
 - [ ] **Thinking check** (stage K, Section 2.1, item 3), before any benchmark generation:
   - [x] built and tested locally (2026-11-18);
-  - [ ] the Talon run, after the owner's approval;
-  - [ ] grading, the owner's look at the sheet, and the decision under the rule fixed in advance.
+  - [x] the Talon run (job 287, 2026-11-19);
+  - [x] grading, the owner's look at the sheet, and the decision: **thinking on** (2026-11-19, the owner's reviewed decision on the blocking R-generation flag).
 - [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4), then re-run `dupcheck`
 - [ ] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. About a third of the trial items had small inconsistencies; no keys were affected.
 - [ ] Generate about 1,000 benchmark questions and the ~200-item development set with Qwen on Talon at the chosen precision; regenerate failures; `verify` (R in the sandbox) and `dupcheck` the whole set
@@ -776,7 +788,9 @@ Dates are placeholders until the program's real deadlines are known.
   - whether GPUs on more than one node may be used at once (the written answer says all 4 GPUs of a node);
   - storage beyond 500 GB, and the account's lifetime and renewal (not asked yet);
   - GPU count and tensor parallelism (decided by the throughput benchmark).
-- [ ] **Teacher thinking mode**, decided by the thinking check. Its design and rule were fixed on 2026-11-18 (Section 2.1, item 3). A cap on thinking length is not considered. The winning mode is also used for the teacher's benchmark run.
+- [x] **Teacher thinking mode** (decided 2026-11-19): **thinking on** for all generation and for the teacher's benchmark run, after the thinking check and the owner's review of its blocking flag (Section 2.1, item 3).
+- [ ] **The teacher's answer limit on the benchmark** (part of the evaluation protocol). Thinking on was cut off on 8 of 120 answers at 16,384 tokens in the check, so consider Qwen's recommended 32,768 for the accuracy run. Criterion 4b's timing protocol asks for the same limit for the teacher and the students, so the timing and accuracy runs may need separate settings.
+- [ ] **Answering prompt v2:** keep the `Final answer:` line for R-expression questions (v1 told the model "one line of R and nothing else", Section 2.1, item 3).
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds
 - [x] **Require `r_solution` in every benchmark reply** (decided 2026-11-11). The field must always be present. It holds substantive R wherever R can compute the answer, and an explicit "not applicable" empty value otherwise. The legacy path that accepted a reply without the field is removed, and the `absent_r_solution` regression fixture is updated deliberately (Section 4, safeguard 6a). Training replies keep the field, but its correctness is not required (safeguard 9).
 - [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.

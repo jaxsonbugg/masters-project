@@ -215,7 +215,7 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
 3. **Teacher setup:**
    1. precision: BF16, decided without a test (2026-11-18);
    2. output limit and context: kept as final;
-   3. **the thinking check** (stage K): built and tested locally; next, the Talon run (after your approval), grading, your look at the sheet, and the decision.
+   3. **the thinking check** (stage K): done 2026-11-19 (job 287). Thinking off was about 3 to 7 points less accurate (mostly tricky R details) and about 7 times cheaper to generate with. Your decision: **thinking on**.
 4. **Benchmark and development set:**
    1. generate;
    2. R keys, `verify`, `dupcheck`;

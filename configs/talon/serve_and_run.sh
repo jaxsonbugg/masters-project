@@ -96,11 +96,11 @@ nvidia-smi 2>/dev/null | head -n 4 || true   # the header line shows the CUDA ve
 # Confidential-computing mode of the assigned GPU(s), recorded because vLLM issue #57224 reports garbled output on H100 NVL in
 # that mode (vLLM 0.29-0.33). Recorded, not judged here: the wording of `nvidia-smi -q` for it is UNVERIFIED on Talon, so a
 # person reads this line (and the replies) before any result is used.
-CC_MODE="$( { nvidia-smi -q -i "$GPU_IDS" 2>/dev/null || true; } | grep -i -A2 'confidential\|CC State\|CC Mode' | tr -s ' \n' ' ' | cut -c1-200 || true)"
+CC_MODE="$( { nvidia-smi -q -i "$GPU_IDS" 2>/dev/null || true; } | grep -iE -A2 'confidential|\bCC (State|Mode|Status)\b' | grep -viE 'ECC' | tr -s ' \n' ' ' | cut -c1-200 || true)"
 CC_MODE="${CC_MODE:-not reported by nvidia-smi -q}"
 echo "confidential computing (nvidia-smi -q): $CC_MODE"
 echo "layout: $GPU_COUNT GPU(s), tensor parallel $TENSOR_PARALLEL, replicas $REPLICAS, max sequences $MAX_NUM_SEQS, max length per sequence $MAX_MODEL_LEN"
-echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; an interim setting: Stage T measures how often answers are cut off at this length, and the final value is fixed before the precision test (docs/methodology/workflow.md, settings review 2026-11-12)."
+echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; fixed as final on 2026-11-18 together with the 16,384-token output limit (Stage T cut off 1 reply in 128; docs/methodology/workflow.md Section 2.1)."
 
 # ---- 2. queue wait, from Slurm itself (not from an assumed variable) -------------------------------------------------
 SUBMIT="unknown"; STARTED="unknown"; WAIT="unknown"
