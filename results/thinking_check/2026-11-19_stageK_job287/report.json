@@ -132,11 +132,11 @@
   },
   "correctness": {
     "on": {
-      "mean_pct": 87.5,
-      "mean_pct_without_parser_fix": 83.3,
+      "mean_pct": 89.2,
+      "mean_pct_without_parser_fix": 85.0,
       "parser_fix_used": 5,
       "question_bootstrap_95_pct": [
-        75.0,
+        79.2,
         97.5
       ],
       "format_failures": 8,
@@ -145,18 +145,18 @@
       "by_category": {
         "conceptual": 87.5,
         "numerical": 83.3,
-        "output_interpretation": 83.3,
+        "output_interpretation": 94.4,
         "r_generation": 100.0,
         "r_interpretation": 83.3
       }
     },
     "off": {
-      "mean_pct": 83.3,
-      "mean_pct_without_parser_fix": 71.7,
+      "mean_pct": 85.8,
+      "mean_pct_without_parser_fix": 74.2,
       "parser_fix_used": 17,
       "question_bootstrap_95_pct": [
-        71.7,
-        93.3
+        75.0,
+        95.0
       ],
       "format_failures": 0,
       "cut_off": 0,
@@ -164,16 +164,16 @@
       "by_category": {
         "conceptual": 91.7,
         "numerical": 83.3,
-        "output_interpretation": 83.3,
+        "output_interpretation": 100.0,
         "r_generation": 87.5,
         "r_interpretation": 66.7
       }
     },
     "questions_compared": 40,
-    "difference_off_minus_on_pct": -4.2,
+    "difference_off_minus_on_pct": -3.4,
     "difference_question_bootstrap_95_pct": [
-      -13.3,
-      3.3
+      -12.5,
+      5.0
     ]
   },
   "category_flags": [
@@ -253,8 +253,8 @@
     "rule": "a reply with no 'Final answer:' line whose whole content is exactly one line is read as the answer (documented fix of 2026-11-19, decided before grading, applied to both modes)",
     "used_on": 5,
     "used_off": 17,
-    "accuracy_on_without_fix": 83.3,
-    "accuracy_off_without_fix": 71.7,
+    "accuracy_on_without_fix": 85.0,
+    "accuracy_off_without_fix": 74.2,
     "accuracy_within_5_without_fix": false
   },
   "rule_outcome": {
@@ -267,7 +267,7 @@
     "answer_records_complete": true,
     "set_complete_enough": true,
     "not_usable_because": [],
-    "sheet_items_pending": 11,
-    "outcome": "NOT FINAL: 11 question(s) on check_sheet.csv still need your look; fill it in and rerun with --sheet"
+    "sheet_items_pending": 0,
+    "outcome": "THINKING ON unless the owner reviews the flagged category and records a decision (blocking category flag)"
   }
 }
