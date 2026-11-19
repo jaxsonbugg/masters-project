@@ -241,6 +241,13 @@ chk "five folders: writing on and off (60 replies each), the answer set, answers
 chk "the runs are, in order, writing on, writing off, answers on, answers off" 'set -- $KRUNS; grep -q "\"thinking\": \"on\"" $1/run_log.json && grep -q "\"thinking\": \"off\"" $2/run_log.json && grep -q "\"thinking\": \"on\"" $4/run_log.json && grep -q "\"thinking\": \"off\"" $5/run_log.json'
 chk "thinking-off replies carry no reasoning, and validation confirmed it from the records" 'set -- $KRUNS; ! grep -q "thinking about it" $2/responses.jsonl && ! grep -q "thinking about it" $5/responses.jsonl && [ "$(grep -c "thinking off confirmed" <<<"$OUT")" = 2 ]'
 chk "the result file records the confidential-computing line, and each run its cc_mode" 'grep -q "^CC_MODE=" $RES/stageK.txt && set -- $KRUNS && grep -q "\"cc_mode\"" $1/run_log.json'
+echo "[K2] stage K stops at an INFRASTRUCTURE failure, but not at model-quality findings"
+sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 K_SAMPLES=1 FAKE_FAIL_ITEM=BM8005
+chk "an incomplete thinking-on writing run stops stage K at once: FAIL_INFRA, no thinking-off writing, no answer-set, no answering" '[ $RC -ne 0 ] && grep -q "RESULT: FAIL_INFRA (stage K)" <<<"$OUT" && grep -q "STOPPING stage K" <<<"$OUT" && ! grep -q "writing, thinking off" <<<"$OUT" && ! grep -q -- "--- answer-set" <<<"$OUT" && ! grep -q "answering, thinking" <<<"$OUT" && grep -q "stage K stopped early" $RES/stageK.txt'
+sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 K_SAMPLES=1 FAKE_ANSWER_FAIL=on
+chk "a failed thinking-on answer run stops stage K before the thinking-off answers" '[ $RC -ne 0 ] && grep -q "RESULT: FAIL_INFRA (stage K)" <<<"$OUT" && grep -q "answering, thinking on" <<<"$OUT" && ! grep -q "answering, thinking off" <<<"$OUT"'
+sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 K_SAMPLES=1 FAKE_MODE=mixed
+chk "model-quality findings (every 4th question cut off) do NOT stop stage K: all steps run, PASS_QUALITY_WARN, five folders" '[ $RC -eq 0 ] && grep -q "RESULT: PASS_QUALITY_WARN.*(stage K)" <<<"$OUT" && grep -q "answering, thinking off" <<<"$OUT" && [ "$(set -- $(val $RES/stageK.txt RUN_DIRS); echo $#)" = 5 ]'
 sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=; chk "Stage K needs CLIENT_CONCURRENCY (no default)" '[ $RC -ne 0 ] && grep -q "CLIENT_CONCURRENCY is" <<<"$OUT"'
 sub talon_thinking.sbatch FAKE_VLLM_VERSION=0.19.2 VLLM_VERSION=0.19.2; chk "Stage K needs a Stage A with the same engine and weights" '[ $RC -ne 0 ] && grep -q "different ENGINE_FP" <<<"$OUT"'
 echo "[P1] the one-job pipeline: A, B, main with one layout"

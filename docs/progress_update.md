@@ -868,3 +868,27 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - `docs/clusters/cluster_selection.md` and `docs/models/teacher_model_evaluations.md`: dated notes.
   - The stale "about 17 GB used" figures now also give the 83 GB measured after the Talon download.
 - **Next:** the stage K run on Talon (about 2 GPU-hours, 1 GPU), **only after Jaxson approves it separately**. Then copy the folders to the PC, score, grade, fill in the sheet, and record the decision.
+
+### Thinking check: stop on infrastructure failures, and no decision from incomplete data (2026-11-18)
+- **Why:** Jaxson reviewed commit `afdf17c` and asked for two targeted corrections before stage K is submitted. Nothing else was changed, and the decision thresholds (5 points, 5 points, 2 times, 10-point flag) are unchanged.
+- **1. Stage K stops at an infrastructure failure** (`configs/talon/serve_and_run.sh`).
+  - **What stops it:** a client error, or a run that fails `validate` (missing replies, an incomplete run, thinking not really off), in either writing run or either answering run. The later steps (answer-set, answering) are skipped, because they would be invalid. The job ends FAIL_INFRA, with the reason in `stageK.txt` ("stage K stopped early: ...").
+  - **What does not stop it:** model-quality findings (cut-off replies, bad JSON) are results and are kept.
+  - **An empty shared set** (every question failed in its origin mode) is a result too: nothing is answered, and the job ends PASS_QUALITY_WARN with a note.
+- **2. No decision from incomplete data** (`code/generation/answer_check.py`).
+  - **What it checks first:**
+    - it re-runs `validate` on all four runs;
+    - it gives every expected answer record a status: answered, missing, or HTTP error;
+    - it records the unfilled positions.
+  - **What is graded:** only answered records. A missing record or an HTTP error is a gap, never a wrong answer. A reply that is wrong, cut off or lacks a `Final answer:` line is a valid, incorrect answer.
+  - **The new rule, set before any result:** the outcome is NOT USABLE, and no thinking-mode decision is drawn, if any of these holds:
+    - a run fails infrastructure validation;
+    - the answer records are not complete and paired;
+    - fewer than 36 of the 40 positions are filled, or more than 2 are unfilled in either origin half;
+    - thinking off is not verified.
+- **Tests:** every local suite passes: answer-check tests 40/40 (8 new), Talon shell tests 45/30/67 (3 new in part 2), R sandbox self-test 13/13, regression snapshot 52 parts unchanged, test_suite.py 59/59, Redhawk shell tests 101/101, test_talon_python.py 15/15, throughput report 23/23.
+  - **New stage K checks:** an incomplete writing run stops the stage before anything else; a failed thinking-on answer run stops it before thinking off; model-quality findings run through to the end.
+  - **New answer-check checks:** a missing record, an HTTP error, a valid reply with no final line, a run that fails validation, and three unfilled positions in one half.
+  - **Fake server:** `FAKE_ANSWER_FAIL` switch.
+- **Docs:** `docs/methodology/workflow.md` Section 2.1, item 3 (a new paragraph on when the job stops and when no decision may be drawn), and the `answer_check.py` docstring.
+- **No GPU job was submitted.**

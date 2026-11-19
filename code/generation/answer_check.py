@@ -23,6 +23,11 @@ HOW AN ANSWER IS GRADED (key = the origin writing run's key after `open_teacher_
   short text       correct if equal after lower-casing and removing spaces and punctuation; always put on your sheet
   no "Final answer:" line = wrong, counted separately as a format failure.
 
+WHEN NO DECISION IS DRAWN (outcome NOT USABLE, checked before anything else): a run fails infrastructure validation; the
+answer records are not complete and paired (a MISSING record or an HTTP ERROR is a gap, never a wrong answer; a reply that is
+wrong, cut off or has no "Final answer:" line is a valid, incorrect answer); fewer than 36 of 40 positions are filled or more
+than 2 are unfilled in either origin half; or a thinking-off reply shows thinking.
+
 YOUR LOOK (check_sheet.csv). Questions where the two modes' most common answers differ, short-text questions, and questions
 whose key R could not confirm go on a sheet. For each you fill in key_correct (yes/no), corrected_key if no, and optionally
 accept_also (more answers that are also right, separated by |). Run again with --sheet to regrade.
@@ -38,6 +43,7 @@ import csv
 import json
 import random
 import re
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -47,6 +53,14 @@ import open_teacher_test as ott  # noqa: E402  (reuses reply parsing, the usable
 import generate_benchmark as gb  # noqa: E402
 
 ACC_MARGIN, USABLE_MARGIN, SPEEDUP_MIN, CATEGORY_FLAG = 5.0, 5.0, 2.0, 10.0   # the pre-set rule (points, points, ratio, points)
+# When is the comparison usable at all? (added 2026-11-18, before any result; the thresholds above are unchanged)
+#  - all four runs pass INFRASTRUCTURE validation (`open_teacher_test.py validate`: exit 0 or 2);
+#  - the answer records are COMPLETE and PAIRED: every question x sample has a saved HTTP-200 reply in BOTH modes, and both
+#    runs used the same number of samples. A missing reply or an HTTP error is an infrastructure gap, never a wrong answer;
+#    a reply that exists but is wrong, cut off or has no "Final answer:" line is a valid (incorrect) model answer;
+#  - the shared set is complete enough: at most 4 of the 40 positions unfilled (at least 36 filled), and at most 2 unfilled in
+#    either origin half, so the set stays balanced between the two modes. Otherwise the comparison is NOT USABLE.
+SET_MIN_FILLED, SET_MAX_UNFILLED_PER_HALF = 36, 2
 BLOCKING_CATEGORIES = ("numerical", "r_generation")
 PROJECTED_GENERATIONS = 232_000   # nested 1k...200k training sets + spares + benchmark + dev set (workflow.md Section 2.1)
 BOOT = 10_000
@@ -161,7 +175,21 @@ def main():
     report = {"rule": {"accuracy_margin_points": ACC_MARGIN, "usable_margin_points": USABLE_MARGIN,
                        "generation_speedup_min": SPEEDUP_MIN, "category_flag_points": CATEGORY_FLAG,
                        "blocking_categories": list(BLOCKING_CATEGORIES),
+                       "set_min_filled": SET_MIN_FILLED, "set_max_unfilled_per_half": SET_MAX_UNFILLED_PER_HALF,
                        "nature": "descriptive engineering criterion, not a statistical non-inferiority claim"}}
+
+    # ---- 0. infrastructure validation of all four runs (the same `validate` the Talon job ran) ----
+    validation = {}
+    for name, d in (("writing_on", write_runs["on"]), ("writing_off", write_runs["off"]),
+                    ("answers_on", answer_runs["on"]), ("answers_off", answer_runs["off"])):
+        r = subprocess.run([sys.executable, str(Path(ott.__file__)), "validate", "--run", str(d)],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        lines = r.stdout.splitlines()
+        validation[name] = {"exit": r.returncode, "infrastructure_pass": r.returncode in (0, 2),
+                            "result": next((l for l in reversed(lines) if l.startswith("VALIDATE_RESULT")), None),
+                            "infrastructure_failures": [l.strip() for l in lines if "INFRASTRUCTURE FAIL" in l][:10]}
+    report["validation"] = validation
+    samples = {m: json.loads((d / "run_log.json").read_text(encoding="utf-8")).get("samples") for m, d in answer_runs.items()}
 
     # ---- 1. usability of the writing runs (no R: the same test validate and answer-set use) ----
     first, count = ott.SMOKE_SETS["K"]
@@ -184,7 +212,9 @@ def main():
                 n_by_cat[slots[iid]["category"]] += 1
                 ok_by_cat[slots[iid]["category"]] += good
                 if not good:
+                    infra = bool(problems) and problems[0].startswith(("no saved reply", "no reply (HTTP"))
                     failures.append({"mode": m, "block": block, "item_id": iid, "category": slots[iid]["category"],
+                                     "kind": "infrastructure (no valid reply)" if infra else "model (reply failed a check)",
                                      "problems": problems})
             usability[f"{m}_{block}"] = {"usable": ok, "of": len(ids), "rate_pct": round(100 * ok / len(ids), 1),
                                          "by_category": {c: f"{ok_by_cat[c]}/{n_by_cat[c]}" for c in sorted(n_by_cat)}}
@@ -218,25 +248,47 @@ def main():
             it["canonical_answer"] = s["corrected_key"].strip()
             note.append("key corrected on the owner's sheet")
         key_items[q["qid"]], key_notes[q["qid"]] = it, note
-    graded = []
+    # Every expected answer record gets a status. Only "answered" records are graded: a MISSING record (no row at all) or an
+    # HTTP ERROR (rows, but none with HTTP 200) is an infrastructure gap, never counted as a wrong answer. An answered reply that
+    # is wrong, cut off or lacks a "Final answer:" line is a valid model answer that is incorrect.
+    graded, gaps = [], []
     per_q = {m: {} for m in answer_runs}
+    records = {}
+    n_samples = max((s or 0) for s in samples.values())
     for m, d in answer_runs.items():
-        rows = first_ok(ott.read_rows(d), "answer_id")
+        all_rows = ott.read_rows(d)
+        rows = first_ok(all_rows, "answer_id")
+        seen = {r.get("answer_id") for r in all_rows}
+        counts = Counter()
         for q in questions:
             extra_ok = [x.strip() for x in (sheet.get(q["qid"], {}).get("accept_also") or "").split("|") if x.strip()]
             vals = []
-            for n in range(1, json.loads((d / "run_log.json").read_text(encoding="utf-8"))["samples"] + 1):
-                rec = rows.get(f"{q['qid']}-s{n}")
-                content = ott.reply_parts(rec)[0] if rec else ""
+            for n in range(1, n_samples + 1):
+                aid = f"{q['qid']}-s{n}"
+                rec = rows.get(aid)
+                if rec is None:
+                    status = "http_error" if aid in seen else "missing"
+                    counts[status] += 1
+                    gaps.append({"mode": m, "answer_id": aid, "status": status})
+                    continue
+                counts["answered"] += 1
+                content, _, finish, usage = ott.reply_parts(rec)
                 fa = ott.final_answer(content)
                 ok, how = grade(fa, key_items[q["qid"]], sandbox, extra_ok)
+                if finish == "length":
+                    how = "cut off at max_tokens; " + how
                 vals.append(ok)
-                usage = (rec or {}).get("response", {}) or {}
-                graded.append({"mode": m, "qid": q["qid"], "sample": n, "origin": q["origin"], "category": q["category"],
-                               "answer_type": q["answer_type"], "final_answer": fa, "key": key_items[q["qid"]]["canonical_answer"],
-                               "correct": ok, "how": how, "format_failure": fa is None,
-                               "output_tokens": (usage.get("usage") or {}).get("completion_tokens")})
-            per_q[m][q["qid"]] = sum(vals) / len(vals)
+                graded.append({"mode": m, "qid": q["qid"], "sample": n, "status": "answered", "origin": q["origin"],
+                               "category": q["category"], "answer_type": q["answer_type"], "final_answer": fa,
+                               "key": key_items[q["qid"]]["canonical_answer"], "correct": ok, "how": how,
+                               "format_failure": fa is None, "cut_off": finish == "length",
+                               "output_tokens": usage.get("completion_tokens")})
+            if vals:
+                per_q[m][q["qid"]] = sum(vals) / len(vals)
+        records[m] = {"expected": len(questions) * n_samples, "answered": counts["answered"],
+                      "missing": counts["missing"], "http_error": counts["http_error"], "samples_in_run_log": samples[m]}
+    complete = (samples["on"] == samples["off"] and all(r["answered"] == r["expected"] for r in records.values()))
+    report["answer_records"] = {**records, "complete_and_paired": complete, "gaps": gaps[:50]}
     (out / "graded_answers.jsonl").write_text("".join(json.dumps(g, ensure_ascii=False) + "\n" for g in graded), encoding="utf-8")
 
     # ---- 4. the sheet for the owner ----
@@ -271,18 +323,21 @@ def main():
     pending = sum(1 for r in sheet_rows if not r["key_correct"])
 
     # ---- 5. correctness summary ----
-    qids = [q["qid"] for q in questions]
+    # only questions answered in BOTH modes enter the comparison (with complete records that is every question)
+    qids = [q["qid"] for q in questions if q["qid"] in per_q["on"] and q["qid"] in per_q["off"]]
     acc = {}
     for m in answer_runs:
-        mine = [g for g in graded if g["mode"] == m]
+        mine = [g for g in graded if g["mode"] == m and g["qid"] in qids]
         lo, hi = bootstrap(per_q[m][i] for i in qids)
         by_cat = {}
-        for c in sorted({q["category"] for q in questions}):
-            ids = [q["qid"] for q in questions if q["category"] == c]
+        for c in sorted({q["category"] for q in questions if q["qid"] in qids}):
+            ids = [q["qid"] for q in questions if q["category"] == c and q["qid"] in qids]
             by_cat[c] = round(100 * sum(per_q[m][i] for i in ids) / len(ids), 1)
         acc[m] = {"mean_pct": round(100 * sum(g["correct"] for g in mine) / max(len(mine), 1), 1),
                   "question_bootstrap_95_pct": [round(100 * lo, 1), round(100 * hi, 1)],
-                  "format_failures": sum(g["format_failure"] for g in mine), "answers": len(mine), "by_category": by_cat}
+                  "format_failures": sum(g["format_failure"] for g in mine), "cut_off": sum(g["cut_off"] for g in mine),
+                  "answers_graded": len(mine), "by_category": by_cat}
+    acc["questions_compared"] = len(qids)
     dlo, dhi = bootstrap(per_q["off"][i] - per_q["on"][i] for i in qids)
     acc["difference_off_minus_on_pct"] = round(acc["off"]["mean_pct"] - acc["on"]["mean_pct"], 1)
     acc["difference_question_bootstrap_95_pct"] = [round(100 * dlo, 1), round(100 * dhi, 1)]
@@ -291,8 +346,15 @@ def main():
              for c in acc["on"]["by_category"] if acc["on"]["by_category"][c] - acc["off"]["by_category"][c] >= CATEGORY_FLAG]
     report["correctness"] = acc
     report["category_flags"] = flags
+    unfilled = composition["unfilled"]
+    unfilled_half = {m: sum(1 for u in unfilled if u["origin"] == m) for m in ("on", "off")}
+    set_usable = (len(questions) >= SET_MIN_FILLED and max(unfilled_half.values()) <= SET_MAX_UNFILLED_PER_HALF)
     report["answer_set"] = {"n_questions": len(questions), "by_origin_and_category": composition["by_origin_and_category"],
-                            "replacements": composition["replacements"], "unfilled": composition["unfilled"]}
+                            "replacements": composition["replacements"], "unfilled": unfilled,
+                            "unfilled_positions": [u["position"] for u in unfilled], "unfilled_by_origin": unfilled_half,
+                            "complete_enough": set_usable,
+                            "rule": f"usable only with at least {SET_MIN_FILLED} of {ott.K_PRIMARY} positions filled and at most "
+                                    f"{SET_MAX_UNFILLED_PER_HALF} unfilled in either origin half"}
 
     # ---- 6. cost: generation (main) and answering (separate); start-up time separate ----
     cost = {}
@@ -318,10 +380,25 @@ def main():
     s_ok = speedup >= SPEEDUP_MIN
     blocked = any(f["blocking"] for f in flags)
     verified = verify["writing"]["with_thinking"] == 0 and verify["answering"]["with_thinking"] == 0
-    if pending:
+    # Conditions under which NO decision may be drawn. They are checked before the owner's sheet and the rule.
+    unusable = []
+    failed_runs = [k for k, v in validation.items() if not v["infrastructure_pass"]]
+    if failed_runs:
+        unusable.append(f"infrastructure validation failed for {', '.join(failed_runs)}")
+    if not complete:
+        unusable.append("the answer records are incomplete or unpaired (" + "; ".join(
+            f"{m}: {r['answered']}/{r['expected']} answered, {r['missing']} missing, {r['http_error']} HTTP error(s), "
+            f"{r['samples_in_run_log']} sample(s)" for m, r in records.items()) + ")")
+    if not set_usable:
+        unusable.append(f"the shared set is too incomplete ({len(unfilled)} of {ott.K_PRIMARY} positions unfilled, "
+                        f"{unfilled_half['on']} in the thinking-on half and {unfilled_half['off']} in the thinking-off half; "
+                        f"the limit is {ott.K_PRIMARY - SET_MIN_FILLED} in all and {SET_MAX_UNFILLED_PER_HALF} per half)")
+    if not verified:
+        unusable.append("thinking-off replies show thinking, so the check did not test thinking off")
+    if unusable:
+        outcome = "NOT USABLE: " + "; ".join(unusable) + ". No thinking-mode decision is drawn; explain or rerun first"
+    elif pending:
         outcome = f"NOT FINAL: {pending} question(s) on check_sheet.csv still need your look; fill it in and rerun with --sheet"
-    elif not verified:
-        outcome = "NOT USABLE: thinking-off replies show thinking, so the check did not test thinking off; explain before deciding"
     elif a_ok and u_ok and s_ok and not blocked:
         outcome = "THINKING OFF meets the pre-set criterion"
     elif a_ok and u_ok and s_ok and blocked:
@@ -330,11 +407,18 @@ def main():
         outcome = "THINKING ON (the pre-set criterion for thinking off is not met)"
     report["rule_outcome"] = {"accuracy_within_5": a_ok, "usable_within_5": u_ok, "generation_2x_cheaper": s_ok,
                               "blocking_flag": blocked, "thinking_off_verified": verified,
+                              "infrastructure_validated": not failed_runs, "answer_records_complete": complete,
+                              "set_complete_enough": set_usable, "not_usable_because": unusable,
                               "sheet_items_pending": pending, "outcome": outcome}
     (out / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # ---- printed summary ----
     print("THINKING ON/OFF CHECK (observational; the 5-point rule is a descriptive engineering criterion)")
+    print("0. VALIDITY: " + "; ".join(f"{k} {'PASS' if v['infrastructure_pass'] else 'FAIL'}" for k, v in validation.items()))
+    for m, r in records.items():
+        print(f"   answers {m}: {r['answered']}/{r['expected']} answered, {r['missing']} missing, {r['http_error']} HTTP error(s)")
+    print(f"   unfilled positions: {[u['position'] for u in unfilled] or 'none'} (on half {unfilled_half['on']}, off half {unfilled_half['off']}); "
+          f"set complete enough: {set_usable}")
     print(f"Answer set: {len(questions)} question(s); by origin and category: {composition['by_origin_and_category']}; "
           f"{len(composition['replacements'])} replacement(s), {len(composition['unfilled'])} unfilled")
     print("1. USABILITY (first attempt, primary slots BM8001-BM8040):")
@@ -344,10 +428,10 @@ def main():
               f"reserve block {usability[f'{m}_reserve']['usable']}/{usability[f'{m}_reserve']['of']}")
     for f_ in failures:
         print(f"   FAILED ({f_['mode']}, {f_['block']}) {f_['item_id']} [{f_['category']}]: {'; '.join(f_['problems'])}")
-    print("2. ANSWER CORRECTNESS (mean over all answers; 95% interval resamples questions):")
+    print(f"2. ANSWER CORRECTNESS (mean over the answered records of the {acc['questions_compared']} questions answered in both modes; 95% interval resamples questions):")
     for m in ("on", "off"):
         a = acc[m]
-        print(f"   thinking {m}: {a['mean_pct']}% {a['question_bootstrap_95_pct']}, format failures {a['format_failures']}/{a['answers']}; by category {a['by_category']}")
+        print(f"   thinking {m}: {a['mean_pct']}% {a['question_bootstrap_95_pct']}, format failures {a['format_failures']} and cut off {a['cut_off']} of {a['answers_graded']} graded; by category {a['by_category']}")
     print(f"   off minus on: {acc['difference_off_minus_on_pct']} points, 95% interval {acc['difference_question_bootstrap_95_pct']}")
     for fl in flags:
         print(f"   FLAG {fl['category']}: on {fl['on_pct']}% vs off {fl['off_pct']}%" + (" (BLOCKING)" if fl["blocking"] else ""))

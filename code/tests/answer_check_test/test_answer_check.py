@@ -97,6 +97,7 @@ def write_run(name, mode, broken, wall):
     sampling, extra = ott.mode_params("talon", mode)
     meta = {"use": "dev_test_only", "backend": "talon", "model": "qwen3.6-27b-bf16", "thinking": mode, "sampling": sampling,
             "extra_params": extra, "slot_set": "dev_smoke", "slot_ids": list(slots), "max_tokens": 16384,
+            "prompt_sha256": gb.load_prompt()[1], "prompt_version": "v6", "attempts_per_slot": 1,
             "meta": {"gpu_count": "1", "load_seconds": "86"},
             "sessions": [{"wall_seconds": wall, "out_tokens": 60 * (4000 if mode == "on" else 400), "calls": 60}]}
     (d / "run_log.json").write_text(json.dumps(meta), encoding="utf-8")
@@ -130,10 +131,11 @@ check("the composition counts questions by origin mode and category",
       sum(comp["by_origin_and_category"].values()) == 39 and all(k.split(" | ")[0] in ("on", "off") for k in comp["by_origin_and_category"]))
 
 
-def answer_run(name, mode, answer_for, wall):
+def answer_run(name, mode, answer_for, wall, questions=None):
+    questions = qs if questions is None else questions
     d = T / name; d.mkdir()
     rows = []
-    for q in qs:
+    for q in questions:
         for n in (1, 2, 3):
             msg = {"content": f"Some working.\nFinal answer: {answer_for(q, n)}"}
             if mode == "on":
@@ -145,7 +147,7 @@ def answer_run(name, mode, answer_for, wall):
     (d / "responses.jsonl").write_text("".join(json.dumps(x) + "\n" for x in rows), encoding="utf-8")
     sampling, extra = ott.mode_params("talon", mode)
     meta = {"kind": "answers", "use": "dev_test_only", "backend": "talon", "model": "qwen3.6-27b-bf16", "thinking": mode,
-            "sampling": sampling, "extra_params": extra, "samples": 3, "question_ids": [q["qid"] for q in qs],
+            "sampling": sampling, "extra_params": extra, "samples": 3, "question_ids": [q["qid"] for q in questions],
             "answer_prompt_sha256": ott.load_answer_prompt()[1], "meta": {"gpu_count": "1", "load_seconds": "80"},
             "sessions": [{"wall_seconds": wall, "out_tokens": len(rows) * 100, "calls": len(rows)}]}
     (d / "run_log.json").write_text(json.dumps(meta), encoding="utf-8")
@@ -166,9 +168,10 @@ a_off = answer_run("a_off", "off", right, 200)
 out1 = T / "report1"
 
 
-def run_check(out, a_off_dir, sheet=None):
-    args = [PY, AC, "--write-on", str(w_on), "--write-off", str(w_off), "--answers-on", str(a_on),
-            "--answers-off", str(a_off_dir), "--set-dir", str(set_path.parent), "--out", str(out)]
+def run_check(out, a_off_dir, sheet=None, write_on=None, write_off=None, answers_on=None, set_dir=None):
+    args = [PY, AC, "--write-on", str(write_on or w_on), "--write-off", str(write_off or w_off),
+            "--answers-on", str(answers_on or a_on), "--answers-off", str(a_off_dir),
+            "--set-dir", str(set_dir or set_path.parent), "--out", str(out)]
     if sheet:
         args += ["--sheet", str(sheet)]
     return subprocess.run(args, capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -241,6 +244,77 @@ r = run_check(T / "report4", leak, filled)
 rep4 = json.loads((T / "report4" / "report.json").read_text(encoding="utf-8"))
 check("a thinking-off reply that shows thinking makes the check NOT USABLE until explained",
       rep4["rule_outcome"]["outcome"].startswith("NOT USABLE"), rep4["rule_outcome"])
+
+# ------------------------------------------------------------------ 3. validity before any decision
+print("[3] validity: infrastructure validation, complete paired answer records, a complete-enough shared set")
+
+
+def copy_run(src, name):
+    d = T / name; shutil.copytree(src, d); return d
+
+
+def rows_of(d):
+    return [json.loads(l) for l in (d / "responses.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def put_rows(d, rows):
+    (d / "responses.jsonl").write_text("".join(json.dumps(x) + "\n" for x in rows), encoding="utf-8")
+
+
+def report_of(out):
+    return json.loads((out / "report.json").read_text(encoding="utf-8"))
+
+
+check("the healthy run: all four runs pass infrastructure validation and the records are complete and paired",
+      all(v["infrastructure_pass"] for v in rep2["validation"].values()) and rep2["answer_records"]["complete_and_paired"]
+      and rep2["answer_records"]["off"]["missing"] == 0 and rep2["answer_set"]["unfilled_positions"] == [25]
+      and rep2["answer_set"]["complete_enough"], (rep2["validation"], rep2["answer_records"]))
+miss = copy_run(a_off, "a_off_missing"); put_rows(miss, rows_of(miss)[1:])
+r = run_check(T / "report5", miss, filled); rep5 = report_of(T / "report5")
+rec5 = rep5["answer_records"]["off"]
+check("a MISSING answer record is counted as missing, not as a wrong answer (the answered ones still score 100%)",
+      rec5["missing"] == 1 and rec5["http_error"] == 0 and rec5["answered"] == rec5["expected"] - 1
+      and rep5["correctness"]["off"]["mean_pct"] == 100.0, rec5)
+check("...and no decision is drawn: NOT USABLE (incomplete records; the answer run fails infrastructure validation)",
+      rep5["rule_outcome"]["outcome"].startswith("NOT USABLE") and not rep5["rule_outcome"]["answer_records_complete"]
+      and not rep5["validation"]["answers_off"]["infrastructure_pass"], rep5["rule_outcome"])
+herr = copy_run(a_off, "a_off_http"); rs = rows_of(herr)
+rs[0] = {**rs[0], "http_status": 500, "response": None, "error": "boom"}; put_rows(herr, rs)
+r = run_check(T / "report6", herr, filled); rep6 = report_of(T / "report6")
+check("an HTTP ERROR is counted as an HTTP error, not as a missing record or a wrong answer, and blocks the decision",
+      rep6["answer_records"]["off"]["http_error"] == 1 and rep6["answer_records"]["off"]["missing"] == 0
+      and rep6["correctness"]["off"]["mean_pct"] == 100.0 and rep6["rule_outcome"]["outcome"].startswith("NOT USABLE"),
+      (rep6["answer_records"]["off"], rep6["rule_outcome"]))
+nofin = copy_run(a_off, "a_off_nofinal"); rs = rows_of(nofin)
+rs[0]["response"]["choices"][0]["message"]["content"] = "I think it is about a third."; put_rows(nofin, rs)
+r = run_check(T / "report7", nofin, filled); rep7 = report_of(T / "report7")
+check("a VALID reply with no 'Final answer:' line is an answered but incorrect answer (a format failure), not a gap",
+      rep7["answer_records"]["complete_and_paired"] and rep7["correctness"]["off"]["format_failures"] == 1
+      and rep7["correctness"]["off"]["mean_pct"] < 100 and not rep7["rule_outcome"]["outcome"].startswith("NOT USABLE"),
+      (rep7["correctness"]["off"], rep7["rule_outcome"]))
+badw = copy_run(w_off, "w_off_badmeta")
+meta = json.loads((badw / "run_log.json").read_text(encoding="utf-8")); meta["sampling"]["temperature"] = 0.9
+(badw / "run_log.json").write_text(json.dumps(meta), encoding="utf-8")
+r = run_check(T / "report8", a_off, filled, write_off=badw); rep8 = report_of(T / "report8")
+check("a writing run that FAILS infrastructure validation (wrong sampling recorded) makes the comparison NOT USABLE",
+      not rep8["validation"]["writing_off"]["infrastructure_pass"] and "infrastructure validation failed for writing_off"
+      in rep8["rule_outcome"]["outcome"], rep8["rule_outcome"])
+# the thinking-off half loses 3 positions (21, 22, 23: primary and reserve both fail) -> 37 filled (>= 36) but 3 > 2 in one half
+w_on2 = write_run("w_on2", "on", set(), 3600)
+w_off2 = write_run("w_off2", "off", {"BM8021", "BM8041", "BM8022", "BM8042", "BM8023", "BM8043"}, 600)
+r = subprocess.run([PY, OTT, "--out-root", str(T / "sets2"), "answer-set", "--on", str(w_on2), "--off", str(w_off2)],
+                   capture_output=True, text=True, encoding="utf-8", errors="replace")
+set2 = Path([l for l in r.stdout.splitlines() if l.startswith("ANSWER_SET=")][0].split("=", 1)[1].strip())
+qs2 = [json.loads(l) for l in set2.read_text(encoding="utf-8").splitlines() if l.strip()]
+a_on2 = answer_run("a_on2", "on", right, 1800, qs2); a_off2 = answer_run("a_off2", "off", right, 200, qs2)
+r = run_check(T / "report9", a_off2, None, write_on=w_on2, write_off=w_off2, answers_on=a_on2, set_dir=set2.parent)
+rep9 = report_of(T / "report9")
+check("unfilled positions are recorded, and 3 unfilled in one origin half (limit 2) makes the shared set NOT USABLE",
+      len(qs2) == 37 and rep9["answer_set"]["unfilled_positions"] == [21, 22, 23] and not rep9["answer_set"]["complete_enough"]
+      and "the shared set is too incomplete" in rep9["rule_outcome"]["outcome"], (len(qs2), rep9["answer_set"].get("unfilled_positions"), rep9["rule_outcome"]))
+check("the decision thresholds are unchanged (5 points, 5 points, 2x, 10-point flag)",
+      rep9["rule"]["accuracy_margin_points"] == 5.0 and rep9["rule"]["usable_margin_points"] == 5.0
+      and rep9["rule"]["generation_speedup_min"] == 2.0 and rep9["rule"]["category_flag_points"] == 10.0)
 
 shutil.rmtree(T, ignore_errors=True)
 print(f"\n==== answer check tests: {passed} passed, {failed} failed ====")

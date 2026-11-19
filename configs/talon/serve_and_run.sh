@@ -290,25 +290,44 @@ for C in $CONC_LIST; do
   client_and_validate "$SUF" "${ARGS[@]}"
   if [ "$STAGE" = K ]; then
     if [ "$C" = on ]; then W_ON="$RUN_DIR"; else W_OFF="$RUN_DIR"; fi
+    # An INFRASTRUCTURE failure (client error, or validate exit 1: incomplete run, missing replies, thinking not really off ...)
+    # makes every later step of stage K invalid, so the stage stops here. Model-quality findings (validate exit 2: a reply cut off,
+    # bad JSON ...) are results of the experiment and do NOT stop it.
+    if [ "$V_ONE" = 1 ] || [ "$RC_ONE" -ne 0 ]; then
+      K_STOP="the thinking-$C writing run failed (client exit $RC_ONE, validate exit $V_ONE; see $VALLOG)"; VRC=1
+      echo "STOPPING stage K: $K_STOP. The later steps (answer-set, answering) are skipped because they would be invalid."
+      break
+    fi
   fi
 done
 # ---- stage K, part 2: the fixed shared question set, then both modes answer it (3 times per question) ----
-if [ "$STAGE" = K ]; then
+if [ "$STAGE" = K ] && [ -z "${K_STOP:-}" ]; then
   ASLOG="$LOGDIR/answerset_${TAGID}.out"; ASET=""
-  if [ -n "${W_ON:-}" ] && [ -n "${W_OFF:-}" ]; then
-    echo; echo "--- answer-set: the fixed shared question set ---"
-    python open_teacher_test.py --out-root "$QT_OUT" answer-set --on "$W_ON" --off "$W_OFF" 2>&1 | tee "$ASLOG"
-    ASET="$(sed -n 's/^ANSWER_SET=//p' "$ASLOG" | tail -n 1)"
-  fi
-  if [ -z "$ASET" ]; then
-    echo "INFRASTRUCTURE FAIL: no shared answer set was built (see $ASLOG)"; VRC=1
+  echo; echo "--- answer-set: the fixed shared question set ---"
+  python open_teacher_test.py --out-root "$QT_OUT" answer-set --on "$W_ON" --off "$W_OFF" 2>&1 | tee "$ASLOG"
+  AS_RC="${PIPESTATUS[0]}"
+  ASET="$(sed -n 's/^ANSWER_SET=//p' "$ASLOG" | tail -n 1)"
+  if [ "$AS_RC" -ne 0 ] || [ -z "$ASET" ]; then
+    K_STOP="no shared answer set was built (answer-set exit $AS_RC; see $ASLOG)"; VRC=1
+    echo "INFRASTRUCTURE FAIL: $K_STOP"; echo "STOPPING stage K: answering is skipped."
   else
     RUN_DIRS="${RUN_DIRS:+$RUN_DIRS }$(dirname "$ASET")"
-    for M in on off; do
-      echo; echo "--- client: stage K, answering, thinking $M ---"
-      client_and_validate "_answer_$M" --out-root "$QT_OUT" answer --backend talon --base-url "http://127.0.0.1:$PORT/v1" \
-        --set "$ASET" --samples "${K_SAMPLES:-3}" --thinking "$M" --concurrency "$CLIENT_CONCURRENCY" "${COMMON_META[@]}"
-    done
+    if [ "$(grep -c . "$ASET" || true)" = 0 ]; then
+      # Every position failed in its origin mode: a RESULT of the experiment, not a fault; there is simply nothing to answer.
+      K_NOTE="the shared answer set is empty (every question failed in its origin mode), so nothing was answered"
+      echo "NOTE: $K_NOTE"
+    else
+      for M in on off; do
+        echo; echo "--- client: stage K, answering, thinking $M ---"
+        client_and_validate "_answer_$M" --out-root "$QT_OUT" answer --backend talon --base-url "http://127.0.0.1:$PORT/v1" \
+          --set "$ASET" --samples "${K_SAMPLES:-3}" --thinking "$M" --concurrency "$CLIENT_CONCURRENCY" "${COMMON_META[@]}"
+        if [ "$V_ONE" = 1 ] || [ "$RC_ONE" -ne 0 ]; then
+          K_STOP="the thinking-$M answer run failed (client exit $RC_ONE, validate exit $V_ONE; see $VALLOG)"; VRC=1
+          echo "STOPPING stage K: $K_STOP."
+          break
+        fi
+      done
+    fi
   fi
 fi
 set -e
@@ -333,14 +352,15 @@ if [ "$STAGE" = main ]; then HINT=" - if the run is only incomplete, resubmit wi
 case "$VRC" in 0|2) INFRA_STATE=PASS ;; *) REASON="$REASON INFRASTRUCTURE validation failed (see $LOGDIR/validate_${TAGID}*.out)$HINT;" ;; esac
 [ "$ERRS" -eq 0 ] || REASON="$REASON error words in the server log;"
 [ "$MINFREE" -ge 0 ] || REASON="$REASON no GPU memory samples;"
+[ -z "${K_STOP:-}" ] || REASON="$REASON stage K stopped early: $K_STOP;"
 if [ -n "$REASON" ]; then
   INFRA_STATE=FAIL
   write_result FAIL_INFRA "$REASON"
   echo "RESULT: FAIL_INFRA (stage $STAGE):$REASON"
   exit 1
 fi
-if [ "$QUALITY_REPLIES" -gt 0 ]; then
-  write_result PASS_QUALITY_WARN "$QUALITY_REPLIES of $REPLIES repl(ies) have model-quality findings"
+if [ "$QUALITY_REPLIES" -gt 0 ] || [ -n "${K_NOTE:-}" ]; then
+  write_result PASS_QUALITY_WARN "$QUALITY_REPLIES of $REPLIES repl(ies) have model-quality findings${K_NOTE:+; $K_NOTE}"
   echo "RESULT: PASS_QUALITY_WARN (stage $STAGE): infrastructure is fine; $QUALITY_REPLIES of $REPLIES repl(ies) have model-quality findings (listed above; these are results, not faults)"
 else
   write_result PASS "ok"

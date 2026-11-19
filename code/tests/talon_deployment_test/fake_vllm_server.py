@@ -14,6 +14,7 @@ slot-aware /v1/chat/completions. Behaviour switches (environment):
   FAKE_DIE=1           exit while "loading"
   FAKE_FAIL_ITEM       that item id answers HTTP 500 once (FAKE_STATE marks it)
   FAKE_DELAY           seconds per request (default 0.05) so the client's wall-clock time is never zero
+  FAKE_ANSWER_FAIL     on | off: every ANSWERING request (stage K) in that thinking mode answers HTTP 500
 Exits by itself after 300 s so it can never linger."""
 import json, os, re, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -71,6 +72,8 @@ class H(BaseHTTPRequestHandler):
         # chat_template_kwargs.enable_thinking false (the thinking check): no reasoning field, far fewer tokens
         think = (body.get("chat_template_kwargs") or {}).get("enable_thinking", True)
         if "Answer format:" in user:   # an ANSWERING request (stage K): working, then one final line
+            if os.environ.get("FAKE_ANSWER_FAIL") == ("on" if think else "off"):   # every answering call in that mode fails
+                self.send_response(500); self.end_headers(); self.wfile.write(b"boom"); return
             msg = {"role": "assistant", "content": "Working it out.\nFinal answer: 0.313"}
             if think:
                 msg[FIELD] = "thinking about it"

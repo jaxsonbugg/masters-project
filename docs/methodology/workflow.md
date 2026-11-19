@@ -169,6 +169,16 @@ No student result existed when this change was made.
      - **The keys** come from `score`, with R in the sandbox.
      - **The rules:** a number must be within the item's tolerance; a multiple-choice answer must have the same letter; an R expression must pass the item's `r_check` in the sandbox; short text must match after normalizing. A missing `Final answer:` line is wrong and counted separately as a format failure.
      - **The owner's sheet:** the owner checks the **key** of every question where the two modes' most common answers differ, every short-text question and every number key R could not confirm (`check_sheet.csv`, probably 5 to 15 items). A corrected key regrades both modes.
+- **When the job stops, and when no decision may be drawn** (added 2026-11-18, before any result; the thresholds below are unchanged).
+  - **On Talon:** stage K **stops at once** at an *infrastructure* failure: a client error, or a run that fails `validate` (missing replies, an incomplete run, thinking not really off). The later steps are skipped because they would be invalid, and the job ends FAIL_INFRA.
+    - **What does not stop it:** *model-quality* findings, such as a cut-off reply, bad JSON or a missing `Final answer:` line. These are results of the experiment and are recorded.
+    - **An empty shared set** (every question failed in its origin mode) is also a result: nothing is answered, and the job ends with a quality warning.
+  - **On the PC:** `answer_check.py` draws no decision (outcome **NOT USABLE**) unless all three of these hold:
+    - **(i)** all four runs pass infrastructure validation;
+    - **(ii)** the answer records are complete and paired: every question × sample has an HTTP-200 reply in both modes, with the same number of samples;
+    - **(iii)** the shared set is complete enough: at least 36 of the 40 positions filled, and at most 2 unfilled in either origin half, so the set stays balanced.
+  - **Gaps versus wrong answers:** a missing record or an HTTP error is counted as a gap, never as a wrong answer. A reply that exists but is wrong, cut off or has no `Final answer:` line is a valid, incorrect answer.
+  - **Unfilled positions** are listed in the report.
 - **What is reported, as separate outcomes.**
   1. **Usability:** the first-attempt usable rate on the 40 primary slots, by mode and by category, with every failure and its reason. The reserve is reported separately.
   2. **Answer correctness:** the mean accuracy over all answers, by mode, overall and by category, with a 95% interval from a bootstrap that resamples **questions**, not answers. Also the format-failure rate.
