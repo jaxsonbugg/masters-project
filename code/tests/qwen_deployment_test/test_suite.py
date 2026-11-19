@@ -46,6 +46,17 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         user = body["messages"][1]["content"]
+        think_on = body.get("chat_template_kwargs", {}).get("enable_thinking", True)
+        STATE.setdefault("seen_thinking", []).append(think_on)
+        if "Answer format:" in user:   # an ANSWERING request (thinking check): reply with working and a final line
+            msg = {"content": "Working it out.\nFinal answer: 0.313"}
+            if think_on or STATE["mode"] == "leakthink":
+                msg["reasoning_content"] = "let me think"
+            out = {"model": body["model"], "choices": [{"message": msg, "finish_reason": "stop"}],
+                   "usage": {"prompt_tokens": 300, "completion_tokens": 900 if think_on else 60}}
+            data = json.dumps(out).encode()
+            self.send_response(200); self.send_header("Content-Type", "application/json"); self.end_headers(); self.wfile.write(data)
+            return
         iid = re.search(r"item (BM\d{4})", user).group(1)
         g = lambda k: re.search(rf"^{k}: (\S+)", user, re.M).group(1)
         cat, diff, atype = g("Category"), g("Difficulty"), g("Answer type")
@@ -65,7 +76,10 @@ class H(BaseHTTPRequestHandler):
         elif mode == "slotmismatch": item["category"] = "conceptual" if cat != "conceptual" else "numerical"; content = json.dumps(item)
         else: content = "```json\n" + json.dumps(item) + "\n```" if int(iid[2:]) % 2 else json.dumps(item)
         pt, ct = STATE["usage"]
-        out = {"model": body["model"], "choices": [{"message": {"content": content, "reasoning_content": "let me think"}, "finish_reason": fin}],
+        msg = {"content": content}
+        if think_on or mode == "leakthink":
+            msg["reasoning_content"] = "let me think"
+        out = {"model": body["model"], "choices": [{"message": msg, "finish_reason": fin}],
                "usage": {"prompt_tokens": pt, "completion_tokens": ct}}
         data = json.dumps(out).encode()
         self.send_response(200); self.send_header("Content-Type", "application/json"); self.end_headers(); self.wfile.write(data)
@@ -75,7 +89,7 @@ URL = f"http://127.0.0.1:{srv.server_port}/v1"
 
 def reset(**kw):
     STATE.update({"mode": "good", "calls": {}, "fail_once": set(), "failed": set(), "cur": 0, "max": 0, "delay": 0.0,
-                  "usage": (2000, 8000), "http500_every": 0, "n": 0}); STATE.update(kw)
+                  "usage": (2000, 8000), "http500_every": 0, "n": 0, "seen_thinking": []}); STATE.update(kw)
 
 def cli(root, *args):
     r = subprocess.run([PY, OTT, "--out-root", str(root), *args], capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -224,6 +238,51 @@ check("smoke test A (cap check) sends exactly one dev slot with max_tokens 512",
 print("\n[6] dry run")
 reset(); rc, out = cli(WORK / "r7", "run", "--backend", "redhawk", "--dry-run")
 check("dry run shows the prompt hash and the schema block and sends nothing", rc == 0 and "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4" in out and "Output schema (JSON Schema):" in out and not STATE["calls"])
+
+# ------------------------------------------------------------------ 7. the thinking on/off check (set K)
+print("\n[7] thinking check (set K): thinking off, the fixed shared answer set, answering")
+def answer_rows(d): return [json.loads(l) for l in (Path(d) / "responses.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+R7 = WORK / "r7k"; reset()
+rc, out = cli(R7, "run", "--backend", "talon", "--base-url", URL, "--smoke-set", "K", "--thinking", "off", "--concurrency", "8")
+d_off = last_run(R7, "*smokeK-thinkoff*"); m_off = json.loads((d_off / "run_log.json").read_text(encoding="utf-8"))
+check("a thinking-off run keeps chat_template_kwargs and sends enable_thinking false, with the non-thinking sampling",
+      len(STATE["seen_thinking"]) == 60 and not any(STATE["seen_thinking"]) and m_off["sampling"]["temperature"] == 0.7
+      and m_off["extra_params"] == {"chat_template_kwargs": {"enable_thinking": False}} and m_off["thinking"] == "off", (m_off.get("sampling"), m_off.get("extra_params")))
+rc, out = cli(R7, "validate", "--run", str(d_off))
+check("validate confirms thinking off from the records (no reasoning in any reply)", rc in (0, 2) and "thinking off confirmed" in out and "infra=PASS" in out, out[-400:])
+reset()
+cli(R7, "run", "--backend", "talon", "--base-url", URL, "--smoke-set", "K", "--concurrency", "8")
+d_on = [p for p in sorted(Path(R7).glob("*smokeK*")) if "thinkoff" not in p.name][-1]
+check("the thinking-on run of set K sends enable_thinking true", len(STATE["seen_thinking"]) == 60 and all(STATE["seen_thinking"]))
+rc, out = cli(R7, "answer-set", "--on", str(d_on), "--off", str(d_off))
+m = re.search(r"ANSWER_SET=(.+)", out)
+set_path = Path(m.group(1).strip()) if m else None
+comp = json.loads((set_path.parent / "composition.json").read_text(encoding="utf-8")) if set_path else {}
+qs = [json.loads(l) for l in set_path.read_text(encoding="utf-8").splitlines() if l.strip()] if set_path else []
+check("answer-set accounts for all 40 positions (filled + unfilled) with the pre-set origin of each half",
+      rc == 0 and len(qs) + len(comp.get("unfilled", [])) == 40 and all(q["origin"] == ("on" if q["position"] <= 20 else "off") for q in qs), out[-400:])
+check("each position uses its primary slot, or the reserve slot at the same pattern position, or stays unfilled",
+      all(p["reserve_slot"] == f"BM{8041 + (p['position'] - 1) % 20:04d}" and p["used_slot"] in (p["primary_slot"], p["reserve_slot"], None)
+          and p["primary_slot"] == f"BM{8000 + p['position']:04d}" for p in comp.get("positions", [])))
+check("all 120 writing attempts are recorded with their outcome (nothing dropped silently)",
+      len(comp.get("writing_outcomes", {}).get("on", [])) == 60 and len(comp.get("writing_outcomes", {}).get("off", [])) == 60)
+rc, out = cli(R7, "answer-set", "--on", str(d_off), "--off", str(d_on))
+check("answer-set refuses writing runs given in the wrong mode", rc != 0 and "thinking" in out, out[-200:])
+reset()
+rc, out = cli(R7, "answer", "--backend", "talon", "--base-url", URL, "--set", str(set_path), "--samples", "2", "--thinking", "off", "--concurrency", "8")
+d_aoff = Path(re.search(r"RUN_DIR=(.+)", out).group(1).strip())
+check("thinking-off answering: every question answered twice, with thinking off in every request",
+      len(answer_rows(d_aoff)) == 2 * len(qs) and STATE["seen_thinking"] and not any(STATE["seen_thinking"]), len(answer_rows(d_aoff)))
+rc, out = cli(R7, "validate", "--run", str(d_aoff))
+check("validate accepts the thinking-off answer run and confirms thinking off", rc == 0 and "thinking off confirmed" in out and "infra=PASS" in out, out[-400:])
+rc, out = cli(R7, "answer", "--backend", "talon", "--base-url", URL, "--set", str(set_path), "--samples", "2", "--thinking", "on", "--resume", str(d_aoff))
+check("an answer resume in the other thinking mode is refused", rc != 0 and "refused" in out, out[-200:])
+reset(mode="leakthink")
+rc, out = cli(R7, "answer", "--backend", "talon", "--base-url", URL, "--set", str(set_path), "--samples", "1", "--thinking", "off", "--concurrency", "8")
+d_leak = Path(re.search(r"RUN_DIR=(.+)", out).group(1).strip())
+rc, out = cli(R7, "validate", "--run", str(d_leak))
+check("a thinking-off answer run whose replies still show thinking fails validation as INFRASTRUCTURE",
+      rc == 1 and "thinking was requested OFF" in out and "thinking off NOT confirmed" in out, out[-400:])
 # ------------------------------------------------------------------ cleanup: leave nothing behind
 if REVIEW.exists():
     for p in REVIEW.glob("*"):

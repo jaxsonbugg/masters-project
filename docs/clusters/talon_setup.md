@@ -16,8 +16,8 @@ whole-node job (2026-11-04). Its generation speed has not been measured yet. Tal
 us nothing, one job may run at most 3 days, and we have 500 GB of storage (more must be requested). **CONFIRMED IN WRITING 2026-11-12 (Dr. Mueller):** Talon is free, and the only limit is the time per job; there is no GPU-hour cap (`docs/clusters/research_computing_correspondence.md`).
 
 The Redhawk pipeline job 2511641 has finished, but its results have **not been reviewed yet** (`docs/logs/compute_log.md`, entry 7). It is no longer a
-comparison baseline. The planned precision comparison is **4-bit versus BF16, both on Talon** (`docs/methodology/workflow.md` Section 2.1), so hardware does not
-differ between the two runs. Redhawk stays the tested fallback. **Its executable logic is unchanged since the Talon work began**; the only edits under `configs/redhawk/` are three comment lines that were repointed when `docs/` was reorganized on 2026-11-07 (`docs/progress_update.md`, 2026-11-07 and 2026-11-11).
+comparison baseline. Since 2026-11-18 all generation uses **BF16 on Talon**, without a precision comparison (`docs/methodology/workflow.md` Section 2.1).
+Redhawk stays the tested fallback. **Its executable logic is unchanged since the Talon work began**; the only edits under `configs/redhawk/` are three comment lines that were repointed when `docs/` was reorganized on 2026-11-07 (`docs/progress_update.md`, 2026-11-07 and 2026-11-11).
 
 ## 2. What is known and what is not
 
@@ -185,13 +185,13 @@ be 6,250 / 16 = 390 hours, about 16 days. These numbers are made up to show the 
 waits and time limits, model loading repeats per job, and failed examples must be re-asked. Treat it as a planning estimate with a wide error bar. The
 "if N GPUs were available" lines are arithmetic only. Research Computing confirmed in writing (2026-11-12) that there is no GPU-hour cap and that all 4 GPUs of a node may be used at once; whether GPUs on several nodes may be used at once is not stated, and the 8- and 16-GPU lines assume it.
 
-## 7. The 20,480-token context is a comparison setting, not the model's best
+## 7. The 20,480-token context: below the model's best, and final (2026-11-18)
 
 Qwen3.6-27B natively handles 262,144 tokens, and its model card advises keeping at least 128K tokens of context to preserve its thinking quality. The
-Talon test runs use **20,480 tokens per sequence** (3,000 for the prompt, 16,384 for the output, headroom). It was chosen to match the Redhawk
-deployment, and it is kept so that the two Talon runs of the 4-bit versus BF16 comparison have identical room per question. The scripts print this
-note, and the checks above look for truncation and reasoning exhaustion. If the throughput benchmark shows
-truncation at 20,480, a run at a longer `MAX_MODEL_LEN` is the next experiment; the report can compare the two.
+Talon test runs use **20,480 tokens per sequence** (3,000 for the prompt, 16,384 for the output, headroom). It was first chosen to match the Redhawk
+deployment. Stage T then showed 1 reply in 128 cut off, at the 16,384-token output limit, not at the context. So on 2026-11-18 both values were fixed as
+final: 16,384 output tokens and 20,480 per sequence. This keeps the Stage T speed figures comparable, and a cut-off reply counts as unusable. The scripts print this
+note, and the checks above look for truncation and reasoning exhaustion.
 
 ## 8. What the 200,000-example generation will need (documented, NOT built)
 
@@ -234,7 +234,7 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 - ***Wall times:** smoke 1 h, throughput 4 h, generation runs 24 h (they resume in a new job).*
 - ***GPU-memory guard:** 90,000 MiB.*
 - ***NVLink pairing:** checked and recorded, not forced.*
-- ***Context length:** 20,480 for now, finalized from the Stage T truncation rates before the precision test.*
+- ***Context length:** 20,480 per sequence and 16,384 output tokens, fixed as final on 2026-11-18 (Stage T: 1 in 128 cut off at the output limit).*
 
 *Stage A passed, 2026-11-12 (job 204, 1 H100 on `mualhpgp02`, about 0.17 GPU-hours; `docs/logs/compute_log.md` entry 12).*
 - *Qwen3.6-27B BF16 loads on one H100 in 242 s (the first load includes a one-time 35 s compile step), with about 6 GB of GPU memory to spare after vLLM's own reservation.*
@@ -269,8 +269,9 @@ to trust the server instead of comparing fingerprints; key-pair login; read-only
 6. **`prep_talon.sh`** (installs vLLM, downloads and verifies about 54 GB; needs `QT_CONFIRM_STORAGE=yes`; separate approval).
 7. **Stage A** (`submit_pipeline.sh smoke_a`): read it before anything else. This is also where the real vLLM log and reply fields replace the fakes.
 8. **Stage T** for each layout (1 GPU, 2 GPUs, ...), then `throughput_report.py`; choose the layout together.
-9. **Stage B and the main run** (or `pipeline`) with the chosen layout: the BF16 side of the 4-bit versus BF16 comparison on Talon. The 4-bit side
-   needs a Talon 4-bit backend (format and engine still open, `docs/methodology/workflow.md` Section 10.2).
+9. **Stage K, the thinking check** (`submit_pipeline.sh thinking`, 1 GPU, `CLIENT_CONCURRENCY=16`), after the owner's approval. It writes set K with thinking on and with thinking off, builds the
+   shared question set, and has both modes answer it 3 times. Graded on the PC with `answer_check.py` (`docs/methodology/workflow.md` Section 2.1). There is no precision
+   comparison: BF16 is used for all generation (decided 2026-11-18).
 10. A **new plan** for the 200,000-example work, using the measured GPU-hours.
 
 ## 10. What could go wrong

@@ -15,6 +15,10 @@
 #   T     the throughput benchmark: 32 development questions (BM9101-9132) once per client concurrency in SWEEP_CONCURRENCY, on
 #         ONE server start. Run it once per GPU layout (see talon_throughput.sbatch), then read all runs with
 #         code/generation/throughput_report.py.
+#   K     the thinking on/off check (decided 2026-11-18; docs/methodology/workflow.md Section 2.1), on ONE server start: write
+#         set K (BM8001-8060) with thinking on, then with thinking off; build the fixed shared question set (answer-set); then
+#         both modes answer it K_SAMPLES (default 3) times per question, at CLIENT_CONCURRENCY. Every run is validated.
+#         Needs a passing Stage A with the same engine and weights. Graded later on the PC (code/generation/answer_check.py).
 #   main  the comparison run, BM0021-BM0120, one attempt per slot, with the layout that passed B.
 # Settings (talon_settings.sh or the job's environment): GPU_COUNT, TENSOR_PARALLEL, REPLICAS, MAX_NUM_SEQS, CLIENT_CONCURRENCY,
 # MAX_MODEL_LEN (no preferred defaults). Optional: QT_ACK_QUALITY=yes (go on after a stage in which EVERY reply had a
@@ -44,9 +48,9 @@ require_paths
 talon_facts_banner
 
 STAGE="${QT_STAGE:-}"
-case "$STAGE" in A|B|T|main) ;; *) die "QT_STAGE must be A, B, T or main" ;; esac
+case "$STAGE" in A|B|T|K|main) ;; *) die "QT_STAGE must be A, B, T, K or main" ;; esac
 check_layout
-case "$STAGE" in B|main) check_concurrency ;; esac
+case "$STAGE" in B|K|main) check_concurrency ;; esac
 [ "$TALON_ENGINE_MODE" = venv ] || die "TALON_ENGINE_MODE=$TALON_ENGINE_MODE is not implemented in this draft (only venv). Decide after the probe, then extend this script."
 need VLLM_VERSION; need MODEL_REV; need GPU_MIN_TOTAL_MIB; need SERVED_NAME
 
@@ -89,6 +93,12 @@ echo "assigned GPU(s): CUDA_VISIBLE_DEVICES=$GPU_IDS (indexes $GPU_INDEXES); NVL
 echo "$GPU_LIST"
 nvidia-smi -i "$GPU_IDS" --query-gpu=index,name,memory.total,driver_version --format=csv
 nvidia-smi 2>/dev/null | head -n 4 || true   # the header line shows the CUDA version the driver supports (not yet recorded for Talon)
+# Confidential-computing mode of the assigned GPU(s), recorded because vLLM issue #57224 reports garbled output on H100 NVL in
+# that mode (vLLM 0.29-0.33). Recorded, not judged here: the wording of `nvidia-smi -q` for it is UNVERIFIED on Talon, so a
+# person reads this line (and the replies) before any result is used.
+CC_MODE="$( { nvidia-smi -q -i "$GPU_IDS" 2>/dev/null || true; } | grep -i -A2 'confidential\|CC State\|CC Mode' | tr -s ' \n' ' ' | cut -c1-200 || true)"
+CC_MODE="${CC_MODE:-not reported by nvidia-smi -q}"
+echo "confidential computing (nvidia-smi -q): $CC_MODE"
 echo "layout: $GPU_COUNT GPU(s), tensor parallel $TENSOR_PARALLEL, replicas $REPLICAS, max sequences $MAX_NUM_SEQS, max length per sequence $MAX_MODEL_LEN"
 echo "NOTE: $MAX_MODEL_LEN tokens per sequence is far below Qwen's native 262,144 and below the 128K its model card advises; an interim setting: Stage T measures how often answers are cut off at this length, and the final value is fixed before the precision test (docs/methodology/workflow.md, settings review 2026-11-12)."
 
@@ -150,7 +160,7 @@ gate_from() {  # $1 = the stage whose result file must show a pass; $2 = LAYOUT_
 }
 case "$STAGE" in
   B) gate_from A LAYOUT_FP ;;
-  T) gate_from A ENGINE_FP ;;
+  T|K) gate_from A ENGINE_FP ;;
   main) gate_from B LAYOUT_FP ;;
 esac
 
@@ -172,7 +182,7 @@ write_result() {  # $1 = PASS | PASS_QUALITY_WARN | FAIL_INFRA, $2 = reason. Smo
     echo "GPU_IDS=$GPU_IDS"; echo "GPU_INDEXES=$GPU_INDEXES"; echo "NVLINK_PAIR=$NVLINK_PAIR"; echo "MAX_NUM_SEQS=$MAX_NUM_SEQS"; echo "CLIENT_CONCURRENCY=${CLIENT_CONCURRENCY:-sweep: $SWEEP_CONCURRENCY}"; echo "MAX_MODEL_LEN=$MAX_MODEL_LEN"
     echo "VLLM_VERSION=$ACTUAL_VERSION"; echo "MODEL_REV=$MODEL_REV"; echo "WEIGHTS_MANIFEST_SHA256=$MANIFEST_SHA"
     echo "ENGINE_FP=$ENGINE_FP"; echo "LAYOUT_FP=$LAYOUT_FP"; echo "MIN_FREE_MIB=$MINFREE"; echo "JOB=$JOB"; echo "LOGTAG=$TAGID"
-    echo "NODE=$(hostname)"; echo "UTC=$(date -u +%FT%TZ)"; echo "RUN_DIR=$RUN_DIR"; echo "RUN_DIRS=$RUN_DIRS"; } > "$f.tmp"
+    echo "NODE=$(hostname)"; echo "UTC=$(date -u +%FT%TZ)"; echo "RUN_DIR=$RUN_DIR"; echo "RUN_DIRS=$RUN_DIRS"; echo "CC_MODE=$CC_MODE"; } > "$f.tmp"
   mv "$f.tmp" "$f"
   [ "$STAGE" = main ] || cp "$f" "$RESULT_DIR/stage${STAGE}_job${JOB}${QT_ATTEMPT:+_$QT_ATTEMPT}.txt"
 }
@@ -220,37 +230,19 @@ case "$STAGE" in
   A) CONC_LIST="1" ;;
   B|main) CONC_LIST="$CLIENT_CONCURRENCY" ;;
   T) CONC_LIST="$SWEEP_CONCURRENCY" ;;
+  K) CONC_LIST="on off" ;;   # the thinking modes; the concurrency is CLIENT_CONCURRENCY
 esac
 RC=0; VRC=0; SMEM=""
 trap - ERR   # a non-zero exit of the client or of validate is expected and handled below; do not print an ERROR line for it
 set +e
-for C in $CONC_LIST; do
-  SUF=""; [ "$STAGE" != T ] || SUF="_c$C"
-  PYLOG="$LOGDIR/run_${TAGID}${SUF}.out"; VALLOG="$LOGDIR/validate_${TAGID}${SUF}.out"
-  ARGS=(--out-root "$QT_OUT" run --backend talon --base-url "http://127.0.0.1:$PORT/v1" --concurrency "$C"
-        --meta "engine=vllm" --meta "vllm_version=$ACTUAL_VERSION" --meta "model_repo=$MODEL_REPO" --meta "model_rev=$MODEL_REV"
+COMMON_META=(--meta "engine=vllm" --meta "vllm_version=$ACTUAL_VERSION" --meta "model_repo=$MODEL_REPO" --meta "model_rev=$MODEL_REV"
         --meta "gpu_count=$GPU_COUNT" --meta "tensor_parallel=$TENSOR_PARALLEL" --meta "replicas=$REPLICAS"
         --meta "max_num_seqs=$MAX_NUM_SEQS" --meta "max_model_len=$MAX_MODEL_LEN" --meta "load_seconds=$LOAD"
         --meta "weights_manifest_sha256=$MANIFEST_SHA" --meta "slurm_job=$JOB" --meta "node=$(hostname)" --meta "stage=$STAGE"
-        --meta "queue_submit_time=$SUBMIT" --meta "queue_start_time=$STARTED" --meta "queue_wait_seconds=$WAIT")
-  case "$STAGE" in
-    A) ARGS+=(--smoke-set A) ;;
-    B) ARGS+=(--smoke-set B) ;;
-    T) ARGS+=(--smoke-set T) ;;
-    main)
-      if [ -n "${QT_RESUME:-}" ]; then ARGS+=(--resume "$QT_RESUME"); fi
-      if [ "${QT_BREAK_LOCK:-}" = yes ]; then ARGS+=(--break-lock); fi
-      if [ "${QT_RETRY_ERRORS:-}" = yes ]; then ARGS+=(--retry-errors); fi ;;
-  esac
-  echo; echo "--- client: stage $STAGE, concurrency $C ---"
-  if [ -n "${QT_PY_TIMEOUT:-}" ]; then
-    timeout "$QT_PY_TIMEOUT" python open_teacher_test.py "${ARGS[@]}" 2>&1 | tee "$PYLOG"
-  else
-    python open_teacher_test.py "${ARGS[@]}" 2>&1 | tee "$PYLOG"
-  fi
-  RC_ONE="${PIPESTATUS[0]}"; [ "$RC_ONE" -eq 0 ] || RC="$RC_ONE"
-  RUN_DIR="$(sed -n 's/^RUN_DIR=//p' "$PYLOG" | tail -n 1)"
-  # ---- MANDATORY validation. Exit codes of `validate`: 0 clean, 1 infrastructure failure, 2 infrastructure fine but quality findings.
+        --meta "queue_submit_time=$SUBMIT" --meta "queue_start_time=$STARTED" --meta "queue_wait_seconds=$WAIT"
+        --meta "cc_mode=$CC_MODE")
+# ---- MANDATORY validation of $RUN_DIR. Exit codes of `validate`: 0 clean, 1 infrastructure failure, 2 infrastructure fine but quality findings.
+validate_one() {
   if [ -n "$RUN_DIR" ]; then
     RUN_DIRS="${RUN_DIRS:+$RUN_DIRS }$RUN_DIR"
     python open_teacher_test.py --out-root "$QT_OUT" validate --run "$RUN_DIR" 2>&1 | tee "$VALLOG"
@@ -265,7 +257,60 @@ for C in $CONC_LIST; do
   QUALITY_REPLIES=$(( QUALITY_REPLIES + ${Q_ONE:-0} )); REPLIES=$(( REPLIES + ${REP_ONE:-0} ))
   # peak memory so far, saved next to the replies so throughput_report.py can show it
   if [ -n "$RUN_DIR" ] && [ -d "$RUN_DIR" ]; then summarize_memory "$MEMLOG" | grep '^gpu' > "$RUN_DIR/gpu_peak.txt" || true; fi
+}
+# One client call and its MANDATORY validation. $1 = log-name suffix; the rest = the client's arguments. Sets RUN_DIR.
+client_and_validate() {
+  local suf="$1"; shift
+  PYLOG="$LOGDIR/run_${TAGID}${suf}.out"; VALLOG="$LOGDIR/validate_${TAGID}${suf}.out"
+  if [ -n "${QT_PY_TIMEOUT:-}" ]; then
+    timeout "$QT_PY_TIMEOUT" python open_teacher_test.py "$@" 2>&1 | tee "$PYLOG"
+  else
+    python open_teacher_test.py "$@" 2>&1 | tee "$PYLOG"
+  fi
+  RC_ONE="${PIPESTATUS[0]}"; [ "$RC_ONE" -eq 0 ] || RC="$RC_ONE"
+  RUN_DIR="$(sed -n 's/^RUN_DIR=//p' "$PYLOG" | tail -n 1)"
+  validate_one
+}
+for C in $CONC_LIST; do
+  SUF=""; CONC="$C"
+  [ "$STAGE" != T ] || SUF="_c$C"
+  if [ "$STAGE" = K ]; then SUF="_write_$C"; CONC="$CLIENT_CONCURRENCY"; fi   # in stage K the list is the thinking modes
+  ARGS=(--out-root "$QT_OUT" run --backend talon --base-url "http://127.0.0.1:$PORT/v1" --concurrency "$CONC" "${COMMON_META[@]}")
+  case "$STAGE" in
+    A) ARGS+=(--smoke-set A) ;;
+    B) ARGS+=(--smoke-set B) ;;
+    T) ARGS+=(--smoke-set T) ;;
+    K) ARGS+=(--smoke-set K --thinking "$C") ;;
+    main)
+      if [ -n "${QT_RESUME:-}" ]; then ARGS+=(--resume "$QT_RESUME"); fi
+      if [ "${QT_BREAK_LOCK:-}" = yes ]; then ARGS+=(--break-lock); fi
+      if [ "${QT_RETRY_ERRORS:-}" = yes ]; then ARGS+=(--retry-errors); fi ;;
+  esac
+  echo; echo "--- client: stage $STAGE, $([ "$STAGE" = K ] && echo "writing, thinking $C" || echo "concurrency $C") ---"
+  client_and_validate "$SUF" "${ARGS[@]}"
+  if [ "$STAGE" = K ]; then
+    if [ "$C" = on ]; then W_ON="$RUN_DIR"; else W_OFF="$RUN_DIR"; fi
+  fi
 done
+# ---- stage K, part 2: the fixed shared question set, then both modes answer it (3 times per question) ----
+if [ "$STAGE" = K ]; then
+  ASLOG="$LOGDIR/answerset_${TAGID}.out"; ASET=""
+  if [ -n "${W_ON:-}" ] && [ -n "${W_OFF:-}" ]; then
+    echo; echo "--- answer-set: the fixed shared question set ---"
+    python open_teacher_test.py --out-root "$QT_OUT" answer-set --on "$W_ON" --off "$W_OFF" 2>&1 | tee "$ASLOG"
+    ASET="$(sed -n 's/^ANSWER_SET=//p' "$ASLOG" | tail -n 1)"
+  fi
+  if [ -z "$ASET" ]; then
+    echo "INFRASTRUCTURE FAIL: no shared answer set was built (see $ASLOG)"; VRC=1
+  else
+    RUN_DIRS="${RUN_DIRS:+$RUN_DIRS }$(dirname "$ASET")"
+    for M in on off; do
+      echo; echo "--- client: stage K, answering, thinking $M ---"
+      client_and_validate "_answer_$M" --out-root "$QT_OUT" answer --backend talon --base-url "http://127.0.0.1:$PORT/v1" \
+        --set "$ASET" --samples "${K_SAMPLES:-3}" --thinking "$M" --concurrency "$CLIENT_CONCURRENCY" "${COMMON_META[@]}"
+    done
+  fi
+fi
 set -e
 trap 'echo "ERROR at line $LINENO: $BASH_COMMAND" >&2' ERR
 if [ "$REPLIES" -gt 0 ] && [ "$QUALITY_REPLIES" -eq "$REPLIES" ]; then QUALITY_ALL=yes; fi
@@ -304,5 +349,9 @@ fi
 if [ "$STAGE" = T ]; then
   echo "Throughput runs of this layout: $RUN_DIRS"
   echo "Read them (and the runs of other layouts) with:  python code/generation/throughput_report.py $(for d in $RUN_DIRS; do printf -- '--run %s ' "$d"; done)"
+fi
+if [ "$STAGE" = K ]; then
+  echo "Thinking-check folders (writing on, writing off, answer set, answers on, answers off): $RUN_DIRS"
+  echo "Copy them to the PC, score the two writing runs, then run code/generation/answer_check.py (docs/methodology/workflow.md Section 2.1)."
 fi
 exit 0

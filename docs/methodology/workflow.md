@@ -33,7 +33,7 @@ Terms used throughout, defined once:
 A student, meaning one (model size, data size) pair, is a **successful specialization** only if it meets **all** of the criteria below. The thresholds were fixed before any student results exist. Any later change must be logged in `docs/progress_update.md` with a reason, as was done for criterion 4 (Section 1.2) and for how criterion 1 is graded (Section 1.3).
 
 1. **Retained accuracy.** The ratio is student accuracy divided by teacher accuracy on the frozen benchmark. The lower bound of the bootstrap 95% CI of that ratio must reach a tier: **Useful >= 70%**, **Strong >= 85%**, **Near-parity >= 95%**. Accuracy is macro-averaged across benchmark categories. Every answer, the teacher's and the students', is graded by the grader against the reference key (Section 2.3). For R code items, the execution-based check is reported as a cross-check (Section 1.3). Results are reported at all three tiers.
-   - *Weak-teacher safeguard.* Teacher and student absolute accuracies are always reported with CIs next to every ratio. A student must also reach an **absolute accuracy floor of 60%** to earn any tier. A teacher below **80%** on the benchmark is a red flag. In that case, pause and review benchmark difficulty and the teacher settings, using the dev set and not the frozen benchmark, before distillation. The first remedy is Qwen3.6-27B at a higher precision or with more thinking (Section 2.1).
+   - *Weak-teacher safeguard.* Teacher and student absolute accuracies are always reported with CIs next to every ratio. A student must also reach an **absolute accuracy floor of 60%** to earn any tier. A teacher below **80%** on the benchmark is a red flag. In that case, pause and review benchmark difficulty and the teacher settings, using the dev set and not the frozen benchmark, before distillation. The first remedy is Qwen3.6-27B at a higher precision or with more thinking (Section 2.1) (BF16 is already the highest precision available, so since 2026-11-18 this means more thinking: thinking on if the thinking check chose off, or a longer output limit).
 2. **Real gain over its own baseline.** The student must be significantly better than the same student untrained (McNemar's test, Holm correction across model pairs).
 3. **Usable output.** A minimum share of well-formed, parseable responses and a minimum share of R code that runs. The R code is executed only in the R sandbox (Section 4, safeguard 10). The starting value is 90% each; it is confirmed in the Phase 4 pilot, and any change is logged before Phase 5 results.
 4. **Efficiency.** See Section 1.2. The original wording is kept there verbatim, followed by the current two-part definition.
@@ -117,49 +117,78 @@ No student result existed when this change was made.
 **Deployment.**
 - **Talon (primary):** vLLM serving the full BF16 weights. BF16 is a 16-bit number format, so the model runs as released, without compression. Repository `Qwen/Qwen3.6-27B`, revision `6a9e13bd6fc8f0983b9b99948120bc37f49c13e9`, about 53,011 MiB of weights. Engine pinned 2026-11-12: `vllm==0.32.0` (the model card requires 0.19.0 or later; details in `docs/models/model_versions.md` Section 6). Settings are in `configs/talon/talon_settings.sh`, explained in `docs/clusters/talon_setup.md`.
 - **Redhawk (fallback):** llama.cpp tag `b11960` (commit `8642541b...`) serving a 4-bit GGUF file (`unsloth/Qwen3.6-27B-GGUF` @ `82d411ac...`, `Qwen3.6-27B-Q4_K_M.gguf`, SHA-256 `5ed60d0a...`) on two 16 GB V100s. Pins are in `configs/redhawk/common.sh`.
-- **Sampling** (the model card's recommended thinking-mode settings, identical on both clusters): temperature 1.0, top_p 0.95, top_k 20, min_p 0, presence penalty 0. The output limit is 16,384 tokens per call, thinking included. The context is 20,480 tokens per sequence, which is a comparison setting and not the model's maximum (`docs/clusters/talon_setup.md` Section 7).
+- **Sampling** (the model card's recommended thinking-mode settings, identical on both clusters): temperature 1.0, top_p 0.95, top_k 20, min_p 0, presence penalty 0. The output limit is 16,384 tokens per call, thinking included. The context is 20,480 tokens per sequence, below the model's maximum and fixed as final on 2026-11-18 (`docs/clusters/talon_setup.md` Section 7). Whether thinking stays on is decided by the thinking check (below).
 
-**Choosing the teacher precision (decided 2026-11-11; protocol pre-registered before it runs).** *Precision* is how many bits store each of the model's numbers: BF16 uses 16, FP8 uses 8, a 4-bit version uses 4. Fewer bits mean a smaller, faster model, and possibly a slightly worse one.
-- **One precision is used for all generation.** The benchmark and every training set come from the same teacher setup. Mixing precisions across data sizes would add a second difference between the conditions being compared.
-- **What is compared.** BF16 (the reference), FP8 and 4-bit, all on Talon and all served by vLLM, so neither the engine nor the hardware differs. This replaces the earlier plan to compare Redhawk's 4-bit file with Talon's BF16.
-- **Two endpoints, measured on the same development slots (BM8xxx, never benchmark or training):**
-  - **Usability, on all slots:** the item is usable on the first attempt. That means a complete, parseable reply that passes the automatic checks, and for a number item, a key that R could recompute from the item's own code (run in the R sandbox, Section 4, safeguard 10).
-  - **Answer correctness, on a stratified sample:** checked independently of the teacher. A computable answer is checked by R in the sandbox, and anything else by the owner by hand, with every disagreement adjudicated.
-    - **Why usability alone is not enough:** a compressed model can write perfectly formatted answers that are more often wrong.
-    - **Why no language model judges this endpoint:** the precision decides how all the training data is made, so a model grader's verdicts are kept out of it (Section 2.3).
-- **The statistics.** Two comparisons against BF16 (FP8 vs BF16, 4-bit vs BF16) with a multiplicity adjustment (Holm, or Bonferroni at one-sided α = 0.025 each). This is a non-inferiority test: a lower precision passes if the confidence interval for its paired difference from BF16 stays above −3 percentage points on **both** endpoints.
-  - The 3-point margin is provisional. Before the run, it must be justified in writing as the largest loss of teacher quality that would not change the study's conclusions, not only by the GPU time it saves.
-  - **The margin is never widened to make the sample smaller.**
-- **Sample sizes, calculated before any precision-test output exists.**
-  - **What is computed.** For each comparison and each endpoint, the number of paired slots needed to show non-inferiority with the declared power. A *paired* slot is one question slot answered by both precisions. The *discordance* ψ (psi) is the share of slots where the two precisions disagree: one is usable or correct and the other is not. If the two precisions truly perform the same, the approximate number of slots is
+**The teacher setup: BF16, a fixed output limit, and a check of thinking mode (decided 2026-11-16 to 2026-11-18).** One fixed teacher setup writes the benchmark, the development set and every training set. Using one setup means the data sizes are never written by different teachers. The setup is therefore settled once, before any of that data exists. It has two knobs that matter: **precision** and **thinking mode**.
 
-    n ≈ (z₁₋α + z_power)² × ψ / Δ²
+**1. Precision: BF16, without a precision test.** *Precision* is how many bits store each of the model's numbers: BF16 uses 16, FP8 uses 8, and a 4-bit version uses 4. Fewer bits mean a smaller, faster model, and possibly a slightly worse one.
+- **What was planned and dropped.** The plan was a formal test of FP8 and a community 4-bit checkpoint against BF16: two measures, a 3-point non-inferiority margin, sample sizes fixed in advance, and a feasibility gate. It is archived verbatim in `docs/archive/retired_precision_test_2026-11-18.md`.
+  - **4-bit was dropped first:** community checkpoints are thinly documented and need extra provenance work.
+- **Why FP8 was not tested either.**
+  - **What the evidence suggests:** a literature search (2026-11-16; secondary sources, not checked by us) found suggestive but not conclusive evidence:
+    - Qwen's FP8 model card says its performance is "nearly identical" to the original, without numbers;
+    - one undocumented community table puts FP8 within 1.3 points of BF16 on three benchmarks;
+    - well-documented sibling models are within about 1 point;
+    - FP8 runs about 1.4 to 1.8 times faster on other models and hardware.
 
-    Here Δ = 0.03 is the margin. z₁₋α = 1.96 is the normal quantile for one-sided α = 0.025, which is used for every comparison, even if the 4-bit arm is dropped. z_power is 0.84 for 80% power and 1.28 for 90%.
-  - **Worked numbers.**
+    Nothing measured this model on H100 + vLLM in thinking mode.
+  - **What a test would cost:** about 1 to 2 weeks and 5 to 15 hours of hand-judging.
+  - **What it would save:** about 400 to 630 GPU-hours (about 4 to 7 cluster days on 4 GPUs) if all 200,000 examples are generated, or about 100 to 160 at the 50k fallback. Cluster time is free.
+- **Why BF16 is the safe choice.**
+  - It is the model as released.
+  - It is affordable: about 232,000 generations in all (the nested training sets up to 200k, plus spares, the benchmark and the development set) at Stage T's 6.14 GPU-hours per 1,000 is about 1,425 GPU-hours.
+  - It was already the default of the retired protocol.
 
-    | Assumed discordance ψ | Slots at 80% power | Slots at 90% power |
-    |---|---|---|
-    | 0.05 | 437 | 584 |
-    | 0.10 | 873 | 1,168 |
-    | 0.15 | 1,309 | 1,752 |
+  FP8 (`Qwen/Qwen3.6-27B-FP8`) and every 4-bit checkpoint are recorded as **not tested and not used**.
+- **Two engine notes from that search.**
+  - **The KV cache:** vLLM's working memory for the text so far stays at its default type, not FP8.
+  - **vLLM issue #57224** reports garbled output from H100 NVL GPUs in "confidential computing" mode on vLLM 0.29 to 0.33. Every Talon job now records that mode (`CC_MODE` in its result file), and replies are read before results are used.
 
-  - **What is declared before the run:** the power (80% is proposed), and each assumed ψ with its source. The usability ψ is re-estimated from a 100-slot first run.
-  - **The manual workload** of the correctness endpoint is roughly the number of slots × the number of arms × the share of items R cannot check. That share is about 70% if only number items are computable. *Example:* ψ = 0.10 at 80% power with three arms (BF16, FP8, 4-bit) is about 873 × 3 × 0.7 ≈ 1,830 judgments by hand.
-- **Feasibility gate.** Before any precision-test output exists, the owner writes down the largest number of hand judgments that is practical.
-  - **If the calculation needs more:** BF16 is used for all generation. FP8 and 4-bit may still be run on a feasible sample, but only as an **exploratory**, descriptive comparison that cannot change the choice.
-  - The −3 margin is not widened to fit the workload. BF16 is the safe default because it is the model as released, and its GPU time is affordable: about 1,228 GPU-hours for 200,000 examples, from Stage T, with no GPU-hour cap.
-- **The 4-bit arm (decided 2026-11-12).** Qwen publishes no official 4-bit release of Qwen3.6-27B, so the 4-bit arm uses a **community-quantized** checkpoint. It is kept only if all of the following are verified before download:
-  - **Provenance:** prefer a reproducible checkpoint quantized **directly from the official BF16 weights**, with **no additional fine-tuning**.
-  - **License:** compatible with this use.
-  - **Quantization method:** documented.
-  - **vLLM `0.32.0` compatibility on H100:** confirmed. For example, a GPTQ checkpoint with `desc_act=True` is served incorrectly by vLLM 0.30 and later.
+**2. Output limit and context: 16,384 and 20,480 tokens, final (decided 2026-11-18).**
+- **Qwen's recommendation:** 32,768 output tokens.
+- **What Stage T showed with 16,384:** 1 reply in 128 was cut off (0.8%).
+- **Why keep it:** it keeps the Stage T speed figures directly comparable. A cut-off reply is unusable for whichever setup produced it.
 
-  The exact quantization configuration is recorded with the results: method, bits, group size, symmetric or asymmetric, calibration data, the quantization tool and its version, and the repository commit. The comparison is reported as one between **specific model deployments** (this checkpoint served this way), not as a universal comparison of 4 bits against 16. It uses the **same pre-registered non-inferiority criteria** as FP8 against BF16. **If no candidate passes the provenance and compatibility checks, the 4-bit arm is dropped rather than delaying the pilot;** the test then compares FP8 with BF16 only. Candidates found on 2026-11-12, still to be checked: `cyankiwi/Qwen3.6-27B-AWQ-INT4`, `btbtyler09/Qwen3.6-27B-GPTQ-4bit`, `Lorbus/Qwen3.6-27B-int4-AutoRound` (`docs/models/model_versions.md` Section 6).
-- **Decision rule.** If the feasibility gate passes, use the lowest-compute precision that is non-inferior to BF16 on both endpoints. If neither FP8 nor 4-bit passes, or the gate fails, use BF16. The chosen precision's projected total GPU time must fit the timeline, run in resumable jobs shorter than the 3-day limit.
-- **Worked example (hypothetical numbers).** On 1,000 paired slots, BF16 is usable on 88% and 4-bit on 87.2%, a difference of −0.8 points. If the adjusted lower confidence bound is −2.6 (above −3) for usability, and the correctness sample gives a lower bound of −2.1, then 4-bit passes both endpoints and is chosen. A lower bound of −3.4 on either endpoint would mean 4-bit fails.
+**3. Thinking mode: decided by a quick observational check (stage K; designed 2026-11-18).**
+- **What and why.** About 95% of the teacher's output is *thinking*: text it writes privately before its answer. Stage T measured about 4,600 of 4,850 output tokens per example as thinking.
+  - The students are trained only on the final worked answer, never on the thinking. So thinking matters only through how often that answer is right.
+  - Switching thinking off could make generation many times cheaper. If the teacher got much worse, though, every training example and the teacher's own benchmark score would carry that.
+- **How it works.** It runs as one Talon job (stage K), on one server start, about 2 GPU-hours.
+  1. **Writing, both modes.** The teacher writes 60 development slots, **BM8001–BM8060**, once with thinking on and once with thinking off, using the benchmark prompt v6.
+     - **The slots:** BM8001–BM8040 are the 40 primary slots, two 20-slot blocks with the benchmark's exact category and difficulty mix. BM8041–BM8060 are a reserve block with the same pattern.
+     - **Every attempt is recorded,** failures included.
+  2. **A fixed, balanced, shared question set** (`answer-set`).
+     - **Which question fills which position:** positions 1–20 take BM8001–BM8020 as written with thinking **on**, and positions 21–40 take BM8021–BM8040 as written with thinking **off**. Each half has the benchmark's category mix, and neither mode answers only its own questions.
+     - **The replacement rule, fixed in advance:** a question that failed the automatic checks is replaced by the reserve slot at the same pattern position (same category and difficulty), written in the **same** origin mode. If that also failed, the position stays **unfilled**. Nothing is dropped silently, and the set's composition (origin mode × category, replacements, unfilled positions) is reported.
+     - *Example:* if thinking-on BM8003 failed, position 3 uses thinking-on BM8043.
+  3. **Answering, both modes.** Each mode answers every question in the set **3 times**, with a new answering prompt (`data/prompts/teacher_answer_v1.md`). Every answer ends with one `Final answer:` line.
+  4. **Thinking off is verified, not assumed.** The request keeps vLLM's `chat_template_kwargs: {"enable_thinking": ...}` structure.
+     - **The proof:** `validate` checks that no thinking-off reply has a reasoning field, `<think>` text or reasoning tokens. Otherwise the run fails as infrastructure.
+     - **Sampling:** each mode uses the model card's settings for that mode. Thinking on: temperature 1.0, top_p 0.95, top_k 20, presence penalty 0. Thinking off: temperature 0.7, top_p 0.80, top_k 20, presence penalty 1.5.
+  5. **Grading on this PC** (`code/generation/answer_check.py`).
+     - **The keys** come from `score`, with R in the sandbox.
+     - **The rules:** a number must be within the item's tolerance; a multiple-choice answer must have the same letter; an R expression must pass the item's `r_check` in the sandbox; short text must match after normalizing. A missing `Final answer:` line is wrong and counted separately as a format failure.
+     - **The owner's sheet:** the owner checks the **key** of every question where the two modes' most common answers differ, every short-text question and every number key R could not confirm (`check_sheet.csv`, probably 5 to 15 items). A corrected key regrades both modes.
+- **What is reported, as separate outcomes.**
+  1. **Usability:** the first-attempt usable rate on the 40 primary slots, by mode and by category, with every failure and its reason. The reserve is reported separately.
+  2. **Answer correctness:** the mean accuracy over all answers, by mode, overall and by category, with a 95% interval from a bootstrap that resamples **questions**, not answers. Also the format-failure rate.
+  3. **Cost:**
+     - **the generation cost**, in GPU-hours per usable written question. This is the main measure, and it **includes** the GPU time of failed attempts;
+     - answering throughput, separately;
+     - model start-up time, recorded separately and excluded from both.
+- **The rule, fixed before the results.** It is a descriptive engineering criterion, **not** a statistical non-inferiority claim. Thinking off is adopted only if all three hold, on point estimates:
+  - (a) its mean answer accuracy is no more than **5 points** below thinking on;
+  - (b) its first-attempt usable rate is no more than **5 points** below;
+  - (c) question generation costs at least **2 times** fewer GPU-hours per usable question.
 
-**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, the first step is the same model with a higher precision or more thinking, not a different model. The alternatives ranked in `docs/models/teacher_model_evaluations.md` stay documented but are not the plan.
+  Otherwise, thinking on.
+- **The category flag.** Any category where thinking off is **10 or more points** worse is flagged. A flag in **numerical** or **R generation** questions blocks adopting thinking off until the owner has reviewed those answers and recorded a decision.
+- *Worked example (hypothetical numbers):* thinking on answers 86.7% correctly and thinking off 83.3% (3.4 points lower), with usable rates of 95% and 92.5%. Thinking-off generation costs 0.0102 GPU-hours per usable question against 0.0640, which is 6.3 times cheaper. All three conditions hold. If numerical questions dropped from 90% to 75%, the blocking flag would still hold thinking off back until the owner had looked.
+- **What it can and cannot tell us.** With 40 questions the overall accuracy is uncertain by roughly ±8 points, and much more within one category. The check can reveal a large drop; it cannot prove that the two modes are equal. It is reported as observational.
+- **The consequence.** Whichever mode wins is used for **all** generation **and** for the teacher's benchmark run, so the student-to-teacher ratio compares like with like.
+- **Status.** Built and tested locally on 2026-11-18 (stage K in `configs/talon/`, `open_teacher_test.py` `run --thinking`, `answer-set`, `answer`, and `answer_check.py`). The Talon run waits for the owner's separate approval.
+
+**Fallback if the teacher underperforms.** If teacher accuracy on the benchmark is below 80%, the first step is the same model with a higher precision or more thinking, not a different model (BF16 is already the highest precision available, so since 2026-11-18 this means more thinking: thinking on if the thinking check chose off, or a longer output limit). The alternatives ranked in `docs/models/teacher_model_evaluations.md` stay documented but are not the plan.
 
 ### 2.2 Why the teacher changed (the Claude era, archived)
 
@@ -485,7 +514,11 @@ The benchmark comes before the pilot because the pilot needs something frozen to
 - [ ] Review the Redhawk pipeline job 2511641 (finished, results not yet checked) and record it in `docs/logs/compute_log.md`
 - [ ] Require the `r_solution` and `working` fields in every benchmark reply ("not applicable" where R does not apply), then update the regression fixture (Section 4, safeguard 6a)
 - [x] **Set up the R sandbox** (WSL2 plus bubblewrap) and pass its security self-test before any further model-written R is run (Section 4, safeguard 10): done 2026-11-12, 13 of 13 checks
-- [ ] Choose the teacher precision (BF16, FP8 or 4-bit) with the pre-registered protocol in Section 2.1, before any benchmark generation. The sample-size calculation and the feasibility gate come first.
+- [x] Teacher precision: **BF16 for all generation**, decided 2026-11-18 without a precision test (FP8 and 4-bit not tested and not used; Section 2.1, item 1). Output limit 16,384 and context 20,480 fixed as final.
+- [ ] **Thinking check** (stage K, Section 2.1, item 3), before any benchmark generation:
+  - [x] built and tested locally (2026-11-18);
+  - [ ] the Talon run, after the owner's approval;
+  - [ ] grading, the owner's look at the sheet, and the decision under the rule fixed in advance.
 - [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4), then re-run `dupcheck`
 - [ ] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. About a third of the trial items had small inconsistencies; no keys were affected.
 - [ ] Generate about 1,000 benchmark questions and the ~200-item development set with Qwen on Talon at the chosen precision; regenerate failures; `verify` (R in the sandbox) and `dupcheck` the whole set
@@ -658,7 +691,7 @@ Storage is split in two. **Small, important items live in the project repository
 
 **The R sandbox** is a WSL2 Ubuntu system on this PC, outside the repository (Section 4, safeguard 10; `recovery/r_sandbox.md`).
 
-**Clusters.** Redhawk and Talon **share one home folder** (`/home/buggjm`). It has a 500 GB hard quota and a 480 GB soft quota; about 17 GB was in use on 2026-11-06.
+**Clusters.** Redhawk and Talon **share one home folder** (`/home/buggjm`). It has a 500 GB hard quota and a 480 GB soft quota; about 17 GB was in use on 2026-11-06, and about 83 GB after the Talon weights and environment were downloaded on 2026-11-12.
 - Redhawk work lives in `/home/buggjm/masters_project`.
 - Talon work lives in its own folder, `/home/buggjm/talon_project` (repo, models, teacher_outputs), so the two can never overwrite each other.
 
@@ -700,7 +733,8 @@ Dates are placeholders until the program's real deadlines are known.
 | Grader errors or bias (leniency, or favoring the teacher's longer answers) | Reference key, blind pooled batches, calibration answers, the human audit, the deterministic cross-check, and validity thresholds with pre-registered failure rules (Section 2.3) |
 | Codex usage limits (included allowance; credits may be needed) | A usage pilot and projection before the screen and the grading; the expected usage stated before every run |
 | Untrusted model-written R code | Runs only in the sandbox, which fails closed (Section 4, safeguard 10) |
-| Precision correctness sample too large to judge by hand | Feasibility gate: BF16 by default and any comparison exploratory; the margin is never widened (Section 2.1) |
+| Thinking off makes the teacher worse | The thinking check with a rule fixed in advance and a blocking category flag; whichever mode wins also takes the benchmark (Section 2.1) |
+| Garbled vLLM output on H100 NVL in confidential-computing mode (vLLM issue #57224) | The mode is recorded in every Talon job (`CC_MODE`), and replies are read before results are used |
 | Confounded comparisons across sizes | Identical recipe, data, seeds and evaluation for all students |
 
 ### 10.2 Open decisions
@@ -712,16 +746,8 @@ Dates are placeholders until the program's real deadlines are known.
   - the usage-pilot results and the projection for the full grid.
 - [ ] **Grader validity thresholds, the fallback grading method (including the short-text rubric) and the primary-score rule** (Section 2.3), set on development data and frozen before any benchmark answer is graded.
 - [ ] **Grader audit design for the full grid** (beyond the pilot's 180 answers), set after the pilot.
-- [ ] **Teacher precision details** (Section 2.1).
-  - **FP8:** an official FP8 checkpoint exists (`Qwen/Qwen3.6-27B-FP8`).
-  - **4-bit:** no official release exists; the rule for a community checkpoint is decided (Section 2.1). Still open: which candidate, if any, passes the checks (done at Stage 1.3, before download).
-  - **Still to write:**
-    - the rationale for the 3-point margin;
-    - the power (80% proposed);
-    - the assumed discordance values and their source;
-    - the owner's cap on hand judgments for the feasibility gate.
-
-    The sample sizes follow from these.
+- [x] **Teacher precision** (decided 2026-11-18): BF16 for all generation, without a precision test. FP8 and every 4-bit checkpoint are not tested and not used. The retired protocol is in `docs/archive/retired_precision_test_2026-11-18.md` (Section 2.1, item 1).
+- [x] **Output limit and context** (decided 2026-11-18): 16,384 output tokens and 20,480 tokens per sequence, final (Section 2.1, item 2).
 - [x] **R sandbox limits** (decided and tested 2026-11-12): 4096 MB address space, 10 s CPU, 20 s wall, 1 MB output, 16 MB per file, 64 MB `/tmp`, 256 processes (Section 4, safeguard 10; `configs/paths.yaml`).
 - [ ] **Talon settings still unverified:**
   - the vLLM version pin: resolved 2026-11-12, `vllm==0.32.0`;
@@ -735,7 +761,7 @@ Dates are placeholders until the program's real deadlines are known.
   - whether GPUs on more than one node may be used at once (the written answer says all 4 GPUs of a node);
   - storage beyond 500 GB, and the account's lifetime and renewal (not asked yet);
   - GPU count and tensor parallelism (decided by the throughput benchmark).
-- [ ] **Teacher thinking budget** (decide before the precision test). In Stage A about 95% of Qwen's output tokens were thinking: 4,537 output tokens for a one-line binomial question, of which about 250 were the answer. Qwen3.6-27B can run with thinking on or off, and thinking changes both answer quality and the GPU time per example (and therefore the 200,000-example projection). The options are: thinking on as now (the model card's recommended setting), a cap on thinking length, or thinking off for training-data generation. Whatever is chosen is part of the teacher setup and is fixed before the precision test.
+- [ ] **Teacher thinking mode**, decided by the thinking check. Its design and rule were fixed on 2026-11-18 (Section 2.1, item 3). A cap on thinking length is not considered. The winning mode is also used for the teacher's benchmark run.
 - [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds
 - [x] **Require `r_solution` in every benchmark reply** (decided 2026-11-11). The field must always be present. It holds substantive R wherever R can compute the answer, and an explicit "not applicable" empty value otherwise. The legacy path that accepted a reply without the field is removed, and the `absent_r_solution` regression fixture is updated deliberately (Section 4, safeguard 6a). Training replies keep the field, but its correctness is not required (safeguard 9).
 - [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.

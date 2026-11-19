@@ -232,6 +232,17 @@ chk "8 of 32 cut off = 25% > 5%: report exit 2 with FINDINGS" '[ $RC -eq 2 ] && 
 echo "[T3] Stage T needs a Stage A with the same engine and weights (any layout)"
 sub talon_throughput.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1; chk "a different layout is allowed for T (same engine)" '[ $RC -eq 0 ] && [ "$(val $RES/stageT.txt GPU_COUNT)" = 1 ]'
 sub talon_throughput.sbatch FAKE_VLLM_VERSION=0.19.2 VLLM_VERSION=0.19.2; chk "another vLLM version than Stage A is refused" '[ $RC -ne 0 ] && grep -q "different ENGINE_FP" <<<"$OUT"'
+echo "[K1] the thinking check (stage K): write in both modes, build the shared set, answer in both modes, one server start"
+sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 K_SAMPLES=2
+chk "Stage K passes and names its folders" '[ $RC -eq 0 ] && grep -q "RESULT: PASS.*(stage K)" <<<"$OUT" && grep -q "Thinking-check folders" <<<"$OUT"'
+chk "only ONE server start for the whole of stage K" '[ "$(grep -c "Starting vllm serve" <<<"$OUT")" = 1 ]'
+KRUNS="$(val $RES/stageK.txt RUN_DIRS)"
+chk "five folders: writing on and off (60 replies each), the answer set, answers on and off (2 per question)" 'set -- $KRUNS; [ $# -eq 5 ] && [ "$(wc -l < $1/responses.jsonl)" = 60 ] && [ "$(wc -l < $2/responses.jsonl)" = 60 ] && [ -s $3/answer_set.jsonl ] && [ -s $3/composition.json ] && [ "$(wc -l < $4/responses.jsonl)" = $(( 2 * $(wc -l < $3/answer_set.jsonl) )) ] && [ "$(wc -l < $5/responses.jsonl)" = $(( 2 * $(wc -l < $3/answer_set.jsonl) )) ]'
+chk "the runs are, in order, writing on, writing off, answers on, answers off" 'set -- $KRUNS; grep -q "\"thinking\": \"on\"" $1/run_log.json && grep -q "\"thinking\": \"off\"" $2/run_log.json && grep -q "\"thinking\": \"on\"" $4/run_log.json && grep -q "\"thinking\": \"off\"" $5/run_log.json'
+chk "thinking-off replies carry no reasoning, and validation confirmed it from the records" 'set -- $KRUNS; ! grep -q "thinking about it" $2/responses.jsonl && ! grep -q "thinking about it" $5/responses.jsonl && [ "$(grep -c "thinking off confirmed" <<<"$OUT")" = 2 ]'
+chk "the result file records the confidential-computing line, and each run its cc_mode" 'grep -q "^CC_MODE=" $RES/stageK.txt && set -- $KRUNS && grep -q "\"cc_mode\"" $1/run_log.json'
+sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=; chk "Stage K needs CLIENT_CONCURRENCY (no default)" '[ $RC -ne 0 ] && grep -q "CLIENT_CONCURRENCY is" <<<"$OUT"'
+sub talon_thinking.sbatch FAKE_VLLM_VERSION=0.19.2 VLLM_VERSION=0.19.2; chk "Stage K needs a Stage A with the same engine and weights" '[ $RC -ne 0 ] && grep -q "different ENGINE_FP" <<<"$OUT"'
 echo "[P1] the one-job pipeline: A, B, main with one layout"
 rm -f $RES/stageA.txt $RES/stageB.txt
 sub talon_pipeline.sbatch; PJ=$JOBN; SUMM="$RES/pipeline_job$PJ.txt"
@@ -278,6 +289,9 @@ chk "the UNVERIFIED facts are printed by the submit script too" 'grep -q "UNVERI
 chk "QT_SUBMIT=yes submits the pipeline wrapper with untyped gres and records the job" '[ $RC -eq 0 ] && grep -q "Submitted pipeline job 4444" <<<"$OUT" && grep -v -- "--test-only" "$FAKE_SBATCH_LOG" | grep -q -- "--gres=gpu:2 --time=12:00:00 --cpus-per-task=32 --mem=240G configs/talon/talon_pipeline.sbatch" && grep -q "JOB=4444 KIND=pipeline" "$T/tl/submit_log.txt"'
 : > "$FAKE_SBATCH_LOG"; KIND=throughput subm QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=
 chk "the throughput kind uses its own wall time and GPU count, and needs no CLIENT_CONCURRENCY" '[ $RC -eq 0 ] && grep -q -- "--gres=gpu:h100:1 --time=02:00:00 --cpus-per-task=16 --mem=120G configs/talon/talon_throughput.sbatch" "$FAKE_SBATCH_LOG"'
+: > "$FAKE_SBATCH_LOG"; KIND=thinking subm QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1
+chk "the thinking kind submits talon_thinking.sbatch with the throughput wall time" '[ $RC -eq 0 ] && grep -q -- "--gres=gpu:h100:1 --time=02:00:00 --cpus-per-task=16 --mem=120G configs/talon/talon_thinking.sbatch" "$FAKE_SBATCH_LOG"'
+KIND=thinking subm GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=; chk "the thinking kind needs CLIENT_CONCURRENCY" '[ $RC -ne 0 ] && grep -q "CLIENT_CONCURRENCY is" <<<"$OUT"'
 chk "CPUs and memory scale with the GPU count (2 GPUs: 32 cores, 240G; 1 GPU: 16 cores, 120G)" 'grep -q -- "--cpus-per-task=16 --mem=120G" "$FAKE_SBATCH_LOG"'
 ready; subm CPUS_PER_GPU=; chk "refused when CPUS_PER_GPU is blank" '[ $RC -ne 0 ] && grep -q "CPUS_PER_GPU is" <<<"$OUT"'
 KIND=bogus subm; chk "an unknown kind is refused" '[ $RC -ne 0 ] && grep -q "unknown kind" <<<"$OUT"'

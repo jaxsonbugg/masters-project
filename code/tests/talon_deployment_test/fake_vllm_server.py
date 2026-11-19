@@ -68,6 +68,14 @@ class H(BaseHTTPRequestHandler):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         time.sleep(DELAY)
         user = body["messages"][1]["content"]
+        # chat_template_kwargs.enable_thinking false (the thinking check): no reasoning field, far fewer tokens
+        think = (body.get("chat_template_kwargs") or {}).get("enable_thinking", True)
+        if "Answer format:" in user:   # an ANSWERING request (stage K): working, then one final line
+            msg = {"role": "assistant", "content": "Working it out.\nFinal answer: 0.313"}
+            if think:
+                msg[FIELD] = "thinking about it"
+            return self.send(200, {"model": body["model"], "choices": [{"message": msg, "finish_reason": "stop"}],
+                                   "usage": {"prompt_tokens": 300, "completion_tokens": 900 if think else 60}})
         iid = re.search(r"item (BM\d{4})", user).group(1)
         g = lambda k: re.search(rf"^{k}: (\S+)", user, re.M).group(1)
         cat, diff, atype = g("Category"), g("Difficulty"), g("Answer type")
@@ -83,8 +91,10 @@ class H(BaseHTTPRequestHandler):
             content, finish, completion = "", "length", body.get("max_tokens", 16384)
         elif MODE == "reasoning_only":
             content = ""
-        out = {"model": body["model"], "choices": [{"message": {"role": "assistant", "content": content, FIELD: "thinking about it"},
-                                                    "finish_reason": finish}],
+        msg = {"role": "assistant", "content": content}
+        if think:
+            msg[FIELD] = "thinking about it"
+        out = {"model": body["model"], "choices": [{"message": msg, "finish_reason": finish}],
                "usage": {"prompt_tokens": 500, "completion_tokens": completion}}
         self.send(200, out)
 

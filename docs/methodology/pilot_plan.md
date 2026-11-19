@@ -55,19 +55,23 @@ Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and te
 1. **Fix slot variety.** Change the slot design so no combination repeats more than necessary (more subtopics, varied settings and contexts), then re-run `dupcheck`, which compares every question with every earlier one by text similarity, once with numbers kept and once with numbers masked, and lists near-copies for review. Success looks like few or no flagged pairs on a development batch.
 2. **Bring up Talon.** Pin the vLLM version (vLLM is the program that loads the model onto the GPUs and answers requests; the model card requires 0.19.0 or later), settle how jobs request GPUs, review the settings file, run a scheduler acceptance test, download the BF16 weights, then run smoke stage A (a few questions, to see that everything works) and the throughput stage T (how many tokens per second Talon delivers). The exact steps are in `docs/clusters/talon_setup.md` Section 9. Talon's nodes are shared between jobs and a job may run for at most 3 days, so long runs are split into pieces that can be restarted.
 3. **Review the Redhawk fallback run.** Redhawk job 2511641 (the Qwen pipeline with the 4-bit model) has finished but nobody has looked at its results. It is reviewed and recorded in `docs/logs/compute_log.md`, because it shows whether the fallback deployment works.
-4. **Choose the teacher precision on Talon** (decided 2026-11-11; protocol in `docs/methodology/workflow.md` Section 2.1).
-   - **What precision means here:** BF16 is a 16-bit number format, about 2 bytes per parameter, so the full Qwen weights are about 53,011 MiB. FP8 uses about 1 byte per parameter and a 4-bit version about half a byte; both are smaller and usually faster, but compression can cost quality.
-   - **One precision for everything:** whichever is chosen is used for the benchmark and for every training set, so the data sizes are never written by different teacher setups.
-   - **How it is tested:** all three are run on the same development slots on Talon, served by the same engine. FP8 and 4-bit are each compared with BF16 on two things:
-     - **usable questions**, measured automatically on every slot;
-     - **answer correctness**, checked independently on a sample: by R where the answer can be computed, and by you by hand otherwise.
+4. **Settle the teacher setup** (decided 2026-11-16 to 2026-11-18; details in `docs/methodology/workflow.md` Section 2.1). One setup writes everything, so it is fixed before any benchmark or training data exists.
+   - **Precision: BF16, without a test.** BF16 is the model as released. A compressed copy (FP8, about 1 byte per number, or 4-bit, about half a byte) is smaller and probably faster, but possibly a little worse.
+     - **Why FP8 is not tested:** published hints say official FP8 is close to BF16 and about 1.4 to 1.8 times faster, but nothing proves it for our setup. Testing it properly would take 1 to 2 weeks and 5 to 15 hours of your hand-judging, to save about 4 to 7 days of cluster time at 200,000 examples.
+     - **Why BF16:** it is affordable (about 1,425 GPU-hours for everything) and the safe default. FP8 and 4-bit are recorded as not tested and not used.
+   - **Output limit:** 16,384 tokens per answer and 20,480 per sequence stay, now as final values. Stage T cut off only 1 reply in 128.
+   - **Thinking: a quick check of on against off.** About 95% of what the teacher writes is private "thinking". The students never see it; they learn only from the final worked answer. Switching thinking off could make generation many times cheaper, but a teacher that gets much worse would undermine the whole experiment. So one short Talon job (about 2 GPU-hours) runs these steps:
+     1. **Writing, in both modes:** the teacher writes 40 practice questions (plus 20 reserves) with thinking on, and again with thinking off. Every attempt is kept, failures included.
+     2. **A shared question set:** 40 questions, half written in each mode, with the benchmark's topic mix. A failed question is replaced by the reserve question of the same kind, written in the same mode, by a rule set in advance.
+     3. **Answering, in both modes:** each mode answers every question 3 times, ending with a `Final answer:` line.
+     4. **Grading on the PC:** answers are graded automatically. You check the answer key only where the two modes disagree, about 5 to 15 questions.
+   - **The rule, set before the results.** Thinking off is used only if all three of these hold:
+     - its answers are at most 5 points less accurate;
+     - its questions are usable at most 5 points less often;
+     - writing a usable question costs at least half as much GPU time.
 
-     Both are needed because a compressed model can write perfectly formatted answers that are more often wrong. No language model judges this test, because the precision decides how all the training data is made.
-   - **How many slots are needed, worked out first.** The test asks whether the cheaper precision is "not worse by more than 3 percentage points". How many paired slots that needs depends on how often the two precisions disagree, the *discordance*. If they disagree on 10% of slots, about 873 slots are needed at 80% power. The correctness half then needs roughly 873 slots × 3 precisions × 70% (the share R cannot check) ≈ 1,830 judgments by hand (the formula is in `docs/methodology/workflow.md` Section 2.1).
-   - **The feasibility gate.** Before any test output exists, you write down how many hand judgments are practical.
-     - **If the calculation needs more:** BF16 is used for everything. The cheaper precisions may still be run on a smaller sample, but only as an *exploratory* comparison that cannot change the choice.
-     - **The margin stays fixed:** the 3-point margin is never loosened to make the sample smaller.
-   - **The rule:** if the gate passes, the cheapest precision that is not worse than BF16 by more than 3 percentage points on both measures is chosen. The margin's scientific justification is written down first.
+     A drop of 10 points or more in numerical or R-generation questions also holds it back until you have looked.
+   - **What it is:** a rough, observational check (40 questions cannot prove two modes equal). Whichever mode wins is also used when the teacher takes the benchmark.
 5. **Set up the R sandbox** (done 2026-11-12: self-test 13 of 13; `recovery/r_sandbox.md`).
    - **Why:** the R code in a teacher reply was written by a model, so it is treated as untrusted. It could by mistake delete files, read personal files or reach the internet.
    - **How:** before any more model-written R is run, an isolated Linux environment (WSL2 with the bubblewrap sandbox) is set up on this PC. There, R runs with no network, no view of the Windows drives (so no repository, credentials or personal files), and limits on memory, time and output.
@@ -176,7 +180,7 @@ The three models are:
 
 - **Untrained Pythia 70M**: the starting point. Any improvement has to be measured against this.
 - **Fine-tuned Pythia 70M**: did training on 1,000 examples help?
-- **The teacher (Qwen3.6-27B)**, run once on Talon: the ceiling we compare against. The project's main metric is the student's accuracy as a fraction of the teacher's. A teacher score below 80% is a red flag (`docs/methodology/workflow.md` Section 1.1); the first remedy is the same Qwen model at a higher precision or with more thinking, not a different model.
+- **The teacher (Qwen3.6-27B)**, run once on Talon: the ceiling we compare against. The project's main metric is the student's accuracy as a fraction of the teacher's. A teacher score below 80% is a red flag (`docs/methodology/workflow.md` Section 1.1); the first remedy is the same Qwen model at a higher precision or with more thinking, not a different model (BF16 is already the highest precision available, so since 2026-11-18 this means more thinking: thinking on if the thinking check chose off, or a longer output limit).
 
 **Timing for criterion 4b.** The same runs also measure speed. Criterion 4b (`docs/methodology/workflow.md` Section 1.2) asks that a student use at least 10x less GPU time per benchmark question than the teacher and have at least 10x lower median latency (the time from sending one question to receiving the full answer), measured on the same GPU type (H100 NVL) with the same serving settings and the same maximum number of new tokens. Worked example from the workflow: if the teacher on 2 H100s answers the 1,000 questions in 50 minutes, that is 2 x 3,000 s / 1,000 = 6.0 GPU-seconds per question; if a student on 1 H100 takes 4 minutes, that is 0.24 GPU-seconds, and 6.0 / 0.24 = 25x passes. The pilot fixes the measurement protocol (engine and version, batch size, warm-up runs excluded, number of repeated timings) before any real student result counts.
 
@@ -189,7 +193,7 @@ We then answer these questions and write the results in `docs/methodology/workfl
 - Did every step run end to end without hand-fixing?
 - How much GPU time did one training example take to write, and what does that make 50,000, 100,000 and 200,000 examples take? Does that fit within the 3-day job limit (split into restartable pieces) and the project timeline?
 - How long did a training run take and how long was the queue, so how long will the full grid of 20 models take?
-- Is the storage plan safe? The shared home folder has a 480 GB soft quota (about 17 GB used so far).
+- Is the storage plan safe? The shared home folder has a 480 GB soft quota (about 83 GB used after the Talon download of 2026-11-12).
 - Are the R-code and format success thresholds (90% each, `docs/methodology/workflow.md` Section 1.1) realistic for these models?
 - How many benchmark questions did the screen flag, what error rate did the 150-item audit find, and is the benchmark good enough to keep?
 - Did Codex pass its validity thresholds, and did it agree with you and with the simple rules equally well for every model?
@@ -198,9 +202,9 @@ We then answer these questions and write the results in `docs/methodology/workfl
 
 If the answers are acceptable, we scale up. If not, we fix the weakest part first.
 
-## The order of work (revised 2026-11-12)
+## The order of work (revised 2026-11-12 and 2026-11-18)
 
-1. **Talon bring-up.** Done so far: the probe, the BF16 download, the smoke test (Stage A) and the throughput test (Stage T). Remaining: the FP8 and 4-bit downloads, and the training environment.
+1. **Talon bring-up.** Done so far: the probe, the BF16 download, the smoke test (Stage A) and the throughput test (Stage T). Remaining: the training environment. No FP8 or 4-bit download is needed.
 2. **Generation code:**
    - `r_solution` and `working` required in benchmark replies;
    - slot variety;
@@ -208,11 +212,10 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
    - decontamination;
    - the fix for the "No:" false alarm;
    - **the R sandbox**.
-3. **Teacher precision:**
-   1. sample sizes and the feasibility gate;
-   2. the precision-test slots;
-   3. usability on all slots, and correctness on a sample (R in the sandbox, plus you);
-   4. the decision.
+3. **Teacher setup:**
+   1. precision: BF16, decided without a test (2026-11-18);
+   2. output limit and context: kept as final;
+   3. **the thinking check** (stage K): built and tested locally; next, the Talon run (after your approval), grading, your look at the sheet, and the decision.
 4. **Benchmark and development set:**
    1. generate;
    2. R keys, `verify`, `dupcheck`;

@@ -390,7 +390,7 @@ LiveCodeBench versions differ (v3, v5, v6 use different problem sets), so those 
 
 ## 11. The proposed shortlist test (superseded) and what replaced it
 
-**Status.** This test was proposed on 2026-11-03 and never run. The 2026-11-06 decision chose Qwen3.6-27B directly, and the test's role is now filled by the **Talon 4-bit vs BF16 deployment comparison** described in `docs/methodology/workflow.md` Section 2.1. The original proposal is kept in short form because its measurements are still the right ones to look at.
+**Status.** This test was proposed on 2026-11-03 and never run. The 2026-11-06 decision chose Qwen3.6-27B directly, and the test's role is now filled by the **Talon 4-bit vs BF16 deployment comparison** described in `docs/methodology/workflow.md` Section 2.1. *(Update 2026-11-18: that comparison was not run either. BF16 is used for all generation without a precision test, and FP8 and 4-bit are not used; `docs/archive/retired_precision_test_2026-11-18.md`.)* The original proposal is kept in short form because its measurements are still the right ones to look at.
 
 **What was proposed, and why.** Public benchmarks cannot tell us how well a model writes *statistics and R* questions and answers in *our* format. A small test can. The idea was to give each shortlisted model (Qwen3.6-27B, DeepSeek V4-Flash, gpt-oss-120b, optionally Qwen3-32B) the same 20 slot descriptions (category, subtopic, difficulty, answer type) with **new item IDs, kept in a separate dev folder that never becomes part of the benchmark**, run each with thinking on and its card's recommended sampling settings, and compare them on the free checks already in `generate_benchmark.py`:
 - share of replies that are valid JSON on the first try

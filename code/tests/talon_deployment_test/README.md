@@ -12,8 +12,10 @@ run, its real log and a real reply replace the placeholders in `fake_vllm_server
   - part 1: the draft guard (the review flag is read from the file, not the environment), UNSET and shared paths, layout checks (no preferred
     default, GPU_COUNT = TENSOR_PARALLEL x REPLICAS), Stage A healthy, 1, 2 and 4 fake GPUs, weights/version/flag/server failures, Stage B gates,
     quality findings, truncation and reasoning-only replies;
-  - part 2: the throughput stage (one server start, one run per concurrency) and its report, truncation findings, the pipeline (A, B, main),
-    the one-attempt-per-slot rule, and stops at the first failure;
+  - part 2: the throughput stage (one server start, one run per concurrency) and its report, truncation findings, the thinking check
+    (stage K: one server start; writing on and off with 60 replies each, the shared answer set, answering on and off; thinking off
+    confirmed; the confidential-computing line recorded; its gates), the pipeline (A, B, main), the one-attempt-per-slot rule, and stops
+    at the first failure;
   - part 3: `submit_pipeline.sh` refusals and option building, the probe scripts (accepted GPU request forms, record file, read-only), `prep_talon.sh`
     and `fetch_talon.sh` guards, and file hygiene (no carriage returns, `bash -n`).
 - `test_throughput_report.py`: the throughput arithmetic on synthetic run folders, every expected number worked out by hand in a comment.

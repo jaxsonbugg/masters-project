@@ -2,7 +2,7 @@
 # submit_pipeline.sh (Talon) - check that everything is ready, then submit ONE Talon job. Run it on a login node:
 #   cd <repo copy> && GPU_COUNT=2 TENSOR_PARALLEL=2 REPLICAS=1 MAX_NUM_SEQS=8 CLIENT_CONCURRENCY=8 QT_SUBMIT=yes bash configs/talon/submit_pipeline.sh <kind>
 # (the numbers are placeholders for the layout you chose; there is no preferred default)
-# <kind> is one of: smoke_a | smoke_b | throughput | pipeline | main   (default: pipeline)
+# <kind> is one of: smoke_a | smoke_b | throughput | thinking | pipeline | main   (default: pipeline)
 # Without QT_SUBMIT=yes it only does the checks and the scheduler's start estimate (sbatch --test-only: no job is created).
 #
 # WHY THIS SCRIPT EXISTS. #SBATCH lines in a script cannot hold variables, and nothing about Talon's partition, account, GPU
@@ -27,9 +27,10 @@ case "$KIND" in
   smoke_a)    WRAPPER=talon_smoke_a.sbatch;    JOBNAME=qt_talon_A;        TKIND=smoke ;;
   smoke_b)    WRAPPER=talon_smoke_b.sbatch;    JOBNAME=qt_talon_B;        TKIND=smoke ;;
   throughput) WRAPPER=talon_throughput.sbatch; JOBNAME=qt_talon_T;        TKIND=throughput ;;
+  thinking)   WRAPPER=talon_thinking.sbatch;   JOBNAME=qt_talon_K;        TKIND=throughput ;;   # stage K uses the throughput wall time (4 h)
   pipeline)   WRAPPER=talon_pipeline.sbatch;   JOBNAME=qt_talon_pipeline; TKIND=pipeline ;;
   main)       WRAPPER=talon_test.sbatch;       JOBNAME=qt_talon_main;     TKIND=main ;;
-  *) die "unknown kind '$KIND' (use smoke_a, smoke_b, throughput, pipeline or main)" ;;
+  *) die "unknown kind '$KIND' (use smoke_a, smoke_b, throughput, thinking, pipeline or main)" ;;
 esac
 
 echo "== 0. settings reviewed, paths, layout =="
@@ -37,7 +38,7 @@ require_reviewed
 require_paths
 talon_facts_banner
 check_layout
-case "$KIND" in smoke_b|pipeline|main) check_concurrency ;; esac
+case "$KIND" in smoke_b|thinking|pipeline|main) check_concurrency ;; esac
 need VLLM_VERSION; need MODEL_REV
 ok "settings reviewed by a person; layout: $GPU_COUNT GPU(s) = tensor parallel $TENSOR_PARALLEL x replicas $REPLICAS; max length $MAX_MODEL_LEN"
 

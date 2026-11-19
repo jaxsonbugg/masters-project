@@ -8,7 +8,7 @@
 
 **Duration:** Two semesters (from September 2026)
 
-**Status (2026-11-12):** Teacher (Qwen3.6-27B, BF16, vLLM 0.32.0) deployed on Talon: smoke test and throughput benchmark complete. Evaluation design revised: training data is retained without correctness-based filtering, and a frontier-model grader scores the benchmark. Benchmark generation pending.
+**Status (2026-11-18):** Teacher (Qwen3.6-27B, BF16, vLLM 0.32.0) deployed on Talon: smoke test and throughput benchmark complete; BF16 fixed for all generation. Thinking mode to be settled by a short observational check (built, awaiting its cluster run). Training data is retained without correctness-based filtering, and a frontier-model grader scores the benchmark. Benchmark generation pending.
 
 ## Overview
 
@@ -28,7 +28,7 @@ This project measures how much domain capability a frontier-class teacher model 
 
 | Factor | Setting |
 |---|---|
-| Teacher | Qwen3.6-27B (Apache 2.0), BF16 weights served by vLLM on Talon; revision pinned |
+| Teacher | Qwen3.6-27B (Apache 2.0), BF16 weights served by vLLM on Talon, revision pinned; one setup for all data (no FP8 or 4-bit); 16,384 output tokens; thinking mode set by a pre-specified on/off check |
 | Students | Pythia 70M / 160M / 410M / 1B, deduped variants, final `step143000` checkpoints pinned by commit SHA |
 | Distillation data | Nested sets of 1k, 10k, 50k, 100k, 200k teacher-generated examples (50k is the minimum fallback), retained without correctness-based filtering: format, duplicate, decontamination and length checks only. Their correctness is unknown and may vary by category, by design |
 | Benchmark | ~1,000 held-out questions in five categories and three difficulty levels. Answers are independently checked where computationally possible (R recomputes numeric keys and tests R-code items), every question is screened for ambiguity by a frontier model with owner review, and a stratified 150-item sample is audited by hand. Frozen and hashed before any training |
@@ -69,7 +69,7 @@ The full definitions, the original wording and the measurement protocol are in [
   - Talon bring-up: vLLM 0.32.0 pinned, BF16 weights downloaded and hashed, smoke test and throughput benchmark (about 6 GPU-hours per 1,000 examples on one H100).
   - R sandbox for model-written code (WSL2 + bubblewrap + R 4.3.1), self-test 13/13.
 - **Next:**
-  - Choose the teacher precision (BF16 against FP8 and a conditional community 4-bit checkpoint), with sample sizes and a feasibility gate fixed in advance.
+  - Run the thinking on/off check on Talon (40 balanced development questions, rule fixed in advance) and fix the thinking mode.
   - Fix slot diversity (the near-duplicate questions found in testing).
 - **Then:**
   - Generate, check and freeze the benchmark.

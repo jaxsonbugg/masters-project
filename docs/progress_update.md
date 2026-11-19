@@ -824,3 +824,47 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Files:**
   - **new:** `code/generation/r_sandbox.py`, `recovery/r_sandbox.md`;
   - **changed:** `code/generation/generate_benchmark.py`, `configs/paths.yaml`, `code/tests/benchmark_core_regression/capture.py`, `code/tests/qwen_deployment_test/test_suite.py` and its README, `docs/methodology/workflow.md` (safeguard 10 status, Phase 3, Section 8, Section 10.2), `docs/methodology/pilot_plan.md`, `docs/models/model_versions.md` (Section 6a), `README.md`, `CLAUDE.md`.
+
+### Teacher setup decided: BF16 for everything, final output limit, and a quick thinking on/off check built (2026-11-16 to 2026-11-18)
+- **Why these decisions were needed.** One teacher setup writes the benchmark, the development set and every training set (nested 1k to 200k, about 232,000 generations with spares). So its two knobs, precision and thinking mode, had to be fixed before any of that data exists.
+- **Precision: BF16, no precision test** (Jaxson's decisions):
+  - **4-bit was dropped first:** community checkpoints are thinly documented and need extra provenance work.
+  - **A literature search** (2026-11-16, by a research agent, secondary sources not checked by us) found no published head-to-head test of official Qwen3.6-27B-FP8 against BF16 on H100 + vLLM in thinking mode. Qwen's FP8 card says "nearly identical" without numbers; an undocumented community table is within 1.3 points; sibling models are within about 1 point; FP8 speed-ups are 1.4 to 1.8 times on other models and hardware.
+  - **The trade-off:** a test of our own would have taken about 1 to 2 weeks and 5 to 15 hours of hand-judging, to save roughly 400 to 630 GPU-hours (about 4 to 7 cluster days) at 200k, or about 100 to 160 at 50k.
+  - **The decision:** BF16 for all generation. It is the model as released, affordable (about 1,425 GPU-hours), and the old protocol's default. FP8 and 4-bit are not tested and not used.
+  - **The archive:** the retired protocol (two measures, 3-point margin, sample sizes, feasibility gate, 4-bit rule) is kept verbatim in the new `docs/archive/retired_precision_test_2026-11-18.md`.
+- **Output limit and context:** 16,384 output tokens and 20,480 per sequence, fixed as final. Qwen recommends 32,768, but Stage T cut off only 1 reply in 128, and keeping the values keeps the Stage T figures comparable.
+- **Thinking mode:** to be decided by a quick **observational** check (stage K). The design was set by Jaxson with these requirements:
+  - every writing attempt is recorded;
+  - a fixed shared question set balanced by origin mode and category, with a pre-specified replacement procedure that does not favor either mode, and nothing dropped silently;
+  - usability and correctness are reported as separate outcomes;
+  - question-level uncertainty and category flags;
+  - generation cost includes failed attempts, with start-up time separate;
+  - the existing `chat_template_kwargs` structure is kept, and thinking off is confirmed from the records;
+  - the implementation stays proportional.
+
+  The design:
+  - **Writing:** 40 primary slots (BM8001–BM8040) plus a 20-slot reserve (BM8041–BM8060), written in both modes with prompt v6.
+  - **The shared set:** positions 1–20 come from thinking on and 21–40 from thinking off. A failed question is replaced by the reserve slot at the same pattern position, in the same origin mode; otherwise the position stays unfilled and is reported.
+  - **Answering:** each mode answers 3 times with the new `data/prompts/teacher_answer_v1.md`.
+  - **Grading:** automatic on the PC (R expressions in the sandbox), with a short owner sheet.
+  - **The rule, fixed before the results:** a descriptive engineering criterion, not a non-inferiority claim. Thinking off is adopted only if its accuracy and its usable rate are each no more than 5 points below thinking on, and generation is at least 2 times cheaper per usable question. A 10-point drop in numerical or R-generation questions blocks it until the owner reviews. The winning mode is also used for the teacher's benchmark run.
+- **Code:**
+  - **`code/generation/open_teacher_test.py`:**
+    - `run --thinking on|off`, with the model card's non-thinking sampling (temperature 0.7, top_p 0.80, top_k 20, presence penalty 1.5);
+    - development set K;
+    - `validate` checks the mode's sampling, and confirms thinking off from the records (a reasoning field, `<think>` text or reasoning tokens make it an INFRASTRUCTURE failure);
+    - new `answer-set` and `answer` commands; answer runs are validated too.
+  - **New `code/generation/answer_check.py`:** grading, the owner's sheet, the bootstrap over questions, category flags, cost and the rule's outcome.
+  - **Talon:** new stage K in `configs/talon/serve_and_run.sh` (one server start: writing on, writing off, answer-set, answering on, answering off, each validated), a new wrapper `configs/talon/talon_thinking.sbatch`, and a `thinking` kind in `submit_pipeline.sh` (4-hour wall time). Every Talon job now records the GPU's confidential-computing mode (`CC_MODE`), because vLLM issue #57224 reports garbled output on H100 NVL in that mode.
+  - **Unchanged:** the Redhawk scripts and prompt v6.
+- **Tests:** every local suite passes: R sandbox self-test 13/13, regression snapshot 52 parts unchanged, test_suite.py 59/59 (11 new), the new answer-check tests 32/32, Redhawk shell tests 101/101, Talon shell tests 45/27/67 (10 new), test_talon_python.py 15/15, throughput report 23/23.
+  - **Extended:** `test_suite.py` (section 7, thinking check), `shtest_talon.sh` (stage K and the `thinking` kind), and the two fake servers, which now honor thinking off and answer questions.
+  - **New:** `code/tests/answer_check_test/test_answer_check.py`.
+- **Docs:**
+  - `docs/methodology/workflow.md`: Section 2.1 rewritten; Phase 3, the risks and the open decisions updated. A dated note was added to the remedy for a weak teacher: BF16 is already the highest precision, so "higher precision or more thinking" now means more thinking.
+  - `docs/methodology/pilot_plan.md`, `README.md` and `docs/models/model_versions.md`: FP8 and 4-bit marked not used.
+  - `docs/clusters/talon_setup.md`: the context is final, and step 9 is now stage K.
+  - `docs/clusters/cluster_selection.md` and `docs/models/teacher_model_evaluations.md`: dated notes.
+  - The stale "about 17 GB used" figures now also give the 83 GB measured after the Talon download.
+- **Next:** the stage K run on Talon (about 2 GPU-hours, 1 GPU), **only after Jaxson approves it separately**. Then copy the folders to the PC, score, grade, fill in the sheet, and record the decision.

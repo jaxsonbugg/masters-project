@@ -14,7 +14,17 @@ real job scripts against it and check what they do.
   overwrite, no repeat, lock file, settings must match), 8 calls at once with no repeats, scoring through R. Every R run
   goes through the R sandbox (`code/generation/r_sandbox.py`; `docs/methodology/workflow.md` Section 4, safeguard 10), so
   the WSL2 sandbox must be set up (`recovery/r_sandbox.md`). The suite also checks that `score` and `verify` refuse when the
-  sandbox fails its self-test.
+  sandbox fails its self-test. Section [7] covers the thinking on/off check (set K, BM8001-BM8060):
+  - thinking-off requests keep `chat_template_kwargs` with `enable_thinking: false` and the non-thinking sampling;
+  - `validate` confirms thinking off from the records;
+  - `answer-set` accounts for all 40 positions with the pre-specified origin and replacement rule, records all 120 writing
+    attempts, and refuses runs given in the wrong mode;
+  - `answer` answers every question N times;
+  - an answer resume in the other mode is refused;
+  - a thinking-off run whose replies still show thinking fails as INFRASTRUCTURE.
+
+  Grading itself is tested in `code/tests/answer_check_test/test_answer_check.py`. It uses synthetic run folders and needs the R
+  sandbox, which grades the R expressions.
 - `shtest.sh` (a few minutes per part; four parts that can run at the same time): the Redhawk job scripts with fake
   `nvidia-smi`, `module`, `scontrol`, `squeue` and `llama-server`.
   - Parts 1-2, the single stages: GPU, weights, template and flag checks, the stage gates, the memory summary, queue wait,
