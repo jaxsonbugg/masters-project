@@ -892,3 +892,25 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **Fake server:** `FAKE_ANSWER_FAIL` switch.
 - **Docs:** `docs/methodology/workflow.md` Section 2.1, item 3 (a new paragraph on when the job stops and when no decision may be drawn), and the `answer_check.py` docstring.
 - **No GPU job was submitted.**
+
+### Thinking check run on Talon (job 287) and graded provisionally; one documented parser fix (2026-11-19)
+- **The run** (Jaxson approved and submitted it after refreshing the Talon copy to `021ad26`):
+  - **Job:** 287, stage K, 1 H100 on `mualhpgp01`, queue wait 0 s, about 45 min, about **0.75 GPU-hours**.
+  - **Validation:** infrastructure PASS in every run, with 31 of 360 replies carrying model-quality findings.
+  - **Thinking off was confirmed** from the records in all 180 of its replies.
+  - **The shared set:** 40 of 40 positions filled, with 0 replacements. Compute log entry 15.
+- **A problem in my answering prompt, found before grading.**
+  - **What happened:** for R-expression questions, `teacher_answer_v1.md` said "one line of R code ... and nothing else". That conflicts with its own "Final answer:" instruction, so 22 replies (thinking off 17, thinking on 5) were just the R line, with no label.
+  - **The fix (Jaxson's choice):** a reply with no "Final answer:" line whose whole content is exactly one line is read as the answer. It was decided before any answer was graded, applied identically to both modes, and documented (`answer_check.py`, `docs/methodology/workflow.md` Section 2.1). The report also shows the results without the fix.
+  - **What stays a failure:** the 8 thinking-on answers cut off at 16,384 tokens while still thinking.
+  - **One more addition:** questions whose R-computed key replaced a different typed key are now also put on the owner's sheet. This adds checks and changes no rule.
+- **Provisional grading** (`results/thinking_check/2026-11-19_stageK_job287/`), not final: 11 questions on the owner's sheet still need Jaxson's look.
+  - **Usability:** thinking on 40/40 (100%), thinking off 39/40 (97.5%).
+  - **Accuracy:** thinking on 87.5%, thinking off 83.3% (−4.2 points, question-level 95% interval −13.3 to +3.3). Without the parser fix: 83.3% and 71.7%.
+  - **Generation cost:** thinking off is about **7.3 times cheaper** per usable question (0.00044 against 0.00323 GPU-hours).
+  - **Category flags:** R generation (100% against 87.5%) is **blocking**; R interpretation (83.3% against 66.7%) is not.
+- **Also recorded:**
+  - **The `CC_MODE` search failed:** it captured the ECC memory setting, not the confidential-computing state. A direct check was tried after the job had ended and was refused. No garbled output was seen.
+  - **An outdated message:** the "interim 20,480" note printed by `serve_and_run.sh` is out of date.
+  - **Both** are to be fixed in the scripts.
+- **Files:** `code/generation/answer_check.py` (the parser fix and the extra sheet reason), its tests (now 44/44), `docs/logs/compute_log.md`, `docs/methodology/workflow.md`, `results/thinking_check/2026-11-19_stageK_job287/`, and the scored-item copies in `results/open_teacher_test/`.

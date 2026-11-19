@@ -46,6 +46,13 @@ st = {"answer_type": "short_text", "canonical_answer": "nrow"}
 check("short text: 'NROW()' matches 'nrow' after normalizing", ac.grade("NROW()", st, None)[0])
 check("short text: an answer accepted on the owner's sheet counts", ac.grade("dim(x)[1]", st, None, ["dim(x)[1]"])[0])
 check("missing final answer is wrong and named a format failure", ac.grade(None, num, None) == (False, "format failure: no 'Final answer:' line"))
+check("parser fix: a reply that is exactly one line with no 'Final answer:' line is read as the answer",
+      ac.final_answer_with_fix("sum(1:10)") == ("sum(1:10)", True)
+      and ac.final_answer_with_fix("<think>hmm</think>\n`sum(1:10)`") == ("sum(1:10)", True))
+check("parser fix: a 'Final answer:' line is still read the pre-specified way (fix not used)",
+      ac.final_answer_with_fix("work\nFinal answer: 0.313") == ("0.313", False))
+check("parser fix: several lines without a final line, or an empty reply, remain format failures",
+      ac.final_answer_with_fix("line one\nline two") == (None, False) and ac.final_answer_with_fix("") == (None, False))
 plan = ott.k_positions()
 check("the shared-set plan: positions 1-20 from thinking on, 21-40 from thinking off",
       [p[1] for p in plan] == ["on"] * 20 + ["off"] * 20)
@@ -286,7 +293,7 @@ check("an HTTP ERROR is counted as an HTTP error, not as a missing record or a w
       and rep6["correctness"]["off"]["mean_pct"] == 100.0 and rep6["rule_outcome"]["outcome"].startswith("NOT USABLE"),
       (rep6["answer_records"]["off"], rep6["rule_outcome"]))
 nofin = copy_run(a_off, "a_off_nofinal"); rs = rows_of(nofin)
-rs[0]["response"]["choices"][0]["message"]["content"] = "I think it is about a third."; put_rows(nofin, rs)
+rs[0]["response"]["choices"][0]["message"]["content"] = "I think it is about a third.\nNot completely sure."; put_rows(nofin, rs)
 r = run_check(T / "report7", nofin, filled); rep7 = report_of(T / "report7")
 check("a VALID reply with no 'Final answer:' line is an answered but incorrect answer (a format failure), not a gap",
       rep7["answer_records"]["complete_and_paired"] and rep7["correctness"]["off"]["format_failures"] == 1
@@ -312,6 +319,18 @@ rep9 = report_of(T / "report9")
 check("unfilled positions are recorded, and 3 unfilled in one origin half (limit 2) makes the shared set NOT USABLE",
       len(qs2) == 37 and rep9["answer_set"]["unfilled_positions"] == [21, 22, 23] and not rep9["answer_set"]["complete_enough"]
       and "the shared set is too incomplete" in rep9["rule_outcome"]["outcome"], (len(qs2), rep9["answer_set"].get("unfilled_positions"), rep9["rule_outcome"]))
+one = copy_run(a_off, "a_off_oneline"); rs = rows_of(one)
+fixed_ids = []
+for x in rs:
+    if x["qid"] == qs[0]["qid"]:
+        x["response"]["choices"][0]["message"]["content"] = KEY[qs[0]["answer_type"]]   # just the answer, no 'Final answer:' line
+        fixed_ids.append(x["answer_id"])
+put_rows(one, rs)
+r = run_check(T / "report10", one, filled); rep10 = report_of(T / "report10")
+pf = rep10["parser_fix_sensitivity"]
+check("parser fix end to end: one-line replies count as correct, are reported, and the result WITHOUT the fix is shown too",
+      pf["used_off"] == 3 and pf["used_on"] == 0 and rep10["correctness"]["off"]["mean_pct"] == 100.0
+      and pf["accuracy_off_without_fix"] < 100.0 and "accuracy_within_5_without_fix" in pf, (pf, rep10["correctness"]["off"]["mean_pct"]))
 check("the decision thresholds are unchanged (5 points, 5 points, 2x, 10-point flag)",
       rep9["rule"]["accuracy_margin_points"] == 5.0 and rep9["rule"]["usable_margin_points"] == 5.0
       and rep9["rule"]["generation_speedup_min"] == 2.0 and rep9["rule"]["category_flag_points"] == 10.0)

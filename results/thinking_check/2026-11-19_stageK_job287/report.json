@@ -1,0 +1,273 @@
+{
+  "rule": {
+    "accuracy_margin_points": 5.0,
+    "usable_margin_points": 5.0,
+    "generation_speedup_min": 2.0,
+    "category_flag_points": 10.0,
+    "blocking_categories": [
+      "numerical",
+      "r_generation"
+    ],
+    "set_min_filled": 36,
+    "set_max_unfilled_per_half": 2,
+    "nature": "descriptive engineering criterion, not a statistical non-inferiority claim"
+  },
+  "validation": {
+    "writing_on": {
+      "exit": 0,
+      "infrastructure_pass": true,
+      "result": "VALIDATE_RESULT infra=PASS quality_replies=0 replies=60",
+      "infrastructure_failures": []
+    },
+    "writing_off": {
+      "exit": 2,
+      "infrastructure_pass": true,
+      "result": "VALIDATE_RESULT infra=PASS quality_replies=1 replies=60",
+      "infrastructure_failures": []
+    },
+    "answers_on": {
+      "exit": 2,
+      "infrastructure_pass": true,
+      "result": "VALIDATE_RESULT infra=PASS quality_replies=13 replies=120",
+      "infrastructure_failures": []
+    },
+    "answers_off": {
+      "exit": 2,
+      "infrastructure_pass": true,
+      "result": "VALIDATE_RESULT infra=PASS quality_replies=17 replies=120",
+      "infrastructure_failures": []
+    }
+  },
+  "usability": {
+    "on_primary": {
+      "usable": 40,
+      "of": 40,
+      "rate_pct": 100.0,
+      "by_category": {
+        "conceptual": "8/8",
+        "numerical": "12/12",
+        "output_interpretation": "6/6",
+        "r_generation": "8/8",
+        "r_interpretation": "6/6"
+      }
+    },
+    "on_reserve": {
+      "usable": 20,
+      "of": 20,
+      "rate_pct": 100.0,
+      "by_category": {
+        "conceptual": "4/4",
+        "numerical": "6/6",
+        "output_interpretation": "3/3",
+        "r_generation": "4/4",
+        "r_interpretation": "3/3"
+      }
+    },
+    "off_primary": {
+      "usable": 39,
+      "of": 40,
+      "rate_pct": 97.5,
+      "by_category": {
+        "conceptual": "8/8",
+        "numerical": "11/12",
+        "output_interpretation": "6/6",
+        "r_generation": "8/8",
+        "r_interpretation": "6/6"
+      }
+    },
+    "off_reserve": {
+      "usable": 20,
+      "of": 20,
+      "rate_pct": 100.0,
+      "by_category": {
+        "conceptual": "4/4",
+        "numerical": "6/6",
+        "output_interpretation": "3/3",
+        "r_generation": "4/4",
+        "r_interpretation": "3/3"
+      }
+    }
+  },
+  "writing_failures": [
+    {
+      "mode": "off",
+      "block": "primary",
+      "item_id": "BM8020",
+      "category": "numerical",
+      "kind": "model (reply failed a check)",
+      "problems": [
+        "content is not parseable JSON"
+      ]
+    }
+  ],
+  "thinking_off_verification": {
+    "writing": {
+      "replies": 60,
+      "with_thinking": 0,
+      "examples": []
+    },
+    "answering": {
+      "replies": 120,
+      "with_thinking": 0,
+      "examples": []
+    }
+  },
+  "answer_records": {
+    "on": {
+      "expected": 120,
+      "answered": 120,
+      "missing": 0,
+      "http_error": 0,
+      "samples_in_run_log": 3
+    },
+    "off": {
+      "expected": 120,
+      "answered": 120,
+      "missing": 0,
+      "http_error": 0,
+      "samples_in_run_log": 3
+    },
+    "complete_and_paired": true,
+    "gaps": []
+  },
+  "correctness": {
+    "on": {
+      "mean_pct": 87.5,
+      "mean_pct_without_parser_fix": 83.3,
+      "parser_fix_used": 5,
+      "question_bootstrap_95_pct": [
+        75.0,
+        97.5
+      ],
+      "format_failures": 8,
+      "cut_off": 8,
+      "answers_graded": 120,
+      "by_category": {
+        "conceptual": 87.5,
+        "numerical": 83.3,
+        "output_interpretation": 83.3,
+        "r_generation": 100.0,
+        "r_interpretation": 83.3
+      }
+    },
+    "off": {
+      "mean_pct": 83.3,
+      "mean_pct_without_parser_fix": 71.7,
+      "parser_fix_used": 17,
+      "question_bootstrap_95_pct": [
+        71.7,
+        93.3
+      ],
+      "format_failures": 0,
+      "cut_off": 0,
+      "answers_graded": 120,
+      "by_category": {
+        "conceptual": 91.7,
+        "numerical": 83.3,
+        "output_interpretation": 83.3,
+        "r_generation": 87.5,
+        "r_interpretation": 66.7
+      }
+    },
+    "questions_compared": 40,
+    "difference_off_minus_on_pct": -4.2,
+    "difference_question_bootstrap_95_pct": [
+      -13.3,
+      3.3
+    ]
+  },
+  "category_flags": [
+    {
+      "category": "r_generation",
+      "on_pct": 100.0,
+      "off_pct": 87.5,
+      "blocking": true
+    },
+    {
+      "category": "r_interpretation",
+      "on_pct": 83.3,
+      "off_pct": 66.7,
+      "blocking": false
+    }
+  ],
+  "answer_set": {
+    "n_questions": 40,
+    "by_origin_and_category": {
+      "on | numerical": 6,
+      "on | conceptual": 4,
+      "on | r_generation": 4,
+      "on | output_interpretation": 3,
+      "on | r_interpretation": 3,
+      "off | numerical": 6,
+      "off | conceptual": 4,
+      "off | r_generation": 4,
+      "off | output_interpretation": 3,
+      "off | r_interpretation": 3
+    },
+    "replacements": [],
+    "unfilled": [],
+    "unfilled_positions": [],
+    "unfilled_by_origin": {
+      "on": 0,
+      "off": 0
+    },
+    "complete_enough": true,
+    "rule": "usable only with at least 36 of 40 positions filled and at most 2 unfilled in either origin half"
+  },
+  "cost": {
+    "generation_on": {
+      "gpu_hours_excluding_startup": 0.1936,
+      "startup_seconds": "130",
+      "calls_including_failed": 60,
+      "usable_questions": 60,
+      "gpu_hours_per_usable_question": 0.00323,
+      "output_tokens_per_call": 4671,
+      "projected_gpu_hours_232k": 749
+    },
+    "answering_on": {
+      "gpu_hours_excluding_startup": 0.3702,
+      "startup_seconds": "130",
+      "answers": 120,
+      "answers_per_gpu_hour": 324.2,
+      "output_tokens_per_answer": 4308
+    },
+    "generation_off": {
+      "gpu_hours_excluding_startup": 0.0258,
+      "startup_seconds": "130",
+      "calls_including_failed": 60,
+      "usable_questions": 59,
+      "gpu_hours_per_usable_question": 0.00044,
+      "output_tokens_per_call": 619,
+      "projected_gpu_hours_232k": 101
+    },
+    "answering_off": {
+      "gpu_hours_excluding_startup": 0.0767,
+      "startup_seconds": "130",
+      "answers": 120,
+      "answers_per_gpu_hour": 1564.1,
+      "output_tokens_per_answer": 821
+    },
+    "generation_speedup_off_vs_on": 7.34
+  },
+  "parser_fix_sensitivity": {
+    "rule": "a reply with no 'Final answer:' line whose whole content is exactly one line is read as the answer (documented fix of 2026-11-19, decided before grading, applied to both modes)",
+    "used_on": 5,
+    "used_off": 17,
+    "accuracy_on_without_fix": 83.3,
+    "accuracy_off_without_fix": 71.7,
+    "accuracy_within_5_without_fix": false
+  },
+  "rule_outcome": {
+    "accuracy_within_5": true,
+    "usable_within_5": true,
+    "generation_2x_cheaper": true,
+    "blocking_flag": true,
+    "thinking_off_verified": true,
+    "infrastructure_validated": true,
+    "answer_records_complete": true,
+    "set_complete_enough": true,
+    "not_usable_because": [],
+    "sheet_items_pending": 11,
+    "outcome": "NOT FINAL: 11 question(s) on check_sheet.csv still need your look; fill it in and rerun with --sheet"
+  }
+}

@@ -82,6 +82,25 @@ def as_number(s):
         return None
 
 
+def final_answer_with_fix(content):
+    """(answer, fixed). The pre-specified reading is the last "Final answer:" line (ott.final_answer).
+
+    DOCUMENTED PARSER FIX (decided 2026-11-19, after the stage K run but BEFORE any answer was graded; applied identically
+    to both modes): answering prompt v1 told the model, for R-expression questions, to give "one line of R code ... and
+    nothing else", which conflicts with its own instruction to end with a "Final answer:" line. Many replies were therefore
+    just the R line. When a reply has no "Final answer:" line but its whole content (thinking removed) is exactly ONE
+    non-empty line, that line is taken as the answer (fixed=True). Everything else is unchanged: a reply with several
+    lines and no "Final answer:" line, or an empty reply (for example cut off while thinking), is still a format failure.
+    The report also shows the results WITHOUT this fix."""
+    fa = ott.final_answer(content)
+    if fa is not None:
+        return fa, False
+    lines = [l for l in ott.THINK.sub("", content or "").strip().splitlines() if l.strip()]
+    if len(lines) == 1:
+        return (lines[0].strip().strip("`$ ").strip() or None), True
+    return None, False
+
+
 def mc_letter(s):
     m = re.match(r"^\W*([A-Da-d])\b", (s or "").strip())
     return m.group(1).upper() if m else None
@@ -243,6 +262,9 @@ def main():
         note = []
         if it.get("answer_type") == "number" and it.get("key_source") != "r":
             note.append("number key not confirmed by R")
+        for sf in it.get("soft_flags") or []:
+            if "differs from R" in sf:   # R's value replaced the model's typed key: worth a look (adds a check, changes no rule)
+                note.append("R's value replaced a different typed key (" + sf[:90] + ")")
         s = sheet.get(q["qid"])
         if s and s.get("key_correct", "").strip().lower() == "no" and s.get("corrected_key", "").strip():
             it["canonical_answer"] = s["corrected_key"].strip()
@@ -273,14 +295,19 @@ def main():
                     continue
                 counts["answered"] += 1
                 content, _, finish, usage = ott.reply_parts(rec)
-                fa = ott.final_answer(content)
+                fa, fixed = final_answer_with_fix(content)
                 ok, how = grade(fa, key_items[q["qid"]], sandbox, extra_ok)
+                # the same answer read strictly (no parser fix): only differs when the fix was used
+                ok_strict = ok if not fixed else False
+                if fixed:
+                    how = "single-line reply read by the documented parser fix; " + how
                 if finish == "length":
                     how = "cut off at max_tokens; " + how
                 vals.append(ok)
                 graded.append({"mode": m, "qid": q["qid"], "sample": n, "status": "answered", "origin": q["origin"],
                                "category": q["category"], "answer_type": q["answer_type"], "final_answer": fa,
                                "key": key_items[q["qid"]]["canonical_answer"], "correct": ok, "how": how,
+                               "single_line_fix": fixed, "correct_without_fix": ok_strict,
                                "format_failure": fa is None, "cut_off": finish == "length",
                                "output_tokens": usage.get("completion_tokens")})
             if vals:
@@ -334,6 +361,8 @@ def main():
             ids = [q["qid"] for q in questions if q["category"] == c and q["qid"] in qids]
             by_cat[c] = round(100 * sum(per_q[m][i] for i in ids) / len(ids), 1)
         acc[m] = {"mean_pct": round(100 * sum(g["correct"] for g in mine) / max(len(mine), 1), 1),
+                  "mean_pct_without_parser_fix": round(100 * sum(g["correct_without_fix"] for g in mine) / max(len(mine), 1), 1),
+                  "parser_fix_used": sum(g["single_line_fix"] for g in mine),
                   "question_bootstrap_95_pct": [round(100 * lo, 1), round(100 * hi, 1)],
                   "format_failures": sum(g["format_failure"] for g in mine), "cut_off": sum(g["cut_off"] for g in mine),
                   "answers_graded": len(mine), "by_category": by_cat}
@@ -405,6 +434,13 @@ def main():
         outcome = "THINKING ON unless the owner reviews the flagged category and records a decision (blocking category flag)"
     else:
         outcome = "THINKING ON (the pre-set criterion for thinking off is not met)"
+    report["parser_fix_sensitivity"] = {
+        "rule": "a reply with no 'Final answer:' line whose whole content is exactly one line is read as the answer "
+                "(documented fix of 2026-11-19, decided before grading, applied to both modes)",
+        "used_on": acc["on"]["parser_fix_used"], "used_off": acc["off"]["parser_fix_used"],
+        "accuracy_on_without_fix": acc["on"]["mean_pct_without_parser_fix"],
+        "accuracy_off_without_fix": acc["off"]["mean_pct_without_parser_fix"],
+        "accuracy_within_5_without_fix": acc["off"]["mean_pct_without_parser_fix"] >= acc["on"]["mean_pct_without_parser_fix"] - ACC_MARGIN}
     report["rule_outcome"] = {"accuracy_within_5": a_ok, "usable_within_5": u_ok, "generation_2x_cheaper": s_ok,
                               "blocking_flag": blocked, "thinking_off_verified": verified,
                               "infrastructure_validated": not failed_runs, "answer_records_complete": complete,
@@ -433,6 +469,9 @@ def main():
         a = acc[m]
         print(f"   thinking {m}: {a['mean_pct']}% {a['question_bootstrap_95_pct']}, format failures {a['format_failures']} and cut off {a['cut_off']} of {a['answers_graded']} graded; by category {a['by_category']}")
     print(f"   off minus on: {acc['difference_off_minus_on_pct']} points, 95% interval {acc['difference_question_bootstrap_95_pct']}")
+    pf = report["parser_fix_sensitivity"]
+    print(f"   parser fix (one-line replies read as the answer) used: on {pf['used_on']}, off {pf['used_off']}; WITHOUT it: "
+          f"on {pf['accuracy_on_without_fix']}%, off {pf['accuracy_off_without_fix']}%, accuracy within 5: {pf['accuracy_within_5_without_fix']}")
     for fl in flags:
         print(f"   FLAG {fl['category']}: on {fl['on_pct']}% vs off {fl['off_pct']}%" + (" (BLOCKING)" if fl["blocking"] else ""))
     print(f"   thinking-off verification: writing {verify['writing']['with_thinking']}/{verify['writing']['replies']}, "

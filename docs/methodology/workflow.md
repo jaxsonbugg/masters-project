@@ -168,6 +168,11 @@ No student result existed when this change was made.
   5. **Grading on this PC** (`code/generation/answer_check.py`).
      - **The keys** come from `score`, with R in the sandbox.
      - **The rules:** a number must be within the item's tolerance; a multiple-choice answer must have the same letter; an R expression must pass the item's `r_check` in the sandbox; short text must match after normalizing. A missing `Final answer:` line is wrong and counted separately as a format failure.
+     - **A documented parser fix** (decided 2026-11-19, after the run but **before any answer was graded**, applied to both modes alike).
+       - **The problem:** answering prompt v1 told the model, for R-expression questions, to give "one line of R code … and nothing else". That conflicts with its own instruction to end with a `Final answer:` line, so many replies were just the R line (22 of 240; thinking off 17, thinking on 5).
+       - **The fix:** a reply with no `Final answer:` line whose whole content is exactly **one** line is read as the answer. A longer reply without the line, or an empty one (for example cut off while thinking), is still a format failure.
+       - **Reporting:** the report also gives the accuracy and accuracy criterion **without** the fix.
+       - **The prompt:** fixed in v2 before any further use.
      - **The owner's sheet:** the owner checks the **key** of every question where the two modes' most common answers differ, every short-text question and every number key R could not confirm (`check_sheet.csv`, probably 5 to 15 items). A corrected key regrades both modes.
 - **When the job stops, and when no decision may be drawn** (added 2026-11-18, before any result; the thresholds below are unchanged).
   - **On Talon:** stage K **stops at once** at an *infrastructure* failure: a client error, or a run that fails `validate` (missing replies, an incomplete run, thinking not really off). The later steps are skipped because they would be invalid, and the job ends FAIL_INFRA.

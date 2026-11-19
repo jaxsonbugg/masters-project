@@ -36,8 +36,9 @@ This is the record of every cluster job, scheduler test and measured local run i
 | 12 | 2026-11-12 15:37 | Talon `talon`, `mualhpgp02` | 204 | **Stage A smoke test**: Qwen3.6-27B BF16 on vLLM 0.32.0, 2 development questions | 1 x H100 NVL, ~10.5 min | ~0.17 | PASS (answers read: sensible) |
 | 13 | 2026-11-12 16:13 | Talon `talon` | 207 | Stage T throughput test, first submission (cancelled by Jaxson to resubmit with a longer client time limit) | 1 x H100 NVL, ~5 min | ~0.08 | CANCELLED (server loaded in 130 s; no replies) |
 | 14 | 2026-11-12 16:18 | Talon `talon`, `mualhpgp02` | 209 | **Stage T throughput test**: Qwen3.6-27B BF16 on vLLM 0.32.0, 32 development questions at concurrency 1, 4, 8 and 16 | 1 x H100 NVL, ~2 h 22 min | ~2.37 | PASS with quality warnings (1 cut-off, 1 false alarm) |
+| 15 | 2026-11-19 02:19 | Talon `talon`, `mualhpgp01` | 287 | **Stage K, the thinking on/off check**: Qwen3.6-27B BF16 on vLLM 0.32.0; set K written with thinking on and off, shared set built, both modes answered it 3 times | 1 x H100 NVL, ~45 min | ~0.75 | PASS with quality warnings (31 of 360 replies; infrastructure clean) |
 
-**GPU-hours used to date: about 2.67:** about 0.05 (Redhawk job 6), about 0.0003 (Talon job 196), about 0.17 (Talon job 204), about 0.08 (Talon job 207, cancelled) and about 2.37 (Talon job 209), plus Redhawk job 7 once it is reviewed.
+**GPU-hours used to date: about 3.42:** about 0.05 (Redhawk job 6), about 0.0003 (Talon job 196), about 0.17 (Talon job 204), about 0.08 (Talon job 207, cancelled), about 2.37 (Talon job 209) and about 0.75 (Talon job 287), plus Redhawk job 7 once it is reviewed.
 
 ## Entries
 
@@ -229,3 +230,38 @@ This is the record of every cluster job, scheduler test and measured local run i
 
   These are development slots only, marked test material, never benchmark data.
 - **Related progress entry:** "Talon Stage T" (2026-11-12).
+
+### 15. Talon job 287: Stage K, the thinking on/off check, 2026-11-19 (cluster local time 2026-11-18 21:19; UTC 2026-11-19 02:19)
+- **Purpose:** the quick observational check of whether the teacher writes and answers almost as well with thinking off, for far less GPU time (`docs/methodology/workflow.md` Section 2.1, item 3). Approved by Jaxson, who refreshed the Talon copy and submitted it with `QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1 REPLICAS=1 MAX_NUM_SEQS=16 CLIENT_CONCURRENCY=16 bash configs/talon/submit_pipeline.sh thinking`.
+- **Software:**
+  - repository copy at commit `021ad26`, refreshed build-then-swap; the old copy was kept on Talon;
+  - vLLM 0.32.0; model `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; context 20,480, output limit 16,384;
+  - prompts: v6 (`348db6ff...`) for writing, and `teacher_answer_v1.md` (SHA-256 of the LF-normalized text `984ee088...`) for answering;
+  - 3 samples per question;
+  - sampling: thinking on uses temperature 1.0, top_p 0.95, top_k 20, presence penalty 0; thinking off uses temperature 0.7, top_p 0.80, top_k 20, presence penalty 1.5.
+- **Request:** 1 GPU (`--gres=gpu:nvidia_h100_nvl:1`, the throughput wall time of 4 h), on `mualhpgp01`, GPU index 0 (H100 NVL, 95,830 MiB, driver 610.57.04, CUDA 13.3).
+- **Timing:**
+  - **Submitted and started:** 21:19:02 local, so the queue wait was **0 s**.
+  - **Ended:** the result file is stamped **03:04:15 UTC**, so the wall time was about **45 min 13 s**, which is about **0.75 GPU-hours**.
+  - **Weight check and server load:** about 5 minutes in total. The server was ready after **130 s**.
+- **The four client runs** (client time only, start-up excluded):
+
+  | Run | UTC | Wall | Replies | Output tokens | Finish |
+  |---|---|---|---|---|---|
+  | Writing, thinking on (BM8001–BM8060) | 02:24:13–02:35:50 | 697.1 s | 60/60 | 280,266 | 60 stop |
+  | Writing, thinking off | 02:35:51–02:37:24 | 92.8 s | 60/60 | 37,123 | 60 stop |
+  | Answering, thinking on (40 x 3) | 02:37:25–02:59:38 | 1,332.7 s | 120/120 | 516,943 | 112 stop, **8 cut off at 16,384** |
+  | Answering, thinking off (40 x 3) | 02:59:38–03:04:14 | 276.2 s | 120/120 | 98,522 | 120 stop |
+
+  **The shared set:** all 40 positions were filled, with 0 replacements and 0 unfilled.
+- **Validation:** infrastructure PASS for every run. **Thinking off was confirmed from the records:** 60 of 60 writing replies and 120 of 120 answers had no reasoning field, no `<think>` text and no reasoning tokens. There were 31 model-quality findings in 360 replies:
+  - 1 thinking-off writing reply had invalid JSON (BM8020, which lies outside the thinking-off half of the set);
+  - 13 thinking-on and 17 thinking-off answers had no `Final answer:` line.
+- **GPU memory and the server log:** peak 89,751 of 95,830 MiB (6,079 MiB free); 0 error words in the server log.
+- **The confidential-computing record failed.** `CC_MODE` captured "ECC Mode … Enabled", which is the GPU's memory error correction, not confidential computing: the search pattern "CC Mode" also matches "ECC Mode". A direct check (`srun --overlap … nvidia-smi conf-compute -f`) was tried after the job had already ended, so it was refused. The confidential-computing state of this run is therefore not recorded. Its known risk is garbled output, and none was seen: every reply was structured text. The search pattern is to be fixed.
+- **Outcome:** `RESULT=PASS_QUALITY_WARN`, "31 of 360 repl(ies) have model-quality findings". Graded on the PC with `answer_check.py` (see the progress log).
+- **Output:**
+  - **On Talon:** `/home/buggjm/talon_project/teacher_outputs/2026-11-19_qwen3-6-27b-talon-bf16_{smokeK01, smokeK-thinkoff01, answersetK01, answersK01, answersK-thinkoff01}`.
+  - **On the PC:** copied to `C:\masters_project_large\data\teacher_outputs\` under the same names, plus `2026-11-19_stageK_job287_logs\` (job log, `stageK.txt`, client, validation and server logs, GPU memory CSV).
+  - These are development slots only, marked test material.
+- **Related progress entry:** "Thinking check run on Talon" (2026-11-19).
