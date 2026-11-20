@@ -1,0 +1,89 @@
+# Application contexts (draft 1, 2026-11-19; approved by Jaxson 2026-11-19).
+#
+# WHAT THIS IS: a second "deck of cards", dealt alongside the subtopic, that tells the teacher what real-world
+# setting to use for a question's story and variable names. It exists so that ~200,000 training questions are
+# not near-copies of each other, and it is dealt the SAME way in every set (benchmark, development set, the
+# held-out set and every training size), so set size is the only thing that differs between the nested sets.
+#
+# THE "NO APPLIED CONTEXT" CARD: some questions should stay purely statistical or about R itself, with no
+# real-world story. The share of such questions differs by category, because some categories are naturally
+# abstract (writing or reading R code, conceptual questions) and others usually come with a story (numerical
+# problems, reading statistical output). `no_context_share` gives that share per category; the dealer adds the
+# matching number of "none" cards to each category's deck, so every full cycle of the deck has exactly that
+# share.
+#
+# RULE FOR R QUESTIONS: a context only sets the story (what the variables mean, how they are named). It never
+# changes what R may be used: base R and the stats package only, plus the built-in datasets.
+#
+# HOW TO EDIT: add, remove or reword contexts freely; keep `name` short (it is printed in reports) and
+# `description` to one line (it is inserted into the prompt). Run `python code/generation/variety.py check`.
+# Every change changes this file's SHA-256, which is recorded in every slot file.
+
+no_context_share:
+  numerical: 0.25
+  conceptual: 0.50
+  r_generation: 0.60
+  r_interpretation: 0.60
+  output_interpretation: 0.25
+
+contexts:
+  - name: medicine
+    description: a clinical study or hospital setting (patients, treatments, recovery times, blood pressure)
+  - name: public health
+    description: disease surveillance, vaccination programs or health surveys in a population
+  - name: sports
+    description: athletes, teams, game scores, training times or season statistics
+  - name: ecology
+    description: field measurements of plants or animals (species counts, body sizes, habitat surveys)
+  - name: agriculture
+    description: crop yields, fertilizer trials, soil measurements or livestock weights
+  - name: manufacturing
+    description: a production line (part dimensions, defect counts, machine settings)
+  - name: quality control
+    description: inspection of products or batches against specifications
+  - name: finance
+    description: stock returns, interest rates, loan defaults or portfolio values
+  - name: insurance
+    description: claim counts, claim sizes or policyholder risk
+  - name: education
+    description: students, test scores, study hours or teaching methods
+  - name: psychology
+    description: an experiment on reaction times, memory, attitudes or survey scales
+  - name: marketing
+    description: customers, advertising campaigns, click-through rates or purchase amounts
+  - name: retail
+    description: store sales, basket sizes, returns or inventory
+  - name: transportation
+    description: commute times, traffic counts, delivery delays or vehicle fuel use
+  - name: climate and weather
+    description: temperatures, rainfall, storm counts or air quality readings
+  - name: energy
+    description: electricity use, power output, battery life or energy prices
+  - name: genetics
+    description: gene expression, allele frequencies or inherited traits
+  - name: social science
+    description: survey responses, household income, voting or demographic data
+  - name: engineering
+    description: material strength, component lifetimes or measurement error in tests
+  - name: astronomy
+    description: star brightness, observation counts or measurement error in telescope data
+  - name: food science
+    description: taste panels, nutrient content, shelf life or cooking experiments
+  - name: environmental monitoring
+    description: pollutant levels, water quality samples or wildlife counts at monitoring sites
+  - name: workplace and human resources
+    description: employee salaries, productivity, absences or job satisfaction surveys
+  - name: technology and software
+    description: website load times, app usage, error counts or A/B tests of a feature
+  - name: telecommunications
+    description: call durations, network outages or data usage per customer
+  - name: real estate
+    description: house prices, floor areas, rents or time on the market
+  - name: tourism and hospitality
+    description: hotel occupancy, visitor counts, ratings or spending per visit
+  - name: veterinary science
+    description: animal patients, treatment outcomes, weights or recovery times
+  - name: criminology
+    description: incident counts, response times or survey data on public safety
+  - name: physics laboratory
+    description: repeated measurements of a physical quantity (time, length, temperature) with error

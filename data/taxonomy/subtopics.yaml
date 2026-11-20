@@ -1,0 +1,773 @@
+# Taxonomy of question subtopics (draft 2, 2026-11-19; draft 1 was 2026-10-15).
+#
+# WHAT THIS IS: the list of things a benchmark (or training) question can be about. The script
+# `code/generation/variety.py` deals these out to question slots like cards from a shuffled deck, so a
+# subtopic is not used twice at the same difficulty until every subtopic in its list has been used once.
+#
+# HOW TO EDIT: add, remove or reword lines freely. Every line is one subtopic. Keep each one short and
+# specific. Run `python code/generation/variety.py check` afterwards: it refuses duplicate area names and
+# repeated subtopics within a category, counts the subtopics and tells you whether the list is big enough for
+# the 1,150-slot benchmark (1,000 + 15% spares) with no repeats. Every change changes the file's SHA-256 hash,
+# which is written into every slot file and run log, so we always know which taxonomy wrote which questions.
+#
+# SIZE RULE: in a 1,150-slot benchmark the slot pattern asks for at most about 115 questions of one category at
+# one difficulty, so each category needs at least that many subtopics to avoid repeating a (subtopic,
+# difficulty) pair. R interpretation is split 2:1 between number and short-text answers, and output
+# interpretation has one slot per difficulty, so those lists can be shorter. `variety.py check` computes the
+# exact requirement from the pattern.
+#
+# CHANGES IN DRAFT 2 (2026-11-19, approved by Jaxson 2026-11-19): the two r_generation areas both named
+# "data frames" were merged into one (YAML silently kept only the second, dropping 16 subtopics); "arima or auto.arima" became
+# "arima" (auto.arima is in the forecast package, not base R). Subtopics that appear in two DIFFERENT
+# categories (for example "weighted mean" in numerical and in r_generation) are intended and kept.
+#
+# CONSTRAINT FOR R TOPICS: base R and the stats package only (no library()), plus built-in datasets
+# (mtcars, iris, airquality, ToothGrowth, PlantGrowth, women, cars, faithful, USArrests, ChickWeight, trees).
+#
+# Each category lists areas (groups of related subtopics); the areas are used to spread the questions evenly
+# over the whole field instead of letting one area dominate.
+
+categories:
+
+  numerical:
+    answer_type: number
+    areas:
+      descriptive statistics:
+        - mean and standard deviation of a small data set
+        - median and quartiles
+        - interquartile range and outlier fences
+        - mean from a frequency table
+        - weighted mean
+        - percentile rank from a normal model
+        - coefficient of variation
+        - z-score of an observation
+        - mean and variance after a linear transformation
+        - combined mean of two groups
+      probability:
+        - probability of independent events
+        - conditional probability and Bayes' rule
+        - combinations and permutations
+        - probability of at least one event
+        - total probability across several groups
+        - inclusion-exclusion for two or three events
+        - expected value of a game
+        - expected value and variance of a discrete variable
+        - covariance of two discrete variables from a joint table
+        - marginal and conditional probability from a joint table
+        - waiting-time probability with repeated trials
+        - counting probability for matching or birthday-type problems
+        - probability from a table of two categories
+        - two draws without replacement
+      distributions:
+        - binomial probability
+        - cumulative binomial probability
+        - Poisson probability
+        - normal probability from a z-score
+        - normal quantile (find the cutoff)
+        - sum of independent normal variables
+        - sampling distribution of the sample mean
+        - normal approximation to the binomial
+        - exponential distribution probability
+        - geometric distribution probability
+        - hypergeometric probability
+        - negative binomial probability
+        - uniform distribution probability and mean
+        - standard error of a sample proportion
+        - chi-square distribution tail probability
+        - t distribution critical value
+        - F distribution critical value
+        - mean and variance of a binomial variable
+        - Poisson approximation to the binomial
+        - percentile of a normal from its mean and standard deviation
+        - conditional probability for a normal variable
+        - transformation of a uniform variable
+      estimation and confidence intervals:
+        - standard error of the sample mean
+        - confidence interval for a mean from summary numbers
+        - confidence interval for a proportion
+        - sample size for a margin of error
+        - sample size for a proportion
+        - confidence interval for a difference in means
+        - confidence interval for a difference in proportions
+        - confidence interval for a variance
+        - maximum likelihood estimate from data
+        - method of moments estimate
+        - bias of an estimator
+        - mean squared error of an estimator
+        - Fisher information for a simple distribution
+        - Wald confidence interval for a regression coefficient
+        - Wilson confidence interval for a proportion
+        - Agresti-Coull confidence interval for a proportion
+        - asymptotic variance of a maximum likelihood estimator
+        - confidence interval for an odds ratio
+
+        
+      hypothesis tests:
+        - one-sample t statistic
+        - two-sample difference-in-means test statistic
+        - paired t statistic from differences
+        - z-test for a proportion
+        - two-proportion z statistic
+        - chi-square statistic from a table
+        - chi-square goodness of fit statistic
+        - degrees of freedom for a test
+        - p-value from a z statistic
+        - p-value from a t statistic
+        - power of a z-test
+        - type II error probability
+        - pooled variance estimate
+        - F statistic for comparing two variances
+        - one-way ANOVA F from summary values
+        - critical value for a rejection region
+        - Welch degrees of freedom
+        - sign test probability
+        - Wilcoxon rank-sum statistic from small samples
+        - Mann-Whitney U from ranks
+        - effect size (Cohen's d)
+        - test statistic for a correlation
+        - likelihood ratio test statistic from log-likelihoods
+        - score test statistic for a simple model
+        - Wald test statistic from a coefficient and standard error
+        - likelihood ratio test from model deviances
+        - Bonferroni-adjusted significance threshold
+        - Benjamini-Hochberg adjusted p-values
+      regression and correlation:
+        - correlation coefficient from summary values
+        - regression slope from summary statistics
+        - regression intercept and prediction
+        - R-squared from sums of squares
+        - residual of one observation
+        - standard error of the slope
+        - t statistic for the slope
+        - confidence interval for a mean response
+        - prediction from a multiple regression equation
+        - adjusted R-squared
+        - odds ratio from a 2x2 table
+        - logistic regression probability from coefficients
+        - Poisson regression predicted count from coefficients
+        - Poisson regression rate ratio from coefficients
+        - logistic regression odds ratio confidence interval
+        - deviance from observed and fitted Poisson counts
+        - likelihood of a binary logistic regression model
+        - variance inflation factor from auxiliary R-squared
+        - BIC from log-likelihood and parameter count
+        - prediction from a regression model with interaction terms
+      other methods:
+        - relative risk from a 2x2 table
+        - bootstrap standard error from resampled values
+        - permutation test p-value from listed outcomes
+        - moving average of a time series
+        - exponential smoothing forecast
+        - lag-1 autocorrelation of a short series
+        - posterior mean for a beta-binomial model
+        - posterior probability from a discrete prior
+        - AR(1) forecast from model coefficients
+        - first and seasonal differences of a time series
+        - Bayesian posterior mean for a normal-normal model
+        - expected count in a contingency table
+        - sample size for a two-group comparison
+        - relative risk reduction and number needed to treat
+
+  conceptual:
+    answer_type: multiple_choice
+    areas:
+      hypothesis testing:
+        - meaning of a p-value
+        - Type I and Type II errors
+        - statistical power
+        - choosing between a t-test and a z-test
+        - one-sided versus two-sided tests
+        - multiple comparisons
+        - statistical versus practical significance
+        - wording of null and alternative hypotheses
+        - what failing to reject the null does and does not mean
+        - confidence interval and hypothesis test duality
+        - assumptions of the two-sample t-test
+        - paired versus independent samples
+        - p-hacking and optional stopping
+        - effect size versus p-value
+        - differences between Wald score and likelihood ratio tests
+        - likelihood ratio tests for nested models
+        - family-wise error rate versus false discovery rate
+        - equivalence testing versus traditional hypothesis testing
+        - relationship between sample size and statistical significance
+      estimation and intervals:
+        - interpreting a confidence interval
+        - what changes the width of a confidence interval
+        - confidence level versus probability
+        - bias and variance of an estimator
+        - consistency of an estimator
+        - unbiased versus minimum-variance estimators
+        - the likelihood function
+        - intuition for maximum likelihood
+        - what a sufficient statistic is
+        - standard error versus standard deviation
+        - sampling distribution of an estimator
+        - the bias-variance trade-off
+        - shrinkage estimators
+        - meaning of degrees of freedom
+        - asymptotic normality of maximum likelihood estimators
+        - Fisher information and estimator precision
+        - profile likelihood confidence intervals
+        - identifiability of model parameters
+        - bootstrap percentile versus basic confidence intervals
+      probability ideas:
+        - independent versus mutually exclusive events
+        - conditional versus joint probability
+        - the base rate fallacy
+        - the law of large numbers
+        - the central limit theorem
+        - expected value versus most likely value
+        - variance of a sum of dependent variables
+        - the memoryless property
+        - Simpson's paradox
+        - interpreting Bayes' rule
+        - exchangeability
+        - independence versus zero correlation
+        - properties of the normal distribution
+        - heavy tails and outliers
+        - conditional expectation and the law of total expectation
+        - law of total variance
+        - covariance matrices and positive semidefiniteness
+        - moment generating functions and their properties
+        - convergence in probability versus convergence in distribution
+      regression:
+        - assumptions of linear regression
+        - interpreting R-squared
+        - interpreting a regression slope
+        - interpreting an intercept
+        - multicollinearity
+        - influential points and leverage
+        - residual plots and unequal variance
+        - the danger of extrapolation
+        - overfitting
+        - adjusted R-squared versus R-squared
+        - interaction terms
+        - dummy variable coefficients
+        - confounding in a regression
+        - odds in logistic regression
+        - regularization with ridge and lasso
+        - model selection with AIC
+        - the purpose of cross-validation
+        - correlation versus causation
+        - generalized linear model components and link functions
+        - canonical versus noncanonical link functions
+        - interpreting coefficients under different link functions
+        - Poisson regression assumptions and interpretations
+        - overdispersion in count regression
+        - quasi-Poisson versus negative binomial regression
+        - zero-inflated versus hurdle count models
+        - deviance and Pearson residuals in generalized linear models
+        - offset terms in Poisson regression
+        - complete and quasi-complete separation in logistic regression
+        - proportional odds assumption in ordinal regression
+        - multinomial versus ordinal logistic regression
+        - nested versus nonnested model comparisons
+        - AIC versus BIC for model selection
+      sampling and study design:
+        - sampling methods and sampling bias
+        - randomization in experiments
+        - blocking and stratification
+        - confounding variables
+        - observational versus experimental studies
+        - nonresponse and undercoverage
+        - blinding and placebo effects
+        - stratified versus cluster sampling
+        - survivorship bias
+        - selection bias
+        - sample size and precision
+        - replication and reproducibility
+        - control groups
+        - measurement error and reliability
+        - completely randomized versus randomized block designs
+        - factorial experimental designs
+        - main effects versus interaction effects
+        - pseudoreplication and independence of observations
+        - missing completely at random versus missing at random
+        - intention-to-treat versus per-protocol analysis
+      resampling and nonparametric methods:
+        - the bootstrap
+        - the idea of a permutation test
+        - when to use a nonparametric test
+        - rank-based methods
+        - bootstrap confidence intervals
+        - the jackknife
+        - Monte Carlo simulation
+        - effect of outliers on the mean and median
+        - stratified bootstrap sampling
+        - parametric versus nonparametric bootstrap
+        - Monte Carlo standard error
+        - bootstrap bias estimation
+        - permutation tests and exchangeability assumptions
+      Bayesian and other topics:
+        - meaning of prior and posterior
+        - credible interval versus confidence interval
+        - conjugate priors
+        - frequentist versus Bayesian interpretation
+        - likelihood ratios
+        - false discovery rate
+        - assumptions of ANOVA
+        - interpreting an interaction plot
+        - assumptions of the chi-square test
+        - stationarity of a time series
+        - meaning of autocorrelation
+        - the idea of principal components
+        - the idea of clustering
+        - precision and recall
+        - ROC curves and AUC
+        - class imbalance
+        - data leakage
+        - the curse of dimensionality
+        - posterior predictive distributions
+        - sensitivity of Bayesian inference to prior selection
+        - AR versus MA versus ARMA time series models
+        - interpreting ACF and PACF plots
+        - differencing to remove a stochastic trend
+        - Granger causality versus ordinary causation
+        - repeated measures and within-subject correlation
+
+  r_generation:
+    answer_type: r_expression
+    areas:
+      vectors and sequences:
+        - creating and subsetting a vector
+        - seq and rep
+        - cumulative sums
+        - reversing and sorting a vector
+        - vector of squares or powers
+        - every k-th element of a vector
+        - differences between consecutive values
+        - running maximum with cummax
+        - building a repeating pattern by recycling
+        - rounding and truncation
+        - removing duplicates
+        - which and which.max
+      summaries:
+        - summary statistic of a vector
+        - counting with table
+        - proportion of values meeting a condition
+        - mean ignoring NA
+        - quantiles and percentiles
+        - range and spread
+        - correlation of two vectors
+        - cumulative proportions
+        - standardizing a vector with scale
+        - weighted mean
+      data frames:
+        - adding a column to a data frame
+        - filtering rows of a data frame
+        - sorting data
+        - selecting columns by name
+        - renaming a column
+        - counting rows by group
+        - mean by group with tapply
+        - aggregate by group
+        - merging two data frames
+        - subsetting with several conditions
+        - removing rows with missing values
+        - building a data frame from vectors
+        - ordering by two columns
+        - unique values of a column
+        - applying a function to every column
+        - cutting a numeric column into categories
+        - reshaping a data frame from wide to long with reshape
+        - computing several group statistics using aggregate
+        - handling duplicate rows in a data frame
+        - creating interaction variables from existing columns
+        - performing a left join with merge
+      apply family and functional tools:
+        - sapply over columns
+        - lapply over a list
+        - vapply with a declared type
+        - mapply over two vectors
+        - apply over the rows of a matrix
+        - tapply by group
+        - Reduce to combine values
+        - Map and Filter
+        - outer product table
+        - sapply returning a matrix
+      strings and dates:
+        - paste and paste0
+        - substr and substring
+        - nchar and toupper
+        - gsub replacement
+        - sprintf formatting
+        - strsplit then count
+        - grepl matching
+        - sorting strings
+        - extracting digits with regmatches
+        - converting text to a Date
+        - difference between two dates
+        - formatting a date
+        - weekdays and months
+        - a sequence of dates
+      matrices:
+        - matrix operations
+        - transpose and multiply
+        - diagonal and trace
+        - solving a linear system
+        - determinant and inverse
+        - row and column sums
+        - cbind and rbind
+        - extracting the upper triangle
+        - matrix indexing with a condition
+        - building a matrix with a pattern
+      model and test functions:
+        - running a t-test and extracting the p-value
+        - fitting a linear model and extracting a coefficient
+        - predicted value from lm
+        - residual sum of squares
+        - chi-square test p-value
+        - correlation test statistic
+        - confidence interval from t.test
+        - normal probability with pnorm
+        - normal quantile with qnorm
+        - binomial probability with dbinom
+        - sample variance computed by hand
+        - standardized residuals
+        - logistic model coefficient
+        - ANOVA table p-value
+        - fitting a Poisson regression with glm
+        - fitting a binomial regression with glm
+        - calculating fitted probabilities with predict
+        - extracting coefficient standard errors from summary
+        - comparing nested GLMs with anova
+        - computing AIC and BIC for fitted models
+        - extracting model deviance and residual degrees of freedom
+        - computing Pearson residuals from a fitted GLM
+        - fitting a regression model with interaction terms
+        - constructing confidence intervals with confint
+        - fitting an ARIMA model with arima
+        - extracting residuals and fitted values from a model
+        - computing an odds ratio from logistic regression coefficients
+        - fitting a linear model without an intercept
+      simulation and random numbers:
+        - random draws with set.seed
+        - sampling without replacement
+        - simulating coin tosses
+        - bootstrap mean
+        - simulating normal data and taking its mean
+        - Monte Carlo probability estimate
+        - random permutation
+        - shuffling the rows of a data frame
+        - simulating Poisson-distributed observations
+        - simulating binomial responses from logistic probabilities
+        - estimating statistical power by simulation
+        - simulating sampling distributions of estimators
+        - constructing a Monte Carlo confidence interval
+        - simulating an AR(1) time series
+      functions and control flow:
+        - writing a small function
+        - recoding with ifelse
+        - a while loop that counts
+        - a function with a default argument
+        - a recursive function
+        - recoding a number into labels with cut
+        - writing a function to calculate a confidence interval
+        - using tryCatch to handle an error
+        - defining a function that returns multiple statistics
+        - creating a simulation function with replicate
+      lists, sets and factors:
+        - factor levels and counts
+        - set operations such as union and intersect
+        - extracting a list element
+        - combining a list into a data frame with do.call
+        - names of a vector
+        - match and %in%
+        - changing the reference level with relevel
+        - generating a design matrix with model.matrix
+        - creating an ordered factor
+        - extracting multiple elements from a fitted model object
+
+  r_interpretation_number:
+    category: r_interpretation
+    answer_type: number
+    areas:
+      vector arithmetic:
+        - vector arithmetic and recycling
+        - integer division and modulo
+        - rounding with round and ceiling
+        - sum and mean of a transformed vector
+        - cumulative product
+        - powers and square roots
+        - length after a sequence of operations
+        - range and diff of the range
+        - counting values that meet a comparison
+        - max and which.max
+        - product of a subset
+        - rev combined with indexing
+      indexing:
+        - indexing with positive and negative indices
+        - logical indexing
+        - indexing by names
+        - head and tail
+        - indexing with which
+        - replacing elements and then summing
+        - every other element
+        - matrix indexing
+        - extracting a list element
+        - nested indexing
+      sequences:
+        - result of seq and rep
+        - seq_len and seq_along
+        - rep with each
+        - rev of a sequence
+        - length of a sequence made with by
+        - cumsum and diff
+        - cumulative maximum
+        - sequences with decimal steps
+      missing values:
+        - NA handling in mean and sum
+        - counting missing values with is.na
+        - effect of na.rm
+        - NA in comparisons
+        - complete.cases count
+        - ifelse with NA
+      apply family:
+        - result of an apply-family call
+        - sapply with an anonymous function
+        - lapply followed by unlist and sum
+        - vapply and sum
+        - tapply group means
+        - mapply sums
+        - apply on matrix rows
+        - Reduce with addition
+        - Filter then length
+        - an element of an outer product
+      matrices:
+        - an element of a matrix product
+        - dim and byrow
+        - sum of the diagonal
+        - transpose then index
+        - rowSums
+        - an element of the solution of a linear system
+        - apply on matrix columns
+        - cbind then sum
+        - rank of a matrix with qr
+        - element of a covariance matrix from cov
+        - number of columns in a model matrix
+        - matrix cross-product with crossprod
+      data frames:
+        - data frame subsetting result
+        - nrow after filtering
+        - mean of a filtered column
+        - table counts from a column
+        - aggregate result value
+        - row count after a merge
+        - new column then sum
+        - order then index
+        - number of unique values
+        - a calculation inside with()
+      factors and types:
+        - factor levels and as.numeric
+        - as.numeric of a character vector
+        - result of class conversions
+        - number of levels
+        - number of bins from cut
+        - table of a factor
+        - reference category in a model matrix
+        - numeric codes of an ordered factor
+        - count of factor levels remaining after droplevels
+      strings with numeric results:
+        - nchar of pasted strings
+        - substr converted to a number
+        - length after strsplit
+        - number of matches with grepl
+        - position of a match
+        - counting characters
+      control flow and functions:
+        - for loop accumulation
+        - while loop count
+        - a function with a default argument
+        - a recursive function value
+        - if-else chain result
+        - vectorized ifelse then sum
+        - repeat with break
+        - a closure that counts
+        - result of switch
+        - the value returned by a function with an early return
+        - numerical result from replicate
+        - value returned by tryCatch after an error
+        - accumulated result from nested loops
+      statistics functions:
+        - mean median and sd of a vector
+        - var and cor
+        - a quantile value
+        - scale then sum
+        - cumsum of probabilities
+        - dnorm or pnorm rounded
+        - rounding of a value ending in 5
+        - weighted.mean
+        - probability from a fitted logistic model
+        - predicted count from a fitted Poisson model
+        - odds ratio from an extracted model coefficient
+        - p-value extracted from a coefficient summary matrix
+        - AIC difference between fitted models
+        - residual degrees of freedom from a fitted GLM
+        - confidence interval endpoint extracted from confint
+        - fitted value from a regression model with an interaction
+      sorting and ranking:
+        - sorting with order
+        - rank with ties
+        - sort decreasing and index
+        - order with ties
+        - rev of order
+        - rank with ties averaged
+
+  r_interpretation_text:
+    category: r_interpretation
+    answer_type: short_text
+    areas:
+      fix the bug:
+        - fix a misspelled function name
+        - fix an off-by-one error
+        - fix a wrong argument such as na.rm
+        - fix a missing comma or parenthesis
+        - fix = used where == is needed
+        - fix a wrong index
+        - fix wrong quotes around a variable name
+        - fix a character-versus-number type error
+        - fix a wrong argument name
+        - fix a loop that never ends
+        - fix a function that forgets to return a value
+        - fix a wrong column reference
+        - fix a recycling problem
+        - fix & used where && is needed
+        - fix a matrix dimension mismatch
+        - fix a wrong sort direction
+        - fix a factor converted to a number the wrong way
+        - fix a wrong paste separator
+        - fix a misplaced set.seed
+        - fix a wrong apply margin
+        - fix incorrect family specification in glm
+        - fix predict with the wrong type argument
+        - fix incorrect newdata column names
+        - fix a factor reference level error
+        - fix a variable incorrectly treated as continuous
+        - fix a formula with an unintended interaction
+        - fix an incorrectly specified offset term
+        - fix a matrix that is not conformable for multiplication
+        - fix an incorrect extraction from a model summary
+      what is printed:
+        - paste and substr output
+        - toupper and tolower output
+        - factor levels output
+        - names of a vector output
+        - class of an object
+        - typeof output
+        - result of is.na
+        - a printed logical vector
+        - strsplit result
+        - sprintf output
+        - format of a date
+        - rev of a string vector
+        - sort of strings
+        - unique values printed
+        - which names meet a condition
+        - names after sorting
+        - levels after relevel
+        - class of an expression result
+        - output of identical or all.equal
+        - output of nchar on a vector
+        - names of components in a fitted lm object
+        - class of a fitted glm object
+        - family name printed from a fitted GLM
+        - coefficient names from a model with factor predictors
+        - output of an ordered factor comparison
+      R behavior:
+        - what a warning message means
+        - what NULL returns
+        - what NA propagation prints
+        - what %in% returns
+        - the difference between [ and [[
+        - what seq_len(0) returns
+        - the sum of an empty vector
+        - what sapply returns for results of unequal length
+        - what order does with ties
+        - what happens when lengths differ in arithmetic
+        - what predict type response means for a GLM
+        - what happens when a predictor has missing values
+        - what happens when a factor has only one observed level
+        - how R constructs interaction terms in a model formula
+        - what happens when coefficients are aliased
+
+  output_interpretation:
+    answer_type: multiple_choice
+    areas:
+      test output:
+        - conclusion from t-test output
+        - interpreting a likelihood ratio test result
+        - interpreting a Wald test for multiple coefficients
+        - interpreting a score test statistic
+        - interpreting a Bonferroni-adjusted result
+        - interpreting a multiple-testing adjusted p-value
+        - interpreting a test of equal variances
+        - paired t-test output
+        - confidence interval in test output
+        - two-sample Welch t-test output
+        - chi-square test output
+        - one-sample proportion test output
+        - two-proportion test output
+        - Fisher's exact test output
+        - Wilcoxon test output
+        - Shapiro-Wilk test output
+        - variance test output
+        - correlation test output
+        - exact binomial test output
+        - Kolmogorov-Smirnov test output
+      ANOVA and regression output:
+        - p-value in an ANOVA table
+        - two-way ANOVA table
+        - Tukey comparison output
+        - meaning of a regression coefficient in a coefficient table
+        - R-squared and residual standard error
+        - F-statistic in a regression summary
+        - multiple regression coefficient with other variables held fixed
+        - dummy variable coefficient
+        - interaction term coefficient
+        - logistic regression coefficient as an odds ratio
+        - logistic regression deviance
+        - Poisson regression coefficient as a rate ratio
+        - confidence intervals for coefficients
+        - residual summary in lm output
+        - predicted values with intervals
+        - comparing two nested models with anova
+        - AIC comparison
+        - identifying overdispersion from residual deviance and degrees of freedom
+        - interpreting a log-link GLM coefficient
+        - interpreting an offset in Poisson regression
+        - comparing models using residual deviance
+        - interpreting a likelihood ratio test between nested GLMs
+        - identifying a significant interaction in two-way ANOVA
+        - identifying multicollinearity using variance inflation factors
+        - interpreting rank-deficient regression output
+        - interpreting a significant lack-of-fit test
+        - comparing two models using BIC
+        - interpreting residual diagnostic output
+        - interpreting a warning about fitted probabilities of zero or one
+        - polynomial regression term
+        - reading coefficient p-values
+        - standard error and t value in a coefficient table
+      descriptive and classification output:
+        - summary of a numeric vector
+        - interpreting a bootstrap distribution summary
+        - interpreting standardized versus raw coefficients
+        - identifying an optimal classification threshold from a metric table
+        - interpreting a principal component variance summary
+        - interpreting ACF and PACF output
+        - interpreting time series forecast intervals
+        - summary of a data frame
+        - table of frequencies
+        - a correlation matrix
+        - accuracy or sensitivity from a confusion matrix
+        - specificity and precision from a confusion matrix
+        - boxplot statistics
+        - quantile output
+        - a cumulative frequency table
+        - group means from tapply
+        - aggregate output
+        - proportions from a cross-tabulation
+        - structure output from str
+        - a covariance matrix
+        - skewness suggested by summary output
+        - a table of thresholds with sensitivity and specificity

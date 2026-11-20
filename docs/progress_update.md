@@ -933,3 +933,19 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - answering prompt v2, which keeps the `Final answer:` line for R questions;
   - the teacher's benchmark answer limit.
 - **Updated:** `docs/methodology/workflow.md` (Section 2.1, Phase 3, Section 10.2), `docs/methodology/pilot_plan.md`, `README.md`.
+
+### Taxonomy fixed, context deck and slot dealer built, prompts and labeling guide approved (2026-11-19)
+- **Why:** before the benchmark, the development set and up to about 232,000 training examples can be generated, every slot (what one question is about) has to come from the real topic list, with a real-world setting for variety, and be frozen in a file. The approved plan for this work covers the taxonomy, a context deck, the slot dealer, the full-size generator and decontamination; this entry covers the parts Jaxson reviewed and approved today.
+- **Taxonomy (`data/taxonomy/subtopics.yaml`, draft 2, committed to Git for the first time):**
+  - the two R-generation areas both named "data frames" were merged; YAML keeps only the last of two equal keys, so 16 subtopics had been silently dropped;
+  - "fitting an ARIMA model with arima or auto.arima" became "... with arima" (`auto.arima` is in the forecast package, not base R);
+  - the area "R behaviour" is now "R behavior";
+  - result: 673 subtopics, enough for the 1,150-slot benchmark with no repeated subtopic at one difficulty.
+- **Context deck (`data/taxonomy/contexts.yaml`, new):** 30 real-world settings, plus a "no applied context" card with a share by category (R generation and R interpretation 60%, conceptual 50%, numerical and output interpretation 25%), dealt the same way in every set.
+- **Slot dealer (`code/generation/variety.py`, new):** `check` refuses duplicate keys and repeated subtopics and applies the size rule; `deal` writes a frozen slot file plus a manifest with every SHA-256 and the deck state; `replace` deals like-for-like replacement slots from the continued decks; `report` shows the mix. Trial deals (not real data, in the scratchpad) hit the category and difficulty targets exactly at 1k, 10k and 200k, with no repeated subtopic at one difficulty in the benchmark.
+- **Prompts:**
+  - `data/prompts/benchmark_generation_v7.md`: v6 plus one "Setting:" line, and one corrected sentence (v6 said the first line of each answer is compared with the key; answers are now read from their `Final answer:` line and graded against the key). v6 is unchanged (SHA-256 `348db6ff...`).
+  - `data/prompts/training_generation_v1.md`: new. A question plus a short `worked_answer` (2 to 8 plain steps, at most about 250 words) and a `final_answer`, assembled as `Question:` / `Answer:` / `Final answer:` plus end-of-text, at most 2,048 Pythia tokens. Format checks only, no correctness checks.
+- **Labeling guide (`docs/guides/decontamination_labeling_guide.md`, new):** how to label candidate pairs as duplicate, template variant or distinct, blind to the scores; which pairs are labeled (training against development only, synthetic hard pairs, an audit of non-nominated pairs); and the default action per label.
+- **SHA-256 at approval** (each is also recorded in every slot file or run log that uses the file): `subtopics.yaml` `17d7340a...`, `contexts.yaml` `100d9102...`, `benchmark_generation_v7.md` `980f5570...`, `training_generation_v1.md` `db9ca660...`.
+- **Not done yet:** the generator, decontamination code, tests and docs (next). No Talon job was run and no real data was generated.
