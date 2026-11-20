@@ -8,7 +8,7 @@
 
 **Duration:** Two semesters (from September 2026)
 
-**Status (2026-11-18):** Teacher (Qwen3.6-27B, BF16, vLLM 0.32.0) deployed on Talon: smoke test and throughput benchmark complete; BF16 with thinking on fixed for all generation (thinking mode settled by a pre-specified on/off check, 2026-11-19). Training data is retained without correctness-based filtering, and a frontier-model grader scores the benchmark. Benchmark generation pending.
+**Status (2026-11-20):** Teacher (Qwen3.6-27B, BF16, vLLM 0.32.0) deployed on Talon: smoke test and throughput benchmark complete; BF16 with thinking on fixed for all generation (thinking mode settled by a pre-specified on/off check, 2026-11-19). Training data is retained without correctness-based filtering, and a frontier-model grader scores the benchmark. Taxonomy-based slot dealer, generation prompts (benchmark v7, training v1), full-size sharded generator and decontamination built and tested locally; benchmark generation pending.
 
 ## Overview
 
@@ -68,9 +68,10 @@ The full definitions, the original wording and the measurement protocol are in [
   - Redhawk llama.cpp deployment.
   - Talon bring-up: vLLM 0.32.0 pinned, BF16 weights downloaded and hashed, smoke test and throughput benchmark (about 6 GPU-hours per 1,000 examples on one H100).
   - R sandbox for model-written code (WSL2 + bubblewrap + R 4.3.1), self-test 13/13.
+  - Slot variety: taxonomy (673 subtopics) and context deck dealt into frozen, fingerprinted slot files.
+  - Full-size generator (sharded, resumable Talon stage G) and decontamination (lexical and embedding retrieval, MinHash, label-calibrated rule); local tests only.
 - **Next:**
-  - Fix slot diversity and build the full-size generator and decontamination.
-  - Fix slot diversity (the near-duplicate questions found in testing).
+  - Talon smoke test of stage G.
 - **Then:**
   - Generate, check and freeze the benchmark.
   - Set up and validate the Codex grader.
@@ -85,10 +86,11 @@ The full definitions, the original wording and the measurement protocol are in [
 | [docs/progress_update.md](docs/progress_update.md) | Dated log of every change and decision |
 | [docs/logs/compute_log.md](docs/logs/compute_log.md) / [docs/logs/cost_log.md](docs/logs/cost_log.md) | Cluster jobs and measured local runs / paid and plan-metered calls (the Codex grader) |
 | `docs/` | Organized by topic: `methodology/` (workflow, pilot plan), `models/` (model versions, teacher evaluation, Pythia behavior), `clusters/` (cluster selection, Talon setup), `logs/` (compute and cost logs), `guides/` (Git notes), `archive/` (retired methods, reference only); only `progress_update.md` sits at the root |
-| `code/generation/` | Benchmark slot blueprint, validity checks and the R key step for benchmark items (`generate_benchmark.py`); teacher client for the cluster deployments (`open_teacher_test.py`); throughput report |
+| `code/generation/` | Slot dealer (`variety.py`); generation prompts and reply checks (`set_prompts.py`); full-size generator, collection and nested sets (`generate_set.py`); v6 checks and the R key step (`generate_benchmark.py`); deployment-test client (`open_teacher_test.py`); throughput report |
+| `code/verification/` | Decontamination (`decontaminate.py`) and the embedding-model check (`embedding_check.py`) |
 | `code/evaluation/`, `code/tests/` | Pythia probe; local test suites for the pipeline and the cluster job scripts |
 | `configs/` | `paths.yaml` (all storage locations) and the Redhawk and Talon Slurm scripts |
-| `data/prompts/` | Generation prompt (v6, SHA-256 pinned by the job scripts) |
+| `data/prompts/`, `data/taxonomy/` | Generation prompts (benchmark v7, training v1; v6 kept for past runs; SHA-256 pinned by the job scripts); taxonomy and context deck |
 | `recovery/` | Rebuild procedures for everything stored outside the repository |
 | `results/`, `environment/` | Small result files; pinned Python packages |
 

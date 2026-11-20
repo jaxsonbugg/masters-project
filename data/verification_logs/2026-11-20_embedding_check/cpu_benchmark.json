@@ -1,0 +1,12 @@
+{
+  "texts": 5000,
+  "seconds": 129.3,
+  "texts_per_second": 38.7,
+  "batch": 64,
+  "threads": 14,
+  "peak_memory_mb": 867,
+  "start_memory_mb": 37,
+  "vectors_mb": 7.3,
+  "projected_minutes_for_260000": 112.1,
+  "projected_vectors_mb_for_260000": 381
+}

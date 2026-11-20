@@ -2,7 +2,10 @@
 # submit_pipeline.sh (Talon) - check that everything is ready, then submit ONE Talon job. Run it on a login node:
 #   cd <repo copy> && GPU_COUNT=2 TENSOR_PARALLEL=2 REPLICAS=1 MAX_NUM_SEQS=8 CLIENT_CONCURRENCY=8 QT_SUBMIT=yes bash configs/talon/submit_pipeline.sh <kind>
 # (the numbers are placeholders for the layout you chose; there is no preferred default)
-# <kind> is one of: smoke_a | smoke_b | throughput | thinking | pipeline | main   (default: pipeline)
+# <kind> is one of: smoke_a | smoke_b | throughput | thinking | generate | pipeline | main   (default: pipeline)
+# generate (stage G, added 2026-11-20) also needs GEN_SLOTS, GEN_PROMPT (benchmark | training), GEN_SHARD (k/K) and optionally GEN_FIRST
+# and GEN_COUNT; its job name carries the shard, so the shards of one slot file can wait and run side by side, but the same shard twice
+# is refused. It is not submitted when less than GEN_MIN_FREE_MIB would be left below the home folder's soft quota.
 # Without QT_SUBMIT=yes it only does the checks and the scheduler's start estimate (sbatch --test-only: no job is created).
 #
 # WHY THIS SCRIPT EXISTS. #SBATCH lines in a script cannot hold variables, and nothing about Talon's partition, account, GPU
@@ -28,9 +31,10 @@ case "$KIND" in
   smoke_b)    WRAPPER=talon_smoke_b.sbatch;    JOBNAME=qt_talon_B;        TKIND=smoke ;;
   throughput) WRAPPER=talon_throughput.sbatch; JOBNAME=qt_talon_T;        TKIND=throughput ;;
   thinking)   WRAPPER=talon_thinking.sbatch;   JOBNAME=qt_talon_K;        TKIND=throughput ;;   # stage K uses the throughput wall time (4 h)
+  generate)   WRAPPER=talon_generate.sbatch;   JOBNAME="";                TKIND=generate ;;     # job name set below from the shard
   pipeline)   WRAPPER=talon_pipeline.sbatch;   JOBNAME=qt_talon_pipeline; TKIND=pipeline ;;
   main)       WRAPPER=talon_test.sbatch;       JOBNAME=qt_talon_main;     TKIND=main ;;
-  *) die "unknown kind '$KIND' (use smoke_a, smoke_b, throughput, thinking, pipeline or main)" ;;
+  *) die "unknown kind '$KIND' (use smoke_a, smoke_b, throughput, thinking, generate, pipeline or main)" ;;
 esac
 
 echo "== 0. settings reviewed, paths, layout =="
@@ -38,7 +42,22 @@ require_reviewed
 require_paths
 talon_facts_banner
 check_layout
-case "$KIND" in smoke_b|thinking|pipeline|main) check_concurrency ;; esac
+case "$KIND" in smoke_b|thinking|generate|pipeline|main) check_concurrency ;; esac
+if [ "$KIND" = generate ]; then
+  check_generate
+  JOBNAME="qt_talon_G_$GEN_TAG"
+  ok "generation: $(basename "$GEN_SLOTS"), $GEN_PROMPT prompt (pinned SHA-256 matches), shard $GEN_SHARD, positions from ${GEN_FIRST:-1} (count ${GEN_COUNT:-0}, 0 = to the end); job name $JOBNAME"
+  echo "== 0b. room below the home folder's quota =="
+  read -r Q_USED Q_SOFT Q_HARD <<<"$(home_quota_mib /home)"
+  if [ "${Q_USED:-UNKNOWN}" = UNKNOWN ]; then
+    [ "${QT_QUOTA_CHECKED:-}" = yes ] || die "the home folder's quota could not be read (quota -s -v -f /home). Check it by hand; if there is room, run again with QT_QUOTA_CHECKED=yes."
+    ok "quota not readable; checked by hand (QT_QUOTA_CHECKED=yes)"
+  else
+    Q_FREE=$(( Q_SOFT - Q_USED ))
+    [ "$Q_FREE" -ge "$GEN_MIN_FREE_MIB" ] || die "only $Q_FREE MiB are left below the soft quota ($Q_USED of $Q_SOFT MiB used); a generation job needs at least GEN_MIN_FREE_MIB=$GEN_MIN_FREE_MIB MiB. Copy finished outputs to the PC and remove them from Talon first."
+    ok "$Q_FREE MiB left below the soft quota ($Q_USED of $Q_SOFT MiB used; at least $GEN_MIN_FREE_MIB needed)"
+  fi
+fi
 need VLLM_VERSION; need MODEL_REV
 ok "settings reviewed by a person; layout: $GPU_COUNT GPU(s) = tensor parallel $TENSOR_PARALLEL x replicas $REPLICAS; max length $MAX_MODEL_LEN"
 
@@ -75,6 +94,7 @@ echo "== 5. the scheduler's verdict (sbatch --test-only: no job is created) =="
 cd "$QT_REPO" || die "cannot enter $QT_REPO"
 build_sbatch_opts "$TKIND"
 echo "  sbatch options built from the settings: ${SB_OPTS[*]}"
+[ "$KIND" != generate ] || SB_OPTS+=(--job-name="$JOBNAME")   # talon_generate.sbatch has no #SBATCH --job-name: one name per shard
 TEST="$(sbatch --test-only "${SB_OPTS[@]}" "configs/talon/$WRAPPER" 2>&1)"; echo "  $TEST"
 grep -q "to start at" <<<"$TEST" || die "the scheduler did not accept the request (see above)."
 ok "accepted"
@@ -88,7 +108,7 @@ echo "== 6. submitting the $KIND job =="
 OUT="$(sbatch "${SB_OPTS[@]}" "configs/talon/$WRAPPER" 2>&1)"; echo "  $OUT"
 JOB="$(awk '/Submitted batch job/ {print $NF}' <<<"$OUT" | tail -n 1)"
 [ -n "$JOB" ] || die "sbatch did not report a job number: the $KIND job was NOT submitted."
-{ echo "JOB=$JOB KIND=$KIND SUBMITTED_UTC=$(date -u +%FT%TZ) LAYOUT=$GPU_COUNT/$TENSOR_PARALLEL/$REPLICAS/$MAX_NUM_SEQS/${CLIENT_CONCURRENCY:-none}/$MAX_MODEL_LEN"; } >> "$QT_ROOT/submit_log.txt"
+{ echo "JOB=$JOB KIND=$KIND SUBMITTED_UTC=$(date -u +%FT%TZ) LAYOUT=$GPU_COUNT/$TENSOR_PARALLEL/$REPLICAS/$MAX_NUM_SEQS/${CLIENT_CONCURRENCY:-none}/$MAX_MODEL_LEN${GEN_TAG:+ GEN=$GEN_TAG}"; } >> "$QT_ROOT/submit_log.txt"
 echo
 echo "Submitted $KIND job $JOB. It is now in line; the PC can be off and the VPN can be disconnected."
 echo "  Where it stands:     squeue -j $JOB -o '%i %T %r %S'        (STATE, REASON, estimated start)"

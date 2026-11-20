@@ -52,7 +52,7 @@ Between 2026-10-07 and 2026-10-15 the question-writing pipeline was built and te
 
 ### What has to happen before the 1,000-question run
 
-1. **Fix slot variety.** Change the slot design so no combination repeats more than necessary (more subtopics, varied settings and contexts), then re-run `dupcheck`, which compares every question with every earlier one by text similarity, once with numbers kept and once with numbers masked, and lists near-copies for review. Success looks like few or no flagged pairs on a development batch.
+1. **Fix slot variety (built 2026-11-19 and 2026-11-20).** The slots now come from the taxonomy (673 subtopics) and a deck of 30 real-world settings plus a "no applied context" card, dealt like cards from shuffled decks so a subtopic is not repeated at one difficulty until every other one has been used (`code/generation/variety.py`; `docs/methodology/workflow.md` Section 4, safeguard 4). In the 1,150-slot benchmark no (subtopic, difficulty) pair repeats. The benchmark prompt is now v7 (one "Setting:" line added). Success still has to be shown on real replies: the near-duplicate checks on the development set should flag few or no pairs.
 2. **Bring up Talon.** Pin the vLLM version (vLLM is the program that loads the model onto the GPUs and answers requests; the model card requires 0.19.0 or later), settle how jobs request GPUs, review the settings file, run a scheduler acceptance test, download the BF16 weights, then run smoke stage A (a few questions, to see that everything works) and the throughput stage T (how many tokens per second Talon delivers). The exact steps are in `docs/clusters/talon_setup.md` Section 9. Talon's nodes are shared between jobs and a job may run for at most 3 days, so long runs are split into pieces that can be restarted.
 3. **Review the Redhawk fallback run.** Redhawk job 2511641 (the Qwen pipeline with the 4-bit model) has finished but nobody has looked at its results. It is reviewed and recorded in `docs/logs/compute_log.md`, because it shows whether the fallback deployment works.
 4. **Settle the teacher setup** (decided 2026-11-16 to 2026-11-18; details in `docs/methodology/workflow.md` Section 2.1). One setup writes everything, so it is fixed before any benchmark or training data exists.
@@ -117,10 +117,10 @@ The teacher setup from Step 1 serves Qwen; training Pythia needs a different set
 
 The teacher writes about 1,000 new questions on statistics and R, each with a worked answer. This only starts after the benchmark is frozen. Four things keep it apart from the benchmark and keep it useful:
 
-- **A separate prompt.** Training data uses its own prompt file (for example `data/prompts/training_generation_v1.md`, still to be written), never the benchmark prompt. Each example follows one fixed template (`Question: ...`, then `Answer: ...`) with a short answer that ends in a clearly marked final answer. The training code adds the end-of-text token (id 0) after every answer so the student learns to stop. Loss (the error the training tries to reduce) is counted only on the answer and that end token, so the student is graded on writing the answer, not on copying the question.
+- **A separate prompt.** Training data uses its own prompt file, `data/prompts/training_generation_v1.md` (approved 2026-11-19), never the benchmark prompt. Each example follows one fixed template (`Question: ...`, then `Answer: ...`) with a short answer that ends in a clearly marked final answer. The training code adds the end-of-text token (id 0) after every answer so the student learns to stop. Loss (the error the training tries to reduce) is counted only on the answer and that end token, so the student is graded on writing the answer, not on copying the question.
 - **Separate IDs and folders.** Training examples get their own prefix (for example `TR000001`) and dated run folders; benchmark IDs are `BM0001` to `BM1000`.
 - **Variety.** The same slot-variety fix applies, so the 1,000 examples cover many different skills instead of many copies of a few.
-- **Decontamination** against the frozen benchmark. Every training example is compared with every benchmark question in two ways: shared word sequences (for example any shared run of 8 or more words) and embedding similarity (a small model turns each text into a list of numbers, and two texts with very similar numbers say the same thing in different words). Worked example: if benchmark item BM0412 asks for P(X = 2) when X ~ Binomial(5, 0.4), a training example asking for P(X = 3) with the same setup scores 0.93 on `dupcheck` with numbers masked and is dropped; a Poisson question with similar wording scores 0.55 and stays, because it trains the same skill without copying the exam. Matches are removed from the training set, never from the frozen benchmark, and the thresholds and counts are logged.
+- **Decontamination** against the frozen benchmark. Every training example is compared with every benchmark question in two ways: shared word sequences (for example any shared run of 8 or more words) and embedding similarity (a small model turns each text into a list of numbers, and two texts with very similar numbers say the same thing in different words). These checks only pick out candidate pairs; which pairs count as copies is decided by a rule chosen from pairs you label by hand (duplicate, template variant or distinct) on development data, never on the benchmark (`docs/guides/decontamination_labeling_guide.md`). Worked example: if benchmark item BM0412 asks for P(X = 2) when X ~ Binomial(5, 0.4), a training example asking for P(X = 3) in the same words is a template variant and is dropped and replaced like-for-like; a Poisson question with similar wording is distinct and stays, because it trains the same skill without copying the exam. Matches are removed from the training set, never from the frozen benchmark, and the rule and counts are logged.
 
 We record the token counts the engine reports for every response and the GPU time of every generation job, because together they give the true GPU time per example, which is what the full-scale projection needs. Then we:
 
@@ -205,20 +205,22 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
 ## The order of work (revised 2026-11-12 and 2026-11-18)
 
 1. **Talon bring-up.** Done so far: the probe, the BF16 download, the smoke test (Stage A) and the throughput test (Stage T). Remaining: the training environment. No FP8 or 4-bit download is needed.
-2. **Generation code:**
-   - `r_solution` and `working` required in benchmark replies;
-   - slot variety;
-   - the full-size generator;
-   - decontamination;
+2. **Generation code** (all built and tested locally by 2026-11-20; nothing generated yet):
+   - `r_solution` and `working` required in benchmark replies (prompt v7);
+   - slot variety (taxonomy, context deck, slot dealer);
+   - the full-size generator and Talon stage G;
+   - decontamination (method and embedding check; the rule is set later from your labels);
    - the fix for the "No:" false alarm;
    - **the R sandbox**.
+
+   Next: a short stage G smoke test on Talon (20 benchmark-v7 and 20 training-v1 smoke slots), **only with your separate approval**.
 3. **Teacher setup:**
    1. precision: BF16, decided without a test (2026-11-18);
    2. output limit and context: kept as final;
    3. **the thinking check** (stage K): done 2026-11-19 (job 287). Thinking off was about 3 to 7 points less accurate (mostly tricky R details) and about 7 times cheaper to generate with. Your decision: **thinking on**.
 4. **Benchmark and development set:**
    1. generate;
-   2. R keys, `verify`, `dupcheck`;
+   2. R keys, `verify`, spares for failed slots, near-duplicate checks;
    3. Codex setup: you install it and confirm the terms; the batch tool is built and tested;
    4. the Codex usage pilot;
    5. the Codex screen, and your review of the flags;

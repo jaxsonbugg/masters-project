@@ -193,19 +193,55 @@ deployment. Stage T then showed 1 reply in 128 cut off, at the 16,384-token outp
 final: 16,384 output tokens and 20,480 per sequence. This keeps the Stage T speed figures comparable, and a cut-off reply counts as unusable. The scripts print this
 note, and the checks above look for truncation and reasoning exhaustion.
 
-## 8. What the 200,000-example generation will need (documented, NOT built)
+## 8. The 200,000-example generation: stage G (built 2026-11-20, not yet run on Talon)
 
-`open_teacher_test.py` is a tool for comparing deployments of the model on 100 fixed question slots. It deliberately lacks what a 200,000-example run
-needs, and these get their own plan and approval later:
-- **A far richer question generator.** The current blueprint has only 138 distinct slot combinations (category, subtopic, difficulty, answer type);
-  200,000 examples need much more variety, or the data will repeat itself.
-- **Sharding into chunks** sized to the job time limit, with **checkpoint and resume at scale** and no double-spending of GPU time.
-- **Several server replicas side by side and job arrays** to use all 16 GPUs (this draft supports `REPLICAS=1` only).
-- **A deduplication and decontamination pass** against the benchmark, so no benchmark question can leak into training data.
-- **Data checks without correctness filtering** (decided 2026-11-12): format, duplicates, decontamination and the 2,048-token limit, and a policy for rejected examples. Training examples are retained without correctness-based filtering (`docs/methodology/workflow.md` Section 4, safeguard 9).
-- **An answer-length and thinking-budget policy**, because thinking tokens dominate cost and time.
-- **Output format and storage size** (200,000 examples of thousands of tokens each is gigabytes).
-- **A fair share of the cluster.** There is no GPU-hour cap (confirmed in writing 2026-11-12), but the fair-share policy lengthens waits after heavy use, so the work is submitted in restartable chunks and needs a way to stop safely between them.
+`open_teacher_test.py` compares deployments on 100 fixed slots, one attempt each, and is kept unchanged. The real data are written by a
+second client, `code/generation/generate_set.py`, run as **stage G** (`talon_generate.sbatch`, submitted with the `generate` kind of
+`submit_pipeline.sh`). The method is in `docs/methodology/workflow.md` Section 4 (safeguards 2, 4, 5 and 9); here is what matters on Talon.
+
+**What one stage G job does.** It starts the vLLM server once (the same checks as every stage, and it needs a passing Stage A with the
+same engine and weights), then sends ONE SHARD of a frozen slot file to the teacher. A shard is every K-th slot: shard 2 of 4 takes slots 2,
+6, 10, ... so each shard has the same mix of categories and difficulties as the whole file. A reply that fails the format checks is asked
+again with exactly the same request, up to 3 attempts; every attempt is saved, with its thinking text.
+
+**Settings for a job** (environment variables, passed by the submit script):
+- `GEN_SLOTS`: the slot file (for example `data/slots/smoke_slots.jsonl`; its manifest must sit beside it);
+- `GEN_PROMPT`: `benchmark` (prompt v7, for BM, DV and SM ids) or `training` (prompt v1, for TR, TRR, TV and SM ids);
+- `GEN_SHARD`: `k/K`, for example `2/4`;
+- optional `GEN_FIRST` and `GEN_COUNT`: which positions of the file (the smoke file uses 1-20 with the benchmark prompt and 21-40 with the training prompt).
+
+**Four shards side by side, the same shard never twice.** The job name carries the shard (`qt_talon_G_<set>-<prompt>-p<first>n<count>-<k>of<K>`),
+so the four shards of one slot file can wait and run at the same time on four GPUs, while the submit script refuses a second job for a shard
+that is already queued or running. Each shard writes its own run folder and its own result file (`stageG_<tag>_job<id>.txt`).
+
+**1-day jobs that resume.** `TIME_GENERATE` is 1 day. The client gets its own deadline from the job's real time left: no new request
+starts in the last `GEN_MARGIN_SECONDS` (1,800 s = 30 min); requests already running may finish during half of that margin; the rest is
+kept for validation and the result file. A shard that is not finished is reported as UNFINISHED (not as a failure), and submitting the
+SAME shard again finds its folder and continues where it stopped. A resume is refused if anything changed: the slot file, the prompt,
+the sampling, the output limit, the engine version or the model. A small done-index file lets a resume start at once without re-reading
+every saved reply.
+
+**What stops a job (infrastructure) and what does not (results).** Validation separates the three: an infrastructure failure (damaged
+files, wrong settings, a row from another slot file, a slot asked again after a usable reply, the server no longer answering) gives
+FAIL_INFRA; a slot that failed all 3 attempts is a model-quality RESULT (PASS_QUALITY_WARN); an unfinished shard is resumable.
+
+**Safety checks before submitting.** Both generation prompts are pinned by SHA-256 in `common.sh`, so a changed prompt file is refused.
+The submit script also reads the home folder's quota and refuses when less than `GEN_MIN_FREE_MIB` (20 GB) would be left below the soft
+quota. One 65,000-slot shard is about 1.1 GB of raw replies (about 17 KB per reply, measured in job 287).
+
+**Expected scale** (thinking on, about 3 to 6 GPU-hours per 1,000 slots, from jobs 209 and 287):
+
+| Set | GPU-hours | Clock time on 4 GPUs |
+|---|---|---|
+| Benchmark, development and TV sets (about 1,560 slots) | about 5 to 10 | a few hours |
+| Pilot 1k training set | about 4 to 8 | a few hours |
+| Full training stream (about 260,000 slots) | about 750 to 1,500 | about 8 to 16 days |
+
+**Still not built:** several server replicas inside one job (`REPLICAS=1` only), and job arrays. Four single-GPU shard jobs give the same
+parallelism without them.
+
+**Not yet reviewed:** the three new settings (`TIME_GENERATE`, `GEN_MARGIN_SECONDS`, `GEN_MIN_FREE_MIB`) were added after the settings
+review of 2026-11-12. The first stage G job is a smoke test (20 v7 and 20 training-v1 smoke slots), and it needs the owner's separate approval.
 
 ## 9. After your Talon account is activated: exact steps
 

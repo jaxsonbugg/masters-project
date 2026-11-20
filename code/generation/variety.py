@@ -34,6 +34,7 @@ COMMANDS
   python variety.py check                                   check the taxonomy and contexts; print counts
   python variety.py deal --set benchmark --n 1150 --seed S --out data/slots     write a slot file + manifest
   python variety.py replace --manifest M --like <slot id> [--count 1]          deal like-for-like replacements
+  python variety.py replace --manifest M --like-file needs_replacement.txt    one replacement per listed id
   python variety.py report --slots F [--prefixes 1000,10000]                   the target mix of a slot file
 
 Example: `deal --set benchmark --n 1150` gives BM0001-BM1150; slot BM0001 might be
@@ -355,6 +356,8 @@ def deal_replacements(man_path, likes, taxonomy=TAXONOMY_FILE, contexts=CONTEXTS
     rows = existing + new
     m["replacements_file"] = rep_path.name
     m["replacements_sha256"] = write_jsonl(rep_path, rows)
+    # every version of the replacements file stays a valid fingerprint: runs made from an earlier version carry its SHA
+    m.setdefault("replacements_sha256_history", []).append(m["replacements_sha256"])
     m["deck_state"] = d.state()
     m["replacements"].append({"utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                               "ids": [s["item_id"] for s in new], "replaces": [s["replaces"] for s in new]})
@@ -368,9 +371,12 @@ def cmd_replace(args):
     rep = Path(args.manifest).parent / f"{m['set']}_replacements.jsonl"
     if rep.exists():
         slots.update({s["item_id"]: s for s in read_slots(rep)})
-    if args.like not in slots:
-        sys.exit(f"{args.like} is not a slot of this set")
-    new = deal_replacements(args.manifest, [slots[args.like]] * args.count, args.taxonomy, args.contexts)
+    likes = [args.like] * args.count if args.like else \
+        [l.strip() for l in Path(args.like_file).read_text(encoding="utf-8").splitlines() if l.strip()]
+    unknown = [i for i in likes if i not in slots]
+    if unknown or not likes:
+        sys.exit(f"not slots of this set: {unknown[:5]}" if unknown else "nothing to replace")
+    new = deal_replacements(args.manifest, [slots[i] for i in likes], args.taxonomy, args.contexts)
     for s in new:
         print(json.dumps(s, ensure_ascii=False))
 
@@ -481,8 +487,10 @@ def main():
     p.set_defaults(fn=cmd_deal)
     p = sub.add_parser("replace", help="deal like-for-like replacement slots from the continued decks")
     p.add_argument("--manifest", required=True)
-    p.add_argument("--like", required=True)
-    p.add_argument("--count", type=int, default=1)
+    g = p.add_mutually_exclusive_group(required=True)
+    g.add_argument("--like", help="the slot to replace like-for-like")
+    g.add_argument("--like-file", help="a file with one slot id per line (collect-train's needs_replacement.txt)")
+    p.add_argument("--count", type=int, default=1, help="with --like: how many replacements to deal")
     p.set_defaults(fn=cmd_replace)
     p = sub.add_parser("report", help="the target mix of a slot file, optionally for several prefixes")
     p.add_argument("--slots", required=True)

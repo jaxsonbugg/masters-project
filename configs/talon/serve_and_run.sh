@@ -19,6 +19,11 @@
 #         set K (BM8001-8060) with thinking on, then with thinking off; build the fixed shared question set (answer-set); then
 #         both modes answer it K_SAMPLES (default 3) times per question, at CLIENT_CONCURRENCY. Every run is validated.
 #         Needs a passing Stage A with the same engine and weights. Graded later on the PC (code/generation/answer_check.py).
+#   G     generation (added 2026-11-20): one SHARD of a frozen slot file through code/generation/generate_set.py, with the benchmark
+#         prompt v7 or the training prompt v1 (GEN_SLOTS, GEN_PROMPT, GEN_SHARD, optional GEN_FIRST and GEN_COUNT). Up to 3 attempts per
+#         slot. The client is stopped GEN_MARGIN_SECONDS before the job's end, so validation and the result file still run; an
+#         UNFINISHED shard is not a failure: submitting the same shard again resumes it. Needs a passing Stage A with the same engine
+#         and weights. Several shards may run at the same time (one job per shard).
 #   main  the comparison run, BM0021-BM0120, one attempt per slot, with the layout that passed B.
 # Settings (talon_settings.sh or the job's environment): GPU_COUNT, TENSOR_PARALLEL, REPLICAS, MAX_NUM_SEQS, CLIENT_CONCURRENCY,
 # MAX_MODEL_LEN (no preferred defaults). Optional: QT_ACK_QUALITY=yes (go on after a stage in which EVERY reply had a
@@ -48,16 +53,18 @@ require_paths
 talon_facts_banner
 
 STAGE="${QT_STAGE:-}"
-case "$STAGE" in A|B|T|K|main) ;; *) die "QT_STAGE must be A, B, T, K or main" ;; esac
+case "$STAGE" in A|B|T|K|G|main) ;; *) die "QT_STAGE must be A, B, T, K, G or main" ;; esac
 check_layout
-case "$STAGE" in B|K|main) check_concurrency ;; esac
+case "$STAGE" in B|K|G|main) check_concurrency ;; esac
+GEN_TAG=""
+if [ "$STAGE" = G ]; then check_generate; fi
 [ "$TALON_ENGINE_MODE" = venv ] || die "TALON_ENGINE_MODE=$TALON_ENGINE_MODE is not implemented in this draft (only venv). Decide after the probe, then extend this script."
 need VLLM_VERSION; need MODEL_REV; need GPU_MIN_TOTAL_MIB; need SERVED_NAME
 
 JOB="${SLURM_JOB_ID:-nojob}"
 RESULT_DIR="$QT_OUT/stage_results"; LOGDIR="$QT_OUT/job_logs"
 mkdir -p "$RESULT_DIR" "$LOGDIR"
-TAGID="${JOB}_${STAGE}${QT_ATTEMPT:+_$QT_ATTEMPT}"
+TAGID="${JOB}_${STAGE}${QT_ATTEMPT:+_$QT_ATTEMPT}${GEN_TAG:+_$GEN_TAG}"
 SERVER_LOG="$LOGDIR/vllm_server_${TAGID}.log"; MEMLOG="$LOGDIR/gpu_memory_${TAGID}.csv"
 
 load_modules
@@ -160,7 +167,7 @@ gate_from() {  # $1 = the stage whose result file must show a pass; $2 = LAYOUT_
 }
 case "$STAGE" in
   B) gate_from A LAYOUT_FP ;;
-  T|K) gate_from A ENGINE_FP ;;
+  T|K|G) gate_from A ENGINE_FP ;;
   main) gate_from B LAYOUT_FP ;;
 esac
 
@@ -177,14 +184,16 @@ trap cleanup EXIT
 write_result() {  # $1 = PASS | PASS_QUALITY_WARN | FAIL_INFRA, $2 = reason. Smoke stages leave the gate file; main leaves a summary.
   local f="$RESULT_DIR/stage$STAGE.txt"
   [ "$STAGE" != main ] || f="$RESULT_DIR/main_job${JOB}.txt"
+  [ "$STAGE" != G ] || f="$RESULT_DIR/stageG_${GEN_TAG}_job${JOB}.txt"   # shards run side by side, so each writes its own file
   { echo "RESULT=$1"; echo "REASON=$2"; echo "INFRA=$INFRA_STATE"; echo "QUALITY_REPLIES=$QUALITY_REPLIES"; echo "REPLIES=$REPLIES"
     echo "QUALITY_ALL=$QUALITY_ALL"; echo "GPU_COUNT=$GPU_COUNT"; echo "TENSOR_PARALLEL=$TENSOR_PARALLEL"; echo "REPLICAS=$REPLICAS"
     echo "GPU_IDS=$GPU_IDS"; echo "GPU_INDEXES=$GPU_INDEXES"; echo "NVLINK_PAIR=$NVLINK_PAIR"; echo "MAX_NUM_SEQS=$MAX_NUM_SEQS"; echo "CLIENT_CONCURRENCY=${CLIENT_CONCURRENCY:-sweep: $SWEEP_CONCURRENCY}"; echo "MAX_MODEL_LEN=$MAX_MODEL_LEN"
     echo "VLLM_VERSION=$ACTUAL_VERSION"; echo "MODEL_REV=$MODEL_REV"; echo "WEIGHTS_MANIFEST_SHA256=$MANIFEST_SHA"
     echo "ENGINE_FP=$ENGINE_FP"; echo "LAYOUT_FP=$LAYOUT_FP"; echo "MIN_FREE_MIB=$MINFREE"; echo "JOB=$JOB"; echo "LOGTAG=$TAGID"
-    echo "NODE=$(hostname)"; echo "UTC=$(date -u +%FT%TZ)"; echo "RUN_DIR=$RUN_DIR"; echo "RUN_DIRS=$RUN_DIRS"; echo "CC_MODE=$CC_MODE"; } > "$f.tmp"
+    echo "NODE=$(hostname)"; echo "UTC=$(date -u +%FT%TZ)"; echo "RUN_DIR=$RUN_DIR"; echo "RUN_DIRS=$RUN_DIRS"; echo "CC_MODE=$CC_MODE"
+    if [ "$STAGE" = G ]; then echo "GEN_TAG=$GEN_TAG"; echo "GEN_SLOTS=$GEN_SLOTS"; echo "GEN_PROMPT=$GEN_PROMPT"; echo "GEN_SHARD=$GEN_SHARD"; echo "GEN_COMPLETE=${GEN_COMPLETE:-no}"; echo "GEN_RESULT=${GEN_VLINE:-}"; fi; } > "$f.tmp"
   mv "$f.tmp" "$f"
-  [ "$STAGE" = main ] || cp "$f" "$RESULT_DIR/stage${STAGE}_job${JOB}${QT_ATTEMPT:+_$QT_ATTEMPT}.txt"
+  case "$STAGE" in main|G) ;; *) cp "$f" "$RESULT_DIR/stage${STAGE}_job${JOB}${QT_ATTEMPT:+_$QT_ATTEMPT}.txt" ;; esac
 }
 fail() {  # an infrastructure failure before or during loading
   echo "FAIL (infrastructure): $1" >&2; echo "--- last lines of the server log ---" >&2; tail -n 30 "$SERVER_LOG" >&2 || true
@@ -231,6 +240,7 @@ case "$STAGE" in
   B|main) CONC_LIST="$CLIENT_CONCURRENCY" ;;
   T) CONC_LIST="$SWEEP_CONCURRENCY" ;;
   K) CONC_LIST="on off" ;;   # the thinking modes; the concurrency is CLIENT_CONCURRENCY
+  G) CONC_LIST="" ;;         # stage G runs generate_set.py once, below
 esac
 RC=0; VRC=0; SMEM=""
 trap - ERR   # a non-zero exit of the client or of validate is expected and handled below; do not print an ERROR line for it
@@ -300,6 +310,42 @@ for C in $CONC_LIST; do
     fi
   fi
 done
+# ---- stage G: one shard of a slot file through generate_set.py, stopped before the job's end, then validated ----
+if [ "$STAGE" = G ]; then
+  # The time budget, from the job's real time left: no new request after STOP_AFTER seconds; running requests may finish during
+  # GRACE (half the margin); the outer `timeout` (at three quarters of the margin) is only a last safety net. The remaining quarter
+  # of the margin is for validation and the result file. Example with 24 h left and GEN_MARGIN_SECONDS=1800: new requests stop
+  # after 23.5 h, running ones are abandoned at 23.75 h, and validation has the last 15 minutes or more.
+  LEFT="$(slurm_seconds_left)"
+  if [ "${LEFT:--1}" -le 0 ]; then LEFT=$(( 24 * 3600 )); echo "NOTE: the job's time left could not be read; assuming 24 h"; fi
+  STOP_AFTER=$(( LEFT - GEN_MARGIN_SECONDS )); [ "$STOP_AFTER" -gt 30 ] || STOP_AFTER=30
+  GRACE=$(( GEN_MARGIN_SECONDS / 2 )); PYT=$(( STOP_AFTER + GRACE + GEN_MARGIN_SECONDS / 4 ))
+  echo; echo "--- client: stage G, $GEN_PROMPT prompt, $(basename "$GEN_SLOTS"), shard $GEN_SHARD (no new request after ${STOP_AFTER}s, running ones end by $(( STOP_AFTER + GRACE ))s; job time left ${LEFT}s) ---"
+  PYLOG="$LOGDIR/run_${TAGID}.out"; VALLOG="$LOGDIR/validate_${TAGID}.out"
+  timeout --signal=TERM "${PYT}s" python generate_set.py run --backend talon --base-url "http://127.0.0.1:$PORT/v1" --out-root "$QT_OUT"     --slots "$GEN_SLOTS" --prompt "$GEN_PROMPT" --shard "$GEN_SHARD" --first "${GEN_FIRST:-1}" --count "${GEN_COUNT:-0}"     --stop-after "$STOP_AFTER" --grace "$GRACE"     --concurrency "$CLIENT_CONCURRENCY" "${COMMON_META[@]}" --meta "engine_version=vllm-$ACTUAL_VERSION" 2>&1 | tee "$PYLOG"
+  RC_ONE="${PIPESTATUS[0]}"
+  case "$RC_ONE" in
+    0) ;;
+    124|143) G_NOTE="the client was stopped at the wall-time margin; submit the same shard again to resume" ;;
+    4) RC="$RC_ONE"; G_STOP="the client stopped: the server stopped answering (circuit breaker; see $PYLOG)" ;;
+    *) RC="$RC_ONE" ;;
+  esac
+  RUN_DIR="$(sed -n 's/^RUN_DIR=//p' "$PYLOG" | tail -n 1)"
+  if [ -n "$RUN_DIR" ]; then
+    RUN_DIRS="$RUN_DIR"
+    python generate_set.py validate --run "$RUN_DIR" --slots "$GEN_SLOTS" 2>&1 | tee "$VALLOG"
+    V_ONE="${PIPESTATUS[0]}"
+  else
+    echo "INFRASTRUCTURE FAIL: the client never reported a run folder, so there is nothing to validate" | tee "$VALLOG"; V_ONE=1
+  fi
+  # validate: 0 complete and clean, 2 complete with model-quality findings, 3 unfinished (resumable), 1 infrastructure failure
+  case "$V_ONE" in 0|2) GEN_COMPLETE=yes ;; 3) GEN_COMPLETE=no; G_NOTE="${G_NOTE:-the shard is unfinished}; submit the same shard again to resume" ;; *) VRC=1 ;; esac
+  [ "$V_ONE" != 2 ] || VRC=2
+  GEN_VLINE="$(sed -n 's/^VALIDATE_RESULT //p' "$VALLOG" | tail -n 1)"
+  QUALITY_REPLIES="$(sed -n 's/.*quality_replies=\([0-9]*\).*/\1/p' <<<"$GEN_VLINE")"; QUALITY_REPLIES="${QUALITY_REPLIES:-0}"
+  REPLIES="$(sed -n 's/.* replies=\([0-9]*\) .*/\1/p' <<<"$GEN_VLINE")"; REPLIES="${REPLIES:-0}"
+  if [ -n "$RUN_DIR" ] && [ -d "$RUN_DIR" ]; then summarize_memory "$MEMLOG" | grep '^gpu' > "$RUN_DIR/gpu_peak_job${JOB}.txt" || true; fi
+fi
 # ---- stage K, part 2: the fixed shared question set, then both modes answer it (3 times per question) ----
 if [ "$STAGE" = K ] && [ -z "${K_STOP:-}" ]; then
   ASLOG="$LOGDIR/answerset_${TAGID}.out"; ASET=""
@@ -353,14 +399,15 @@ case "$VRC" in 0|2) INFRA_STATE=PASS ;; *) REASON="$REASON INFRASTRUCTURE valida
 [ "$ERRS" -eq 0 ] || REASON="$REASON error words in the server log;"
 [ "$MINFREE" -ge 0 ] || REASON="$REASON no GPU memory samples;"
 [ -z "${K_STOP:-}" ] || REASON="$REASON stage K stopped early: $K_STOP;"
+[ -z "${G_STOP:-}" ] || REASON="$REASON $G_STOP;"
 if [ -n "$REASON" ]; then
   INFRA_STATE=FAIL
   write_result FAIL_INFRA "$REASON"
   echo "RESULT: FAIL_INFRA (stage $STAGE):$REASON"
   exit 1
 fi
-if [ "$QUALITY_REPLIES" -gt 0 ] || [ -n "${K_NOTE:-}" ]; then
-  write_result PASS_QUALITY_WARN "$QUALITY_REPLIES of $REPLIES repl(ies) have model-quality findings${K_NOTE:+; $K_NOTE}"
+if [ "$QUALITY_REPLIES" -gt 0 ] || [ -n "${K_NOTE:-}" ] || [ -n "${G_NOTE:-}" ]; then
+  write_result PASS_QUALITY_WARN "$QUALITY_REPLIES of $REPLIES repl(ies) have model-quality findings${K_NOTE:+; $K_NOTE}${G_NOTE:+; $G_NOTE}"
   echo "RESULT: PASS_QUALITY_WARN (stage $STAGE): infrastructure is fine; $QUALITY_REPLIES of $REPLIES repl(ies) have model-quality findings (listed above; these are results, not faults)"
 else
   write_result PASS "ok"
@@ -369,6 +416,10 @@ fi
 if [ "$STAGE" = T ]; then
   echo "Throughput runs of this layout: $RUN_DIRS"
   echo "Read them (and the runs of other layouts) with:  python code/generation/throughput_report.py $(for d in $RUN_DIRS; do printf -- '--run %s ' "$d"; done)"
+fi
+if [ "$STAGE" = G ]; then
+  echo "Generation shard $GEN_SHARD ($GEN_TAG): complete=${GEN_COMPLETE:-no}; folder $RUN_DIR${G_NOTE:+; NOTE: $G_NOTE}"
+  echo "Copy the folder to the PC when every shard is complete, then: python code/generation/generate_set.py collect --runs <folders> ..."
 fi
 if [ "$STAGE" = K ]; then
   echo "Thinking-check folders (writing on, writing off, answer set, answers on, answers off): $RUN_DIRS"

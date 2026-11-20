@@ -265,3 +265,14 @@ This is the record of every cluster job, scheduler test and measured local run i
   - **On the PC:** copied to `C:\masters_project_large\data\teacher_outputs\` under the same names, plus `2026-11-19_stageK_job287_logs\` (job log, `stageK.txt`, client, validation and server logs, GPU memory CSV).
   - These are development slots only, marked test material.
 - **Related progress entry:** "Thinking check run on Talon" (2026-11-19).
+
+### 16. Local: embedding-model verification and CPU benchmark, 2026-11-20 (this PC, no cluster job)
+- **Purpose:** before decontamination uses the sentence-embedding model on real data, check that the project's implementation gives the same vectors as the official library, and measure its speed on the PC's CPU (approved plan of 2026-11-19, Step 7, item 4; `docs/methodology/workflow.md` Section 4, safeguard 5).
+- **Model:** `sentence-transformers/all-MiniLM-L6-v2` @ `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`, float32 on the CPU (`recovery/embedding_model.md`). Downloaded 2026-11-20, about 92 MB; weights SHA-256 `53aa5117...`, equal to Hugging Face's listing.
+- **Software:** project environment (`C:\masters_project_large\envs\probe`): transformers 5.19.0, torch 2.14.1+cpu, 14 threads. Reference: a throwaway virtual environment in the session scratchpad with sentence-transformers 6.3.0, torch 2.15.0+cpu, transformers 5.23.0, deleted afterwards.
+- **Run 1, verification** (`embedding_check.py texts`, `reference`, `verify`), about 01:40 to 02:00 UTC, seconds of compute: 100 sample texts (4 longer than 256 word pieces). Lowest cosine between the two implementations 0.99999988, required at least 0.9999; largest difference in any number 9e-8. **PASS.**
+- **Run 2, CPU benchmark** (`embedding_check.py bench --n 5000`), about 02:05 UTC: 5,000 training-like texts in 129.3 s, **38.7 texts per second**, batch 64, peak memory 867 MB, 7.3 MB of vectors. Projection: about **112 minutes** and 381 MB of vectors for 260,000 texts. A Talon GPU job is not needed.
+- **Peak GPU memory:** none (CPU only). **GPU-hours:** 0.
+- **Output:** `data/verification_logs/2026-11-20_embedding_check/` (texts, results, the reference environment's versions).
+- **Outcome:** reviewed; the implementation is accepted for decontamination.
+- **Related progress entry:** "Full-size generator, Talon stage G and decontamination built and tested locally" (2026-11-20).

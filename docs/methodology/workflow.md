@@ -394,23 +394,59 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
 
 **Safeguards, in the order they apply.**
 
-1. **Separate generation prompts.** The benchmark is written only with `data/prompts/benchmark_generation_v6.md`. Training data will use its own prompt file (for example `data/prompts/training_generation_v1.md`, to be written in Phase 4). That prompt asks for a different format: a worked answer ending in a marked final answer, in the `Question:` / `Answer:` template. Neither prompt is ever used for the other purpose.
-2. **Separate IDs and folders.**
-   - Benchmark questions carry IDs `BM0001` to `BM1000`.
-   - The **development set** (about 200 items, `DV0001`+) is built with the same automated pipeline: R keys, `verify` and `dupcheck` (safeguard 6a and 6b). It skips the screen and the manual audit, because it is not the measuring instrument. It is used for hyperparameter choice, troubleshooting, evaluation debugging and grader validation (safeguard 8, Section 2.3).
-   - Precision-test slots use `BM8xxx`. Smoke-test slots use `BM9001` and up. Neither is ever part of the benchmark or the training data.
-   - Training examples get their own prefix (for example `TR000001`) and their own dated run folders.
-   - The code refuses to mix smoke and main slots, and the same rule will be added for training slots.
+1. **Separate generation prompts (approved 2026-11-19).** The benchmark and the development set are written only with `data/prompts/benchmark_generation_v7.md`. The training data and the held-out training-style set use `data/prompts/training_generation_v1.md`. Neither prompt is ever used for the other purpose, and the code refuses it (`code/generation/set_prompts.py`).
+   - **v7** is v6 plus one "Setting:" line (the application context, below) and one corrected sentence: v6 told the model that the first line of each answer is compared with the key, but answers are read from their `Final answer:` line and graded against the key. v6 stays byte for byte (SHA-256 `348db6ff...`) for the Redhawk scripts and past runs.
+   - **Training v1** asks for a question plus a short `worked_answer` (2 to 8 plain steps, at most about 250 words, no self-corrections) and a `final_answer`. The code assembles the student text in the exact evaluation template: `Question:` (with choices `A.` to `D.` for multiple choice), `Answer: <worked answer>`, `Final answer: <final answer>`, then Pythia's end-of-text token (id 0).
+   - **Pinned:** both files' SHA-256 values are pinned in `configs/talon/common.sh` (v7 `980f5570...`, training v1 `db9ca660...`), so a Talon job refuses a changed prompt file.
+2. **Separate IDs, folders and slot fingerprints.**
+   - **The IDs of the new sets** (dealt by `code/generation/variety.py` into frozen slot files):
+
+     | Set | IDs | Slots |
+     |---|---|---|
+     | Benchmark | `BM0001`–`BM1150` | 1,000 + 15% spares |
+     | Development set | `DV0001`–`DV0230` | 200 + 15% spares |
+     | Held-out training-style set (for the development loss) | `TV0001`–`TV0180` | about 150 + 20% |
+     | Training stream | `TR000001` onward | about 260,000 |
+     | Training replacements | `TRR000001` onward | only when needed (safeguard 4) |
+     | Generator smoke test | `SM0001` onward | 40 |
+   - **The development set** (`DV`) is built with the same automated pipeline as the benchmark: R keys, `verify` and duplicate checks (safeguard 6a and 6b). It skips the screen and the manual audit, because it is not the measuring instrument. It is used for hyperparameter choice, troubleshooting, evaluation debugging, grader validation (safeguard 8, Section 2.3) and the decontamination calibration (safeguard 5).
+   - **Old test slots** keep their old IDs: thinking-check slots `BM8xxx`, deployment smoke slots `BM9001` and up, and the deployment-test slots `BM0021`–`BM0120`. None of them is ever part of the benchmark or the training data.
+   - **Why a fingerprint is needed.** `BM0001`–`BM0120` also name archived Claude-era trial questions and the old deployment-test slots, which came from a short built-in list ("blueprint v1"). So every new slot carries `slot_scheme: "taxonomy-v2"`, and every slot file's SHA-256 (its fingerprint) is copied into every run log, every saved reply and every collected item. The new tools (`generate_set.py`, `answer_check.py`, and later the evaluation harness) **refuse** a BM item without a matching fingerprint; the only exception is a run of the old v6 deployment-test path, whose slots are rebuilt from blueprint v1 (kept unchanged so past runs can still be re-validated). Each slot file's fingerprint is recorded in the progress log, and the benchmark's in its README at the freeze.
+   - **Separate folders:** each set has its own dated run folders, one per shard (Section 8.2).
 3. **Freeze first.** The benchmark is finished, hashed (SHA-256) and stored read-only before any training example is generated. A changed hash means the benchmark was touched, and the run stops.
 4. **Variety before scale, with matching topic coverage.**
    - **Shared taxonomy:** the benchmark, the development set and the training data use the **same taxonomy and target proportions**, so a poor benchmark score cannot simply mean the training data never covered the topic.
    - **Independent sampling:** each set's questions, parameters, numbers and scenarios are sampled independently, from separate seeds. Subtopics are **not** split between the sets. (A separate benchmark with held-out subtopics, to test generalization, is a possible later study.)
-   - **Fewer repeats:** the slot design is changed so that no (category, subtopic, difficulty) combination repeats more than necessary. The taxonomy draft in `data/taxonomy/` (not yet committed) and a planned `variety.py` are the start of this. `dupcheck` (in `generate_benchmark.py`) compares every new question with earlier ones by text similarity, with numbers kept and with numbers masked, so near-copies are listed for review.
-5. **Decontamination of every training set.** Before a training set is used, every training example is compared with every benchmark question and every development-set question.
-   - **n-gram overlap:** shared word sequences, for example any shared run of 8 or more words.
-   - **Embedding similarity:** a sentence-embedding model turns each text into a vector, and a high cosine similarity means "says the same thing in other words".
+   - **Fewer repeats: the taxonomy and the dealer (built 2026-11-19).** The old built-in list had only 138 combinations of category, subtopic and difficulty for 1,000 slots, so the teacher wrote near-copies whenever one repeated. Now:
+     - **The taxonomy** (`data/taxonomy/subtopics.yaml`, draft 2, approved 2026-11-19) lists 673 subtopics in areas, for example numerical / distributions / "binomial probability". Draft 2 fixed two areas both named "data frames" (YAML silently kept only the second, dropping 16 subtopics) and removed `auto.arima`, which is not base R.
+     - **The context deck** (`data/taxonomy/contexts.yaml`) holds 30 real-world settings (medicine, sports, ecology, finance and so on) plus a **"no applied context"** card, so some questions stay purely statistical or about R. The share of "none" cards differs by category: R generation and R interpretation 60%, conceptual 50%, numerical and output interpretation 25%. A setting changes only the story and the variable names, never the rule of base R and the stats package only.
+     - **How dealing works** (`code/generation/variety.py`). Category and difficulty follow the fixed 20-slot pattern (30/20/20/15/15% and 40/35/25%). Each (category, answer type, difficulty) has its own shuffled deck of subtopics, laid out one area at a time in turn, so a subtopic is not dealt again at that difficulty until the whole deck has been used. The context deck is dealt the same way. Every deck depends only on the set's recorded seed, so the deal can be reproduced exactly, and a deck's state is simply how many cards were dealt.
+     - *Example:* in the 1,150-slot benchmark no (subtopic, difficulty) pair repeats, and in a 6,000-slot test deal each category's "none" share is within 2 points of its target.
+     - **Target versus accepted.** The slot file is the *target*: what was asked for. Some replies are later rejected (three bad attempts, too long, decontamination, near-duplicate), which could shift the mix if, for example, code-heavy questions were rejected more often. So a rejected training example is **replaced like-for-like**: a replacement slot (`TRR...`) keeps the same category, difficulty, answer type and context card and takes the next subtopic of the continued deck, and its example takes the **same position** in the training stream. A position whose 5 replacements all fail is *unfilled* and skipped. A benchmark or development slot that fails is replaced by the next unused spare with the same category, difficulty and answer type.
+     - **The nested training sets have exact sizes.** A published set is exactly the first 1,000, 10,000, 50,000, 100,000 or 200,000 accepted examples, so every smaller set is exactly the start of every larger one. A set is published only when every position up to its last example is settled (accepted or unfilled), it is never published undersized, and once published it can never change: `collect-train` refuses any later input that would change it.
+     - **Balance tolerances,** checked at every published size and recorded in its manifest (target and accepted side by side): category, difficulty and answer type equal the target apart from unfilled positions (at most 0.5% per category); the "none" share within 1 percentage point of target per category at 10k and above (3 points at 1k); each area's share within its category within 20% (relative) of target at 10k and above; at 50k and above the most-used subtopic at most twice the median. A missed tolerance is reported and flagged for the owner, never silently accepted.
+5. **Decontamination of every training set (method built 2026-11-20; thresholds not yet set).**
 
-   Matches above the threshold are removed from the **training** set, never from the benchmark (it is frozen). The thresholds and the counts removed are logged.
+   **What it is and why.** If a student trains on a copy of a benchmark question, a right answer on that question may be memory rather than skill, so the benchmark would overstate what the student learned. Decontamination compares every training example (and every held-out TV example) with every benchmark and development question, and the development set with the benchmark. The same idea inside the training data removes near-copies of one problem, so the students see more different problems. The benchmark is **never** changed because of an overlap: the training example is always the one removed.
+
+   **Two separate stages** (`code/verification/decontaminate.py`; labeling: `docs/guides/decontamination_labeling_guide.md`).
+   - **Retrieval: cheap checks only nominate candidate pairs; nothing is removed here.** The checks use the question plus its choices:
+     - (a) an exact copy after normalizing case and spaces;
+     - (b) a shared run of 8 or more words, as written or with every number replaced by `#`, found through an index of the reference questions' 8-word runs;
+     - (c) a template score, from 0 (nothing shared) to 1 (identical apart from numbers), computed only for pairs that share at least 3 masked 5-word runs;
+     - (d) the embedding cosine similarity: the model `all-MiniLM-L6-v2` (pinned; `recovery/embedding_model.md`) turns each question into 384 numbers summarizing its meaning, and a cosine near 1 means "says the same thing in other words". It is computed in blocks of 10,000 training rows against all references, keeping each row's 3 closest, so no full training-by-reference table is ever built.
+     - Inside the training data, **MinHash** finds near-copies without comparing all pairs: each text becomes 128 numbers summarizing its masked 5-word runs, texts that agree on a whole band of those numbers fall into the same bucket, and only bucket-mates are compared.
+   - **Classification: a rule chosen from hand-labeled pairs decides.** About 150 to 200 nominated pairs between an early training batch and the **development set** (never the benchmark) are labeled blind by the owner as *duplicate*, *template variant* or *distinct*. A rule such as "remove if the embedding score is at least t1, or the template score at least t2" is chosen from those labels and approved before it touches any data; `decontaminate.py apply` refuses a rule file without the approval. Defaults to confirm: against the benchmark and the development set, duplicates and template variants are removed; inside training, only duplicates are removed (the later one), and template variants count as practice.
+   - **Why labels are needed, with real numbers** (measured 2026-11-20 with the pinned model). Against "A fair die is rolled 4 times. What is the probability of getting exactly two sixes?":
+     - a reworded duplicate ("In four rolls of a fair six-sided die, find P(two sixes exactly).") scores template 0.36 and cosine 0.86;
+     - a template variant (7 rolls, three sixes) scores template 0.96 and cosine 0.73;
+     - a distinct problem (the expected number of sixes) scores template 0.72 and cosine 0.83.
+
+     No single score separates the three.
+   - **Measuring what retrieval misses:** a synthetic set of about 80 hard pairs written from development questions (heavy rewordings, and same-concept but different problems across numerical and R questions), reviewed by the owner, gives the retrieval recall; and an audit of the nearest **non-nominated** development question for about 100 random training examples estimates how many copies slip past the checks entirely. Precision and recall from the labeled pairs describe classification only, given retrieval, and are reported that way, with confidence intervals.
+   - **The embedding code is verified.** It matches the official `sentence-transformers` package on 100 texts (lowest cosine 0.99999988, required at least 0.9999), and it runs at about 39 texts per second on the PC's CPU, about 2 hours for 260,000 texts (`data/verification_logs/2026-11-20_embedding_check/`).
+   - **Records:** every candidate pair with its scores, label and decision; the removed IDs with reason and matching reference; counts by check, category and difficulty; the rule, the model pin and the code version (`data/verification_logs/<date>_decontamination/`). Each training set's manifest records the decontamination file's SHA-256.
+   - **The limitation, stated plainly:** decontamination **reduces** leakage; it cannot prove that none remains. Copies that retrieval misses are estimated, not ruled out.
 6. **The benchmark quality procedure (benchmark only; decided 2026-11-12).**
 
    The benchmark is the measuring instrument, so its questions and keys are made as accurate as is reasonably possible. Its answers are **independently checked where computationally possible, screened for ambiguity, and subjected to a stratified 150-item manual audit**. It is not claimed that every key is independently verified.
@@ -462,10 +498,9 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
 
    Qwen-generated training examples are retained without correctness-based filtering. Their correctness is unknown and may vary by question category. This is an intentional property of the experimental design: the study asks whether distillation lets a student approach the teacher, not whether it produces a perfect student. The resulting student models are evaluated independently on a frozen benchmark.
    - **What is still checked on every training example:**
-     - format and parse: a complete, parseable reply tied to its slot, with no thinking aloud in the question;
-     - duplicates (`dupcheck`);
-     - decontamination against the benchmark and the development set (safeguard 5);
-     - the 2,048-token limit.
+     - format and parse: a complete, parseable reply tied to its slot (category, subtopic, difficulty, answer type and context), with no thinking aloud in the question or the worked answer, exactly one final answer, and four unlabeled choices for multiple choice;
+     - near-duplicates inside the training data, and decontamination against the benchmark and the development set (safeguard 5);
+     - the 2,048-token limit, measured with the pinned Pythia tokenizer on the assembled student text, end-of-text token included. An over-long example is rejected and replaced like-for-like, never truncated, and every length rejection is reported with its token count by category, difficulty, answer type and area, so it shows if advanced or code-heavy questions are cut more often.
 
      The `r_solution` field stays in each reply, but its correctness is not required.
    - **What this means for the results.** A student can learn the teacher's mistakes, and that is part of what is measured. *Example:* suppose the teacher answers 95% of the binomial questions on the benchmark correctly but only 70% of the output-interpretation questions. Its training examples on output interpretation probably contain more errors too, so a student's weakness there may partly be inherited. The teacher's graded accuracy by category, on a benchmark whose keys were checked (safeguard 6), shows where this is likely.
@@ -498,14 +533,14 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
 
 **Worked example.**
 - Benchmark item BM0412 asks for P(X = 2) when X ~ Binomial(5, 0.4).
-- A training example generated later asks for P(X = 3) when X ~ Binomial(5, 0.4). With numbers masked, `dupcheck` scores the pair 0.93 (same template). The embedding check also flags it. The training example is dropped.
-- A third training example asks for a Poisson probability with similar wording. It scores 0.55 and stays: it trains the same skill without copying the exam.
+- A training example generated later asks for P(X = 3) when X ~ Binomial(5, 0.4) in the same words. The masked 8-word run nominates the pair, its template score is about 0.95, and under a rule that removes template variants against the benchmark the training example is dropped and replaced like-for-like.
+- A third training example asks for a Poisson probability with similar wording. Its template score is low and it is either not nominated or labeled distinct, so it stays: it trains the same skill without copying the exam.
 
 **Limitations that remain, stated honestly.**
 - **The students learn the teacher's mistakes.** The training data is not filtered for correctness (safeguard 9), so how well a student can do is limited by how often its teacher is right. That is part of the design, and it is reported by category.
 - **Some benchmark keys may still be wrong.** R checks arithmetic and code behavior, not whether the code answers the question as written, so a misread question with consistent code gets a consistent wrong key. The screen and the 150-item audit reduce this, and the audit's error rate estimates what remains. They cannot remove it.
 - **The grader can be wrong, and not equally for every model.** The calibration answers, the human audit and the deterministic cross-check measure this (Section 2.3). They cannot remove it, and 60 audited answers per model can only reveal large differences between models.
-- Decontamination thresholds trade leakage against over-removal. Any threshold leaves some near-paraphrases in, and removes some harmless examples.
+- Decontamination thresholds trade leakage against over-removal. Any threshold leaves some near-paraphrases in, and removes some harmless examples; the labeled pairs, the synthetic hard pairs and the audit of non-nominated pairs estimate both, but cannot prove that no leakage remains.
 - The benchmark measures skill *as Qwen frames it*. Results say how well students learn from this teacher, not how well they would do on an independent human-written exam.
 
 ---
@@ -539,16 +574,20 @@ The benchmark comes before the pilot because the pilot needs something frozen to
   - run smoke stage A;
   - run the throughput stage T.
 - [ ] Review the Redhawk pipeline job 2511641 (finished, results not yet checked) and record it in `docs/logs/compute_log.md`
-- [ ] Require the `r_solution` and `working` fields in every benchmark reply ("not applicable" where R does not apply), then update the regression fixture (Section 4, safeguard 6a)
+- [x] Require the `r_solution` and `working` fields in every benchmark reply ("not applicable" where R does not apply): done for prompt v7 in `set_prompts.check_benchmark_item` (2026-11-19). The v6 path and its regression snapshot are left unchanged on purpose, because past runs are re-validated with them (Section 4, safeguard 6a).
 - [x] **Set up the R sandbox** (WSL2 plus bubblewrap) and pass its security self-test before any further model-written R is run (Section 4, safeguard 10): done 2026-11-12, 13 of 13 checks
 - [x] Teacher precision: **BF16 for all generation**, decided 2026-11-18 without a precision test (FP8 and 4-bit not tested and not used; Section 2.1, item 1). Output limit 16,384 and context 20,480 fixed as final.
 - [ ] **Thinking check** (stage K, Section 2.1, item 3), before any benchmark generation:
   - [x] built and tested locally (2026-11-18);
   - [x] the Talon run (job 287, 2026-11-19);
   - [x] grading, the owner's look at the sheet, and the decision: **thinking on** (2026-11-19, the owner's reviewed decision on the blocking R-generation flag).
-- [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4), then re-run `dupcheck`
+- [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4):
+  - [x] taxonomy draft 2, context deck, slot dealer (`variety.py`), benchmark prompt v7, training prompt v1 (approved 2026-11-19);
+  - [x] the full-size generator (`generate_set.py`), Talon stage G, decontamination code, embedding check, local tests (2026-11-20);
+  - [ ] the Talon smoke test of stage G (20 benchmark-v7 and 20 training-v1 smoke slots), **only with the owner's separate approval**;
+  - [ ] deal the benchmark, development and TV slot files (seeds recorded) and commit them to `data/slots/`.
 - [ ] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. About a third of the trial items had small inconsistencies; no keys were affected.
-- [ ] Generate about 1,000 benchmark questions and the ~200-item development set with Qwen on Talon at the chosen precision; regenerate failures; `verify` (R in the sandbox) and `dupcheck` the whole set
+- [ ] Generate the benchmark (1,150 slots) on Talon with prompt v7 (BF16, thinking on; up to 3 attempts per slot); `collect --r-keys` (R in the sandbox writes number keys), `fill-bench` (failed slots replaced like-for-like from spares), `verify`; then the screen, the audit and the freeze below. The development set and the TV set follow, with the same automated checks. **Owner's approval needed before each generation.**
 - [ ] Keep short-text items tightly constrained (a name, a term, a value); rewrite open-ended ones as multiple choice or drop them
 - [ ] **Codex setup** (Section 2.3). You install the Codex CLI and confirm OpenAI's terms. The batch tool is built: isolated workspace, verdict schema, validating import, tests with a fake `codex`. The usage pilot runs on development items.
 - [ ] **Codex screen of every benchmark question**; the owner reviews every flag (Section 4, safeguard 6c)
@@ -560,10 +599,10 @@ The benchmark comes before the pilot because the pilot needs something frozen to
 ### Phase 4: Pilot (1k examples, Pythia 70M, end to end)
 Goal: prove the whole pipeline on Talon at small scale and measure real GPU time before committing to the full grid. Plain-language walkthrough: `docs/methodology/pilot_plan.md`.
 - [x] Cluster access: Redhawk (2026-10-01), Talon (account active and probed 2026-11-06)
-- [ ] Write the training-data prompt (separate from the benchmark prompt, Section 4). Use one fixed template (`Question: ...` / `Answer: ...`) with short answers ending in a marked final answer. Every example ends with the end-of-text token, id 0, set explicitly because the 1B config names the wrong token. Reasons: `docs/models/pythia_behavior_analysis.md` Sections 3.2 and 5.
+- [x] Write the training-data prompt (separate from the benchmark prompt, Section 4): `data/prompts/training_generation_v1.md`, approved 2026-11-19. Use one fixed template (`Question: ...` / `Answer: ...`) with short answers ending in a marked final answer. Every example ends with the end-of-text token, id 0, set explicitly because the 1B config names the wrong token. Reasons: `docs/models/pythia_behavior_analysis.md` Sections 3.2 and 5.
 - [ ] Generate about 1,250 training questions and teacher answers on Talon, plus about 150 held-out examples for the development loss. They are retained without correctness-based filtering: format checks only (Section 4, safeguard 9).
 - [ ] Check every training example against the Pythia **2,048-token** limit (its `max_position_embeddings`): reject or deliberately shorten an over-length example, never truncate it silently; record the share affected
-- [ ] Decontaminate against the frozen benchmark and the development set; keep the final 1,000
+- [ ] Finalize the decontamination rule on development data only (labeled pairs, synthetic hard pairs, audit of non-nominated pairs; Section 4, safeguard 5), then decontaminate against the frozen benchmark and the development set; publish the exact first 1,000 accepted examples (`collect-train`)
 - [ ] Write the training script (Hugging Face `Trainer`, full fine-tune, every setting explicit) and its pre-pilot tests; a Talon training smoke run
 - [ ] Build and debug the evaluation harness on the development set only. It includes:
   - the deterministic cross-check graders;
@@ -597,15 +636,15 @@ Goal: prove the whole pipeline on Talon at small scale and measure real GPU time
 ### Phase 6: Create the distillation training set
 - [ ] Generate a large pool of domain-specific questions with the training prompt (never the benchmark prompt)
 - [ ] Have the teacher generate answers, explanations and R code
-- [ ] Deduplicate, and decontaminate against the frozen benchmark (Section 4)
+- [ ] Remove near-duplicates inside the training data (the later copy) and decontaminate against the frozen benchmark and the development set (Section 4, safeguard 5); rejected examples are replaced like-for-like
 - [ ] Use the same checked set for every student size. It is retained without correctness-based filtering (Section 4, safeguard 9).
-- [ ] Build nested subsets (1k, 10k, 50k, 100k, 200k as feasible; 50k minimum). The 200k generation plan is in `docs/clusters/talon_setup.md` Section 8.
+- [ ] Build nested subsets (1k, 10k, 50k, 100k, 200k as feasible; 50k minimum) as the exact first N accepted examples, each with its balance report and tolerance checks (Section 4, safeguard 4). The 200k generation plan is in `docs/clusters/talon_setup.md` Section 8.
 
 ### Phase 7: Check teacher-generated training data (no correctness filtering)
 Training examples are retained without correctness-based filtering (Section 4, safeguard 9); this phase checks everything except correctness. The earlier plan to verify the training data with an external model is archived in `docs/archive/retired_verification_2026-11-12.md`.
 - [ ] Format and parse checks on every example; regenerate or drop failures
-- [ ] Duplicates (`dupcheck`), and decontamination against the frozen benchmark and the development set (Section 4, safeguard 5)
-- [ ] The 2,048-token limit: reject or deliberately shorten an over-length example, never truncate it silently
+- [ ] Near-duplicates (MinHash inside the training data), and decontamination against the frozen benchmark and the development set (Section 4, safeguard 5)
+- [ ] The 2,048-token limit: an over-length example is rejected and replaced like-for-like, never truncated; length rejections reported by category, difficulty and answer type
 - [ ] Record the pass rate, the duplicate and decontamination removals and the length distribution
 
 ### Phase 8: Specialize the student models
@@ -692,9 +731,11 @@ Storage is split in two. **Small, important items live in the project repository
 | `docs/` | Project documents in topic subfolders: `methodology/` (this workflow, the pilot plan), `models/` (model versions, teacher evaluation, Pythia behavior), `clusters/` (cluster selection, Talon setup), `logs/` (compute and cost logs), `guides/` (Git notes), `archive/` (retired methods, kept for reference only). The only file at the `docs/` root is `progress_update.md`. New kinds of document get a new, clearly named folder (for example `meetings/`, `report/`) |
 | `recovery/` | Rebuild instructions for everything stored outside the repository, one file per item, written from `_TEMPLATE.md` |
 | `benchmark/` | The frozen benchmark, its checksum and a README (empty until Phase 3 ends) |
-| `data/prompts/` | Prompts: benchmark generation v6; the training prompt and the grading instructions (`grading_v1`) later |
-| `data/verification_logs/` | Benchmark quality records: R-check results, the Codex screen's flags with the owner's decisions, and the manual audit (Section 4, safeguard 6) |
-| `code/generation/` | Benchmark blueprint and checks (including the R key step), the teacher client, the throughput report |
+| `data/prompts/` | Prompts: benchmark generation v7 (v6 kept for past runs), training generation v1, the teacher's answering prompt; the grading instructions (`grading_v1`) later |
+| `data/taxonomy/` | The topic list (`subtopics.yaml`, 673 subtopics) and the context deck (`contexts.yaml`) that every slot is dealt from |
+| `data/slots/` | Frozen slot files and their manifests for the benchmark, development, TV and smoke sets (the large training slot files are outside the repository; their SHA-256 values are recorded here) |
+| `data/verification_logs/` | Benchmark quality records (R-check results, the Codex screen's flags with the owner's decisions, the manual audit; Section 4, safeguard 6) and decontamination records (the embedding check, labeled pairs, rules and removals; safeguard 5) |
+| `code/generation/` | The slot dealer (`variety.py`), the generation prompts and reply checks (`set_prompts.py`), the full-size generator (`generate_set.py`), the v6 benchmark checks (including the R key step), the teacher client, the throughput report |
 | `code/verification/`, `code/training/`, `code/analysis/` | Benchmark quality tools (screen import, audit sampler) and decontamination; fine-tuning code; statistics and plots (later phases) |
 | `code/evaluation/` | Benchmark runners and metrics; currently the Pythia probe |
 | `code/tests/` | Local test suites: the Redhawk and Talon job scripts with fake cluster programs, the teacher client, the throughput report, and the regression snapshot of the shared benchmark functions |
@@ -711,8 +752,10 @@ Storage is split in two. **Small, important items live in the project repository
 |---|---|
 | `models/pythia/` | The four base checkpoints, files kept exactly as distributed (`recovery/pythia_base_models.md`) |
 | `models/finetuned/` | Fine-tuned students, by size and data size |
-| `data/teacher_outputs/` | Raw teacher generations, including the archived Claude-era trials |
-| `data/training_sets/` | Training sets (1k to 200k), retained without correctness-based filtering (`training_data` in `configs/paths.yaml`; created when the first set is built) |
+| `models/embeddings/` | The pinned sentence-embedding model used by decontamination (`recovery/embedding_model.md`) |
+| `data/slots/` | The training stream's slot file and its replacements (about 85 MB for 260,000 slots; `slots_large` in `configs/paths.yaml`) |
+| `data/teacher_outputs/` | Raw teacher generations, one dated folder per run and shard, every attempt with its thinking text, never edited (including the archived Claude-era trials) |
+| `data/training_sets/` | The compact training sets (exactly 1k to 200k accepted examples, one version folder each, with a manifest of counts, SHA-256 values, thresholds and the balance report), retained without correctness-based filtering. Training reads only these files, never the raw replies (`training_data` in `configs/paths.yaml`) |
 | `cache/`, `logs/`, `envs/` | Caches, large logs, Python virtual environments (`recovery/python_env.md`) |
 | Codex grading workspace | A fresh folder per batch, outside the repository (its location is added to `configs/paths.yaml` when the batch tool is built) |
 
@@ -753,7 +796,7 @@ Dates are placeholders until the program's real deadlines are known.
 | Same teacher writes the benchmark and the training data | Section 4: separate prompts and IDs, freeze first, decontamination, the benchmark quality procedure, stated limitations |
 | Benchmark keys wrong in ways R cannot see | Codex screen of every question with the owner's review, a 150-item manual audit with its error rate reported; teacher accuracy reported with the caveat |
 | Teacher errors in the training data | Retained by design (Section 4, safeguard 9) and reported; the teacher's graded accuracy by category shows where its examples are likely weak |
-| Near-duplicate questions at scale | Slot-variety redesign and `dupcheck` before the 1,000-question run |
+| Near-duplicate questions at scale | Taxonomy, context deck and slot dealer (built 2026-11-19); near-duplicate removal inside training with a calibrated rule (Section 4, safeguards 4 and 5) |
 | Pythia models are base models (not instruction-tuned), have a 2,048-token context and never stop on their own | One fixed `Question:`/`Answer:` template, short answers, explicit end-of-text token id 0, a pre-declared stop rule |
 | Very small models may score near zero, hiding differences | Easier items, plus partial-credit and validity metrics |
 | Benchmark contamination | Decontamination, checksum freeze, a separate dev set |
@@ -791,7 +834,9 @@ Dates are placeholders until the program's real deadlines are known.
 - [x] **Teacher thinking mode** (decided 2026-11-19): **thinking on** for all generation and for the teacher's benchmark run, after the thinking check and the owner's review of its blocking flag (Section 2.1, item 3).
 - [ ] **The teacher's answer limit on the benchmark** (part of the evaluation protocol). Thinking on was cut off on 8 of 120 answers at 16,384 tokens in the check, so consider Qwen's recommended 32,768 for the accuracy run. Criterion 4b's timing protocol asks for the same limit for the teacher and the students, so the timing and accuracy runs may need separate settings.
 - [ ] **Answering prompt v2:** keep the `Final answer:` line for R-expression questions (v1 told the model "one line of R and nothing else", Section 2.1, item 3).
-- [ ] **Slot variety:** taxonomy, a `variety.py` slot dealer, and the `dupcheck` thresholds
+- [x] **Slot variety:** taxonomy draft 2, context deck and the `variety.py` slot dealer (approved 2026-11-19; Section 4, safeguard 4)
+- [ ] **Decontamination rule:** the thresholds, chosen from the owner's labeled development pairs and approved before any training data is cleaned (Section 4, safeguard 5)
+- [ ] **Stage G settings review:** `TIME_GENERATE` (1 day), `GEN_MARGIN_SECONDS` (1,800) and `GEN_MIN_FREE_MIB` (20,480) in `configs/talon/talon_settings.sh` were added on 2026-11-20 after the settings review of 2026-11-12, and need the owner's look before the smoke test
 - [x] **Require `r_solution` in every benchmark reply** (decided 2026-11-11). The field must always be present. It holds substantive R wherever R can compute the answer, and an explicit "not applicable" empty value otherwise. The legacy path that accepted a reply without the field is removed, and the `absent_r_solution` regression fixture is updated deliberately (Section 4, safeguard 6a). Training replies keep the field, but its correctness is not required (safeguard 9).
 - [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.
 - [ ] **Claude-era outputs outside the repository:** the raw Sonnet replies in `C:\masters_project_large\data\teacher_outputs\*_sonnet-5-5_*` are not in Git and were not touched. Keep them as part of the archive, or delete them (owner's decision; the items themselves are preserved in the Git tag `pre-cleanup-claude-era`).

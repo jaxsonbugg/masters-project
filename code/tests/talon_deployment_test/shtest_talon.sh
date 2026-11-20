@@ -21,7 +21,7 @@ REV="0123456789abcdef0123456789abcdef01234567"
 
 setup() {
   rm -rf "$T"; mkdir -p "$T"/{bin,repo/data,tl/models/Qwen3.6-27B,tl/teacher_outputs,tl/venv/bin}
-  cp -r "$REPO/code" "$REPO/configs" "$T/repo/"; cp -r "$REPO/data/prompts" "$T/repo/data/"
+  cp -r "$REPO/code" "$REPO/configs" "$T/repo/"; cp -r "$REPO/data/prompts" "$REPO/data/taxonomy" "$T/repo/data/"
   sed -i "s|^talon_root: .*|talon_root: $T/tl|; s|^talon_repo: .*|talon_repo: $T/repo|; s|^talon_models: .*|talon_models: $T/tl/models|; s|^talon_outputs: .*|talon_outputs: $T/tl/teacher_outputs|" "$T/repo/configs/paths.yaml"
   SETF="$T/repo/configs/talon/talon_settings.sh"
   sed 's/^SETTINGS_REVIEWED=yes/SETTINGS_REVIEWED=no/' "$SETF" > "$T/settings_draft.sh"   # a DRAFT copy for the guard tests (the real file is reviewed)
@@ -250,6 +250,38 @@ sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 K_SAMPLES=1 
 chk "model-quality findings (every 4th question cut off) do NOT stop stage K: all steps run, PASS_QUALITY_WARN, five folders" '[ $RC -eq 0 ] && grep -q "RESULT: PASS_QUALITY_WARN.*(stage K)" <<<"$OUT" && grep -q "answering, thinking off" <<<"$OUT" && [ "$(set -- $(val $RES/stageK.txt RUN_DIRS); echo $#)" = 5 ]'
 sub talon_thinking.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=; chk "Stage K needs CLIENT_CONCURRENCY (no default)" '[ $RC -ne 0 ] && grep -q "CLIENT_CONCURRENCY is" <<<"$OUT"'
 sub talon_thinking.sbatch FAKE_VLLM_VERSION=0.19.2 VLLM_VERSION=0.19.2; chk "Stage K needs a Stage A with the same engine and weights" '[ $RC -ne 0 ] && grep -q "different ENGINE_FP" <<<"$OUT"'
+echo "[G1] stage G (generation): a frozen smoke slot file, benchmark prompt on positions 1-20, training prompt on 21-40 as two shards"
+mkdir -p "$T/repo/data/slots"
+"$PYEXE" "$T/repo/code/generation/variety.py" deal --set smoke --n 40 --seed shtest --out "$T/repo/data/slots" > /dev/null
+GEN1=(FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 GEN_SLOTS=data/slots/smoke_slots.jsonl)
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=1/1 GEN_FIRST=1 GEN_COUNT=20 FAKE_FLAKY=1
+GF="$RES/stageG_smoke-benchmark-p1n20-1of1_job$JOBN.txt"; GB="$(val "$GF" RUN_DIR)"
+chk "stage G passes and writes its own result file; the shard is complete with 20 usable slots" '[ $RC -eq 0 ] && grep -q "RESULT: PASS.*(stage G)" <<<"$OUT" && [ "$(val "$GF" GEN_COMPLETE)" = yes ] && grep -q "usable=20 failed=0 unfinished=0" "$GF"'
+chk "every first reply was bad JSON (FAKE_FLAKY), so every slot was asked again: 40 rows, 20 second attempts" '[ "$(wc -l < "$GB/responses.jsonl")" = 40 ] && [ "$(grep -c "\"attempt\": 2" "$GB/responses.jsonl")" = 20 ]'
+chk "the run log records the v7 prompt, the slot-file fingerprint and the engine version" 'grep -q "\"prompt_version\": \"benchmark-v7\"" "$GB/run_log.json" && grep -q "slots_file_sha256" "$GB/run_log.json" && grep -q "\"engine_version\": \"vllm-0.19.1\"" "$GB/run_log.json"'
+chk "only ONE server start for the shard" '[ "$(grep -c "Starting vllm serve" <<<"$OUT")" = 1 ]'
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=training GEN_SHARD=1/2 GEN_FIRST=21 GEN_COUNT=20 FAKE_BAD_ITEMS=SM0021
+GF1="$RES/stageG_smoke-training-p21n20-1of2_job$JOBN.txt"; GT1="$(val "$GF1" RUN_DIR)"
+chk "a slot that is bad on all 3 attempts is a model-quality result: PASS_QUALITY_WARN, complete, failed=1" '[ $RC -eq 0 ] && grep -q "RESULT: PASS_QUALITY_WARN.*(stage G)" <<<"$OUT" && grep -q "usable=9 failed=1 unfinished=0" "$GF1" && [ "$(grep -c "\"item_id\": \"SM0021\"" "$GT1/responses.jsonl")" = 3 ]'
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=training GEN_SHARD=2/2 GEN_FIRST=21 GEN_COUNT=20
+GT2="$(val "$RES/stageG_smoke-training-p21n20-2of2_job$JOBN.txt" RUN_DIR)"
+chk "the two training shards cover SM0021-SM0040 exactly once between them (odd and even positions)" '[ "$(cat "$GT1/done_index.jsonl" "$GT2/done_index.jsonl" | grep -o "SM00[0-9][0-9]" | sort -u | wc -l)" = 20 ] && ! grep -q "SM0022" "$GT1/done_index.jsonl" && ! grep -q "SM0021" "$GT2/done_index.jsonl"'
+echo "[G2] a shard that reaches its deadline is UNFINISHED, not failed; submitting the same shard again resumes it"
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=1/1 GEN_FIRST=21 GEN_COUNT=20 CLIENT_CONCURRENCY=1 FAKE_DELAY=2 FAKE_TIMELEFT=00:00:40 GEN_MARGIN_SECONDS=10
+GF="$RES/stageG_smoke-benchmark-p21n20-1of1_job$JOBN.txt"; GD="$(val "$GF" RUN_DIR)"
+chk "deadline reached: PASS_QUALITY_WARN asking to submit the same shard again, GEN_COMPLETE=no, some slots unfinished" '[ $RC -eq 0 ] && grep -q "submit the same shard again to resume" <<<"$OUT" && [ "$(val "$GF" GEN_COMPLETE)" = no ] && ! grep -q "unfinished=0" "$GF"'
+N1="$(wc -l < "$GD/responses.jsonl")"
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=1/1 GEN_FIRST=21 GEN_COUNT=20
+GF="$RES/stageG_smoke-benchmark-p21n20-1of1_job$JOBN.txt"
+chk "the resubmitted shard resumes the SAME folder and completes it; no slot was sent twice" '[ $RC -eq 0 ] && [ "$(val "$GF" RUN_DIR)" = "$GD" ] && [ "$(val "$GF" GEN_COMPLETE)" = yes ] && [ "$(wc -l < "$GD/responses.jsonl")" = 20 ] && [ "$N1" -lt 20 ]'
+echo "[G3] stage G refuses bad settings before anything is sent"
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=3/2; chk "a shard k/K with k > K is refused" '[ $RC -ne 0 ] && grep -q "GEN_SHARD is" <<<"$OUT"'
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=essay GEN_SHARD=1/1; chk "an unknown prompt is refused" '[ $RC -ne 0 ] && grep -q "GEN_PROMPT is" <<<"$OUT"'
+sub talon_generate.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 GEN_SLOTS=data/slots/none.jsonl GEN_PROMPT=benchmark GEN_SHARD=1/1; chk "a missing slot file is refused" '[ $RC -ne 0 ] && grep -q "does not exist" <<<"$OUT"'
+cp "$T/repo/data/prompts/training_generation_v1.md" "$T/tv1.bak"; echo "x" >> "$T/repo/data/prompts/training_generation_v1.md"
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=training GEN_SHARD=1/1; chk "a training prompt that is not the approved version (pinned SHA-256) is refused" '[ $RC -ne 0 ] && grep -q "not the approved version" <<<"$OUT"'
+cp "$T/tv1.bak" "$T/repo/data/prompts/training_generation_v1.md"
+sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=1/1 FAKE_VLLM_VERSION=0.19.2 VLLM_VERSION=0.19.2; chk "stage G needs a Stage A with the same engine and weights" '[ $RC -ne 0 ] && grep -q "different ENGINE_FP" <<<"$OUT"'
 echo "[P1] the one-job pipeline: A, B, main with one layout"
 rm -f $RES/stageA.txt $RES/stageB.txt
 sub talon_pipeline.sbatch; PJ=$JOBN; SUMM="$RES/pipeline_job$PJ.txt"
@@ -299,6 +331,24 @@ chk "the throughput kind uses its own wall time and GPU count, and needs no CLIE
 : > "$FAKE_SBATCH_LOG"; KIND=thinking subm QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1
 chk "the thinking kind submits talon_thinking.sbatch with the throughput wall time" '[ $RC -eq 0 ] && grep -q -- "--gres=gpu:h100:1 --time=02:00:00 --cpus-per-task=16 --mem=120G configs/talon/talon_thinking.sbatch" "$FAKE_SBATCH_LOG"'
 KIND=thinking subm GPU_COUNT=1 TENSOR_PARALLEL=1 CLIENT_CONCURRENCY=; chk "the thinking kind needs CLIENT_CONCURRENCY" '[ $RC -ne 0 ] && grep -q "CLIENT_CONCURRENCY is" <<<"$OUT"'
+echo "[S3] the generate kind: one job per shard, the same shard never twice, the home quota checked first"
+mkdir -p "$T/repo/data/slots"; "$PYEXE" "$T/repo/code/generation/variety.py" deal --set smoke --n 40 --seed shtest --out "$T/repo/data/slots" > /dev/null
+cat > "$T/bin/quota" <<'QEOF'
+#!/bin/bash
+echo "Disk quotas for user x (uid 1):"
+echo "     Filesystem   space   quota   limit   grace   files   quota   limit   grace"
+echo "host:/home"
+echo "                 ${FAKE_QUOTA_USED:-17336M}    480G    500G           10541   4295m   4295m"
+QEOF
+chmod +x "$T/bin/quota"
+GENS=(GPU_COUNT=1 TENSOR_PARALLEL=1 GEN_SLOTS=data/slots/smoke_slots.jsonl GEN_PROMPT=training GEN_SHARD=2/4 TIME_GENERATE=1-00:00:00)
+: > "$FAKE_SBATCH_LOG"; KIND=generate subm QT_SUBMIT=yes "${GENS[@]}"
+chk "generate submits talon_generate.sbatch with the 1-day wall time and a job name that carries the shard" '[ $RC -eq 0 ] && grep -v -- "--test-only" "$FAKE_SBATCH_LOG" | grep -q -- "--time=1-00:00:00 .*--job-name=qt_talon_G_smoke-training-p1n0-2of4 configs/talon/talon_generate.sbatch" && grep -q "GEN=smoke-training-p1n0-2of4" "$T/tl/submit_log.txt"'
+chk "the quota room is shown" 'grep -q "MiB left below the soft quota" <<<"$OUT"'
+KIND=generate subm "${GENS[@]}" FAKE_QUOTA_USED=480G; chk "refused with too little room below the soft quota" '[ $RC -ne 0 ] && grep -q "left below the soft quota" <<<"$OUT" && grep -q "GEN_MIN_FREE_MIB" <<<"$OUT"'
+KIND=generate subm "${GENS[@]}" FAKE_QUEUED=1; chk "a second job for the same shard is refused (its name is already in the queue)" '[ $RC -ne 0 ] && grep -q "already in the queue" <<<"$OUT"'
+KIND=generate subm "${GENS[@]}" GEN_SHARD=; chk "generate needs GEN_SHARD" '[ $RC -ne 0 ] && grep -q "GEN_SHARD is" <<<"$OUT"'
+KIND=generate subm "${GENS[@]}" TIME_GENERATE=; chk "generate needs its wall-time setting" '[ $RC -ne 0 ] && grep -q "wall-time setting for .generate. jobs" <<<"$OUT"'
 chk "CPUs and memory scale with the GPU count (2 GPUs: 32 cores, 240G; 1 GPU: 16 cores, 120G)" 'grep -q -- "--cpus-per-task=16 --mem=120G" "$FAKE_SBATCH_LOG"'
 ready; subm CPUS_PER_GPU=; chk "refused when CPUS_PER_GPU is blank" '[ $RC -ne 0 ] && grep -q "CPUS_PER_GPU is" <<<"$OUT"'
 KIND=bogus subm; chk "an unknown kind is refused" '[ $RC -ne 0 ] && grep -q "unknown kind" <<<"$OUT"'

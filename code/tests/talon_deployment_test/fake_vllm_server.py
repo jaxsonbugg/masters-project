@@ -15,6 +15,12 @@ slot-aware /v1/chat/completions. Behaviour switches (environment):
   FAKE_FAIL_ITEM       that item id answers HTTP 500 once (FAKE_STATE marks it)
   FAKE_DELAY           seconds per request (default 0.05) so the client's wall-clock time is never zero
   FAKE_ANSWER_FAIL     on | off: every ANSWERING request (stage K) in that thinking mode answers HTTP 500
+  FAKE_FLAKY=1         (generator tests, added 2026-11-19) the FIRST request for every item gets a reply that is not JSON,
+                       so the generator must ask again; later requests are answered normally
+  FAKE_BAD_ITEMS       comma-separated item ids that always get a reply that is not JSON (they fail all attempts)
+  FAKE_LONG_ITEMS      comma-separated training ids whose worked answer is far over 2,048 Pythia tokens
+The generator's requests (benchmark prompt v7 for BM/DV/SM ids, training prompt v1 for TR/TRR/TV/SM ids) are answered
+with a well-formed reply of the right kind; the training reply echoes the slot's context.
 Exits by itself after 300 s so it can never linger."""
 import json, os, re, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -51,6 +57,51 @@ def make_item(cat, sub, diff, atype):
     return it
 
 
+def make_training_item(cat, sub, diff, atype, context, iid):
+    it = {"question": f"Training question {iid} about {sub} in the setting {context}. Give your answer to 3 decimal places.",
+          "choices": [], "answer_type": atype, "worked_answer": "Step 1: set up the calculation.\nStep 2: compute it.",
+          "final_answer": "0.313", "category": cat, "subtopic": sub, "difficulty": diff, "context": context,
+          "r_solution": "cat(dbinom(2, 5, 0.5))" if atype == "number" else ""}
+    if atype == "multiple_choice":
+        it.update(question=f"Training question {iid}: which statement about {sub} is true?",
+                  choices=["The first statement", "The second statement", "The third statement", "The fourth statement"],
+                  final_answer="B")
+    elif atype == "r_expression":
+        it.update(question=f"Training question {iid}: write one line of R for {sub}.", final_answer="sum(1:10)")
+    elif atype == "short_text":
+        it.update(question=f"Training question {iid}: name the statistic for {sub}.", final_answer="variance")
+    if iid in LONG_ITEMS:
+        it["worked_answer"] = " ".join(["The sample mean of the measured values is computed step by step."] * 400)
+    return it
+
+
+SEEN = {}
+BAD_ITEMS = set(filter(None, os.environ.get("FAKE_BAD_ITEMS", "").split(",")))
+LONG_ITEMS = set(filter(None, os.environ.get("FAKE_LONG_ITEMS", "").split(",")))
+
+
+def generator_reply(body, user, think):
+    m = re.search(r"^Write (benchmark item|training example) (\S+)\.$", user, re.M)
+    iid = m.group(2)
+    g = lambda k: re.search(rf"^{k}: (\S+)", user, re.M).group(1)
+    cat, diff, atype = g("Category"), g("Difficulty"), g("Answer type")
+    sub = re.search(r"^Subtopic: (.+)$", user, re.M).group(1)
+    SEEN[iid] = SEEN.get(iid, 0) + 1
+    if m.group(1) == "training example":
+        context = re.search(r'context "([^"]*)"', user).group(1)
+        item = make_training_item(cat, sub, diff, atype, context, iid)
+    else:
+        item = make_item(cat, sub, diff, atype)
+    content = json.dumps(item)
+    if iid in BAD_ITEMS or (os.environ.get("FAKE_FLAKY") == "1" and SEEN[iid] == 1):
+        content = "I believe the answer is 42."
+    msg = {"role": "assistant", "content": content}
+    if think:
+        msg[FIELD] = "thinking about it"
+    return {"model": body["model"], "choices": [{"message": msg, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 500, "completion_tokens": 700}}
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
 
@@ -79,6 +130,8 @@ class H(BaseHTTPRequestHandler):
                 msg[FIELD] = "thinking about it"
             return self.send(200, {"model": body["model"], "choices": [{"message": msg, "finish_reason": "stop"}],
                                    "usage": {"prompt_tokens": 300, "completion_tokens": 900 if think else 60}})
+        if re.search(r"^Write (benchmark item|training example) (?!BM\d{4}\.)", user, re.M):   # generate_set.py
+            return self.send(200, generator_reply(body, user, think))
         iid = re.search(r"item (BM\d{4})", user).group(1)
         g = lambda k: re.search(rf"^{k}: (\S+)", user, re.M).group(1)
         cat, diff, atype = g("Category"), g("Difficulty"), g("Answer type")

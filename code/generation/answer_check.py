@@ -138,7 +138,15 @@ def load_items(run_dir):
     p = Path(run_dir) / "items.jsonl"
     if not p.exists():
         sys.exit(f"{p} is missing: score the writing run first (open_teacher_test.py score --run {run_dir}).")
-    return {r["item_id"]: r for r in (json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip())}
+    items = {r["item_id"]: r for r in (json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip())}
+    # Fingerprint rule (approved plan 2026-11-19, Step 3): a BM item without a slot-file fingerprint is accepted only from a
+    # run of the old deployment-test path (prompt v6, slots from blueprint v1), so a new taxonomy-v2 BM id can never be
+    # confused with an old one.
+    meta = json.loads((Path(run_dir) / "run_log.json").read_text(encoding="utf-8"))
+    for iid, it in items.items():
+        if iid.startswith("BM") and it.get("slot_scheme") != "taxonomy-v2" and meta.get("prompt_version") != "v6":
+            sys.exit(f"{iid} in {run_dir} has no slot-file fingerprint and the run is not an old v6 (blueprint v1) run; refused.")
+    return items
 
 
 def run_cost(run_dir):

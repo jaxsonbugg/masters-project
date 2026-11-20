@@ -8,6 +8,11 @@ teacher_outputs: C:\masters_project_large\data\teacher_outputs
 # safeguard 9). Renamed 2026-11-12 from verified_data (C:\masters_project_large\data\verified, an empty folder left in
 # place); the new folder is created when the first training set is built.
 training_data: C:\masters_project_large\data\training_sets
+# The sentence-embedding model used by decontamination (code/verification/decontaminate.py; recovery/embedding_model.md),
+# pinned to one Hugging Face commit. Downloaded 2026-11-20.
+models_embedding: C:\masters_project_large\models\embeddings\all-MiniLM-L6-v2\1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+# Frozen training slot files and their replacements (too large for Git; their SHA-256 values are in the repository).
+slots_large: C:\masters_project_large\data\slots
 cache: C:\masters_project_large\cache
 logs: C:\masters_project_large\logs
 envs: C:\masters_project_large\envs

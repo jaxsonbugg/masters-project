@@ -131,7 +131,31 @@ check_concurrency() {
   [[ "${CLIENT_CONCURRENCY:-}" =~ ^[1-9][0-9]*$ ]] || die "CLIENT_CONCURRENCY is '${CLIENT_CONCURRENCY:-}', not a positive whole number (no preferred default): set it in $QT_SETTINGS_FILE or in the environment for this job."
 }
 
-# --- sbatch options built from the settings (#SBATCH lines in a script cannot hold variables). $1 = smoke | throughput | pipeline | main
+# --- Generation (stage G, added 2026-11-20; code/generation/generate_set.py). The two generation prompts are pinned here: a job refuses a
+# repository copy whose prompt files differ from the approved versions (data/prompts/benchmark_generation_v7.md and
+# training_generation_v1.md, approved by Jaxson 2026-11-19).
+PROMPT_V7_SHA256="980f55700a39ee21cc7885d1a4f299ab8ba7191ec57b424a4a974b06e24c4153"
+PROMPT_TRAIN_SHA256="db9ca660203a59bbcae882a68d4d130ea972f10cede9821857a7142518a42eb8"
+# check_generate: the generation settings GEN_SLOTS (a frozen slot file with its manifest beside it), GEN_PROMPT (benchmark | training),
+# GEN_SHARD (k/K), optional GEN_FIRST and GEN_COUNT; sets GEN_TAG (used in the job name and the result file).
+check_generate() {
+  [ -n "${GEN_SLOTS:-}" ] || die "GEN_SLOTS is not set: the slot file to generate from (for example data/slots/smoke_slots.jsonl)."
+  case "$GEN_SLOTS" in /*) ;; *) GEN_SLOTS="$QT_REPO/$GEN_SLOTS" ;; esac
+  [ -f "$GEN_SLOTS" ] || die "the slot file $GEN_SLOTS does not exist."
+  local set_name; set_name="$(basename "$GEN_SLOTS" | sed -E 's/_(slots|replacements)\.jsonl$//')"
+  [ -f "$(dirname "$GEN_SLOTS")/${set_name}_slots.manifest.json" ] || die "the manifest ${set_name}_slots.manifest.json is not next to $GEN_SLOTS."
+  case "${GEN_PROMPT:-}" in
+    benchmark) [ "$(sha256sum "$QT_REPO/data/prompts/benchmark_generation_v7.md" | cut -d' ' -f1)" = "$PROMPT_V7_SHA256" ] || die "data/prompts/benchmark_generation_v7.md is not the approved version (SHA-256 differs from the pin in common.sh)." ;;
+    training) [ "$(sha256sum "$QT_REPO/data/prompts/training_generation_v1.md" | cut -d' ' -f1)" = "$PROMPT_TRAIN_SHA256" ] || die "data/prompts/training_generation_v1.md is not the approved version (SHA-256 differs from the pin in common.sh)." ;;
+    *) die "GEN_PROMPT is '${GEN_PROMPT:-}', not benchmark or training." ;;
+  esac
+  [[ "${GEN_SHARD:-}" =~ ^([1-9][0-9]*)/([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -le "${BASH_REMATCH[2]}" ] || die "GEN_SHARD is '${GEN_SHARD:-}', not k/K with 1 <= k <= K (for example 2/4)."
+  [[ "${GEN_FIRST:-1}" =~ ^[1-9][0-9]*$ ]] || die "GEN_FIRST must be a positive whole number."
+  [[ "${GEN_COUNT:-0}" =~ ^[0-9]+$ ]] || die "GEN_COUNT must be a whole number (0 = to the end of the file)."
+  GEN_TAG="${set_name}-${GEN_PROMPT}-p${GEN_FIRST:-1}n${GEN_COUNT:-0}-${GEN_SHARD/\//of}"
+}
+
+# --- sbatch options built from the settings (#SBATCH lines in a script cannot hold variables). $1 = smoke | throughput | pipeline | main | generate
 # Fills the array SB_OPTS; stops with a plain message if a required value is still blank.
 build_sbatch_opts() {
   local kind="$1" t extra
@@ -145,7 +169,7 @@ build_sbatch_opts() {
     gpus) SB_OPTS+=(--gpus="${TALON_GPU_TYPE:+$TALON_GPU_TYPE:}$GPU_COUNT") ;;
     *) die "TALON_GPU_STYLE is '$TALON_GPU_STYLE': choose gres or gpus in $QT_SETTINGS_FILE (probe_talon_part2.sh shows which one the scheduler accepts)." ;;
   esac
-  case "$kind" in smoke) t="$TIME_SMOKE" ;; throughput) t="$TIME_THROUGHPUT" ;; pipeline) t="$TIME_PIPELINE" ;; main) t="$TIME_MAIN" ;; *) die "unknown job kind '$kind'" ;; esac
+  case "$kind" in smoke) t="$TIME_SMOKE" ;; throughput) t="$TIME_THROUGHPUT" ;; pipeline) t="$TIME_PIPELINE" ;; main) t="$TIME_MAIN" ;; generate) t="${TIME_GENERATE:-}" ;; *) die "unknown job kind '$kind'" ;; esac
   [ -n "$t" ] || die "the wall-time setting for '$kind' jobs (TIME_*) is blank in $QT_SETTINGS_FILE: set it from the partition's real limit (probe_talon.sh)."
   SB_OPTS+=(--time="$t")
   # CPUs and memory in proportion to the GPUs (a job that does not ask gets ONE core: OBSERVED 2026-11-12, job 196)
