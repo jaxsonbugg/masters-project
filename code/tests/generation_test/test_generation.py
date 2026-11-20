@@ -492,6 +492,29 @@ try:
 except OSError as e:
     print(f"  NOTE  embedding model not available, embedding tests skipped ({e})")
 
+# ------------------------------------------------------------------ 8. the Talon copy keeps the pinned bytes
+print("[8] the files as `git archive` (the Talon copy) writes them keep their pinned SHA-256 (line endings)")
+import hashlib  # noqa: E402
+import io  # noqa: E402
+import tarfile  # noqa: E402
+pins = {"data/prompts/benchmark_generation_v6.md": "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4",
+        "data/prompts/benchmark_generation_v7.md": sha7, "data/prompts/training_generation_v1.md": shatr,
+        "data/taxonomy/subtopics.yaml": tax_sha, "data/taxonomy/contexts.yaml": ctx_sha}
+common = (REPO / "configs" / "talon" / "common.sh").read_text(encoding="utf-8")
+check("the prompt pins in configs/talon/common.sh equal the prompt files' SHA-256",
+      f'PROMPT_V7_SHA256="{sha7}"' in common and f'PROMPT_TRAIN_SHA256="{shatr}"' in common)
+smoke_slots = REPO / "data" / "slots" / "smoke_slots.jsonl"
+if smoke_slots.exists():
+    pins["data/slots/smoke_slots.jsonl"] = json.loads((REPO / "data" / "slots" / "smoke_slots.manifest.json").read_text())["slots_sha256"]
+arc = subprocess.run(["git", "-C", str(REPO), "archive", "--format=tar", "HEAD", "--", *pins], capture_output=True)
+if arc.returncode == 0:
+    tf = tarfile.open(fileobj=io.BytesIO(arc.stdout))
+    got = {m.name: hashlib.sha256(tf.extractfile(m).read()).hexdigest() for m in tf.getmembers() if m.isfile()}
+    bad = {k: got.get(k, "missing")[:12] for k, v in pins.items() if got.get(k) != v}
+    check("every pinned file comes out of `git archive HEAD` with its pinned SHA-256 (no Windows line endings added)", not bad, bad)
+else:
+    print(f"  NOTE  git archive failed ({arc.stderr.decode()[:120]}); check skipped (files not committed yet?)")
+
 shutil.rmtree(T, ignore_errors=True)
 print(f"\n==== generation tests: {passed} passed, {failed} failed ====")
 sys.exit(1 if failed else 0)
