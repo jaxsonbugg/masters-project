@@ -976,3 +976,10 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - The fake vLLM server answers the v7 and training requests and can fail on purpose (`FAKE_FLAKY`, `FAKE_BAD_ITEMS`, `FAKE_LONG_ITEMS`); its behavior for the old tests is unchanged.
 - **Docs:** `docs/methodology/workflow.md` (safeguards 1, 2, 4, 5 and 9, the worked example, the phase checklists, Section 8 storage, the risk table, Section 10.2: slot variety closed, the decontamination rule and the stage G settings review opened); `docs/methodology/pilot_plan.md`; `docs/clusters/talon_setup.md` Section 8 (rewritten: stage G); `README.md`; `docs/logs/compute_log.md` entry 16.
 - **Not done yet (each needs Jaxson's approval):** the stage G smoke test on Talon (20 benchmark-v7 and 20 training-v1 smoke slots); dealing the real benchmark, development and TV slot files (seeds to choose); the recovery files for slot files, teacher outputs and training sets (written when those exist).
+
+### Stage G settings approved (2026-11-20)
+- **What:** Jaxson approved the three generation settings added to `configs/talon/talon_settings.sh` after the settings review of 2026-11-12, after a plain-language explanation of each:
+  - `TIME_GENERATE` = 1 day: the longest wall time a generation job asks for (Talon allows 3 days). Shorter requests start sooner and lose at most a day if something hangs; a job ends as soon as its work is done.
+  - `GEN_MARGIN_SECONDS` = 1,800: no new request in the job's last 30 minutes; requests already running get 15 more minutes; the rest is for validation and the result file. Cost: at most about 2% of a 24-hour job.
+  - `GEN_MIN_FREE_MIB` = 20,480: the submit script refuses a generation job with less than 20 GB left below the home folder's soft quota (the whole 260,000-slot stream is about 4.5 GB of raw replies at about 17 KB each).
+- **Files:** `configs/talon/talon_settings.sh` (approval comment), `docs/methodology/workflow.md` Section 10.2, `docs/clusters/talon_setup.md` Section 8.

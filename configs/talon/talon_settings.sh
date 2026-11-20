@@ -51,6 +51,7 @@ TIME_SMOKE="${TIME_SMOKE-01:00:00}"          # Stage A and Stage B smoke tests
 TIME_THROUGHPUT="${TIME_THROUGHPUT-04:00:00}"  # Stage T, one GPU layout per job
 TIME_PIPELINE="${TIME_PIPELINE-1-00:00:00}"  # the one-job pipeline (A, B, main)
 TIME_MAIN="${TIME_MAIN-1-00:00:00}"          # a main run alone, or its resume
+# Stage G settings (the next three lines): added 2026-11-20, REVIEWED and approved by Jaxson Bugg on 2026-11-20.
 TIME_GENERATE="${TIME_GENERATE-1-00:00:00}"  # one generation shard (stage G); it resumes in the next job (approved plan 2026-11-19: 1-day jobs)
 GEN_MARGIN_SECONDS="${GEN_MARGIN_SECONDS-1800}" # stage G: no new request this long before the job's end; running ones get half of it; validation and the result file use the rest
 GEN_MIN_FREE_MIB="${GEN_MIN_FREE_MIB-20480}"    # stage G is not submitted with less than this left below the home folder's soft quota (one 65,000-slot shard is about 1.2 GB)

@@ -240,8 +240,8 @@ quota. One 65,000-slot shard is about 1.1 GB of raw replies (about 17 KB per rep
 **Still not built:** several server replicas inside one job (`REPLICAS=1` only), and job arrays. Four single-GPU shard jobs give the same
 parallelism without them.
 
-**Not yet reviewed:** the three new settings (`TIME_GENERATE`, `GEN_MARGIN_SECONDS`, `GEN_MIN_FREE_MIB`) were added after the settings
-review of 2026-11-12. The first stage G job is a smoke test (20 v7 and 20 training-v1 smoke slots), and it needs the owner's separate approval.
+**Reviewed:** the three new settings (`TIME_GENERATE`, `GEN_MARGIN_SECONDS`, `GEN_MIN_FREE_MIB`) were added after the settings
+review of 2026-11-12 and approved by Jaxson on 2026-11-20. The first stage G job is a smoke test (20 v7 and 20 training-v1 smoke slots), and it needs the owner's separate approval.
 
 ## 9. After your Talon account is activated: exact steps
 
