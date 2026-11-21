@@ -221,6 +221,8 @@ No student result existed when this change was made.
 
 The project began with Claude Sonnet 5.5 as the teacher, through the paid Claude API. Anthropic's commercial terms bar using outputs "to train competing AI models". When asked directly, Anthropic support confirmed that Claude outputs may not be used to train the Pythia students. The project therefore switched to an open-weight teacher, and Claude can no longer write either training data or benchmark questions.
 
+**The rule, clarified by the owner (2026-11-21).** Claude writes no training data and no benchmark question text, choices or answer keys; a benchmark question that needs a new wording or key is replaced by a Qwen-written spare or fixed by the owner by hand. Claude may write **grading code** (an R check that decides whether an answer is right; it is never shown to any model and never used for training) only when the owner reviews and approves each one; the 32 R-check repairs of 2026-11-21 are of this kind (`data/verification_logs/2026-11-21_benchmark_check_repairs/review_sheet.csv`). This is stricter than Anthropic's terms, which concern using outputs to train competing models; the project keeps the stricter line on purpose.
+
 **What the Claude trials were.** Between 2026-10-07 and 2026-10-15 there were nine trial runs and two Batch runs, all on the same slot blueprint:
 - **Six 20-question trials**, one per prompt version v1 to v6, all on slots BM0001 to BM0020. The v4 run was refused by the API and returned no items.
 - **Three 1-question probes.** One was rejected with an access error and returned nothing.

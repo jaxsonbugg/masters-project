@@ -1,0 +1,5 @@
+[
+ {"item_id": "BM0052", "reason": "owner (soft-flag review): the IQR depends on the quartile method; R's key uses one method, the teacher used median of halves; also flagged ambiguous by the Codex screen"},
+ {"item_id": "BM0472", "reason": "owner (soft-flag review): the answer does not use the median-of-halves method the question implies; also flagged ambiguous by the Codex screen"},
+ {"item_id": "BM0835", "reason": "owner (soft-flag review): the R code calculates the wrong type of difference, so the key is wrong"}
+]

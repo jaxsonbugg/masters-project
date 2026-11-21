@@ -59,6 +59,7 @@ Write in American English (artifact, behavior, analyze).
   3. *Training precision recipe:* decided in Phase 8.
 
   Preserve the pinned checkpoints exactly as distributed, verify the loaded dtype and parameter count, and document the final mixed-precision recipe once the training environment is set. The teacher's precision (BF16 on Talon, 4-bit on the Redhawk fallback) is always stated with its results.
+- **What Claude may write (owner's clarification, 2026-11-21).** No training data and no benchmark question text, choices or answer keys: a question that needs a new wording or key is replaced by a Qwen-written spare or fixed by the owner by hand. Grading code (R checks) only with the owner's review and approval of each one.
 - **Benchmark isolation.** Never use benchmark questions in any training, prompting or tuning step. Benchmark and training data use separate prompts, separate IDs and decontamination (`docs/methodology/workflow.md` Section 4).
 - **Training data versus benchmark.**
   - **Training data:** Qwen-generated training examples are retained without correctness-based filtering. Their correctness is unknown and may vary by category, and that is intentional. Only format, duplicate, decontamination and length checks apply.

@@ -1168,3 +1168,14 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   The grouping (`codex_batch.review_group`, from the issue type and the wording of the reason) is a sorting aid only; every flag is Jaxson's decision.
 - **Code:** `codex_batch.py report` adds the review-group column and sort; `run.json` records requested versus reported model. Codex tool tests: 43 of 43.
 - **Next (Jaxson):** decide each flag (fix, replace with a spare, or keep with a note). The "no correct option" group matters most: it means Codex thinks the multiple-choice key itself may be wrong.
+
+### Soft-flag review applied; the Claude rule clarified (2026-11-21)
+- **Jaxson's soft-flag review** (`soft_flags_sheet.csv`): of the 28 number keys where the teacher's typed answer differed from R's, 25 are approved (R's value stays the key), and 3 are rejected:
+  - **BM0052:** the IQR depends on the quartile method; R's key uses one method, the teacher another;
+  - **BM0472:** the answer does not use the median-of-halves method the question implies;
+  - **BM0835:** the R code computes the wrong kind of difference, so the key is wrong.
+
+  Codex had independently flagged BM0052 and BM0472 as ambiguous; it could not catch BM0835, because it never sees the code or the key. Two approved keys (BM0160, BM0968) are flagged by Codex for other reasons (missing information; a false justification) and are decided on the Codex sheet.
+- **Decision: the 3 are replaced by spares.** Numerical spares are plentiful (15 intro, 14 intermediate). New `fill-bench --reject <file>` (the owner's rejections, `owner_rejections.json`) treats them as failed. Only those 3 positions changed: 52 to BM1001, 472 to BM1012, 835 to BM1005. The 3 new questions get a Codex screen before the freeze (not yet run). The previous position list is kept as `benchmark_filled_before_owner_rejections.jsonl`.
+- **Spare counts** (unused, usable): 125 in all. Numerical 15 / 14 / 15, but output interpretation only 4 per difficulty (12) against 86 Codex flags in that category. This matters only if many output-interpretation questions are replaced.
+- **The Claude rule clarified (Jaxson):** Claude writes no training data and no benchmark question text, choices or keys; such questions are replaced by Qwen-written spares or fixed by the owner by hand. Claude-written grading code (R checks) is allowed only with the owner's review and approval of each one; the 32 R-check repairs are of this kind and stay. Written into CLAUDE.md and workflow.md Section 2.2.

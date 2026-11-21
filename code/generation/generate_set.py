@@ -828,6 +828,16 @@ def fill_bench(rows, manifest, primary, excluded=()):
 def cmd_fill_bench(args):
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     rows = [json.loads(l) for l in Path(args.items).read_text(encoding="utf-8").splitlines() if l.strip()]
+    if args.reject:
+        # owner's decisions (for example a wrong key found in the soft-flag review, or a flag from the Codex screen):
+        # each listed item is treated as failed, so its position goes to a like-for-like spare and a listed spare is never used
+        rej = {d["item_id"]: d["reason"] for d in json.loads(Path(args.reject).read_text(encoding="utf-8"))}
+        for r in rows:
+            if r["item_id"] in rej:
+                r["status"], r["problems"] = "owner_rejected", [rej[r["item_id"]]]
+        unknown = sorted(set(rej) - {r["item_id"] for r in rows})
+        if unknown and not args.allow_other_sets:
+            sys.exit(f"--reject lists ids not in --items: {unknown[:5]}")
     positions, needs = fill_bench(rows, manifest, args.primary, excluded_spares(args.manifest))
     text = "".join(json.dumps(p, ensure_ascii=False) + "\n" for p in positions)
     Path(args.out).write_text(text, encoding="utf-8", newline="\n")
@@ -1132,6 +1142,8 @@ def main(argv=None):
     p.add_argument("--items", required=True)
     p.add_argument("--manifest", required=True)
     p.add_argument("--primary", type=int, required=True, help="size of the primary block (1000 benchmark, 200 dev)")
+    p.add_argument("--reject", default=None, help="a JSON list of {item_id, reason}: the owner's rejections, replaced by spares")
+    p.add_argument("--allow-other-sets", action="store_true", help="ignore --reject ids that belong to another set")
     p.add_argument("--out", required=True)
     p = sub.add_parser("collect-train", help="training stream: accepted examples, replacements, exact nested sets")
     p.add_argument("--items", required=True)
