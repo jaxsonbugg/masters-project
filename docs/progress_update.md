@@ -1139,3 +1139,14 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **a new rule:** when unsure whether an issue is substantive, prefer passing a well-defined question over flagging a speculative problem.
 - **The workspace:** "Lee Group Workspace", administered by Dr. Lee, who has confirmed that using OpenAI in this way is fine. Recorded in workflow.md Section 2.3 and model_versions.md Section 6a.
 - **Next:** the first real Codex call, the 20-question integration batch of the screen, waits for Jaxson's approval.
+
+### First real Codex call: the 20-question screening test batch (2026-11-21)
+- **What ran (approved by Jaxson):** `codex_batch.py run --real` on batch `2026-11-21_screen_01`, benchmark positions 1-20 (questions and choices only, no keys), through the Lee Group Workspace. Codex CLI `0.169.0-alpha.11.1`; 50.2 s; 15,185 input tokens, 2,295 output tokens (1,515 of them reasoning); exit status 0.
+- **Audit:** the event stream held only a start, one final message and the end. No command, tool or file use, so the run was accepted. Imported with exact coverage: 20 verdicts, 4 flagged (flag rate 20%).
+- **The model was not reported** in the event stream, so `run.json` says "not reported". The top model in the CLI's model list is GPT-6.2-Sol (default reasoning medium), so this batch probably used it, but that is not confirmed. **From the next batch on, the model and reasoning setting are passed explicitly** (`--model gpt-6.2-sol --effort medium`), so they are recorded for certain.
+- **The 4 flags** (`data/verification_logs/2026-11-21_codex_screen/screen_flags.csv`, for Jaxson's decision):
+  - **BM0004 (invalid assumption):** LRT = 7.823 on 1 df gives p = 0.00516; the printout says 0.005214.
+  - **BM0010 (invalid assumption):** the Tukey intervals imply group sizes and degrees of freedom that do not fit one adjusted p-value.
+  - **BM0016 (ambiguous):** the cluster-versus-stratified variance comparison depends on how exactly the clusters mirror the population.
+  - **BM0017 (invalid assumption):** a deviance difference of 4.812 on 1 df gives p = 0.02826; the printout says 0.02838.
+  - Claude checked BM0004 and BM0017 independently: both p-values are off by about 1%, with no conclusion changed. `output_check.py` missed them because it does not read LRT lines or analysis-of-deviance tables; the screen did.

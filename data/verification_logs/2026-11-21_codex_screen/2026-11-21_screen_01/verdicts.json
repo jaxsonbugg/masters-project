@@ -1,0 +1,24 @@
+{
+  "verdicts": [
+    {"id":"S-01-001","verdict":"pass","issue_type":"none","reason":"Clear and answerable."},
+    {"id":"S-01-002","verdict":"pass","issue_type":"none","reason":"The plotted group means support a unique choice."},
+    {"id":"S-01-003","verdict":"pass","issue_type":"none","reason":"The input and required R return type are clear."},
+    {"id":"S-01-004","verdict":"flag","issue_type":"invalid_assumption","reason":"The reported p-value falls outside the rounding range for the stated likelihood ratio statistic and one degree of freedom."},
+    {"id":"S-01-005","verdict":"pass","issue_type":"none","reason":"The distribution, measurement, and rounding rule determine a unique result."},
+    {"id":"S-01-006","verdict":"pass","issue_type":"none","reason":"Exactly one choice gives both the standard estimator and its justification."},
+    {"id":"S-01-007","verdict":"pass","issue_type":"none","reason":"The code has a unique printed result."},
+    {"id":"S-01-008","verdict":"pass","issue_type":"none","reason":"The leverage and deleted residual determine the full-model residual."},
+    {"id":"S-01-009","verdict":"pass","issue_type":"none","reason":"The requested function, formula, and data frame are specified."},
+    {"id":"S-01-010","verdict":"flag","issue_type":"invalid_assumption","reason":"The Tukey interval widths imply group sizes and residual degrees of freedom that are incompatible with the reported HighN–Control adjusted p-value."},
+    {"id":"S-01-011","verdict":"pass","issue_type":"none","reason":"The unequal variances invalidate exchangeability for the stated label-permutation test."},
+    {"id":"S-01-012","verdict":"pass","issue_type":"none","reason":"The trial count, event probability, and rounding rule are specified."},
+    {"id":"S-01-013","verdict":"pass","issue_type":"none","reason":"The vector replacement and sum determine a unique numerical result."},
+    {"id":"S-01-014","verdict":"pass","issue_type":"none","reason":"The matrix and the row to total are specified."},
+    {"id":"S-01-015","verdict":"pass","issue_type":"none","reason":"The summary statistics determine a valid Pearson correlation."},
+    {"id":"S-01-016","verdict":"flag","issue_type":"ambiguous","reason":"If each cluster exactly mirrors the population, the cluster sample mean has zero sampling variance, while approximate mirroring leaves the variance ordering dependent on the cluster means and the stratified allocation."},
+    {"id":"S-01-017","verdict":"flag","issue_type":"invalid_assumption","reason":"The reported chi-square p-value falls outside the rounding range for the stated deviance difference and one degree of freedom."},
+    {"id":"S-01-018","verdict":"pass","issue_type":"none","reason":"The duplicate keys, row retention rule, and factor-level handling are specified."},
+    {"id":"S-01-019","verdict":"pass","issue_type":"none","reason":"The code has a unique result under R's default missing-value handling."},
+    {"id":"S-01-020","verdict":"pass","issue_type":"none","reason":"The current progress, independent success probability, and remaining trial limit determine the probability."}
+  ]
+}

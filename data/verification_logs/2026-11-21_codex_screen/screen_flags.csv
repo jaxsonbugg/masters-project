@@ -1,0 +1,40 @@
+﻿position,item_id,issue_type,codex_reason,question,choices,answer_key,owner_decision (fix/replace/keep),owner_note
+4,BM0004,invalid_assumption,The reported p-value falls outside the rounding range for the stated likelihood ratio statistic and one degree of freedom.,"In a psychology experiment measuring reaction times, researchers compare a full model (including study method and age) to a reduced model (including only age) using a likelihood ratio test. The software output is shown below.
+
+Likelihood ratio test
+data:  full_model and reduced_model
+LRT = 7.823, df = 1, p-value = 0.005214
+
+What conclusion does this test support?","A. The full model does not fit significantly better than the reduced model because the p-value is greater than 0.05.
+B. The full model fits significantly better than the reduced model because the p-value is less than 0.01.
+C. The reduced model is preferred because the likelihood ratio statistic is less than 10.
+D. The additional predictors have no effect on reaction time because the degrees of freedom equals 1.",B,,
+10,BM0010,invalid_assumption,The Tukey interval widths imply group sizes and residual degrees of freedom that are incompatible with the reported HighN–Control adjusted p-value.,"A field trial measured wheat yield (bushels per acre) under three nitrogen fertilizer regimes: Control, LowN, and HighN. After verifying equal variances, a one-way ANOVA followed by Tukey's honest significant difference test was run. The R output for the post-hoc comparisons is shown below:
+
+$fertilizer
+                  diff      lwr     upr     p adj
+LowN-Control   2.500 -0.8234  5.8234  0.1482
+HighN-Control  6.000  2.5123  9.4877  0.0028
+HighN-LowN     3.500  0.1234  6.8766  0.0431
+
+Based on this output, which of the following statements is correct?","A. HighN yields are significantly higher than LowN yields, but neither fertilizer significantly differs from Control.
+B. All three treatment means are significantly different from each other at the 0.05 level.
+C. LowN yields are significantly higher than Control yields, and HighN yields are significantly higher than Control yields.
+D. HighN yields are significantly higher than both LowN and Control yields, but there is no significant difference between LowN and Control yields.",D,,
+16,BM0016,ambiguous,"If each cluster exactly mirrors the population, the cluster sample mean has zero sampling variance, while approximate mirroring leaves the variance ordering dependent on the cluster means and the stratified allocation.","Two sampling designs aim to estimate a population mean using exactly the same total number of observations. Design S divides the population into L subgroups that are internally homogeneous and takes a random sample from every subgroup. Design C divides the population into L subgroups that each mirror the overall population distribution and randomly selects k subgroups, then records all observations in those selected subgroups. Which statement correctly compares the sampling variance of the two mean estimators and provides the correct statistical justification?","A. Design S produces a higher variance estimator because sampling from every subgroup reduces the per-subgroup sample size, increasing within-group uncertainty.
+B. Design S produces a lower variance estimator because internal homogeneity reduces within-group variability, and including every subgroup eliminates between-group variation from the sampling error.
+C. Design C produces a lower variance estimator because observing all units in the selected subgroups removes within-group sampling error.
+D. Both designs produce equal variance because the total sample size is fixed and simple random sampling is used within each subgroup.",B,,
+17,BM0017,invalid_assumption,The reported chi-square p-value falls outside the rounding range for the stated deviance difference and one degree of freedom.,"The following output comes from comparing two nested Poisson regression models for monthly mobile data usage (in gigabytes) among subscribers. Model 1 uses only account tenure as a predictor. Model 2 adds a binary indicator for owning a premium router.
+
+Analysis of Deviance Table
+Model 1: usage ~ tenure
+Model 2: usage ~ tenure + premium_router
+Resid. Df Resid. Dev Df Deviance Pr(>Chi)
+    1  499     612.40
+    2  498     607.59  1   4.8120  0.02838 *
+
+Which statement correctly interprets this likelihood ratio test?","A. The test compares the two models using a t-distribution, and the p-value of 0.028 indicates that tenure alone is a poor predictor of data usage.
+B. Because the residual deviance increased in Model 2, the additional router variable degrades the model fit and should be removed.
+C. Under the null hypothesis that the router variable has no effect, the deviance difference follows a chi-squared distribution with one degree of freedom, and the significant p-value suggests the full model fits the data better.
+D. The test statistic of 4.812 is the estimated coefficient for the router variable, and its significance proves a linear relationship between router quality and data usage.",C,,

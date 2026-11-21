@@ -1,0 +1,10 @@
+{
+ "date": "2026-11-21",
+ "screened": 20,
+ "flagged": 4,
+ "flag_rate": 0.2,
+ "by_issue_type": {
+  "invalid_assumption": 3,
+  "ambiguous": 1
+ }
+}
