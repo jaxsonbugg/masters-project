@@ -1,0 +1,357 @@
+{
+  "verdicts": [
+    {
+      "id": "A-07-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how precision and recall respond to a change in class prevalence at a fixed threshold.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about how prevalence enters two different conditional probabilities under invariant class-conditional score distributions."
+    },
+    {
+      "id": "A-07-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks why analyzing only observations that pass a filter can bias a population estimate.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The stated filtering rule makes this a direct identification of selection bias in a single step."
+    },
+    {
+      "id": "A-07-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the meaning of a dummy coefficient relative to a specified reference group.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reference group is given, and the task calls for one direct interpretation of the coefficient."
+    },
+    {
+      "id": "A-07-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested statistic is calculated from the differences between paired gauge readings.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Computing the differences and applying the standard paired t formula is a routine intermediate calculation."
+    },
+    {
+      "id": "A-07-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a likelihood ratio comparison says about two nested Poisson GLMs.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires interpreting a standard model comparison and distinguishing a joint test from tests of individual terms."
+    },
+    {
+      "id": "A-07-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly requires computing quartiles, the interquartile range, and an outlier fence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines R's default quartile calculation with two routine calculations on a realistic sample."
+    },
+    {
+      "id": "A-07-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks about the coverage limitations of a percentile bootstrap confidence interval.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting the shape of an estimator's sampling distribution to the coverage of a bootstrap interval."
+    },
+    {
+      "id": "A-07-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how missing grouping labels affect the group means returned by tapply.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Explaining the output requires knowing the non-obvious treatment of missing values in the grouping index."
+    },
+    {
+      "id": "A-07-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Computing the overall rejection probability requires evaluating cumulative binomial probabilities within the two modes.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The calculation uses two standard binomial tails and combines them by the law of total probability."
+    },
+    {
+      "id": "A-07-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the logical relationship between independence and zero correlation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for recognition of a basic conceptual distinction in a single step."
+    },
+    {
+      "id": "A-07-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the probability of failing to reject the null under a specified alternative mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must derive the rejection cutoff and then evaluate the nonrejection probability under a different mean."
+    },
+    {
+      "id": "A-07-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares the endpoints of percentile and basic bootstrap confidence intervals.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "With both formulas supplied, the task reduces to comparing the endpoints and recognizing the relevant property of the bootstrap distribution."
+    },
+    {
+      "id": "A-07-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to connect missing regression coefficients to dependence among the predictors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires linking a simple confounding pattern in the study design to the coefficient output of a standard regression."
+    },
+    {
+      "id": "A-07-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to select a threshold using the stated performance metric in the table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a single comparison down the relevant table column."
+    },
+    {
+      "id": "A-07-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an inferential conclusion from exact binomial test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It calls for interpreting a standard hypothesis test in context using the reported alternative and p-value."
+    },
+    {
+      "id": "A-07-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks why replacing values with ranks changes the behavior of a correlation measure in the presence of outliers.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting rank transformation to both outlier influence and the type of association measured."
+    },
+    {
+      "id": "A-07-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to choose a classification threshold by comparing costs derived from the table.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied priors and costs make this a routine weighted comparison of error counts."
+    },
+    {
+      "id": "A-07-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the exchangeability assumption that justifies permuting group labels under the null.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks the solver to recognize the defining assumption for an explicitly described procedure in one step."
+    },
+    {
+      "id": "A-07-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks what the lack-of-fit result implies about the fitted linear model.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The relevant test is labeled in the table, and the solver only has to interpret its reported significance."
+    },
+    {
+      "id": "A-07-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to add an explicit return of the function's computed value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one basic R statement using a variable that has already been defined."
+    },
+    {
+      "id": "A-07-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the variance of a discrete count variable after conditioning on eligibility for review.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about a truncated Poisson distribution and finding its conditional moments."
+    },
+    {
+      "id": "A-07-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the minimum sample size that meets a specified margin of error.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires applying a standard sample-size formula for a mean and rounding the result appropriately."
+    },
+    {
+      "id": "A-07-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Generating a random permutation in R is central to the requested comparison of values with their positions.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression combines random sampling, a vectorized comparison, and a count."
+    },
+    {
+      "id": "A-07-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question concerns how an estimated odds ratio for a predictor compares across logistic models with different covariate sets.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The intended reasoning concerns conditional and marginal odds ratios and the role of covariate assumptions."
+    },
+    {
+      "id": "A-07-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the combined mean calculated from two group means and their sample sizes.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A routine weighted average of the two supplied group means completes the task."
+    },
+    {
+      "id": "A-07-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how increasing sample size affects statistical significance in a two-sample t-test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The question asks for a familiar qualitative relationship without requiring a t statistic or probability calculation."
+    },
+    {
+      "id": "A-07-027",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The correlation matrix supplies the estimates to compare, while the main skill tested is understanding the sampling variability of Pearson correlations."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The comparison requires reasoning about the sampling variance of an estimator under a multivariate normal model."
+    },
+    {
+      "id": "A-07-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression uses qnorm to obtain a normal quantile on the log scale before converting it to the original scale.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The expression requires identifying a tail probability, calling a standard quantile function, and applying the inverse transformation."
+    },
+    {
+      "id": "A-07-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the interpretation of a predictor-by-group interaction coefficient.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The coefficient is given, and the task asks for its interpretation in a single step."
+    },
+    {
+      "id": "A-07-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to distinguish analyses based on original assignment, actual treatment, and protocol adherence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting the study objective and several protocol deviations to a standard analysis principle for randomized studies."
+    },
+    {
+      "id": "A-07-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a reported likelihood ratio test implies about the fit of two nested models.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A standard interpretation of the supplied p-value resolves the comparison without deeper likelihood reasoning."
+    },
+    {
+      "id": "A-07-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested result is one endpoint of a confidence interval for the difference between two proportions.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must calculate two sample proportions, find the standard error of their difference, and form the interval endpoint."
+    },
+    {
+      "id": "A-07-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to compare candidate models using their reported AIC values.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With the AIC values supplied, the task consists of applying one ranking rule to a short table."
+    },
+    {
+      "id": "A-07-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the meaning of false discovery rate control in a multiple-testing setting.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Applying the definition in context requires distinguishing the relevant denominator and expectation from other error criteria."
+    },
+    {
+      "id": "A-07-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to interpret a prediction interval associated with a fitted regression value.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Distinguishing a prediction interval for a new observation from a confidence interval for a mean is standard regression interpretation."
+    },
+    {
+      "id": "A-07-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to use both ACF and PACF output to identify a time-series model.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires tracking the lag indexing and comparing cutoff and decay patterns across two diagnostic summaries."
+    },
+    {
+      "id": "A-07-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The central operation is truncating each calculated bonus toward zero in increments of twenty dollars.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The R expression combines vectorized arithmetic, truncation to a specified increment, and aggregation."
+    },
+    {
+      "id": "A-07-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how to interpret a Bonferroni-adjusted p-value in a family of pairwise comparisons.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires interpreting an adjusted comparison in the context of the error criterion for the full family of tests."
+    },
+    {
+      "id": "A-07-039",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The frequency table identifies the categories, but the central skill is determining goodness-of-fit degrees of freedom after estimating a parameter."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task uses a standard degrees-of-freedom adjustment with the categories and fitted distribution already specified."
+    },
+    {
+      "id": "A-07-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression splits each string and counts a specified pattern in the resulting tokens.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires processing the list returned by string splitting and comparing adjacent tokens without crossing sequence boundaries."
+    },
+    {
+      "id": "A-07-041",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The question uses t-test output but chiefly asks about the test's assumptions and degrees of freedom rather than its inferential conclusion."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The procedure is named in the output, and the task asks for a standard property of Welch's test without requiring its derivation."
+    },
+    {
+      "id": "A-07-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how sample size and population variability determine the precision of an estimated mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires relating confidence interval width to the standard error and identifying its scaling with two inputs."
+    },
+    {
+      "id": "A-07-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which distributional assumption allows independence to be inferred from zero correlation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must distinguish a joint distribution assumption from marginal and conditional moment properties."
+    },
+    {
+      "id": "A-07-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a permutation p-value by identifying which reallocations of the listed observations meet the tail criterion.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires enumerating the assignments, evaluating the statistic, and computing a tail proportion."
+    },
+    {
+      "id": "A-07-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how sample size changes p-values and rejection probability for a fixed true effect.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting sample size to standard error and then reasoning about significance and power in a standard z-test."
+    },
+    {
+      "id": "A-07-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how a quadratic regression term contributes to the marginal response.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The model equation is supplied, and interpreting its marginal response requires a routine derivative."
+    },
+    {
+      "id": "A-07-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for R code to compute a specified quantile of a data column.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a single basic function call with a column and a supplied probability."
+    },
+    {
+      "id": "A-07-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an inferential conclusion about an association from Fisher's exact test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It calls for interpreting a standard test in context using the p-value or the odds-ratio interval."
+    },
+    {
+      "id": "A-07-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how changing model flexibility affects bias, variance, and prediction error.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires relating two opposing changes in estimator behavior to their combined effect on prediction error."
+    },
+    {
+      "id": "A-07-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question specifically asks for tapply to compute a custom summary separately for each group.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The expression combines a standard transformation, a grouped function call, and routine missing-value handling in summary functions."
+    }
+  ]
+}

@@ -361,3 +361,9 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Software:** vLLM 0.32.0; `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; prompt benchmark-v8 (`0ba834e2`); thinking on (temperature 1.0, top_p 0.95, top_k 20); output limit 16,384; up to 3 attempts per slot. Talon repository copy `00b6dd3` (run code unchanged since).
 - **Estimate before the run:** about 0.62 GPU-hours per job, 1.9 in total (budget 4.0).
 - **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/2026-11-21_qwen3-6-27b-talon-bf16_benchmark_benchmark-v8_{3343fe61_shard1of3, 86d58d79_shard2of3, 9dafcafa_shard3of3}`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_replacement_loop_stageG_r1_logs\`. Ledger: `C:\masters_project_large\data\benchmark_work\2026-11-21_replacement_loop\ledger.json`.
+
+### 21. Talon job 317: replacement loop round 2, shard 1 of 2 (stage G), 2026-11-21 (UTC 22:42)
+- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Purpose:** round 2 of the approved replacement loop: 3 same-subtopic candidates for each of the 73 positions round 1 left open (BM1643-BM1861, `benchmark_replacements.jsonl` SHA-256 `37d990fd...`); this job is shard 1 of 2 (about 110 slots). Submitted by `replacement_loop.py` under the standing approval.
+- **Request and software:** as entry 20 (1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`, `GEN_FIRST=493 GEN_COUNT=219 GEN_SHARD=1/2`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
+- **Shard 2/2 was not submitted:** the controller's budget rule stopped it (2.12 GPU-hours measured + 1.0 charged for job 317 while it runs + 1.0 for the next job > 4.0). Round 1 outcome: 91 of 164 positions filled.
