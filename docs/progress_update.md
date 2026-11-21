@@ -1131,3 +1131,11 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - review `screen_v1.md`;
   - record the workspace agreement and ask the administrator or OpenAI for confirmation;
   - approve the 20-question integration batch, the first real Codex call.
+
+### Screening instructions approved; workspace recorded (2026-11-21)
+- **`data/prompts/screen_v1.md` revised by Jaxson and approved** (SHA-256 `2a714fde...`). His changes:
+  - **multiple_correct:** now limited to materially different answers that cannot be accepted as equivalent under a clear grading rule (equivalent expressions or R implementations are not a reason to flag);
+  - **answer_format_unclear:** now about a format too loosely specified for reliable grading (an approximation without stated precision or tolerance, or R code whose expected output or behavior is not defined);
+  - **a new rule:** when unsure whether an issue is substantive, prefer passing a well-defined question over flagging a speculative problem.
+- **The workspace:** "Lee Group Workspace", administered by Dr. Lee, who has confirmed that using OpenAI in this way is fine. Recorded in workflow.md Section 2.3 and model_versions.md Section 6a.
+- **Next:** the first real Codex call, the 20-question integration batch of the screen, waits for Jaxson's approval.

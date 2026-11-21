@@ -215,9 +215,9 @@ Worked example of the limits: if Qwen thinks for 9,000 tokens and then writes a 
 |---|---|
 | Codex CLI version | `codex-cli 0.169.0-alpha.11.1`, bundled in the VS Code extension `openai.chatgpt-26.1111.21308-win32-x64` (`codex_cli` in `configs/paths.yaml`); it changes when the extension updates, so every batch records the version it used |
 | Model and reasoning setting | to be recorded from the first (approved) screen batch |
-| Screening instructions | `data/prompts/screen_v1.md`, pinned by SHA-256 (written 2026-11-21) |
+| Screening instructions | `data/prompts/screen_v1.md`, pinned by SHA-256 (revised and approved by Jaxson) |
 | Grading instructions | `data/prompts/grading_v1.md` (to be written for the pilot, debugged on unused benchmark spares), pinned by SHA-256 |
-| Account | a workspace provided through OpenAI to professors; OpenAI's terms govern (workflow.md Section 2.3); not cost-logged |
+| Account | "Lee Group Workspace", provided through OpenAI to Dr. Lee; OpenAI's terms govern (workflow.md Section 2.3); not cost-logged |
 
 **The R sandbox** runs all model-written R (`docs/methodology/workflow.md` Section 4, safeguard 10). R must be the same version as the one that has computed keys so far, so the keys do not change:
 
