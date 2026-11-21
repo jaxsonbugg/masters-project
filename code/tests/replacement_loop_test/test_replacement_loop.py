@@ -239,9 +239,21 @@ try:
     # ------------------------------------------------------------ 3. the GPU budget
     print("[3] the total GPU budget is a hard stop")
     E = make_env("budget", max_total_gpu_hours=2.0)
-    rc, out = run(E)
-    check("with a 2.0 budget and three 1-hour jobs, the third is not submitted (2 used or committed + 1 > 2)",
-          rc == 3 and stop_reports(E)[-1]["condition"] == "budget" and sum(submits(E).values()) == 2, (out[-400:], submits(E)))
+    rc, out = run(E, FAKE_TALON_HOURS="0.8")
+    check("with a 2.0 budget and jobs that really take 0.8 h, the third job is never submitted (1.6 measured + 1.0 > 2.0): "
+          "budget stop", rc == 3 and stop_reports(E)[-1]["condition"] == "budget" and sum(submits(E).values()) == 2,
+          (out[-400:], submits(E)))
+    L = ledger(E)
+    check("before stopping it waited for the two running jobs to be measured (no stop on the pessimistic 1.0 charge)",
+          any("waiting for them to be measured" in h["event"] for h in L["history"])
+          and all(a.get("gpu_hours") == 0.8 for s in L["rounds"]["1"]["shards"].values() for a in s["attempts"]),
+          [h["event"] for h in L["history"]][-4:])
+    E = make_env("budget_defer", max_total_gpu_hours=2.0)
+    rc, out = run(E, "--max-steps", "12")
+    L = ledger(E)
+    check("with the same 2.0 budget and short jobs, the third job waits for the first two to be measured, then is submitted",
+          sum(submits(E).values()) == 3 and any("waiting for them to be measured" in h["event"] for h in L["history"])
+          and not (L.get("stopped") or {}).get("condition") == "budget", (submits(E), L.get("stopped")))
 
     # ------------------------------------------------------------ 4. bounded retries, unfinished shards
     print("[4] a failing job is retried once; an unfinished shard resumes under the same identifier")

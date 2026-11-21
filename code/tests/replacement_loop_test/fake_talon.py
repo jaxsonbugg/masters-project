@@ -78,6 +78,9 @@ def submit(cmd):
     with open(ROOT / "submit_log.txt", "a") as fh:
         fh.write(f"JOB={job} KIND=generate SUBMITTED_UTC={utc()} LAYOUT=1/1/1/16/16/20480 GEN={tag}\n")
     start = utc()
+    if os.environ.get("FAKE_TALON_HOURS"):           # pretend the job ran this long (budget tests)
+        from datetime import timedelta
+        start = (datetime.now(timezone.utc) - timedelta(hours=float(os.environ["FAKE_TALON_HOURS"]))).strftime("%Y-%m-%dT%H:%M:%SZ")
     outputs = ROOT / "teacher_outputs"
     before = {d.name for d in outputs.glob("*")}
     extra = ["--limit", "1"] if os.environ.get("FAKE_TALON_UNFINISHED_ONCE") == tag and once(st, "unf:" + tag) else []

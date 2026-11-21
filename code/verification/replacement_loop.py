@@ -501,6 +501,14 @@ def phase_submit(cfg, led, T):
             raise StopLoop("repeated failure", f"{sh['tag']} was unfinished {n_unf} times")
         used, unmeasured = gpu_committed(led)
         if used + unmeasured + MAX_GPU_HOURS_PER_JOB > cfg["max_total_gpu_hours"] + 1e-9:
+            running = [a["job"] for s in rd["shards"].values() for a in s["attempts"] if a["state"] == "submitted"]
+            if running:
+                # (owner-approved fix, 2026-11-21) a running job is charged the full 1.0 until it is measured: wait for
+                # it to end and be measured, then check the budget again, instead of stopping on a pessimistic charge
+                led["phase"] = "wait"
+                log_event(led, f"{sh['tag']}: not submitted yet: {used:.2f} used + {unmeasured:.1f} charged for running "
+                               f"job(s) {running} + 1.0 would pass {cfg['max_total_gpu_hours']}; waiting for them to be measured")
+                return
             raise StopLoop("budget", f"GPU budget: {used:.2f} used + {unmeasured:.1f} committed + 1.0 for the next job "
                                      f"would pass {cfg['max_total_gpu_hours']}")
         sh["attempts"].append({"state": "submitting", "intent_utc": utc_now()})
@@ -540,10 +548,9 @@ def phase_wait(cfg, led, T):
     for k, sh in sorted(rd["shards"].items(), key=lambda x: int(x[0])):
         if sh["complete"]:
             continue
+        if not sh["attempts"] or sh["attempts"][-1]["state"] != "submitted":
+            continue                             # not running: handled by submit once nothing is left to wait for
         a = sh["attempts"][-1]
-        if a["state"] != "submitted":
-            led["phase"] = "submit"
-            return False
         rc, out, err = T.ssh(f"squeue -h -u $(id -un) -n qt_talon_G_{sh['tag']} -o %i,%T")
         if rc != 0:
             raise StopLoop("repeated failure", f"squeue failed: {err[-200:]}")
