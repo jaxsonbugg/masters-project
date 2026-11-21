@@ -363,7 +363,12 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/2026-11-21_qwen3-6-27b-talon-bf16_benchmark_benchmark-v8_{3343fe61_shard1of3, 86d58d79_shard2of3, 9dafcafa_shard3of3}`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_replacement_loop_stageG_r1_logs\`. Ledger: `C:\masters_project_large\data\benchmark_work\2026-11-21_replacement_loop\ledger.json`.
 
 ### 21. Talon job 317: replacement loop round 2, shard 1 of 2 (stage G), 2026-11-21 (UTC 22:42)
-- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Status: reviewed.** Ended normally 2026-11-21 (UTC start 22:42, end about 23:19); 0.606 GPU-hours; shard complete; `INFRA=PASS`; 99 usable / 11 failed all 3 attempts (143 replies). Queue wait under 1 minute. The controller was stopped twice while it ran (budget rule, then a VPN drop) and resumed; the job itself was unaffected.
 - **Purpose:** round 2 of the approved replacement loop: 3 same-subtopic candidates for each of the 73 positions round 1 left open (BM1643-BM1861, `benchmark_replacements.jsonl` SHA-256 `37d990fd...`); this job is shard 1 of 2 (about 110 slots). Submitted by `replacement_loop.py` under the standing approval.
 - **Request and software:** as entry 20 (1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`, `GEN_FIRST=493 GEN_COUNT=219 GEN_SHARD=1/2`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
 - **Shard 2/2 was not submitted:** the controller's budget rule stopped it (2.12 GPU-hours measured + 1.0 charged for job 317 while it runs + 1.0 for the next job > 4.0). Round 1 outcome: 91 of 164 positions filled.
+
+### 22. Talon job 319: replacement loop round 2, shard 2 of 2 (stage G), 2026-11-21 (UTC 23:20)
+- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Purpose:** shard 2 of 2 of round 2 (about 110 of the 219 candidates BM1643-BM1861). Submitted by the controller after job 317 was measured (2.73 GPU-hours used + 1.0 for this job = 3.73, within the 4.0 budget).
+- **Request and software:** as entries 20 and 21 (`GEN_FIRST=493 GEN_COUNT=219 GEN_SHARD=2/2`; 1 GPU, `TIME_GENERATE=01:00:00`).
