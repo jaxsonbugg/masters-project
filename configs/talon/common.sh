@@ -131,11 +131,14 @@ check_concurrency() {
   [[ "${CLIENT_CONCURRENCY:-}" =~ ^[1-9][0-9]*$ ]] || die "CLIENT_CONCURRENCY is '${CLIENT_CONCURRENCY:-}', not a positive whole number (no preferred default): set it in $QT_SETTINGS_FILE or in the environment for this job."
 }
 
-# --- Generation (stage G, added 2026-11-20; code/generation/generate_set.py). The two generation prompts are pinned here: a job refuses a
-# repository copy whose prompt files differ from the approved versions (data/prompts/benchmark_generation_v7.md and
-# training_generation_v1.md, approved by Jaxson 2026-11-19).
-PROMPT_V7_SHA256="980f55700a39ee21cc7885d1a4f299ab8ba7191ec57b424a4a974b06e24c4153"
-PROMPT_TRAIN_SHA256="db9ca660203a59bbcae882a68d4d130ea972f10cede9821857a7142518a42eb8"
+# --- Generation (stage G, added 2026-11-20; code/generation/generate_set.py). The two CURRENT generation prompts are pinned here: a job
+# refuses a repository copy whose prompt files differ from the approved versions. Since 2026-11-20 (Jaxson's decision: plain text only)
+# these are data/prompts/benchmark_generation_v8.md and training_generation_v2.md; v7 and v1 (used by the first smoke test, jobs 291
+# and 293) are kept unchanged but are no longer used for new runs.
+PROMPT_BENCH_FILE="benchmark_generation_v8.md"
+PROMPT_BENCH_SHA256="0ba834e29a68dc8f5882f441e5c95ba4246f63e3bc37d6d45fd3beb43c3d0030"
+PROMPT_TRAIN_FILE="training_generation_v2.md"
+PROMPT_TRAIN_SHA256="412d1eb45fc6153dab21ae43e44c05579c0c3266976bc597b20d2406f97c3d54"
 # check_generate: the generation settings GEN_SLOTS (a frozen slot file with its manifest beside it), GEN_PROMPT (benchmark | training),
 # GEN_SHARD (k/K), optional GEN_FIRST and GEN_COUNT; sets GEN_TAG (used in the job name and the result file).
 check_generate() {
@@ -145,8 +148,8 @@ check_generate() {
   local set_name; set_name="$(basename "$GEN_SLOTS" | sed -E 's/_(slots|replacements)\.jsonl$//')"
   [ -f "$(dirname "$GEN_SLOTS")/${set_name}_slots.manifest.json" ] || die "the manifest ${set_name}_slots.manifest.json is not next to $GEN_SLOTS."
   case "${GEN_PROMPT:-}" in
-    benchmark) [ "$(sha256sum "$QT_REPO/data/prompts/benchmark_generation_v7.md" | cut -d' ' -f1)" = "$PROMPT_V7_SHA256" ] || die "data/prompts/benchmark_generation_v7.md is not the approved version (SHA-256 differs from the pin in common.sh)." ;;
-    training) [ "$(sha256sum "$QT_REPO/data/prompts/training_generation_v1.md" | cut -d' ' -f1)" = "$PROMPT_TRAIN_SHA256" ] || die "data/prompts/training_generation_v1.md is not the approved version (SHA-256 differs from the pin in common.sh)." ;;
+    benchmark) [ "$(sha256sum "$QT_REPO/data/prompts/$PROMPT_BENCH_FILE" | cut -d' ' -f1)" = "$PROMPT_BENCH_SHA256" ] || die "data/prompts/$PROMPT_BENCH_FILE is not the approved version (SHA-256 differs from the pin in common.sh)." ;;
+    training) [ "$(sha256sum "$QT_REPO/data/prompts/$PROMPT_TRAIN_FILE" | cut -d' ' -f1)" = "$PROMPT_TRAIN_SHA256" ] || die "data/prompts/$PROMPT_TRAIN_FILE is not the approved version (SHA-256 differs from the pin in common.sh)." ;;
     *) die "GEN_PROMPT is '${GEN_PROMPT:-}', not benchmark or training." ;;
   esac
   [[ "${GEN_SHARD:-}" =~ ^([1-9][0-9]*)/([1-9][0-9]*)$ ]] && [ "${BASH_REMATCH[1]}" -le "${BASH_REMATCH[2]}" ] || die "GEN_SHARD is '${GEN_SHARD:-}', not k/K with 1 <= k <= K (for example 2/4)."

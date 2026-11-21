@@ -258,7 +258,7 @@ sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=1/1 GEN_FI
 GF="$RES/stageG_smoke-benchmark-p1n20-1of1_job$JOBN.txt"; GB="$(val "$GF" RUN_DIR)"
 chk "stage G passes and writes its own result file; the shard is complete with 20 usable slots" '[ $RC -eq 0 ] && grep -q "RESULT: PASS.*(stage G)" <<<"$OUT" && [ "$(val "$GF" GEN_COMPLETE)" = yes ] && grep -q "usable=20 failed=0 unfinished=0" "$GF"'
 chk "every first reply was bad JSON (FAKE_FLAKY), so every slot was asked again: 40 rows, 20 second attempts" '[ "$(wc -l < "$GB/responses.jsonl")" = 40 ] && [ "$(grep -c "\"attempt\": 2" "$GB/responses.jsonl")" = 20 ]'
-chk "the run log records the v7 prompt, the slot-file fingerprint and the engine version" 'grep -q "\"prompt_version\": \"benchmark-v7\"" "$GB/run_log.json" && grep -q "slots_file_sha256" "$GB/run_log.json" && grep -q "\"engine_version\": \"vllm-0.19.1\"" "$GB/run_log.json"'
+chk "the run log records the v8 prompt, the slot-file fingerprint and the engine version" 'grep -q "\"prompt_version\": \"benchmark-v8\"" "$GB/run_log.json" && grep -q "slots_file_sha256" "$GB/run_log.json" && grep -q "\"engine_version\": \"vllm-0.19.1\"" "$GB/run_log.json"'
 chk "only ONE server start for the shard" '[ "$(grep -c "Starting vllm serve" <<<"$OUT")" = 1 ]'
 sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=training GEN_SHARD=1/2 GEN_FIRST=21 GEN_COUNT=20 FAKE_BAD_ITEMS=SM0021
 GF1="$RES/stageG_smoke-training-p21n20-1of2_job$JOBN.txt"; GT1="$(val "$GF1" RUN_DIR)"
@@ -278,9 +278,9 @@ echo "[G3] stage G refuses bad settings before anything is sent"
 sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=3/2; chk "a shard k/K with k > K is refused" '[ $RC -ne 0 ] && grep -q "GEN_SHARD is" <<<"$OUT"'
 sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=essay GEN_SHARD=1/1; chk "an unknown prompt is refused" '[ $RC -ne 0 ] && grep -q "GEN_PROMPT is" <<<"$OUT"'
 sub talon_generate.sbatch FAKE_GPUS=1 GPU_COUNT=1 TENSOR_PARALLEL=1 GEN_SLOTS=data/slots/none.jsonl GEN_PROMPT=benchmark GEN_SHARD=1/1; chk "a missing slot file is refused" '[ $RC -ne 0 ] && grep -q "does not exist" <<<"$OUT"'
-cp "$T/repo/data/prompts/training_generation_v1.md" "$T/tv1.bak"; echo "x" >> "$T/repo/data/prompts/training_generation_v1.md"
+cp "$T/repo/data/prompts/training_generation_v2.md" "$T/tv1.bak"; echo "x" >> "$T/repo/data/prompts/training_generation_v2.md"
 sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=training GEN_SHARD=1/1; chk "a training prompt that is not the approved version (pinned SHA-256) is refused" '[ $RC -ne 0 ] && grep -q "not the approved version" <<<"$OUT"'
-cp "$T/tv1.bak" "$T/repo/data/prompts/training_generation_v1.md"
+cp "$T/tv1.bak" "$T/repo/data/prompts/training_generation_v2.md"
 sub talon_generate.sbatch "${GEN1[@]}" GEN_PROMPT=benchmark GEN_SHARD=1/1 FAKE_VLLM_VERSION=0.19.2 VLLM_VERSION=0.19.2; chk "stage G needs a Stage A with the same engine and weights" '[ $RC -ne 0 ] && grep -q "different ENGINE_FP" <<<"$OUT"'
 echo "[P1] the one-job pipeline: A, B, main with one layout"
 rm -f $RES/stageA.txt $RES/stageB.txt

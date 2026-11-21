@@ -130,18 +130,30 @@ check("training replacements are numbered TRR000001 on", tr_rep[0]["item_id"] ==
 # ------------------------------------------------------------------ 2. prompts and reply checks
 print("[2] prompts v7 and training v1, and the reply checks")
 p6, _ = gb.load_prompt()
-p7, sha7, v7 = sp.load_prompt("benchmark")
+p7, sha7, v7 = sp.load_prompt("benchmark-v7")
+ptr1, shatr1, vtr1 = sp.load_prompt("training-v1")
+p8, sha8, v8 = sp.load_prompt("benchmark")
 ptr, shatr, vtr = sp.load_prompt("training")
 check("the v6 prompt is unchanged (pinned SHA-256 348db6ff...)",
       gb.load_prompt()[1] == "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4")
-check("the prompt files are the approved versions (v7 980f5570..., training v1 db9ca660...)",
-      sha7.startswith("980f5570") and shatr.startswith("db9ca660"))
+check("the earlier prompt files are unchanged (v7 980f5570..., training v1 db9ca660...)",
+      sha7.startswith("980f5570") and shatr1.startswith("db9ca660"))
+check("new runs use benchmark-v8 and training-v2", (v8, vtr) == ("benchmark-v8", "training-v2"))
+s7, s8 = p7[("SYSTEM", None)].split("\n"), p8[("SYSTEM", None)].split("\n")
+check("v8's system text is v7's plus exactly one rule, 2b 'Plain text only'",
+      [l for l in s8 if l not in s7] == [l for l in s8 if l.startswith("2b. Plain text only")] and len(s8) == len(s7) + 1
+      and all(p7[k] == p8[k] for k in p7 if k != ("SYSTEM", None)))
+t1, t2 = ptr1[("SYSTEM", None)].split("\n"), ptr[("SYSTEM", None)].split("\n")
+check("training v2 is v1 plus rule 2a 'Plain text only', with LaTeX named in rule 3; nothing else changed",
+      [l for l in t2 if l not in t1 and not l.startswith(("2a. Plain text only", "3. The worked_answer"))] == []
+      and len(t2) == len(t1) + 1 and all(ptr1[k] == ptr[k] for k in ptr1 if k != ("SYSTEM", None)))
 slot = dict(bm[0])
 slot_v6 = {k: slot[k] for k in ("item_id", "category", "subtopic", "difficulty", "answer_type", "preferred_letter")}
 u6 = gb.build_request(slot_v6, p6)["messages"][0]["content"].split("\n")
-u7 = sp.build_request(slot, p7, "benchmark")["messages"][0]["content"].split("\n")
+u7 = sp.build_request(slot, p7, "benchmark-v7")["messages"][0]["content"].split("\n")
 extra = [l for l in u7 if l not in u6]
-check("the v7 user message is v6's plus exactly one line, the Setting line", len(u7) == len(u6) + 1 and len(extra) == 1
+check("the v7 user message is v6's plus exactly one line, the Setting line (v8 keeps the same user message)", len(u7) == len(u6) + 1 and len(extra) == 1
+      and sp.build_request(slot, p8, "benchmark")["messages"] == sp.build_request(slot, p7, "benchmark-v7")["messages"]
       and extra[0].startswith("Setting: "), extra)
 sys6, sys7 = p6[("SYSTEM", None)].split("\n"), p7[("SYSTEM", None)].split("\n")
 check("the v7 system text differs from v6 in exactly one line (the corrected grading sentence)",
@@ -232,7 +244,7 @@ def run(*extra):
 try:
     rc1, o1 = run("--prompt", "benchmark", "--first", "1", "--count", "12", "--shard", "1/2")
     rc2, o2 = run("--prompt", "benchmark", "--first", "1", "--count", "12", "--shard", "2/2")
-    dirs = sorted(OUT.glob("*_smoke_benchmark_*"))
+    dirs = sorted(OUT.glob("*_smoke_benchmark-v8_*"))
     ids = [json.loads(l)["item_id"] for d_ in dirs for l in (d_ / "done_index.jsonl").read_text().splitlines()]
     check("two shards together cover SM0001-SM0012 exactly, each slot in one shard only",
           rc1 == 0 and rc2 == 0 and len(dirs) == 2 and sorted(set(ids)) == [f"SM{k:04d}" for k in range(1, 13)]
@@ -278,7 +290,7 @@ try:
     st_ = Counter(r["status"] for r in items)
     check("collect: one row per slot, 11 usable and SM0004 failed", len(items) == 12 and st_ == Counter({"usable": 11, "failed": 1}), st_)
     rc6, o6 = run("--prompt", "training", "--first", "13", "--count", "12")
-    tdir = next(OUT.glob("*_smoke_training_*"))
+    tdir = next(OUT.glob("*_smoke_training-v2_*"))
     check("the training prompt runs on positions 13-24 and its replies pass the training format checks",
           rc6 == 0 and gs.validate_run(tdir, sm_path)["usable"] == 12, o6[-300:])
 finally:
@@ -502,17 +514,78 @@ try:
 except OSError as e:
     print(f"  NOTE  embedding model not available, embedding tests skipped ({e})")
 
+# ------------------------------------------------------------------ 9. printout consistency and plain text (2026-11-20)
+print("[9] the printout checker (output_check.py) and the plain-text rule of benchmark-v8 / training-v2")
+import output_check as oc  # noqa: E402
+grid_t = [(0.5, 3), (2.145, 18), (7.0, 23), (1.96, 1e6), (3.3, 5.7)]
+grid_f = [(4.0, 3, 20), (6.0, 2, 27), (25.3, 2, 27), (0.8, 4, 10)]
+grid_c = [(6.102, 1), (12.5, 4), (0.3, 2)]
+code = ("options(digits = 15)\n"
+        + "".join(f"cat(2*pt(-{t}, {d}), '\\n')\n" for t, d in grid_t)
+        + "".join(f"cat(pf({f}, {a}, {b}, lower.tail = FALSE), '\\n')\n" for f, a, b in grid_f)
+        + "".join(f"cat(pchisq({x}, {k}, lower.tail = FALSE), '\\n')\n" for x, k in grid_c)
+        + "cat(qt(0.975, 18), qt(0.975, 25), '\\n')\n")
+ok_r, out = gb.run_r(code, gb.rscript_path())      # our own reference code, run in the R sandbox like all R in this project
+vals = [float(x) for x in out.split()]
+mine = ([oc.p_t_two(t, d) for t, d in grid_t] + [oc.p_f_upper(f, a, b) for f, a, b in grid_f]
+        + [oc.p_chisq_upper(x, k) for x, k in grid_c] + [oc.t_crit(0.95, 18), oc.t_crit(0.95, 25)])
+check("the t, F and chi-square p-values and t critical values match R to 6 significant digits",
+      ok_r and len(vals) == len(mine) and all(abs(a - b) <= 1e-6 * max(abs(b), 1e-300) + 1e-14 for a, b in zip(mine, vals)),
+      list(zip(mine, vals)))
+sm0010 = ("Coefficients:\n               Estimate Std. Error t value Pr(>|t|)    \n(Intercept)  15.3200    2.8100    5.452   0.0000 ***\n"
+          "speed         1.2000    0.2400    5.000   0.0000 ***\ntemp         -0.4000    0.1500   -2.667   0.0131 *  \n---\n"
+          "95% confidence intervals:\n               lower    upper\nspeed         0.992    1.408\ntemp         -0.709   -0.091\n")
+check("SM0010's impossible interval (0.992 to 1.408 for estimate 1.2 with SE 0.24) is caught, and only that row",
+      len(oc.check(sm0010)) == 1 and "interval for speed" in oc.check(sm0010)[0], oc.check(sm0010))
+sm0004 = ("\tTwo Sample t-test\n\ndata:  x and y\nt = 2.145, df = 18, p-value = 0.04546\nalternative hypothesis: true difference "
+          "in means is not equal to 0\n95 percent confidence interval:\n 0.0288 2.7712\nsample estimates:\nmean of x mean of y \n    5.40      4.00 \n")
+check("SM0004 (p 0.04546 where 0.04585 is exact: 0.85%, within the 1% allowance; a correct interval) passes", oc.check(sm0004) == [])
+check("a t-test interval with the wrong width is caught", oc.check(sm0004.replace("0.0288 2.7712", "0.4288 2.3712")) != [])
+check("a p-value 2.7% off (Claude-era BM0070: F = 4.000 on 3 and 20 DF printed 0.0215, exact 0.0221) is caught",
+      oc.check("F-statistic: 4.000 on 3 and 20 DF,  p-value: 0.0215") != [] and oc.check("F-statistic: 4.000 on 3 and 20 DF,  p-value: 0.02208") == [])
+check("a regression p-value inconsistent with t and df (Claude-era BM0110: t = 7 on 23 df printed 1.2e-07, exact 3.9e-07) is caught",
+      oc.check("            Estimate Std. Error t value Pr(>|t|)\nx             0.70      0.10     7.000  1.2e-07 ***\n---\n"
+               "Residual standard error: 2.1 on 23 degrees of freedom\n") != [])
+anova = ("            Df Sum Sq Mean Sq F value  Pr(>F)\ngroup        2  120.0   60.00   6.000 0.00698 **\nResiduals   27  270.0   10.00\n")
+check("a consistent ANOVA table passes; a wrong Mean Sq or F is caught",
+      oc.check(anova) == [] and oc.check(anova.replace("60.00", "65.00")) != [] and oc.check(anova.replace("6.000", "7.000")) != [])
+check("chi-square: X-squared = 6.102 on 1 df with p 0.01350 passes, with p 0.0315 is caught",
+      oc.check("X-squared = 6.102, df = 1, p-value = 0.01350") == [] and oc.check("X-squared = 6.102, df = 1, p-value = 0.0315") != [])
+check("'< 2.2e-16' and '0.0000' are read as bounds: consistent with a huge t, refused for a small one",
+      oc.check("t = 25.3, df = 40, p-value < 2.2e-16") == [] and oc.check("t = 1.2, df = 40, p-value < 2.2e-16") != [])
+check("text with no recognizable printout is never flagged", oc.check("Which statement about the sample mean is true?") == [])
+bm_item = {**good_bm, "answer_type": "multiple_choice", "canonical_answer": "B", "r_solution": "", "answer_tolerance": 0,
+           "choices": ["one", "two", "three", "four"], "question": "Here is R output:\n" + sm0010 + "What does the interval mean?",
+           "category": "output_interpretation"}
+oslot = {**nslot, "category": "output_interpretation", "answer_type": "multiple_choice"}
+check("a benchmark-v8 reply with an inconsistent printout is unusable (asked again); the same reply under v7 is checked as before",
+      any("printed output is inconsistent" in p for p in sp.check_benchmark_item(bm_item, oslot, version="benchmark-v8"))
+      and not any("printed output" in p for p in sp.check_benchmark_item(bm_item, oslot, version="benchmark-v7")))
+fenced = {**good_bm, "question": "Consider:\n```r\nx <- c(1, 2)\n```\nWhat is mean(x)? Give your answer to 3 decimal places."}
+latex = {**good_bm, "question": "Let \\rho = E|X|^3. Compute it. Give your answer to 3 decimal places."}
+rcode = {**good_bm, "question": 'x <- grepl("\\\\d+", s); cat("done\\n"). What is 1+1? Give your answer to 3 decimal places.'}
+check("benchmark-v8: a markdown code fence is refused", any("code fence" in p for p in sp.check_benchmark_item(fenced, nslot)))
+check("benchmark-v8: a LaTeX command (\\rho) is refused", any("LaTeX" in p for p in sp.check_benchmark_item(latex, nslot)))
+check("benchmark-v8: R escapes (\\n, a doubled \\\\d in a regular expression) are NOT mistaken for LaTeX",
+      not any("LaTeX" in p for p in sp.check_benchmark_item(rcode, nslot)))
+check("benchmark-v7 replies keep their old checks (no plain-text rule)", not any("code fence" in p for p in sp.check_benchmark_item(fenced, nslot, version="benchmark-v7")))
+check("training-v2: a code fence in the worked answer is refused; training-v1 is unchanged",
+      any("code fence" in p for p in sp.check_training_item({**good_tr, "worked_answer": "```r\nx\n```"}, tslot))
+      and any("markdown" in p for p in sp.check_training_item({**good_tr, "worked_answer": "```r\nx\n```"}, tslot, version="training-v1")))
+
 # ------------------------------------------------------------------ 8. the Talon copy keeps the pinned bytes
 print("[8] the files as `git archive` (the Talon copy) writes them keep their pinned SHA-256 (line endings)")
 import hashlib  # noqa: E402
 import io  # noqa: E402
 import tarfile  # noqa: E402
 pins = {"data/prompts/benchmark_generation_v6.md": "348db6ff84da29d22b2fcdeec9c13191df9d828b6af64b61146f2794b1888cc4",
-        "data/prompts/benchmark_generation_v7.md": sha7, "data/prompts/training_generation_v1.md": shatr,
+        "data/prompts/benchmark_generation_v7.md": sha7, "data/prompts/training_generation_v1.md": shatr1,
+        "data/prompts/benchmark_generation_v8.md": sha8, "data/prompts/training_generation_v2.md": shatr,
         "data/taxonomy/subtopics.yaml": tax_sha, "data/taxonomy/contexts.yaml": ctx_sha}
 common = (REPO / "configs" / "talon" / "common.sh").read_text(encoding="utf-8")
 check("the prompt pins in configs/talon/common.sh equal the prompt files' SHA-256",
-      f'PROMPT_V7_SHA256="{sha7}"' in common and f'PROMPT_TRAIN_SHA256="{shatr}"' in common)
+      f'PROMPT_BENCH_SHA256="{sha8}"' in common and f'PROMPT_TRAIN_SHA256="{shatr}"' in common
+      and 'PROMPT_BENCH_FILE="benchmark_generation_v8.md"' in common and 'PROMPT_TRAIN_FILE="training_generation_v2.md"' in common)
 smoke_slots = REPO / "data" / "slots" / "smoke_slots.jsonl"
 if smoke_slots.exists():
     pins["data/slots/smoke_slots.jsonl"] = json.loads((REPO / "data" / "slots" / "smoke_slots.manifest.json").read_text())["slots_sha256"]

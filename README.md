@@ -90,7 +90,7 @@ The full definitions, the original wording and the measurement protocol are in [
 | `code/verification/` | Decontamination (`decontaminate.py`) and the embedding-model check (`embedding_check.py`) |
 | `code/evaluation/`, `code/tests/` | Pythia probe; local test suites for the pipeline and the cluster job scripts |
 | `configs/` | `paths.yaml` (all storage locations) and the Redhawk and Talon Slurm scripts |
-| `data/prompts/`, `data/taxonomy/` | Generation prompts (benchmark v7, training v1; v6 kept for past runs; SHA-256 pinned by the job scripts); taxonomy and context deck |
+| `data/prompts/`, `data/taxonomy/` | Generation prompts (benchmark v8, training v2; earlier versions kept for past runs; SHA-256 pinned by the job scripts); taxonomy and context deck |
 | `recovery/` | Rebuild procedures for everything stored outside the repository |
 | `results/`, `environment/` | Small result files; pinned Python packages |
 

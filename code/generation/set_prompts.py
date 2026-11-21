@@ -5,9 +5,11 @@ the tests, so the prompt text and the checks are defined in exactly one place.
 
 WHAT THIS IS AND WHY
 The full-size generator writes three kinds of material from frozen slot files (code/generation/variety.py):
-  - BENCHMARK-STYLE items (the benchmark BM, the development set DV, smoke SM) with data/prompts/benchmark_generation_v7.md:
+  - BENCHMARK-STYLE items (the benchmark BM, the development set DV, smoke SM) with data/prompts/benchmark_generation_v8.md
+    (v7 until 2026-11-20):
     an exam question plus an answer KEY and R code that recomputes or checks it;
-  - TRAINING examples (TR, TRR, and the held-out training-style set TV) with data/prompts/training_generation_v1.md:
+  - TRAINING examples (TR, TRR, and the held-out training-style set TV) with data/prompts/training_generation_v2.md
+    (v1 until 2026-11-20):
     a question plus a short worked answer and a final answer, the material the students learn from.
 generate_benchmark.py (v6, the archived trials and the deployment tests) is NOT changed; its checks are reused here
 and only tightened where the approved plan says so, so the regression snapshot of v6 stays exactly as it was.
@@ -21,6 +23,9 @@ WHAT IS NEW COMPARED WITH v6 (and why)
      aloud). Only a lowercase "no:" in the middle of a sentence ("... must be... no: exactly 2 ...") counts now.
   4. Training replies get their own format checks (no correctness checks; workflow.md Section 4, safeguard 9), and
      their text is assembled into the exact Question:/Answer:/Final answer: template the students see.
+  5. Prompts benchmark-v8 and training-v2 (Jaxson's decision of 2026-11-20) also require plain text: no markdown code
+     fences and no LaTeX in the question, the choices or the worked answer; and a benchmark-v8 question's printed software
+     output must be consistent (output_check.py). Replies of v7 and v1 are still checked exactly as they were written.
 
 EXAMPLE (a training slot): numerical / "binomial probability" / intro / number / context "sports". The user message
 ends with
@@ -43,11 +48,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import generate_benchmark as gb  # noqa: E402  (v6 checks reused unchanged; the regression snapshot covers them)
 
 REPO = gb.REPO
-PROMPTS = {
-    # kind: (prompt file, version label, item-id kinds the prompt may be used for)
-    "benchmark": (REPO / "data" / "prompts" / "benchmark_generation_v7.md", "benchmark-v7", ("BM", "DV", "SM")),
-    "training": (REPO / "data" / "prompts" / "training_generation_v1.md", "training-v1", ("TR", "TRR", "TV", "SM")),
+# Every prompt version that has produced or will produce replies: version -> (prompt file, version label, item-id kinds).
+# Older versions stay here so their runs can still be validated with exactly the checks they were written under.
+PROMPT_FILES = {
+    "benchmark-v7": (REPO / "data" / "prompts" / "benchmark_generation_v7.md", "benchmark-v7", ("BM", "DV", "SM")),
+    "benchmark-v8": (REPO / "data" / "prompts" / "benchmark_generation_v8.md", "benchmark-v8", ("BM", "DV", "SM")),
+    "training-v1": (REPO / "data" / "prompts" / "training_generation_v1.md", "training-v1", ("TR", "TRR", "TV", "SM")),
+    "training-v2": (REPO / "data" / "prompts" / "training_generation_v2.md", "training-v2", ("TR", "TRR", "TV", "SM")),
 }
+# The versions used for new runs (Jaxson's decision of 2026-11-20: plain text only, so benchmark v8 and training v2).
+CURRENT = {"benchmark": "benchmark-v8", "training": "training-v2"}
+PROMPTS = {kind: PROMPT_FILES[v] for kind, v in CURRENT.items()}
+# Versions that get the 2026-11-20 checks: plain text (no code fences, no LaTeX) and, for benchmark-style items, a
+# consistent printout (output_check.py). Earlier versions are validated as they were written.
+PLAIN_TEXT_VERSIONS = {"benchmark-v8", "training-v2"}
+PRINTOUT_CHECK_VERSIONS = {"benchmark-v8"}
 SCHEMA_BLOCK_HEADER = "Output schema (JSON Schema):"   # the same adapter as open_teacher_test.py (schema sent as text)
 NONE = "none"
 MAX_TRAINING_TOKENS = 2048                             # Pythia's context length; the assembled example must fit
@@ -86,9 +101,10 @@ def schema_for(kind):
 # Prompt files
 # ---------------------------------------------------------------------------------------------
 def load_prompt(kind):
-    """(sections, sha256, version label) of a prompt file. Sections are keyed (MARKER, name), as in generate_benchmark.
-    The SHA-256 is of the file's bytes, exactly what configs/talon/prep_talon.sh pins with sha256sum."""
-    path, version, _ = PROMPTS[kind]
+    """(sections, sha256, version label) of a prompt file, given a kind ('benchmark', 'training': the current version) or
+    a version label ('benchmark-v7'). Sections are keyed (MARKER, name), as in generate_benchmark. The SHA-256 is of the
+    file's bytes, exactly what configs/talon/common.sh pins with sha256sum."""
+    path, version, _ = PROMPT_FILES[CURRENT.get(kind, kind)]
     raw = path.read_bytes()
     text = raw.decode("utf-8").replace("\r\n", "\n")
     sections, key, buf = {}, None, []
@@ -125,7 +141,7 @@ def build_request(slot, prompt, kind):
     """The system text and the user message for one slot (before the schema block is appended)."""
     if slot.get("slot_scheme") != "taxonomy-v2":
         raise ValueError(f"{slot.get('item_id')}: not a taxonomy-v2 slot; v7 and training v1 need a frozen slot file")
-    if id_kind(slot["item_id"]) not in PROMPTS[kind][2]:
+    if id_kind(slot["item_id"]) not in PROMPT_FILES[CURRENT.get(kind, kind)][2]:
         raise ValueError(f"{slot['item_id']}: a {kind} prompt may not be used for this id")
     letter = slot.get("preferred_letter") or "any letter"
     user = prompt[("USER", None)].format(
@@ -142,7 +158,7 @@ def build_messages(slot, prompt, kind):
     """Chat messages exactly as sent: the schema JSON appended to the system text (the servers do not enforce a schema,
     and forcing JSON while the model thinks is unreliable; open_teacher_test.py explains this adapter)."""
     req = build_request(slot, prompt, kind)
-    system = req["system"] + "\n\n" + SCHEMA_BLOCK_HEADER + "\n" + json.dumps(schema_for(kind))
+    system = req["system"] + "\n\n" + SCHEMA_BLOCK_HEADER + "\n" + json.dumps(schema_for(kind.split("-")[0]))
     return [{"role": "system", "content": system}, {"role": "user", "content": req["messages"][0]["content"]}]
 
 
@@ -163,6 +179,22 @@ _WORKED_MARKERS = re.compile(r"\bwait\s*[,.:!—-]|[.!?]\s+wait\b|\bhmm\b|\boops
                              r"\bi made (?:a|an) (?:mistake|error)\b", re.I)
 SELF_CORRECTION = "question text looks unfinished or self-correcting"
 
+# Plain text only (prompts benchmark-v8 and training-v2). A code fence is three backticks. A LaTeX command is a backslash
+# followed by two or more letters (\rho, \sqrt, \mathbb) or by ( ) [ ]; R escapes such as \n or \t have one letter, and R
+# regular expressions are written with a doubled backslash ("\\d+"), which the look-behind skips.
+_FENCE = re.compile(r"```")
+_LATEX = re.compile(r"(?<!\\)\\(?:[A-Za-z]{2,}|[()\[\]])")
+
+
+def plain_text_problems(field, text):
+    out = []
+    if _FENCE.search(text):
+        out.append(f"{field} uses a markdown code fence (```); prompt rule: plain text only")
+    m = _LATEX.search(text)
+    if m:
+        out.append(f"{field} uses LaTeX ({m.group(0)!r}); prompt rule: plain text only")
+    return out
+
 
 def thinking_aloud(text):
     """The first marker of a model thinking aloud in question text, or None."""
@@ -173,9 +205,10 @@ def thinking_aloud(text):
 # ---------------------------------------------------------------------------------------------
 # Benchmark v7 checks
 # ---------------------------------------------------------------------------------------------
-def check_benchmark_item(item, slot, finish_reason="stop", r_keyed=True):
-    """Hard problems of one benchmark-v7 reply (empty list = usable). v6's checks, plus: `working` and `r_solution`
-    are required, and the thinking-aloud test uses the "No:" fix."""
+def check_benchmark_item(item, slot, finish_reason="stop", r_keyed=True, version=CURRENT["benchmark"]):
+    """Hard problems of one benchmark-style reply (empty list = usable). v6's checks, plus: `working` and `r_solution`
+    are required, and the thinking-aloud test uses the "No:" fix. From benchmark-v8 on, also plain text only and a
+    consistent printout (output_check.py)."""
     problems = []
     if finish_reason == "length":
         problems.append("cut off at max_tokens")
@@ -201,6 +234,12 @@ def check_benchmark_item(item, slot, finish_reason="stop", r_keyed=True):
         problems.append(f"{SELF_CORRECTION} (found {marker!r})")
     if not item["working"].strip():
         problems.append("empty working")
+    if version in PLAIN_TEXT_VERSIONS:
+        problems += plain_text_problems("question", item["question"])
+        problems += plain_text_problems("choices", " ".join(item["choices"]))
+    if version in PRINTOUT_CHECK_VERSIONS:
+        import output_check
+        problems += output_check.check(item["question"])
     return problems
 
 
@@ -211,8 +250,8 @@ _LETTER_LABEL = re.compile(r"^\s*\(?[A-Da-d][.):]\s")
 _NUMBER = re.compile(r"^-?\d+(?:\.\d+)?$")
 
 
-def check_training_item(item, slot, finish_reason="stop"):
-    """Hard problems of one training-v1 reply (empty list = usable). FORMAT ONLY: nothing here judges whether the answer
+def check_training_item(item, slot, finish_reason="stop", version=CURRENT["training"]):
+    """Hard problems of one training reply (empty list = usable). FORMAT ONLY: nothing here judges whether the answer
     is correct (workflow.md Section 4, safeguard 9). The length limit is checked later, with the Pythia tokenizer
     (training_tokens), because the cluster job does not load a tokenizer."""
     problems = []
@@ -281,6 +320,10 @@ def check_training_item(item, slot, finish_reason="stop"):
             got = len(plain.split(".")[1]) if "." in plain else 0
             if d is not None and got != d:
                 problems.append(f"the question asks for {d} decimal place(s) but the final answer has {got}")
+    if version in PLAIN_TEXT_VERSIONS:
+        for field, text in (("question", item["question"]), ("choices", " ".join(item["choices"])),
+                            ("worked_answer", item["worked_answer"])):
+            problems += plain_text_problems(field, text)
     return problems
 
 

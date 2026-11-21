@@ -206,7 +206,7 @@ again with exactly the same request, up to 3 attempts; every attempt is saved, w
 
 **Settings for a job** (environment variables, passed by the submit script):
 - `GEN_SLOTS`: the slot file (for example `data/slots/smoke_slots.jsonl`; its manifest must sit beside it);
-- `GEN_PROMPT`: `benchmark` (prompt v7, for BM, DV and SM ids) or `training` (prompt v1, for TR, TRR, TV and SM ids);
+- `GEN_PROMPT`: `benchmark` (prompt v8 since 2026-11-20, for BM, DV and SM ids) or `training` (prompt v2, for TR, TRR, TV and SM ids); the run folder name carries the prompt version, for example `smoke_benchmark-v8_<selection>_shard1of1`;
 - `GEN_SHARD`: `k/K`, for example `2/4`;
 - optional `GEN_FIRST` and `GEN_COUNT`: which positions of the file (the smoke file uses 1-20 with the benchmark prompt and 21-40 with the training prompt).
 
@@ -241,7 +241,7 @@ quota. One 65,000-slot shard is about 1.1 GB of raw replies (about 17 KB per rep
 parallelism without them.
 
 **Reviewed:** the three new settings (`TIME_GENERATE`, `GEN_MARGIN_SECONDS`, `GEN_MIN_FREE_MIB`) were added after the settings
-review of 2026-11-12 and approved by Jaxson on 2026-11-20. The first stage G job is a smoke test (20 v7 and 20 training-v1 smoke slots), and it needs the owner's separate approval.
+review of 2026-11-12 and approved by Jaxson on 2026-11-20. The first stage G smoke test (jobs 291 and 293, v7 and training v1) passed on 2026-11-20 (compute log entry 17); a second one checks v8 and training v2.
 
 ## 9. After your Talon account is activated: exact steps
 

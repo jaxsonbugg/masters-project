@@ -117,7 +117,7 @@ The teacher setup from Step 1 serves Qwen; training Pythia needs a different set
 
 The teacher writes about 1,000 new questions on statistics and R, each with a worked answer. This only starts after the benchmark is frozen. Four things keep it apart from the benchmark and keep it useful:
 
-- **A separate prompt.** Training data uses its own prompt file, `data/prompts/training_generation_v1.md` (approved 2026-11-19), never the benchmark prompt. Each example follows one fixed template (`Question: ...`, then `Answer: ...`) with a short answer that ends in a clearly marked final answer. The training code adds the end-of-text token (id 0) after every answer so the student learns to stop. Loss (the error the training tries to reduce) is counted only on the answer and that end token, so the student is graded on writing the answer, not on copying the question.
+- **A separate prompt.** Training data uses its own prompt file, `data/prompts/training_generation_v2.md` (v1 approved 2026-11-19; v2 adds a plain-text rule, 2026-11-20), never the benchmark prompt. Each example follows one fixed template (`Question: ...`, then `Answer: ...`) with a short answer that ends in a clearly marked final answer. The training code adds the end-of-text token (id 0) after every answer so the student learns to stop. Loss (the error the training tries to reduce) is counted only on the answer and that end token, so the student is graded on writing the answer, not on copying the question.
 - **Separate IDs and folders.** Training examples get their own prefix (for example `TR000001`) and dated run folders; benchmark IDs are `BM0001` to `BM1000`.
 - **Variety.** The same slot-variety fix applies, so the 1,000 examples cover many different skills instead of many copies of a few.
 - **Decontamination** against the frozen benchmark. Every training example is compared with every benchmark question in two ways: shared word sequences (for example any shared run of 8 or more words) and embedding similarity (a small model turns each text into a list of numbers, and two texts with very similar numbers say the same thing in different words). These checks only pick out candidate pairs; which pairs count as copies is decided by a rule chosen from pairs you label by hand (duplicate, template variant or distinct) on development data, never on the benchmark (`docs/guides/decontamination_labeling_guide.md`). Worked example: if benchmark item BM0412 asks for P(X = 2) when X ~ Binomial(5, 0.4), a training example asking for P(X = 3) in the same words is a template variant and is dropped and replaced like-for-like; a Poisson question with similar wording is distinct and stays, because it trains the same skill without copying the exam. Matches are removed from the training set, never from the frozen benchmark, and the rule and counts are logged.
@@ -206,14 +206,14 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
 
 1. **Talon bring-up.** Done so far: the probe, the BF16 download, the smoke test (Stage A) and the throughput test (Stage T). Remaining: the training environment. No FP8 or 4-bit download is needed.
 2. **Generation code** (all built and tested locally by 2026-11-20; nothing generated yet):
-   - `r_solution` and `working` required in benchmark replies (prompt v7);
+   - `r_solution` and `working` required in benchmark replies (prompt v7, now v8);
    - slot variety (taxonomy, context deck, slot dealer);
    - the full-size generator and Talon stage G;
    - decontamination (method and embedding check; the rule is set later from your labels);
    - the fix for the "No:" false alarm;
    - **the R sandbox**.
 
-   Next: a short stage G smoke test on Talon (20 benchmark-v7 and 20 training-v1 smoke slots), **only with your separate approval**.
+   Done 2026-11-20: the stage G smoke test (40 of 40 replies usable). Your decisions the same day: the benchmark mix as proposed, an automatic check of printed output, and plain text only (prompts v8 and training v2). Next: a second short smoke test with v8 and v2, **only with your separate approval**, then the slot files and the benchmark.
 3. **Teacher setup:**
    1. precision: BF16, decided without a test (2026-11-18);
    2. output limit and context: kept as final;

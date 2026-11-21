@@ -72,7 +72,7 @@ try:
 except Exception:
     pass
 
-GENERATOR_VERSION = "generate_set-1"
+GENERATOR_VERSION = "generate_set-2"      # 2 (2026-11-20): prompt versions in run names; plain-text and printout checks
 MAX_ATTEMPTS = 3                 # per slot, re-asked without hints (approved plan, Step 5)
 MAX_REPLACEMENTS = 5             # per training position (Step 6)
 HTTP_RETRIES = 3                 # transport errors per slot per session before it is left for the next session
@@ -159,21 +159,23 @@ def parse_reply(rec):
     return item, finish, None
 
 
-def check_reply(rec, slot, prompt_kind):
-    """(item, problems) for a saved row; problems == [] means usable."""
+def check_reply(rec, slot, prompt_kind, version):
+    """(item, problems) for a saved row; problems == [] means usable. `version` is the prompt version the reply was
+    written with (for example benchmark-v8): each version is checked exactly as designed."""
     item, finish, problems = parse_reply(rec)
     if problems is not None:
         return item, problems
     if prompt_kind == "benchmark":
-        return item, sp.check_benchmark_item(item, slot, finish)
-    return item, sp.check_training_item(item, slot, finish)
+        return item, sp.check_benchmark_item(item, slot, finish, version=version)
+    return item, sp.check_training_item(item, slot, finish, version=version)
 
 
 # ---------------------------------------------------------------------------------------------
 # Run folders and the done-index
 # ---------------------------------------------------------------------------------------------
-def run_name(man_set, prompt_kind, selection_sha, shard):
-    return f"{man_set}_{prompt_kind}_{selection_sha[:8]}_shard{shard[0]}of{shard[1]}"
+def run_name(man_set, prompt_version, selection_sha, shard):
+    """For example smoke_benchmark-v8_bfa35577_shard1of1. (Runs before 2026-11-20 carry only the kind, smoke_benchmark_...)"""
+    return f"{man_set}_{prompt_version}_{selection_sha[:8]}_shard{shard[0]}of{shard[1]}"
 
 
 def find_run_dir(backend, name):
@@ -195,21 +197,21 @@ def count_lines(path):
     return n
 
 
-def rebuild_index(run_dir, slots_by_id, prompt_kind):
+def rebuild_index(run_dir, slots_by_id, prompt_kind, version):
     """Rebuild done_index.jsonl from responses.jsonl (slow; only after a crash between the two writes)."""
     rows = []
     for n, rec in enumerate(ott.read_rows(run_dir), 1):
         slot = slots_by_id.get(rec.get("item_id"))
         usable = None
         if rec.get("http_status") == 200 and slot is not None:
-            usable = not check_reply(rec, slot, prompt_kind)[1]
+            usable = not check_reply(rec, slot, prompt_kind, version)[1]
         rows.append({"item_id": rec.get("item_id"), "attempt": rec.get("attempt"), "http_status": rec.get("http_status"),
                      "usable": usable, "line": n})
     ott.atomic_write(run_dir / "done_index.jsonl", "".join(json.dumps(r) + "\n" for r in rows))
     return rows
 
 
-def load_index(run_dir, slots_by_id, prompt_kind):
+def load_index(run_dir, slots_by_id, prompt_kind, version):
     """The done-index, rebuilt if it disagrees with responses.jsonl (a crash between the two appends)."""
     idx_path, resp_path = run_dir / "done_index.jsonl", run_dir / "responses.jsonl"
     n_resp = count_lines(resp_path)
@@ -217,7 +219,7 @@ def load_index(run_dir, slots_by_id, prompt_kind):
         rows = [json.loads(l) for l in idx_path.read_text(encoding="utf-8").splitlines() if l.strip()]
         if len(rows) == n_resp:
             return rows, False
-    return rebuild_index(run_dir, slots_by_id, prompt_kind), True
+    return rebuild_index(run_dir, slots_by_id, prompt_kind, version), True
 
 
 def slot_states(index_rows):
@@ -276,7 +278,7 @@ def cmd_run(args):
         print("\nSYSTEM:\n" + b["messages"][0]["content"] + "\n\nUSER:\n" + b["messages"][1]["content"])
         return 0
 
-    name = run_name(man["set"], args.prompt, selection_sha, shard)
+    name = run_name(man["set"], prompt_version, selection_sha, shard)
     run_dir = find_run_dir(backend, name)
     if run_dir is None:
         root = ott.outputs_root(backend)
@@ -316,7 +318,7 @@ def cmd_run(args):
     else:
         meta = new_meta
     try:
-        index_rows, rebuilt = load_index(run_dir, slots_by_id, args.prompt)
+        index_rows, rebuilt = load_index(run_dir, slots_by_id, args.prompt, prompt_version)
     except ott.RunFolderError as e:
         refuse(str(e))
     states = slot_states(index_rows)
@@ -425,7 +427,7 @@ def cmd_run(args):
             row["seconds"] = round(time.time() - t0, 1)
             usable, problems = None, []
             if row["http_status"] == 200:
-                _, problems = check_reply(row, slot, args.prompt)
+                _, problems = check_reply(row, slot, args.prompt, prompt_version)
                 usable = not problems
                 row["problems"] = problems
             else:
@@ -514,7 +516,10 @@ def validate_run(run_dir, slots_path=None):
     kinds = {sp.id_kind(i) for i in ids}
     if None in kinds or not kinds <= set(SET_IDS.get(meta["set"], ())):
         infra.append(f"slot_ids contain ids that do not belong to set {meta['set']!r}")
-    if not kinds <= set(sp.PROMPTS[meta["prompt_kind"]][2]):
+    if meta.get("prompt_version") not in sp.PROMPT_FILES:
+        infra.append(f"prompt_version {meta.get('prompt_version')!r} is not a known prompt version")
+        return rep
+    if not kinds <= set(sp.PROMPT_FILES[meta["prompt_version"]][2]):
         infra.append(f"the {meta['prompt_kind']} prompt was used for ids it may not be used for")
     if len(set(ids)) != len(ids):
         infra.append("slot_ids contains duplicates")
@@ -530,7 +535,7 @@ def validate_run(run_dir, slots_path=None):
         infra.append(f"max_tokens {meta['max_tokens']} is not the designed {ott.MAX_TOKENS}")
     if meta["max_attempts"] != MAX_ATTEMPTS:
         infra.append(f"max_attempts {meta['max_attempts']} is not {MAX_ATTEMPTS}")
-    _, cur_sha, cur_version = sp.load_prompt(meta["prompt_kind"])
+    _, cur_sha, cur_version = sp.load_prompt(meta["prompt_version"])
     if (meta["prompt_sha256"], meta["prompt_version"]) != (cur_sha, cur_version):
         infra.append("prompt_sha256 differs from the prompt file in this repository copy")
     slots_by_id = None
@@ -590,7 +595,7 @@ def validate_run(run_dir, slots_path=None):
             if not (isinstance(u.get("prompt_tokens"), int) and isinstance(u.get("completion_tokens"), int)):
                 infra.append(f"{iid} line {n}: the saved reply has no integer token counts")
             rep["replies"] += 1
-            _, problems = check_reply(r, slot, meta["prompt_kind"])
+            _, problems = check_reply(r, slot, meta["prompt_kind"], meta["prompt_version"])
             if problems:
                 rep["quality_replies"] += 1
                 quality.append(f"{iid} attempt {attempts}: " + "; ".join(problems))
@@ -658,7 +663,7 @@ def collect_rows(run_dirs, rscript=None):
                 if r.get("http_status") != 200:
                     continue
                 attempts += 1
-                item, problems = check_reply(r, slot, prompt_kind)
+                item, problems = check_reply(r, slot, prompt_kind, meta["prompt_version"])
                 if not problems:
                     chosen = (n, item, r)
                     break

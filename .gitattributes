@@ -5,5 +5,7 @@
 # give them Windows line endings, or a Talon job would refuse them. The v6 prompt is NOT listed: its pin was computed on CRLF bytes.
 data/prompts/benchmark_generation_v7.md text eol=lf
 data/prompts/training_generation_v1.md text eol=lf
+data/prompts/benchmark_generation_v8.md text eol=lf
+data/prompts/training_generation_v2.md text eol=lf
 data/taxonomy/*.yaml text eol=lf
 data/slots/** text eol=lf

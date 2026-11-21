@@ -357,7 +357,7 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
 ## 3. Benchmark design
 
 - **Size:** about 1,000 questions, held out and frozen.
-- **Content mix (proposal, to confirm with Dr. Lee):**
+- **Content mix (approved by the owner on 2026-11-20, as proposed; the training data uses the same mix):**
 
   | Category | Share |
   |---|---|
@@ -394,10 +394,11 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
 
 **Safeguards, in the order they apply.**
 
-1. **Separate generation prompts (approved 2026-11-19).** The benchmark and the development set are written only with `data/prompts/benchmark_generation_v7.md`. The training data and the held-out training-style set use `data/prompts/training_generation_v1.md`. Neither prompt is ever used for the other purpose, and the code refuses it (`code/generation/set_prompts.py`).
+1. **Separate generation prompts (approved 2026-11-19; plain-text versions 2026-11-20).** The benchmark and the development set are written only with `data/prompts/benchmark_generation_v8.md`. The training data and the held-out training-style set use `data/prompts/training_generation_v2.md`. Neither prompt is ever used for the other purpose, and the code refuses it (`code/generation/set_prompts.py`).
    - **v7** is v6 plus one "Setting:" line (the application context, below) and one corrected sentence: v6 told the model that the first line of each answer is compared with the key, but answers are read from their `Final answer:` line and graded against the key. v6 stays byte for byte (SHA-256 `348db6ff...`) for the Redhawk scripts and past runs.
    - **Training v1** asks for a question plus a short `worked_answer` (2 to 8 plain steps, at most about 250 words, no self-corrections) and a `final_answer`. The code assembles the student text in the exact evaluation template: `Question:` (with choices `A.` to `D.` for multiple choice), `Answer: <worked answer>`, `Final answer: <final answer>`, then Pythia's end-of-text token (id 0).
-   - **Pinned:** both files' SHA-256 values are pinned in `configs/talon/common.sh` (v7 `980f5570...`, training v1 `db9ca660...`), so a Talon job refuses a changed prompt file.
+   - **v8 and training v2 (owner's decision, 2026-11-20)** add one rule, "Plain text only": no markdown code fences and no LaTeX; R code and printed output as plain lines; mathematics in plain words or symbols such as sqrt(n) and rho. The stage G smoke test had shown three v7 questions with code fences and one with LaTeX, while the students read plain text. A reply that breaks the rule is unusable and asked again. v7 and v1 stay byte for byte for the smoke runs that used them.
+   - **Pinned:** the current files' SHA-256 values are pinned in `configs/talon/common.sh` (v8 `0ba834e2...`, training v2 `412d1eb4...`), so a Talon job refuses a changed prompt file.
 2. **Separate IDs, folders and slot fingerprints.**
    - **The IDs of the new sets** (dealt by `code/generation/variety.py` into frozen slot files):
 
@@ -458,6 +459,11 @@ The reference key comes from the benchmark quality procedure (Section 4, safegua
    - (b) **R checks test the R code items.**
      - **How:** each R-expression item has an `r_check` that receives an answer as `candidate`. `verify` runs it, in the sandbox, against the key, which it must accept, and against deliberately wrong answers, which it must reject. This way each R item has a well-defined expected behavior.
      - **A flagged check:** one that accepts a wrong answer is flagged as "vacuous".
+   - (a2) **The printed software output is recomputed (decided 2026-11-20).**
+     - **Why:** output-interpretation questions show a printout (a t-test, a regression table, an ANOVA table, a chi-square test) that the teacher writes from memory, and its numbers do not always agree with each other. In the Claude-era trials 6 of 18 such items had small inconsistencies; in the stage G smoke test SM0010 printed a 95% interval of 0.992 to 1.408 for a coefficient whose own estimate 1.2 and standard error 0.24 give about 0.71 to 1.69. Keys were not affected, but an impossible table makes a question confusing or debatable.
+     - **How** (`code/generation/output_check.py`, prompt benchmark-v8 only, so benchmark and development questions; never training data): p-values are recomputed from t, F or chi-square and their degrees of freedom; t from estimate / standard error; interval centres and half-widths from the estimate, the standard error and the critical value; ANOVA mean squares and F. Every printed number stands for its rounding interval ("0.24" is 0.235 to 0.245), and a check passes if the printed result fits, with 1% relative slack. *Example:* SM0004's p = 0.04546 against an exact 0.04585 (0.85%) passes; Claude-era BM0070's p = 0.0215 against 0.0221 (2.7%) fails.
+     - **What happens:** a failing question is unusable and is asked again (up to 3 attempts), then replaced by a spare. The t, F and chi-square functions are written in plain Python, so the check runs on Talon, and they are tested against R.
+     - **Limits:** only these standard R formats are read; other printouts (a confusion matrix, a correlation matrix) are left to the screen and the audit.
    - **What (a) and (b) cannot show.** R runs the teacher's own code, so it checks arithmetic and code behavior, not whether the teacher read the question correctly. Consistent code for a misread question gives a consistent wrong key. Steps (c) and (d) cover that.
    - (c) **Codex screens every question.**
      - **How:** the grader (Section 2.3) reads each benchmark question, without its answer, and flags ambiguity, missing information or invalid statistical assumptions, with a reason. The owner reviews **every** flagged question and fixes it, replaces it, or keeps it with a note.
@@ -585,10 +591,12 @@ The benchmark comes before the pilot because the pilot needs something frozen to
 - [ ] Fix slot variety before any 1,000-question run (Section 4, safeguard 4):
   - [x] taxonomy draft 2, context deck, slot dealer (`variety.py`), benchmark prompt v7, training prompt v1 (approved 2026-11-19);
   - [x] the full-size generator (`generate_set.py`), Talon stage G, decontamination code, embedding check, local tests (2026-11-20);
-  - [ ] the Talon smoke test of stage G (20 benchmark-v7 and 20 training-v1 smoke slots), **only with the owner's separate approval**;
+  - [x] the Talon smoke test of stage G with v7 and training v1 (jobs 291 and 293, 2026-11-20): 40 of 40 replies usable on the first attempt;
+  - [x] owner's decisions of 2026-11-20: the mix approved as proposed; an automatic printout consistency check; plain text only (prompts v8 and training v2);
+  - [ ] a second short smoke test with v8 and training v2, **only with the owner's separate approval**;
   - [ ] deal the benchmark, development and TV slot files (seeds recorded) and commit them to `data/slots/`.
-- [ ] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. About a third of the trial items had small inconsistencies; no keys were affected.
-- [ ] Generate the benchmark (1,150 slots) on Talon with prompt v7 (BF16, thinking on; up to 3 attempts per slot); `collect --r-keys` (R in the sandbox writes number keys), `fill-bench` (failed slots replaced like-for-like from spares), `verify`; then the screen, the audit and the freeze below. The development set and the TV set follow, with the same automated checks. **Owner's approval needed before each generation.**
+- [x] Decide whether output-interpretation items need an automatic consistency check of the printed output, or should have R generate the printout. **Decided 2026-11-20: the automatic check** (`code/generation/output_check.py`, safeguard 6a2). About a third of the trial items had small inconsistencies; no keys were affected; the smoke test's SM0010 printed an impossible interval.
+- [ ] Generate the benchmark (1,150 slots) on Talon with prompt v8 (BF16, thinking on; up to 3 attempts per slot); `collect --r-keys` (R in the sandbox writes number keys), `fill-bench` (failed slots replaced like-for-like from spares), `verify`; then the screen, the audit and the freeze below. The development set and the TV set follow, with the same automated checks. **Owner's approval needed before each generation.**
 - [ ] Keep short-text items tightly constrained (a name, a term, a value); rewrite open-ended ones as multiple choice or drop them
 - [ ] **Codex setup** (Section 2.3). You install the Codex CLI and confirm OpenAI's terms. The batch tool is built: isolated workspace, verdict schema, validating import, tests with a fake `codex`. The usage pilot runs on development items.
 - [ ] **Codex screen of every benchmark question**; the owner reviews every flag (Section 4, safeguard 6c)
@@ -732,7 +740,7 @@ Storage is split in two. **Small, important items live in the project repository
 | `docs/` | Project documents in topic subfolders: `methodology/` (this workflow, the pilot plan), `models/` (model versions, teacher evaluation, Pythia behavior), `clusters/` (cluster selection, Talon setup), `logs/` (compute and cost logs), `guides/` (Git notes), `archive/` (retired methods, kept for reference only). The only file at the `docs/` root is `progress_update.md`. New kinds of document get a new, clearly named folder (for example `meetings/`, `report/`) |
 | `recovery/` | Rebuild instructions for everything stored outside the repository, one file per item, written from `_TEMPLATE.md` |
 | `benchmark/` | The frozen benchmark, its checksum and a README (empty until Phase 3 ends) |
-| `data/prompts/` | Prompts: benchmark generation v7 (v6 kept for past runs), training generation v1, the teacher's answering prompt; the grading instructions (`grading_v1`) later |
+| `data/prompts/` | Prompts: benchmark generation v8 (v6 and v7 kept for past runs), training generation v2 (v1 kept), the teacher's answering prompt; the grading instructions (`grading_v1`) later |
 | `data/taxonomy/` | The topic list (`subtopics.yaml`, 673 subtopics) and the context deck (`contexts.yaml`) that every slot is dealt from |
 | `data/slots/` | Frozen slot files and their manifests for the benchmark, development, TV and smoke sets (the large training slot files are outside the repository; their SHA-256 values are recorded here) |
 | `data/verification_logs/` | Benchmark quality records (R-check results, the Codex screen's flags with the owner's decisions, the manual audit; Section 4, safeguard 6) and decontamination records (the embedding check, labeled pairs, rules and removals; safeguard 5) |
@@ -841,7 +849,7 @@ Dates are placeholders until the program's real deadlines are known.
 - [x] **Require `r_solution` in every benchmark reply** (decided 2026-11-11). The field must always be present. It holds substantive R wherever R can compute the answer, and an explicit "not applicable" empty value otherwise. The legacy path that accepted a reply without the field is removed, and the `absent_r_solution` regression fixture is updated deliberately (Section 4, safeguard 6a). Training replies keep the field, but its correctness is not required (safeguard 9).
 - [ ] **Talon CUDA version:** not recorded yet. Read it during the Talon bring-up (driver and toolkit from `nvidia-smi` in the first GPU job) and add it to `docs/models/model_versions.md` Section 5, next to the vLLM pin above.
 - [ ] **Claude-era outputs outside the repository:** the raw Sonnet replies in `C:\masters_project_large\data\teacher_outputs\*_sonnet-5-5_*` are not in Git and were not touched. Keep them as part of the archive, or delete them (owner's decision; the items themselves are preserved in the Git tag `pre-cleanup-claude-era`).
-- [ ] **Benchmark blueprint** (proposal in Section 3, to confirm with Dr. Lee)
+- [x] **Benchmark blueprint:** approved by the owner on 2026-11-20 as proposed (Section 3)
 - [ ] **Training-data template and answer length.** Proposed from the Pythia probe: one fixed `Question:`/`Answer:` template, short answers with a marked final answer, end-of-text id 0 on every example, loss on the answer and end token only. To confirm in the pilot and with Dr. Lee.
 - [ ] **Evaluation protocol** for all students and baselines. Decided parts (2026-11-11):
   - **Engine:** vLLM for the students and the teacher, on the same H100 NVL type.

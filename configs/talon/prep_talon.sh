@@ -44,10 +44,10 @@ done
 PF="$QT_REPO/data/prompts/benchmark_generation_v6.md"
 [ -f "$PF" ] || die "the prompt file $PF is missing; copy data/prompts again. Nothing was started."
 [ "$(sha256sum "$PF" | cut -d' ' -f1)" = "$PROMPT_SHA256" ] || die "the prompt file does not have the pinned SHA-256 (it changed in transit?). Nothing was started."
-for PF2 in benchmark_generation_v7.md:$PROMPT_V7_SHA256 training_generation_v1.md:$PROMPT_TRAIN_SHA256; do   # the generation prompts (pins in common.sh)
+for PF2 in $PROMPT_BENCH_FILE:$PROMPT_BENCH_SHA256 $PROMPT_TRAIN_FILE:$PROMPT_TRAIN_SHA256; do   # the generation prompts (pins in common.sh)
   [ "$(sha256sum "$QT_REPO/data/prompts/${PF2%%:*}" 2>/dev/null | cut -d' ' -f1)" = "${PF2#*:}" ] || die "data/prompts/${PF2%%:*} is missing or not the approved version. Nothing was started."
 done
-echo "  all scripts parse, no carriage returns, prompt file hashes match the pinned v6, v7 and training v1 prompts."
+echo "  all scripts parse, no carriage returns, prompt file hashes match the pinned v6 prompt and the current generation prompts."
 [ "${QT_CONFIRM_STORAGE:-}" = yes ] || die "Talon's storage rules are UNVERIFIED: read the storage section of the probe output, then run again with QT_CONFIRM_STORAGE=yes. Nothing was started."
 
 echo "== 2. starting the vLLM install and the 54 GB weights download in the background =="
