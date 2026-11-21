@@ -62,6 +62,9 @@ except Exception:
 
 TOOL_VERSION = "codex_batch-1"
 SCREEN_PROMPT = REPO / "data" / "prompts" / "screen_v1.md"
+ALIGN_PROMPT = REPO / "data" / "prompts" / "align_v1.md"
+SUBTOPIC_VERDICTS = ["aligned", "partly", "not_aligned"]
+DIFFICULTY_VERDICTS = ["matches", "easier", "harder"]
 ISSUE_TYPES = ["none", "ambiguous", "missing_information", "invalid_assumption", "multiple_correct", "no_correct_option",
                "answer_format_unclear", "other"]
 # Tools Codex does not need for judging text already in its prompt: switched off for every run (names checked against
@@ -121,11 +124,35 @@ def screen_schema():
     }
 
 
+def align_schema():
+    return {
+        "type": "object",
+        "properties": {"verdicts": {"type": "array", "items": {
+            "type": "object",
+            "properties": {"id": {"type": "string"},
+                           "subtopic_verdict": {"type": "string", "enum": SUBTOPIC_VERDICTS},
+                           "subtopic_reason": {"type": "string"},
+                           "difficulty_verdict": {"type": "string", "enum": DIFFICULTY_VERDICTS},
+                           "difficulty_reason": {"type": "string"}},
+            "required": ["id", "subtopic_verdict", "subtopic_reason", "difficulty_verdict", "difficulty_reason"],
+            "additionalProperties": False}}},
+        "required": ["verdicts"], "additionalProperties": False,
+    }
+
+
+KINDS = {
+    # kind: (instruction file, schema, letter for anonymous ids, fields shown per item)
+    "screen": (SCREEN_PROMPT, screen_schema, "S", ("question", "choices")),
+    "align": (ALIGN_PROMPT, align_schema, "A", ("category", "subtopic", "difficulty", "question", "choices")),
+}
+
+
 # ---------------------------------------------------------------------------------------------
-# build-screen
+# build-screen / build-align
 # ---------------------------------------------------------------------------------------------
-def benchmark_rows(items_path, manifest_path):
-    """The final-benchmark rows, after checking each is a BM item with the benchmark's slot fingerprint and not excluded."""
+def benchmark_rows(items_path, manifest_path, only=None):
+    """The final-benchmark rows (or, with `only`, just those ids, in that order), after checking each is a BM item with the
+    benchmark's slot fingerprint, usable and not excluded."""
     import generate_set as gs
     import set_prompts as sp
     man = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
@@ -133,6 +160,12 @@ def benchmark_rows(items_path, manifest_path):
         sys.exit("build-screen takes the BENCHMARK slot manifest only; Codex never sees the development, TV or training sets")
     excluded = gs.excluded_spares(manifest_path)
     rows = [json.loads(l) for l in Path(items_path).read_text(encoding="utf-8").splitlines() if l.strip()]
+    if only is not None:
+        by = {r.get("item_id"): r for r in rows}
+        missing = [i for i in only if i not in by]
+        if missing:
+            sys.exit(f"--only lists ids that are not in --items: {missing[:5]}")
+        rows = [by[i] for i in only]
     for r in rows:
         iid = r.get("item_id", "")
         if sp.id_kind(iid) != "BM":
@@ -145,44 +178,61 @@ def benchmark_rows(items_path, manifest_path):
     return rows
 
 
-def cmd_build_screen(args):
-    workspace, keys, _ = paths()
-    workspace, keys = check_outside_repo(args.workspace or workspace), check_outside_repo(args.keys or keys)
-    rows = benchmark_rows(args.items, args.manifest)
-    if args.first or args.count:
-        rows = rows[args.first:args.first + args.count] if args.count else rows[args.first:]
-    instr, instr_sha = instructions_text()
-    date = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+def build_batches(rows, kind, label, date, batch_size, workspace, keys, items_file, manifest):
+    """Write one folder per batch: exactly batch.jsonl, instructions.md, schema.json. Keys go to the separate key folder."""
+    instr_path, schema_fn, letter, fields = KINDS[kind]
+    instr, instr_sha = instructions_text(instr_path)
     made = []
-    for b in range(0, len(rows), args.batch_size):
-        nn = len(list(workspace.glob(f"{date}_screen_*"))) + 1
-        name = f"{date}_screen_{nn:02d}"
+    for b in range(0, len(rows), batch_size):
+        nn = len(list(workspace.glob(f"{date}_{label}_*"))) + 1
+        name = f"{date}_{label}_{nn:02d}"
         folder = workspace / name
         if folder.exists():
             sys.exit(f"{folder} exists; batches are never overwritten")
         folder.mkdir(parents=True)
-        part = rows[b:b + args.batch_size]
+        part = rows[b:b + batch_size]
         lines, key = [], {}
         for k, r in enumerate(part, 1):
-            anon = f"S-{nn:02d}-{k:03d}"
-            it = r["item"]
-            choices = {L: c for L, c in zip("ABCD", it.get("choices") or [])}
-            lines.append(json.dumps({"id": anon, "question": it["question"], "choices": choices}, ensure_ascii=False))
+            anon = f"{letter}-{nn:02d}-{k:03d}"
+            it, sl = r["item"], r.get("slot") or {}
+            shown = {"question": it["question"], "choices": {L: c for L, c in zip("ABCD", it.get("choices") or [])},
+                     "category": sl.get("category"), "subtopic": sl.get("subtopic"), "difficulty": sl.get("difficulty")}
+            lines.append(json.dumps({"id": anon, **{f: shown[f] for f in fields}}, ensure_ascii=False))
             key[anon] = {"item_id": r["item_id"], "position": r.get("position")}
         batch_text = "\n".join(lines) + "\n"
         (folder / "batch.jsonl").write_text(batch_text, encoding="utf-8", newline="\n")
         (folder / "instructions.md").write_text(instr, encoding="utf-8", newline="\n")
-        (folder / "schema.json").write_text(json.dumps(screen_schema(), indent=1), encoding="utf-8", newline="\n")
+        (folder / "schema.json").write_text(json.dumps(schema_fn(), indent=1), encoding="utf-8", newline="\n")
         keys.mkdir(parents=True, exist_ok=True)
         (keys / f"{name}_key.json").write_text(json.dumps({
-            "batch": name, "kind": "screen", "instructions_file": str(SCREEN_PROMPT.relative_to(REPO).as_posix()),
-            "instructions_sha256": instr_sha, "batch_sha256": sha256_bytes(batch_text.encode("utf-8")),
-            "items_file": str(args.items), "manifest": str(args.manifest), "ids": key, "tool_version": TOOL_VERSION,
-            "built_utc": utc_now()}, indent=1), encoding="utf-8", newline="\n")
+            "batch": name, "kind": kind, "label": label, "date": date,
+            "instructions_file": str(instr_path.relative_to(REPO).as_posix()), "instructions_sha256": instr_sha,
+            "batch_sha256": sha256_bytes(batch_text.encode("utf-8")), "items_file": str(items_file),
+            "manifest": str(manifest), "ids": key, "tool_version": TOOL_VERSION, "built_utc": utc_now()},
+            indent=1), encoding="utf-8", newline="\n")
         made.append(folder)
     for f in made:
         print(f"built {f} ({len(json.loads((keys / (f.name + '_key.json')).read_text(encoding='utf-8'))['ids'])} questions)")
     return made
+
+
+def cmd_build(args, kind):
+    workspace, keys, _ = paths()
+    workspace, keys = check_outside_repo(args.workspace or workspace), check_outside_repo(args.keys or keys)
+    wanted = [l.strip() for l in Path(args.only).read_text(encoding="utf-8").splitlines() if l.strip()] if args.only else None
+    rows = benchmark_rows(args.items, args.manifest, wanted)
+    if args.first or args.count:
+        rows = rows[args.first:args.first + args.count] if args.count else rows[args.first:]
+    date = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return build_batches(rows, kind, args.label or kind, date, args.batch_size, workspace, keys, args.items, args.manifest)
+
+
+def cmd_build_screen(args):
+    return cmd_build(args, "screen")
+
+
+def cmd_build_align(args):
+    return cmd_build(args, "align")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -319,6 +369,39 @@ def cmd_run(args):
 # ---------------------------------------------------------------------------------------------
 # import
 # ---------------------------------------------------------------------------------------------
+def validate_align(text, ids):
+    """Alignment verdicts: exact coverage, allowed values, non-empty reasons."""
+    problems = []
+    try:
+        obj = json.loads(text)
+    except ValueError as e:
+        return {}, [f"verdicts are not valid JSON ({e})"]
+    if not isinstance(obj, dict) or set(obj) != {"verdicts"} or not isinstance(obj["verdicts"], list):
+        return {}, ["verdicts must be an object with exactly one key, 'verdicts', holding a list"]
+    want = {"id", "subtopic_verdict", "subtopic_reason", "difficulty_verdict", "difficulty_reason"}
+    got = {}
+    for k, v in enumerate(obj["verdicts"]):
+        if not isinstance(v, dict) or set(v) != want or not all(isinstance(v[f], str) for f in v):
+            problems.append(f"verdict {k}: must have exactly {sorted(want)}, all text")
+            continue
+        if v["subtopic_verdict"] not in SUBTOPIC_VERDICTS:
+            problems.append(f"{v['id']}: subtopic_verdict {v['subtopic_verdict']!r} is not allowed")
+        if v["difficulty_verdict"] not in DIFFICULTY_VERDICTS:
+            problems.append(f"{v['id']}: difficulty_verdict {v['difficulty_verdict']!r} is not allowed")
+        if not v["subtopic_reason"].strip() or not v["difficulty_reason"].strip():
+            problems.append(f"{v['id']}: empty reason")
+        if v["id"] in got:
+            problems.append(f"{v['id']}: more than one verdict")
+        got[v["id"]] = v
+    missing = [i for i in ids if i not in got]
+    extra = [i for i in got if i not in set(ids)]
+    if missing:
+        problems.append(f"missing verdicts for {missing}")
+    if extra:
+        problems.append(f"verdicts for ids not in the batch: {extra}")
+    return got, problems
+
+
 def validate_verdicts(text, ids):
     """(verdicts by id, problems). Exact coverage: every id once, nothing else, allowed values only."""
     problems = []
@@ -369,30 +452,41 @@ def cmd_import(args):
     if sha256_bytes(batch) != key["batch_sha256"] or sha256_bytes(batch) != run["batch_sha256"]:
         sys.exit(f"{folder.name}: batch.jsonl changed since it was built or run; nothing imported")
     ids = list(key["ids"])
-    verdicts, problems = validate_verdicts((folder / "verdicts.json").read_text(encoding="utf-8")
-                                           if (folder / "verdicts.json").exists() else "", ids)
+    kind = key.get("kind", "screen")
+    text = (folder / "verdicts.json").read_text(encoding="utf-8") if (folder / "verdicts.json").exists() else ""
+    verdicts, problems = (validate_align if kind == "align" else validate_verdicts)(text, ids)
     if problems:
         print(f"{folder.name}: NOT IMPORTED ({len(problems)} problem(s)); re-run the batch:")
         for p in problems:
             print("  ", p)
         return 2
-    date = folder.name.split("_screen_")[0]
-    out = Path(args.out_root or (REPO / "data" / "verification_logs")) / f"{date}_codex_screen" / folder.name
+    date = key.get("date") or folder.name.split("_")[0]
+    label = key.get("label", "screen")
+    out = Path(args.out_root or (REPO / "data" / "verification_logs")) / f"{date}_codex_{label}" / folder.name
     if out.exists():
         sys.exit(f"{out} exists; an imported batch is never overwritten")
     out.mkdir(parents=True)
     rows = []
     for anon, info in key["ids"].items():
         v = verdicts[anon]
-        rows.append({"item_id": info["item_id"], "position": info["position"], "batch": folder.name, "anon_id": anon,
-                     "verdict": v["verdict"], "issue_type": v["issue_type"], "reason": v["reason"]})
-    (out / "screen_results.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
-                                             encoding="utf-8", newline="\n")
+        base = {"item_id": info["item_id"], "position": info["position"], "batch": folder.name, "anon_id": anon}
+        if kind == "align":
+            rows.append({**base, **{f: v[f] for f in ("subtopic_verdict", "subtopic_reason", "difficulty_verdict",
+                                                      "difficulty_reason")}})
+        else:
+            rows.append({**base, "verdict": v["verdict"], "issue_type": v["issue_type"], "reason": v["reason"]})
+    results_name = "align_results.jsonl" if kind == "align" else "screen_results.jsonl"
+    (out / results_name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
+                                    encoding="utf-8", newline="\n")
     for f in ("batch.jsonl", "verdicts.json", "run.json", "instructions.md", "schema.json"):
         (out / f).write_bytes((folder / f).read_bytes())
     (out / "key.json").write_text(json.dumps(key, indent=1), encoding="utf-8", newline="\n")
-    n_flag = sum(r["verdict"] == "flag" for r in rows)
-    print(f"{folder.name}: imported {len(rows)} verdicts ({n_flag} flagged) -> {out}")
+    if kind == "align":
+        n_ok = sum(r["subtopic_verdict"] == "aligned" and r["difficulty_verdict"] == "matches" for r in rows)
+        print(f"{folder.name}: imported {len(rows)} alignment verdicts ({n_ok} aligned and matching) -> {out}")
+    else:
+        n_flag = sum(r["verdict"] == "flag" for r in rows)
+        print(f"{folder.name}: imported {len(rows)} verdicts ({n_flag} flagged) -> {out}")
     return 0
 
 
@@ -454,15 +548,18 @@ def cmd_report(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("build-screen")
-    p.add_argument("--items", required=True, help="the final benchmark positions (fill-bench output)")
-    p.add_argument("--manifest", required=True, help="data/slots/benchmark_slots.manifest.json")
-    p.add_argument("--batch-size", type=int, default=50)
-    p.add_argument("--first", type=int, default=0, help="skip this many positions (for the first small batch)")
-    p.add_argument("--count", type=int, default=0, help="take only this many positions")
-    p.add_argument("--date", default=None)
-    p.add_argument("--workspace", default=None, help="tests only; normally codex_workspace from configs/paths.yaml")
-    p.add_argument("--keys", default=None, help="tests only; normally codex_keys from configs/paths.yaml")
+    for name in ("build-screen", "build-align"):
+        p = sub.add_parser(name)
+        p.add_argument("--items", required=True, help="benchmark positions (fill-bench output) or collected candidates")
+        p.add_argument("--manifest", required=True, help="data/slots/benchmark_slots.manifest.json")
+        p.add_argument("--batch-size", type=int, default=50)
+        p.add_argument("--first", type=int, default=0)
+        p.add_argument("--count", type=int, default=0)
+        p.add_argument("--only", default=None, help="a file of item ids to include (for example the usable candidates)")
+        p.add_argument("--label", default=None, help="folder label, for example cand-screen (default: the kind)")
+        p.add_argument("--date", default=None)
+        p.add_argument("--workspace", default=None)
+        p.add_argument("--keys", default=None)
     p = sub.add_parser("run")
     p.add_argument("--batch", required=True)
     p.add_argument("--codex", default=None, help="the Codex CLI (default codex_cli in configs/paths.yaml; tests: a fake)")
@@ -479,7 +576,7 @@ def main(argv=None):
     p.add_argument("--items", default=None, help="the benchmark positions, to show question and key on the owner sheet")
     p.add_argument("--out-root", default=None)
     args = ap.parse_args(argv)
-    fn = {"build-screen": cmd_build_screen, "run": cmd_run, "import": cmd_import, "report": cmd_report}[args.cmd]
+    fn = {"build-screen": cmd_build_screen, "build-align": cmd_build_align, "run": cmd_run, "import": cmd_import, "report": cmd_report}[args.cmd]
     rc = fn(args)
     sys.exit(rc if isinstance(rc, int) else 0)
 

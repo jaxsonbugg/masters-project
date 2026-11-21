@@ -44,8 +44,23 @@ m = re.search(r"^Batch ids \(\d+\): (.*)$", stdin, re.M)
 ids = [i.strip() for i in m.group(1).split(",")] if m else []
 if mode == "timeout":
     time.sleep(30)
-verdicts = [{"id": i, "verdict": "flag" if k == 0 else "pass", "issue_type": "missing_information" if k == 0 else "none",
-             "reason": "a needed value is not given" if k == 0 else "clear and answerable"} for k, i in enumerate(ids)]
+# FAKE_CODEX_FAIL_FIRST=<n> with FAKE_CODEX_COUNTER=<file>: the first n calls answer malformed (tests a bounded retry)
+counter = os.environ.get("FAKE_CODEX_COUNTER")
+if counter:
+    n_calls = int(open(counter).read()) + 1 if os.path.exists(counter) else 1
+    open(counter, "w").write(str(n_calls))
+    if n_calls <= int(os.environ.get("FAKE_CODEX_FAIL_FIRST", "0")):
+        mode = "malformed"
+flag_first = os.environ.get("FAKE_CODEX_PASS_ALL") != "1"
+if ids and ids[0].startswith("A-"):          # an alignment batch (align_v1): the first id is only "partly" aligned
+    verdicts = [{"id": i, "subtopic_verdict": "partly" if (k == 0 and flag_first) else "aligned",
+                 "subtopic_reason": "tests the subtopic", "difficulty_verdict": "matches",
+                 "difficulty_reason": "fits the level"} for k, i in enumerate(ids)]
+else:
+    verdicts = [{"id": i, "verdict": "flag" if (k == 0 and flag_first) else "pass",
+                 "issue_type": "missing_information" if (k == 0 and flag_first) else "none",
+                 "reason": "a needed value is not given" if (k == 0 and flag_first) else "clear and answerable"}
+                for k, i in enumerate(ids)]
 if mode == "missing":
     verdicts = verdicts[1:]
 elif mode == "extra":

@@ -141,7 +141,7 @@ class H(BaseHTTPRequestHandler):
             self.send_response(500); self.end_headers(); self.wfile.write(b"boom"); return
         content, finish, completion = json.dumps(make_item(cat, sub, diff, atype)), "stop", 800
         cut = MODE == "truncate" or (MODE == "mixed" and int(iid[2:]) % 4 == 0)
-        if MODE == "badjson":
+        if MODE == "badjson" or iid in BAD_ITEMS:   # FAKE_BAD_ITEMS also for BM ids (replacement-loop tests, 2026-11-21)
             content = "I believe the answer is 42."
         elif cut:
             content, finish, completion = "", "length", body.get("max_tokens", 16384)

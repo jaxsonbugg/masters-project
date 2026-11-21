@@ -35,6 +35,7 @@ COMMANDS
   python variety.py deal --set benchmark --n 1150 --seed S --out data/slots     write a slot file + manifest
   python variety.py replace --manifest M --like <slot id> [--count 1]          deal like-for-like replacements
   python variety.py replace --manifest M --like-file needs_replacement.txt    one replacement per listed id
+  python variety.py replace --manifest M --like-file F --same-subtopic --copies 3   same-subtopic candidates
   python variety.py report --slots F [--prefixes 1000,10000]                   the target mix of a slot file
 
 Example: `deal --set benchmark --n 1150` gives BM0001-BM1150; slot BM0001 might be
@@ -335,9 +336,19 @@ def cmd_deal(args):
     return slot_path, man_path
 
 
-def deal_replacements(man_path, likes, taxonomy=TAXONOMY_FILE, contexts=CONTEXTS_FILE):
-    """Deal like-for-like replacement slots from the continued decks of a slot file; append them to
-    <set>_replacements.jsonl and record the new deck state in the manifest. Returns the new slots."""
+def same_subtopic_slot(item_id, like, copy):
+    """A same-subtopic replacement candidate (owner's decision, 2026-11-21): an exact copy of `like`'s category, subtopic,
+    area, difficulty, answer type, setting and preferred letter, so the benchmark's distribution stays exact down to the
+    subtopic. No deck card is drawn, so no other slot is affected."""
+    keep = ("category", "subtopic", "area", "difficulty", "answer_type", "preferred_letter", "context", "context_text")
+    return {"item_id": item_id, **{k: like[k] for k in keep}, "slot_scheme": SLOT_SCHEME, "replaces": like["item_id"],
+            "mode": "same_subtopic", "copy": copy}
+
+
+def deal_replacements(man_path, likes, taxonomy=TAXONOMY_FILE, contexts=CONTEXTS_FILE, same_subtopic=False, copies=1, tag=None):
+    """Deal replacement slots for a slot file; append them to <set>_replacements.jsonl and record them in the manifest.
+    Default: like-for-like from the continued decks (the subtopic is the next card). same_subtopic=True: `copies`
+    candidates per like slot with the SAME subtopic (same_subtopic_slot). Returns the new slots."""
     man_path = Path(man_path)
     m = json.loads(man_path.read_text(encoding="utf-8"))
     blocks, tax_sha = load_taxonomy(taxonomy)
@@ -352,7 +363,13 @@ def deal_replacements(man_path, likes, taxonomy=TAXONOMY_FILE, contexts=CONTEXTS
         start = m["n"] + len(existing) + 1           # new spares continue the set's own numbering
     else:
         start = len(existing) + 1                     # TRR000001, TRR000002, ...
-    new = [d.deal_like(make_id(m["set"], start + i, replacement=True), like) for i, like in enumerate(likes)]
+    if same_subtopic:
+        new = []
+        for like in likes:
+            for c in range(1, copies + 1):
+                new.append(same_subtopic_slot(make_id(m["set"], start + len(new), replacement=True), like, c))
+    else:
+        new = [d.deal_like(make_id(m["set"], start + i, replacement=True), like) for i, like in enumerate(likes)]
     rows = existing + new
     m["replacements_file"] = rep_path.name
     m["replacements_sha256"] = write_jsonl(rep_path, rows)
@@ -360,7 +377,8 @@ def deal_replacements(man_path, likes, taxonomy=TAXONOMY_FILE, contexts=CONTEXTS
     m.setdefault("replacements_sha256_history", []).append(m["replacements_sha256"])
     m["deck_state"] = d.state()
     m["replacements"].append({"utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                              "ids": [s["item_id"] for s in new], "replaces": [s["replaces"] for s in new]})
+                              "ids": [s["item_id"] for s in new], "replaces": [s["replaces"] for s in new],
+                              "mode": "same_subtopic" if same_subtopic else "next_card", "tag": tag})
     man_path.write_text(json.dumps(m, indent=2), encoding="utf-8", newline="\n")
     return new
 
@@ -376,7 +394,8 @@ def cmd_replace(args):
     unknown = [i for i in likes if i not in slots]
     if unknown or not likes:
         sys.exit(f"not slots of this set: {unknown[:5]}" if unknown else "nothing to replace")
-    new = deal_replacements(args.manifest, [slots[i] for i in likes], args.taxonomy, args.contexts)
+    new = deal_replacements(args.manifest, [slots[i] for i in likes], args.taxonomy, args.contexts,
+                            same_subtopic=args.same_subtopic, copies=args.copies, tag=args.tag)
     for s in new:
         print(json.dumps(s, ensure_ascii=False))
 
@@ -491,6 +510,10 @@ def main():
     g.add_argument("--like", help="the slot to replace like-for-like")
     g.add_argument("--like-file", help="a file with one slot id per line (collect-train's needs_replacement.txt)")
     p.add_argument("--count", type=int, default=1, help="with --like: how many replacements to deal")
+    p.add_argument("--same-subtopic", action="store_true",
+                   help="candidates keep the like slot's exact subtopic, difficulty, setting and letter (no deck card drawn)")
+    p.add_argument("--copies", type=int, default=1, help="with --same-subtopic: candidates per like slot")
+    p.add_argument("--tag", default=None, help="a label recorded in the manifest (for example loop-r1)")
     p.set_defaults(fn=cmd_replace)
     p = sub.add_parser("report", help="the target mix of a slot file, optionally for several prefixes")
     p.add_argument("--slots", required=True)

@@ -1,0 +1,77 @@
+{
+ "ids": [
+  "BM1014",
+  "BM1022",
+  "BM1023",
+  "BM1025",
+  "BM1028",
+  "BM1031",
+  "BM1041",
+  "BM1042",
+  "BM1045",
+  "BM1053",
+  "BM1059",
+  "BM1065",
+  "BM1066",
+  "BM1067",
+  "BM1075",
+  "BM1076",
+  "BM1077",
+  "BM1087",
+  "BM1088",
+  "BM1092",
+  "BM1097",
+  "BM1101",
+  "BM1103",
+  "BM1106",
+  "BM1107",
+  "BM1109",
+  "BM1114",
+  "BM1116",
+  "BM1117",
+  "BM1118",
+  "BM1125",
+  "BM1127",
+  "BM1128",
+  "BM1130",
+  "BM1132",
+  "BM1134",
+  "BM1137",
+  "BM1138",
+  "BM1142",
+  "BM1144"
+ ],
+ "reason": "Codex calibration reserve (plan revision 2, item 5): permanently excluded from the benchmark",
+ "seed": "calibration-2026-11-21",
+ "strata": {
+  "numerical": {
+   "wanted": 12,
+   "drawn": 12,
+   "pool": 42
+  },
+  "conceptual": {
+   "wanted": 8,
+   "drawn": 8,
+   "pool": 30
+  },
+  "r_generation": {
+   "wanted": 8,
+   "drawn": 8,
+   "pool": 22
+  },
+  "output_interpretation": {
+   "wanted": 6,
+   "drawn": 6,
+   "pool": 13
+  },
+  "r_interpretation": {
+   "wanted": 6,
+   "drawn": 6,
+   "pool": 17
+  }
+ },
+ "skipped_unclean": [],
+ "source_items": "benchmark_items_repaired.jsonl",
+ "source_positions": "benchmark_filled.jsonl",
+ "drawn_utc": "2026-11-21T20:49:37+00:00"
+}

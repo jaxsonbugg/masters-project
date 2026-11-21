@@ -622,6 +622,94 @@ check("a 'replace' decision keeps the slot flagged for a spare; a flagged slot w
       ar[2]["status"] == "verify_flagged" and arep["replace"] == ["DV0103"] and arep["undecided"] == ["DV0104"])
 check("the key is never changed by a repair", ar[0]["item"]["canonical_answer"] == "sum(diag(M))")
 
+# ------------------------------------------------------------------ 12. same-subtopic replacement and rounding fixes
+print("[12] same-subtopic candidates, fill-match and the owner's rounding-fix sheet (2026-11-21)")
+import rounding_fixes as rfx  # noqa: E402
+ss_dir = T / "ss"
+s12, m12 = deal("benchmark", 1150, "benchmark-test-ss", ss_dir / "benchmark_slots.jsonl")
+orig12 = {s["item_id"]: s for s in variety.read_slots(s12)}
+state_before = json.loads(m12.read_text(encoding="utf-8"))["deck_state"]
+cands12 = variety.deal_replacements(m12, [orig12["BM0005"], orig12["BM0007"]], same_subtopic=True, copies=3, tag="loop-r1")
+man12 = json.loads(m12.read_text(encoding="utf-8"))
+keys12 = gs.SAME_SLOT_KEYS
+check("same-subtopic candidates: 3 per position, each an exact copy of the position's subtopic, difficulty, setting and letter",
+      len(cands12) == 6 and all(all(c[k] == orig12[c["replaces"]][k] for k in keys12) for c in cands12)
+      and [c["copy"] for c in cands12] == [1, 2, 3, 1, 2, 3], cands12[:1])
+check("same-subtopic dealing draws no deck card (the deck state is unchanged) and is recorded with its mode and tag",
+      man12["deck_state"] == state_before and man12["replacements"][-1]["mode"] == "same_subtopic"
+      and man12["replacements"][-1]["tag"] == "loop-r1")
+check("candidates continue the set's numbering (BM1151-BM1156)", [c["item_id"] for c in cands12] == [f"BM{k}" for k in range(1151, 1157)])
+
+
+def crow(slot, status="usable"):
+    return {"item_id": slot["item_id"], "slot": slot, "status": status, "slot_scheme": "taxonomy-v2",
+            "slots_file_sha256": man12["replacements_sha256"], "item": {"question": "q " + slot["item_id"]}}
+
+
+pos12 = [{"position": k, "item_id": f"BM{k:04d}", "status": "usable", "slot": orig12[f"BM{k:04d}"]} for k in range(1, 11)]
+c_rows = [crow(c) for c in cands12]
+c_rows[0]["status"] = "failed"                                     # BM1151 broken
+scr = {c["item_id"]: {"verdict": "pass", "batch": "b1"} for c in cands12}
+scr["BM1152"] = {"verdict": "flag", "batch": "b1"}                 # BM1152 flagged by the screen
+ali = {c["item_id"]: {"subtopic_verdict": "aligned", "difficulty_verdict": "matches", "batch": "a1"} for c in cands12}
+ali["BM1154"] = {"subtopic_verdict": "aligned", "difficulty_verdict": "easier", "batch": "a1"}
+ali["BM1155"] = {"subtopic_verdict": "partly", "difficulty_verdict": "matches", "batch": "a1"}
+ali["BM1156"] = {"subtopic_verdict": "aligned", "difficulty_verdict": "harder", "batch": "a1"}
+out12, open12 = gs.fill_match_subtopic(pos12, [5, 7], c_rows, scr, ali, man12, orig12)
+check("fill-match skips a broken candidate and a screen-flagged one, and takes the first usable, passed, aligned one",
+      out12[4]["item_id"] == "BM1153" and out12[4]["replaces"] == "BM0005" and out12[4]["previous_item"] == "BM0005")
+check("a position whose candidates are all difficulty-mismatched or only partly aligned stays open (not filled)",
+      open12 == [7] and out12[6]["status"] == "needs_candidate", (open12, out12[6].get("status")))
+check("positions that are not open are untouched", all(out12[k] == pos12[k] for k in range(10) if k not in (4, 6)))
+bad_meta = crow({**cands12[5], "item_id": "BM1157", "difficulty": "graduate" if orig12["BM0007"]["difficulty"] != "graduate" else "intro"})
+scr["BM1157"], ali["BM1157"] = {"verdict": "pass"}, {"subtopic_verdict": "aligned", "difficulty_verdict": "matches"}
+_, open12b = gs.fill_match_subtopic(pos12, [7], c_rows + [bad_meta], scr, ali, man12, orig12)
+check("a candidate whose slot metadata differs from the position's original slot is never used", open12b == [7])
+_, open12c = gs.fill_match_subtopic(pos12, [5], c_rows, scr, ali, man12, orig12, excluded={"BM1153"})
+check("an excluded (calibration) candidate is never used", open12c == [] or _[4]["item_id"] != "BM1153")
+check("a candidate without the slot-file fingerprint is refused",
+      "fingerprint" in str(raises(lambda: gs.fill_match_subtopic(pos12, [5], [{**c_rows[2], "slots_file_sha256": None}],
+                                                                 scr, ali, man12, orig12))))
+
+check("fmt_like keeps the printed precision: 0.02838 -> 0.02826, 6.1e-05 -> 6.3e-05, 0.094 -> 0.093",
+      (rfx.fmt_like("0.02838", 0.0282599), rfx.fmt_like("6.1e-05", 6.33425e-05), rfx.fmt_like("0.094", 0.0930917))
+      == ("0.02826", "6.3e-05", "0.093"), (rfx.fmt_like("0.02838", 0.0282599), rfx.fmt_like("6.1e-05", 6.33425e-05)))
+check("is_rounding_of: 0.005159 is R's 0.0051590 but 0.005214 is not; 1.2e-16 is NOT a rounding of 1.93e-17 (the old "
+      "absolute tolerance said it was)",
+      rfx.is_rounding_of(0.005159, 5e-7, 0.00515904) and not rfx.is_rounding_of(0.005214, 5e-7, 0.00515904)
+      and not rfx.is_rounding_of(1.2e-16, 5e-18, 1.93e-17))
+check("a p-value moving from 0.038 to 0.115 crosses 0.05 and 0.1 (substantive); 0.0254 -> 0.0253 crosses nothing",
+      rfx.crosses(0.03812, 0.115325) == [0.05, 0.1] and rfx.crosses(0.0254, 0.0253) == [])
+check("a significance level named in the question counts as a threshold ('at the 2% level', 'alpha = 0.02')",
+      rfx.stated_levels("Test at the 2% significance level.") == {0.02} and 0.02 in rfx.crosses(0.019, 0.021, rfx.stated_levels("alpha = 0.02")))
+lines = rfx._p_line_findings("LRT = 7.823, df = 1, p-value = 0.005214\nF = 1.82, num df = 19, Den df = 19, p-value = 0.215\n"
+                             "alternative hypothesis: true ratio of variances is not equal to 1\nchi2(2) = 15.88, p-value = 0.00037")
+check("p-value lines are read with the right R call: LRT (chi-squared upper tail), var.test two-sided (2 x the smaller tail), chi2(df)",
+      [e for _, _, e, _ in lines] == ["pchisq(7.823, 1, lower.tail = FALSE)",
+                                      "2 * min(pf(1.82, 19, 19), pf(1.82, 19, 19, lower.tail = FALSE))",
+                                      "pchisq(15.88, 2, lower.tail = FALSE)"], lines)
+coef = ("Coefficients:\n            Estimate Std. Error t value Pr(>|t|)\n(Intercept)  5.0000     1.0000   5.000  0.0001\n"
+        "x            2.0000     0.5000   3.100  0.0050\nResidual standard error: 1 on 20 degrees of freedom\n")
+check("a t value that is not estimate / standard error is recomputed first (3.100 -> 4.000); a matching one is left alone",
+      rfx.statistic_fixes(coef) == {"x            2.0000     0.5000   3.100  0.0050": ("3.100", "4.000")}, rfx.statistic_fixes(coef))
+it12 = {"BMX1": {"item_id": "BMX1", "item": {"question": "a\np-value = 0.0254\nb", "canonical_answer": "B"}}}
+sheet_ok = [{"item_id": "BMX1", "field": "question", "kind": "display_only", "current_text": "p-value = 0.0254", "new_text": "p-value = 0.0253"}]
+sheet_empty = sheet_ok + [{"item_id": "BMX1", "field": "key", "kind": "reference_key", "current_text": "B", "new_text": ""}]
+import copy as _copy  # noqa: E402
+it_b = _copy.deepcopy(it12)
+ch, pr = rfx.apply_fixes(it_b, sheet_empty)
+check("apply-owner-fixes is all or nothing: one empty new_text and NOTHING is applied", ch == [] and pr and it_b == it12, pr)
+it_c = _copy.deepcopy(it12)
+ch, pr = rfx.apply_fixes(it_c, [{**sheet_ok[0], "current_text": "p-value = 0.9999"}])
+check("a current text that is not in the question stops everything", ch == [] and pr and it_c == it12)
+it_d = _copy.deepcopy(it12)
+ch, pr = rfx.apply_fixes(it_d, sheet_ok)
+check("a complete sheet is applied, with the old and new text recorded and the item marked owner_fixed",
+      ch == ["BMX1"] and "p-value = 0.0253" in it_d["BMX1"]["item"]["question"] and it_d["BMX1"]["owner_fixed"]
+      and it_d["BMX1"]["owner_fixes"][0]["old"] == "p-value = 0.0254")
+check("the key is changed only by an explicit reference_key row the owner typed",
+      it_d["BMX1"]["item"]["canonical_answer"] == "B")
+
 # ------------------------------------------------------------------ 8. the Talon copy keeps the pinned bytes
 print("[8] the files as `git archive` (the Talon copy) writes them keep their pinned SHA-256 (line endings)")
 import hashlib  # noqa: E402

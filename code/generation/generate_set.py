@@ -825,6 +825,67 @@ def fill_bench(rows, manifest, primary, excluded=()):
     return positions, needs
 
 
+SAME_SLOT_KEYS = ("category", "subtopic", "area", "difficulty", "answer_type", "preferred_letter", "context")
+
+
+def read_jsonl(path):
+    return [json.loads(l) for l in Path(path).read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def fill_match_subtopic(positions, open_positions, candidates, screen, align, manifest, original_slots, excluded=()):
+    """Same-subtopic replacement (owner's decisions, 2026-11-21). (new positions, still open).
+
+    positions        the current benchmark positions (fill-bench output), position k at index k-1;
+    open_positions   the position numbers that need a new question (serious flags, rejected, earlier substitutions ...);
+    candidates       collected candidate rows; candidate slot["replaces"] names the ORIGINAL dealt slot of its position;
+    screen / align   Codex results by item_id ({"verdict"...} / {"subtopic_verdict", "difficulty_verdict"...});
+    original_slots   {slot id: dealt slot} of the primary block.
+    A candidate qualifies only if: status usable; not excluded; its slot metadata equals the original slot's on every key in
+    SAME_SLOT_KEYS; the screen verdict is "pass"; the alignment is "aligned" AND "matches". The first qualifying candidate
+    in id order fills the position; a position with none stays open (its row is marked needs_candidate)."""
+    for c in candidates:
+        require_fingerprint(c, manifest)
+    prefix, width = variety.SETS[manifest["set"]]
+    excluded = set(excluded)
+    used = {p["item_id"] for p in positions if p.get("position") not in set(open_positions)}
+    out, still_open = [dict(p) for p in positions], []
+    for k in sorted(open_positions):
+        orig_id = f"{prefix}{k:0{width}d}"
+        orig = original_slots[orig_id]
+        def ok(c):
+            sl = c.get("slot") or {}
+            a = align.get(c["item_id"]) or {}
+            return (c["status"] == "usable" and c["item_id"] not in excluded and c["item_id"] not in used
+                    and sl.get("replaces") == orig_id and all(sl.get(key) == orig.get(key) for key in SAME_SLOT_KEYS)
+                    and (screen.get(c["item_id"]) or {}).get("verdict") == "pass"
+                    and a.get("subtopic_verdict") == "aligned" and a.get("difficulty_verdict") == "matches")
+        pick = next((c for c in sorted(candidates, key=lambda c: c["item_id"]) if ok(c)), None)
+        prev = positions[k - 1]
+        if pick is None:
+            still_open.append(k)
+            out[k - 1] = {"position": k, "item_id": prev["item_id"], "status": "needs_candidate", "slot": orig,
+                          "previous": {"item_id": prev["item_id"], "status": prev.get("status")}}
+            continue
+        used.add(pick["item_id"])
+        out[k - 1] = {"position": k, **pick, "replaces": orig_id, "previous_item": prev["item_id"],
+                      "codex_screen": screen[pick["item_id"]].get("batch"), "codex_align": align[pick["item_id"]].get("batch")}
+    return out, still_open
+
+
+def cmd_fill_match(args):
+    manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
+    positions = read_jsonl(args.positions)
+    open_pos = [int(x) for x in Path(args.open).read_text(encoding="utf-8").split()]
+    cands = read_jsonl(args.candidates)
+    screen = {r["item_id"]: r for f in args.screen for r in read_jsonl(f)}
+    align = {r["item_id"]: r for f in args.align for r in read_jsonl(f)}
+    orig = {s["item_id"]: s for s in variety.read_slots(Path(args.manifest).parent / manifest["slots_file"])}
+    out, still = fill_match_subtopic(positions, open_pos, cands, screen, align, manifest, orig, excluded_spares(args.manifest))
+    Path(args.out).write_text("".join(json.dumps(p, ensure_ascii=False) + "\n" for p in out), encoding="utf-8", newline="\n")
+    Path(args.out + ".open.txt").write_text("".join(f"{k}\n" for k in still), encoding="utf-8", newline="\n")
+    print(f"{len(open_pos) - len(still)} of {len(open_pos)} open position(s) filled; {len(still)} still open -> {args.out}")
+
+
 def cmd_fill_bench(args):
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     rows = [json.loads(l) for l in Path(args.items).read_text(encoding="utf-8").splitlines() if l.strip()]
@@ -1145,6 +1206,14 @@ def main(argv=None):
     p.add_argument("--reject", default=None, help="a JSON list of {item_id, reason}: the owner's rejections, replaced by spares")
     p.add_argument("--allow-other-sets", action="store_true", help="ignore --reject ids that belong to another set")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("fill-match", help="benchmark: fill open positions with screened, aligned same-subtopic candidates")
+    p.add_argument("--positions", required=True, help="the current positions (fill-bench output)")
+    p.add_argument("--open", required=True, help="a file of open position numbers, whitespace-separated")
+    p.add_argument("--candidates", required=True, help="collected candidate rows")
+    p.add_argument("--screen", nargs="+", required=True, help="screen_results.jsonl file(s) for the candidates")
+    p.add_argument("--align", nargs="+", required=True, help="align_results.jsonl file(s) for the candidates")
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--out", required=True)
     p = sub.add_parser("collect-train", help="training stream: accepted examples, replacements, exact nested sets")
     p.add_argument("--items", required=True)
     p.add_argument("--manifest", required=True)
@@ -1168,6 +1237,8 @@ def main(argv=None):
         cmd_apply_repairs(args)
     elif args.cmd == "fill-bench":
         cmd_fill_bench(args)
+    elif args.cmd == "fill-match":
+        cmd_fill_match(args)
     elif args.cmd == "collect-train":
         if args.out_dir is None:
             args.out_dir = ott.paths()["training_data"]

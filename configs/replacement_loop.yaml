@@ -1,0 +1,53 @@
+# Replacement loop configuration (code/verification/replacement_loop.py). Approved plan "resolve the Codex flags",
+# revision 2 with the owner's three corrections, 2026-11-21. DRAFT until Jaxson approves the execution configuration.
+#
+# What it controls: same-subtopic replacement of flagged benchmark questions by Qwen candidates, checked by R and by the Codex
+# screen and alignment check. The standing approval (1 GPU, Slurm wall time 01:00:00, at most 200 slots per job, 4.0
+# GPU-hours in total, 40 Codex batch runs, 1 retry, 3 rounds, 3 candidates) is also hard-coded in replacement_loop.py:
+# a value here that would widen it is refused when the file is loaded. Changing this file after a loop has started is
+# refused too (the ledger records this file's SHA-256); a changed configuration needs a new loop_id.
+# {name} is a location from configs/paths.yaml.
+
+loop_id: 2026-11-21_replacement_loop
+
+rounds: 3                      # rounds of generate -> check -> screen -> fill; then the owner-review packet
+candidates_per_position: 3     # Qwen candidates per open position per round (about 40% come through all checks)
+max_total_gpu_hours: 4.0       # hard stop; each running or unmeasured job is charged the full 1.0 until measured
+max_gpu_hours_per_job: 1.0     # enforced by Slurm itself through TIME_GENERATE=01:00:00 (below)
+slots_per_job_max: 200         # jobs are split evenly so none has more
+max_codex_batches: 40          # Codex batch runs in total (screen and alignment, retries included)
+max_retries_per_step: 1        # a failed job or a rejected Codex batch is retried once; a second failure stops the loop
+max_resumes_per_shard: 2       # a shard that reaches the 1-hour limit unfinished resumes in a new job at most twice
+gpu_hours_per_1000_slots: 3.5  # for the estimate: measured 3.0 (benchmark, jobs 299-305) plus a margin for retried slots
+load_hours_per_job: 0.05       # server start, measured 91-121 s per job
+collect_r_keys: true           # R writes the number keys and verify tests every R check (R sandbox)
+
+inputs:
+  positions: "{benchmark_work}/2026-11-21_collection/benchmark_filled.jsonl"       # the current 1,000 positions
+  screen_results: data/verification_logs/2026-11-21_codex_screen                   # the screen of those positions
+  fix_classification: data/verification_logs/2026-11-21_rounding_fixes/fix_classification.json
+  extra_open: []               # files of position numbers to add (for example 'no' answers on the R-check review sheet)
+
+local:
+  state_root: "{benchmark_work}"                 # the ledger and reports go to <state_root>/<loop_id>/
+  slots_dir: data/slots                          # benchmark_slots.manifest.json and benchmark_replacements.jsonl
+  teacher_outputs: "{teacher_outputs}"           # run folders copied from Talon
+
+talon:
+  host: talon
+  ssh: [ssh, -o, BatchMode=yes]
+  scp: [scp, -o, BatchMode=yes]
+  env:                          # restated for the reader; must equal the approval hard-coded in replacement_loop.py
+    GPU_COUNT: 1
+    TENSOR_PARALLEL: 1
+    REPLICAS: 1
+    MAX_NUM_SEQS: 16
+    CLIENT_CONCURRENCY: 16
+    TIME_GENERATE: "01:00:00"
+    GEN_MARGIN_SECONDS: 600
+
+codex:
+  model: gpt-6.2-sol
+  effort: medium
+  batch_size: 50
+  timeout_seconds: 1800

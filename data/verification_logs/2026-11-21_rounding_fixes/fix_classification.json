@@ -1,0 +1,463 @@
+{
+ "BM0004": {
+  "position": 4,
+  "class": "display_only",
+  "codex_reason": "The reported p-value falls outside the rounding range for the stated likelihood ratio statistic and one degree of freedom.",
+  "findings": [
+   "LRT = 7.823 on 1 df gives p = 0.00515855 (R: pchisq(7.823, 1, lower.tail = FALSE)); printed 0.005214"
+  ]
+ },
+ "BM0010": {
+  "position": 10,
+  "class": "not_computable",
+  "codex_reason": "The Tukey interval widths imply group sizes and residual degrees of freedom that are incompatible with the reported HighN–Control adjusted p-value.",
+  "findings": []
+ },
+ "BM0017": {
+  "position": 17,
+  "class": "display_only",
+  "codex_reason": "The reported chi-square p-value falls outside the rounding range for the stated deviance difference and one degree of freedom.",
+  "findings": [
+   "deviance 4.8120 on 1 df gives p = 0.0282622 (R: pchisq(4.8120, 1, lower.tail = FALSE)); printed 0.02838"
+  ]
+ },
+ "BM0044": {
+  "position": 44,
+  "class": "display_only",
+  "codex_reason": "The diet p-value is inconsistent with its displayed F statistic and degrees of freedom at the stated precision.",
+  "findings": [
+   "F = 2.500 on 1 and 196 df gives p = 0.115459 (R: pf(2.500, 1, 196, lower.tail = FALSE)); printed 0.116"
+  ]
+ },
+ "BM0104": {
+  "position": 104,
+  "class": "not_computable",
+  "codex_reason": "The intercept p-value printed as 0.000 is inconsistent with R's two-star significance code.",
+  "findings": []
+ },
+ "BM0124": {
+  "position": 124,
+  "class": "display_only",
+  "codex_reason": "The reported confidence interval is inconsistent with the Welch t statistic and degrees of freedom, even allowing for rounding.",
+  "findings": [
+   "t = 1.80 on 14.23 df gives p = 0.0930917 (R: 2 * pt(-abs(1.80), 14.23)); printed 0.094"
+  ]
+ },
+ "BM0130": {
+  "position": 130,
+  "class": "not_computable",
+  "codex_reason": "The reported p-value is inconsistent with the stated likelihood-ratio statistic for a one-degree-of-freedom comparison.",
+  "findings": []
+ },
+ "BM0137": {
+  "position": 137,
+  "class": "not_computable",
+  "codex_reason": "The reported interaction p-value is smaller than even the limiting two-sided p-value for its printed t statistic.",
+  "findings": []
+ },
+ "BM0145": {
+  "position": 145,
+  "class": "not_computable",
+  "codex_reason": "The stated first quartile is inconsistent with the lower-quarter order statistics in the supplied sorted data.",
+  "findings": []
+ },
+ "BM0177": {
+  "position": 177,
+  "class": "display_only",
+  "codex_reason": "The reported p-value is inconsistent with a chi-squared statistic of 15.88 on two degrees of freedom at the displayed precision.",
+  "findings": [
+   "chi-squared = 15.88 on 2 df gives p = 0.000356206 (R: pchisq(15.88, 2, lower.tail = FALSE)); printed 0.00037"
+  ]
+ },
+ "BM0190": {
+  "position": 190,
+  "class": "not_computable",
+  "codex_reason": "The reported coefficient t statistics and p-values cannot come from a common residual degrees of freedom in the stated linear model.",
+  "findings": []
+ },
+ "BM1017": {
+  "position": 197,
+  "class": "display_only",
+  "codex_reason": "The reported Welch confidence interval is centered at 3.20, which conflicts with the group mean difference of 3.37.",
+  "findings": [
+   "t = 2.8451 on 24.318 df gives p = 0.00887122 (R: 2 * pt(-abs(2.8451), 24.318)); printed 0.008932"
+  ]
+ },
+ "BM0210": {
+  "position": 210,
+  "class": "not_computable",
+  "codex_reason": "The exact binomial p-value for 158 successes in 200 trials under the stated null cannot be as small as reported.",
+  "findings": []
+ },
+ "BM0224": {
+  "position": 224,
+  "class": "not_computable",
+  "codex_reason": "The lack-of-fit and pure-error degrees of freedom sum to 9 rather than the reported residual 7, and the reported lack-of-fit p-value also disagrees with its F statistic and degrees of freedom.",
+  "findings": []
+ },
+ "BM0237": {
+  "position": 237,
+  "class": "display_only",
+  "codex_reason": "The reported p-value is inconsistent with a score statistic of 14.732 under a chi-squared distribution with one degree of freedom.",
+  "findings": [
+   "chi-squared statistic 14.732 on 1 df gives p = 0.000123925 (R: pchisq(14.732, 1, lower.tail = FALSE)); printed 0.000132"
+  ]
+ },
+ "BM1037": {
+  "position": 257,
+  "class": "not_computable",
+  "codex_reason": "The reported t statistics and two-sided p-values imply different residual degrees of freedom across coefficients in the same linear model.",
+  "findings": []
+ },
+ "BM0270": {
+  "position": 270,
+  "class": "display_only",
+  "codex_reason": "The reported two-sided p-value is inconsistent with an F statistic of 1.4321 and 24 degrees of freedom in each group.",
+  "findings": [
+   "F = 1.4321 on 24 and 24 df gives p = 0.385229 (R: 2 * min(pf(1.4321, 24, 24), pf(1.4321, 24, 24, lower.tail = FALSE))); printed 0.2841"
+  ]
+ },
+ "BM0284": {
+  "position": 284,
+  "class": "not_computable",
+  "codex_reason": "The reported p-value for gH is inconsistent with the displayed estimate and standard error for any integer residual degrees of freedom, even allowing for rounding.",
+  "findings": []
+ },
+ "BM0297": {
+  "position": 297,
+  "class": "not_computable",
+  "codex_reason": "The printed significance stars contradict the significance-code legend for the stated p-value.",
+  "findings": []
+ },
+ "BM0317": {
+  "position": 317,
+  "class": "not_computable",
+  "codex_reason": "The confidence and prediction interval widths at latency 300 are incompatible with each other and the stated residual standard error.",
+  "findings": []
+ },
+ "BM0324": {
+  "position": 324,
+  "class": "not_computable",
+  "codex_reason": "The first two reported ACF values imply a negative lag-2 PACF, contradicting the reported positive value.",
+  "findings": []
+ },
+ "BM0330": {
+  "position": 330,
+  "class": "not_computable",
+  "codex_reason": "The reported adjusted p-values for Blends B and C are inconsistent with the Benjamini–Hochberg adjustment of the listed raw p-values.",
+  "findings": []
+ },
+ "BM0357": {
+  "position": 357,
+  "class": "not_computable",
+  "codex_reason": "The printed confidence interval has a negative-infinite lower bound, which conflicts with the stated greater-than alternative.",
+  "findings": []
+ },
+ "BM0364": {
+  "position": 364,
+  "class": "display_only",
+  "codex_reason": "The displayed test statistic and confidence limits are inconsistent with the stated counts and the uncorrected R proportions test.",
+  "findings": [
+   "X-squared = 4.75 on 1 df gives p = 0.0292983 (R: pchisq(4.75, 1, lower.tail = FALSE)); printed 0.02934"
+  ]
+ },
+ "BM0370": {
+  "position": 370,
+  "class": "display_only",
+  "codex_reason": "The displayed p-value for x is inconsistent with the coefficient and standard error, even allowing for rounding.",
+  "findings": [
+   "z = 4.0 gives p = 6.33425e-05 (R: 2 * pnorm(-abs(4.0))); printed 6.1e-05"
+  ]
+ },
+ "BM0375": {
+  "position": 375,
+  "class": "not_computable",
+  "codex_reason": "The stated observed difference and permutation list are inconsistent with the defect counts and the specified Team A minus Team B statistic.",
+  "findings": []
+ },
+ "BM0377": {
+  "position": 377,
+  "class": "not_computable",
+  "codex_reason": "The reported t-statistics and p-values cannot all come from the same residual degrees of freedom in an lm summary.",
+  "findings": []
+ },
+ "BM0390": {
+  "position": 390,
+  "class": "not_computable",
+  "codex_reason": "The reported Fisher test output is inconsistent with the supplied counts and gives the cross-product odds ratio where R reports a conditional maximum likelihood estimate.",
+  "findings": []
+ },
+ "BM0394": {
+  "position": 394,
+  "class": "not_computable",
+  "codex_reason": "The procedure produces a central interval for sample means simulated under a fixed population mean and labels it a confidence interval for that population mean.",
+  "findings": []
+ },
+ "BM0417": {
+  "position": 417,
+  "class": "not_computable",
+  "codex_reason": "The reported Shapiro–Wilk p-value is inconsistent with the given statistic and sample size in R.",
+  "findings": []
+ },
+ "BM0424": {
+  "position": 424,
+  "class": "display_only",
+  "codex_reason": "The reported p-value and confidence interval are inconsistent with the stated F statistic and degrees of freedom.",
+  "findings": [
+   "F = 1.45 on 9 and 9 df gives p = 0.58878 (R: 2 * min(pf(1.45, 9, 9), pf(1.45, 9, 9, lower.tail = FALSE))); printed 0.31",
+   "the 95% interval for the variance ratio from F = 1.45 on 9 and 9 df is (0.360159, 5.83769); printed (0.4502, 4.6218)"
+  ]
+ },
+ "BM0450": {
+  "position": 450,
+  "class": "display_only",
+  "codex_reason": "The reported score-test p-value does not match the stated chi-squared statistic and degrees of freedom at the displayed precision.",
+  "findings": [
+   "Chi-squared = 16.00 on 1 df gives p = 6.33425e-05 (R: pchisq(16.00, 1, lower.tail = FALSE)); printed 6.2e-05",
+   "z = 7.0833 gives p = 1.40761e-12 (R: 2 * pnorm(-abs(7.0833))); printed 1.5e-12"
+  ]
+ },
+ "BM0484": {
+  "position": 484,
+  "class": "display_only",
+  "codex_reason": "The reported confidence interval is inconsistent with the Pearson correlation and sample size implied by the displayed R output, even allowing for rounding.",
+  "findings": [
+   "t = 3.597 on 23 df gives p = 0.00152119 (R: 2 * pt(-abs(3.597), 23)); printed 0.00148"
+  ]
+ },
+ "BM0500": {
+  "position": 500,
+  "class": "not_computable",
+  "codex_reason": "The reported residual standard error conflicts with the value implied by the sample size, sales standard deviation, and correlation for the stated regression.",
+  "findings": []
+ },
+ "BM0510": {
+  "position": 510,
+  "class": "display_only",
+  "codex_reason": "The printed two-sided p-value is inconsistent with the displayed t statistic and degrees of freedom.",
+  "findings": [
+   "t = 2.5981 on 11 df gives p = 0.0247778 (R: 2 * pt(-abs(2.5981), 11)); printed 0.02432"
+  ]
+ },
+ "BM0524": {
+  "position": 524,
+  "class": "not_computable",
+  "codex_reason": "The reported t statistics and p-values are incompatible with a common residual degrees of freedom.",
+  "findings": []
+ },
+ "BM0537": {
+  "position": 537,
+  "class": "display_only",
+  "codex_reason": "The reported p-value and confidence limits do not match the stated F statistic and degrees of freedom.",
+  "findings": [
+   "F = 1.82 on 19 and 19 df gives p = 0.200976 (R: 2 * min(pf(1.82, 19, 19), pf(1.82, 19, 19, lower.tail = FALSE))); printed 0.215"
+  ]
+ },
+ "BM0544": {
+  "position": 544,
+  "class": "not_computable",
+  "codex_reason": "The printed p-value is inconsistent with a two-sided exact binomial test for the stated data and null probability.",
+  "findings": []
+ },
+ "BM0550": {
+  "position": 550,
+  "class": "display_only",
+  "codex_reason": "The reported chi-squared p-value does not match the deviance drop and the stated degrees of freedom.",
+  "findings": [
+   "deviance 22.20 on 2 df gives p = 1.51123e-05 (R: pchisq(22.20, 2, lower.tail = FALSE)); printed 1.06e-05"
+  ]
+ },
+ "BM0557": {
+  "position": 557,
+  "class": "not_computable",
+  "codex_reason": "The reported p-values for the group and interaction terms cannot both arise from the displayed t statistics with the same residual degrees of freedom.",
+  "findings": []
+ },
+ "BM0564": {
+  "position": 564,
+  "class": "not_computable",
+  "codex_reason": "The reported variance proportions are inconsistent with the squared component standard deviations.",
+  "findings": []
+ },
+ "BM0584": {
+  "position": 584,
+  "class": "display_only",
+  "codex_reason": "The printed p-values for DataUsage and CallDuration are inconsistent with their displayed z statistics beyond the stated output precision.",
+  "findings": [
+   "z = 8.1093 gives p = 5.09122e-16 (R: 2 * pnorm(-abs(8.1093))); printed 5.11e-16",
+   "z = 2.0000 gives p = 0.0455003 (R: 2 * pnorm(-abs(2.0000))); printed 0.04553"
+  ]
+ },
+ "BM0597": {
+  "position": 597,
+  "class": "display_only",
+  "codex_reason": "The printed confidence limits do not match the score interval produced by the specified R call.",
+  "findings": [
+   "X-squared = 5 on 1 df gives p = 0.0253473 (R: pchisq(5, 1, lower.tail = FALSE)); printed 0.02565"
+  ]
+ },
+ "BM0604": {
+  "position": 604,
+  "class": "display_only",
+  "codex_reason": "The displayed p-value is inconsistent with the specified R test at the reported precision.",
+  "findings": [
+   "X-squared = 1.0417 on 1 df gives p = 0.307426 (R: pchisq(1.0417, 1, lower.tail = FALSE)); printed 0.3073"
+  ]
+ },
+ "BM0637": {
+  "position": 637,
+  "class": "not_computable",
+  "codex_reason": "The displayed widths are inconsistent with standard variance-based AR(1) intervals because the first two widths imply a third width outside the displayed rounding.",
+  "findings": []
+ },
+ "BM0644": {
+  "position": 644,
+  "class": "not_computable",
+  "codex_reason": "The South–North and East–North adjusted p-values are incompatible with the displayed Tukey intervals for any common residual degrees of freedom, even allowing for rounding.",
+  "findings": []
+ },
+ "BM0690": {
+  "position": 690,
+  "class": "display_only",
+  "codex_reason": "The reported two-sided p-value is inconsistent with the F statistic and degrees of freedom.",
+  "findings": [
+   "F = 4.50 on 14 and 16 df gives p = 0.00521703 (R: 2 * min(pf(4.50, 14, 16), pf(4.50, 14, 16, lower.tail = FALSE))); printed 0.0014",
+   "the 95% interval for the variance ratio from F = 4.50 on 14 and 16 df is (1.59743, 13.1553); printed (1.53, 13.86)"
+  ]
+ },
+ "BM0717": {
+  "position": 717,
+  "class": "substantive",
+  "codex_reason": "The reported p-value is inconsistent with the F statistic and degrees of freedom for the stated two-sided test.",
+  "findings": [
+   "F = 2.4503 on 14 and 13 df gives p = 0.115325 (R: 2 * min(pf(2.4503, 14, 13), pf(2.4503, 14, 13, lower.tail = FALSE))); printed 0.03812"
+  ]
+ },
+ "BM0724": {
+  "position": 724,
+  "class": "display_only",
+  "codex_reason": "The reported p-value and confidence interval are inconsistent with the stated F statistic and degrees of freedom.",
+  "findings": [
+   "F = 0.892 on 14 and 14 df gives p = 0.833685 (R: 2 * min(pf(0.892, 14, 14), pf(0.892, 14, 14, lower.tail = FALSE))); printed 0.5812",
+   "the 95% interval for the variance ratio from F = 0.892 on 14 and 14 df is (0.299471, 2.6569); printed (0.3815, 2.0538)"
+  ]
+ },
+ "BM0730": {
+  "position": 730,
+  "class": "not_computable",
+  "codex_reason": "R's Shapiro–Wilk test cannot produce the displayed combination of W and p-value at the stated precision for any supported sample size.",
+  "findings": []
+ },
+ "BM0744": {
+  "position": 744,
+  "class": "not_computable",
+  "codex_reason": "The reported p-value for the email predictor is below the two-sided normal tail probability at the displayed t statistic and therefore cannot come from a Student t test.",
+  "findings": []
+ },
+ "BM0750": {
+  "position": 750,
+  "class": "not_computable",
+  "codex_reason": "R's Shapiro–Wilk test cannot produce the displayed combination of W and p-value at the stated precision for any supported sample size.",
+  "findings": []
+ },
+ "BM0784": {
+  "position": 784,
+  "class": "not_computable",
+  "codex_reason": "For eight pairs, the stated two-sided exact p-value is inconsistent with the reported signed-rank statistic.",
+  "findings": []
+ },
+ "BM0790": {
+  "position": 790,
+  "class": "display_only",
+  "codex_reason": "The reported p-value is inconsistent with the displayed F statistic and degrees of freedom at the stated precision.",
+  "findings": [
+   "F = 5.342 on 1 and 47 df gives p = 0.0252513 (R: pf(5.342, 1, 47, lower.tail = FALSE)); printed 0.0254"
+  ]
+ },
+ "BM0797": {
+  "position": 797,
+  "class": "not_computable",
+  "codex_reason": "The pressure and temperature coefficient tests report t statistics and p-values that cannot share the same residual degrees of freedom.",
+  "findings": []
+ },
+ "BM0810": {
+  "position": 810,
+  "class": "display_only",
+  "codex_reason": "The reported chi-squared statistic is inconsistent with the count, null proportion, and stated continuity correction.",
+  "findings": [
+   "X-squared = 6.7324 on 1 df gives p = 0.00946771 (R: pchisq(6.7324, 1, lower.tail = FALSE)); printed 0.009483"
+  ]
+ },
+ "BM0817": {
+  "position": 817,
+  "class": "display_only",
+  "codex_reason": "The reported F-test p-value is inconsistent with the displayed F statistic and its degrees of freedom.",
+  "findings": [
+   "F = 171.1 on 1 and 48 df gives p = 1.92629e-17 (R: pf(171.1, 1, 48, lower.tail = FALSE)); printed 1.2e-16",
+   "t = -13.08 on 48 df gives p = 1.92918e-17 (R: 2 * pt(-abs(-13.08), 48)); printed 1.2e-16"
+  ]
+ },
+ "BM0850": {
+  "position": 850,
+  "class": "display_only",
+  "codex_reason": "The printed p-values for the main effects disagree with the stated F statistics and degrees of freedom at the displayed precision.",
+  "findings": [
+   "F = 2.50 on 1 and 36 df gives p = 0.122594 (R: pf(2.50, 1, 36, lower.tail = FALSE)); printed 0.1224",
+   "F = 1.80 on 1 and 36 df gives p = 0.188115 (R: pf(1.80, 1, 36, lower.tail = FALSE)); printed 0.1885",
+   "F = 8.50 on 1 and 36 df gives p = 0.00607621 (R: pf(8.50, 1, 36, lower.tail = FALSE)); printed 0.0060"
+  ]
+ },
+ "BM0897": {
+  "position": 897,
+  "class": "display_only",
+  "codex_reason": "The reported correlation and degrees of freedom are inconsistent with the printed t-statistic and confidence interval.",
+  "findings": [
+   "t = 3.368 on 18 df gives p = 0.00342578 (R: 2 * pt(-abs(3.368), 18)); printed 0.00341"
+  ]
+ },
+ "BM0910": {
+  "position": 910,
+  "class": "not_computable",
+  "codex_reason": "The reported t-statistics and two-sided p-values cannot all arise from the same residual degrees of freedom at the displayed precision.",
+  "findings": []
+ },
+ "BM0957": {
+  "position": 957,
+  "class": "display_only",
+  "codex_reason": "The reported p-value is inconsistent with the displayed t statistic and six degrees of freedom for a two-sided test.",
+  "findings": [
+   "t = 2.132 on 6 df gives p = 0.0769964 (R: 2 * pt(-abs(2.132), 6)); printed 0.07892"
+  ]
+ },
+ "BM0964": {
+  "position": 964,
+  "class": "display_only",
+  "codex_reason": "The displayed 95% confidence interval is too narrow for the reported mean difference, t statistic, and degrees of freedom.",
+  "findings": [
+   "t = 2.45 on 9 df gives p = 0.0367567 (R: 2 * pt(-abs(2.45), 9)); printed 0.035"
+  ]
+ },
+ "BM1050": {
+  "position": 970,
+  "class": "display_only",
+  "codex_reason": "The reported p-value disagrees with the chi-square upper-tail probability implied by the statistic and two degrees of freedom, even allowing for rounding.",
+  "findings": [
+   "X-squared = 12.392 on 2 df gives p = 0.00203756 (R: pchisq(12.392, 2, lower.tail = FALSE)); printed 0.00203"
+  ]
+ },
+ "BM0990": {
+  "position": 990,
+  "class": "not_computable",
+  "codex_reason": "For 20 pairs in the stated exact two-sided signed-rank test, the reported p-value is inconsistent with the reported statistic.",
+  "findings": []
+ },
+ "BM0997": {
+  "position": 997,
+  "class": "display_only",
+  "codex_reason": "The reported p-value for price_per_sqft is inconsistent with its reported z statistic even after allowing for rounding.",
+  "findings": [
+   "z = 3.08 gives p = 0.00207001 (R: 2 * pnorm(-abs(3.08))); printed 0.00203",
+   "z = 4.00 gives p = 6.33425e-05 (R: 2 * pnorm(-abs(4.00))); printed 6.1e-05"
+  ]
+ }
+}
