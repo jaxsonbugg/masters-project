@@ -541,6 +541,25 @@ def parse_kv(text):
     return dict(l.split("=", 1) for l in text.splitlines() if "=" in l and re.match(r"^[A-Z_]+=", l))
 
 
+CONN_TOLERANCE_SECONDS = float(os.environ.get("RL_CONN_TOLERANCE_SECONDS", 1800))   # env override: tests only
+
+
+def connection_down(cfg, led, rc, err):
+    """While WAITING on a job (owner-approved, 2026-11-21): ssh exit 255 means the connection failed (VPN or Wi-Fi), not
+    Talon. Tolerated for up to 30 minutes, then the loop stops. Submissions never use this: there, an unanswered ssh still
+    stops the loop and the next start reconciles before anything is resubmitted."""
+    if rc != 255:
+        return False
+    now = time.time()
+    since = led.setdefault("conn_down_since", now)
+    if now - since > CONN_TOLERANCE_SECONDS:
+        return False
+    if since == now:
+        log_event(led, f"Talon unreachable ({err.strip()[-120:]}); retrying while waiting, for up to "
+                       f"{CONN_TOLERANCE_SECONDS / 60:.0f} minutes")
+    return True
+
+
 def phase_wait(cfg, led, T):
     """Returns True when every shard is complete; False while jobs are still queued or running."""
     rd = cur(led)
@@ -553,13 +572,23 @@ def phase_wait(cfg, led, T):
         a = sh["attempts"][-1]
         rc, out, err = T.ssh(f"squeue -h -u $(id -un) -n qt_talon_G_{sh['tag']} -o %i,%T")
         if rc != 0:
+            if connection_down(cfg, led, rc, err):
+                waiting = True
+                continue
             raise StopLoop("repeated failure", f"squeue failed: {err[-200:]}")
         if any(l.split(",")[0].strip() == a["job"] for l in out.splitlines()):
+            led.pop("conn_down_since", None)
             waiting = True
             continue
         rc, out, err = T.ssh(f"cat {T.outputs}/stage_results/stageG_{sh['tag']}_job{a['job']}.txt")
+        rc2, log, err2 = T.ssh(f"head -n 40 {T.repo}/qt_talon_G_{sh['tag']}_{a['job']}.log")
+        if rc == 255 or rc2 == 255:                # the connection dropped: never mistake that for a failed job
+            if connection_down(cfg, led, 255, err or err2):
+                waiting = True
+                continue
+            raise StopLoop("repeated failure", f"Talon unreachable while reading job {a['job']}'s results: {(err or err2)[-200:]}")
+        led.pop("conn_down_since", None)
         res = parse_kv(out) if rc == 0 else {}
-        rc2, log, _ = T.ssh(f"head -n 40 {T.repo}/qt_talon_G_{sh['tag']}_{a['job']}.log")
         start = re.search(r"=== node \S+, job \d+, stage G, (\S+Z) ===", log or "")
         if res.get("UTC") and start:
             t0 = datetime.fromisoformat(start.group(1).replace("Z", "+00:00"))

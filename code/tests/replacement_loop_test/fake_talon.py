@@ -112,6 +112,14 @@ def submit(cmd):
 def ssh(cmd):
     log("SSH " + cmd)
     st = state()
+    # FAKE_TALON_DOWN_CALLS=<n>: the next n status/result reads fail as if the VPN dropped (ssh exit 255)
+    if os.environ.get("FAKE_TALON_DOWN_CALLS") and cmd.startswith(("squeue", "cat ", "head ")):
+        left = st.setdefault("down_left", int(os.environ["FAKE_TALON_DOWN_CALLS"]))
+        if left > 0:
+            st["down_left"] = left - 1
+            save(st)
+            print("ssh: Could not resolve hostname fakehost: Name or service not known", file=sys.stderr)
+            sys.exit(255)
     if "submit_pipeline.sh generate" in cmd:
         return submit(cmd)
     if cmd.startswith("squeue"):

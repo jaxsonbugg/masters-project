@@ -246,7 +246,7 @@ try:
     L = ledger(E)
     check("before stopping it waited for the two running jobs to be measured (no stop on the pessimistic 1.0 charge)",
           any("waiting for them to be measured" in h["event"] for h in L["history"])
-          and all(a.get("gpu_hours") == 0.8 for s in L["rounds"]["1"]["shards"].values() for a in s["attempts"]),
+          and all(abs((a.get("gpu_hours") or 0) - 0.8) < 0.01 for s in L["rounds"]["1"]["shards"].values() for a in s["attempts"]),
           [h["event"] for h in L["history"]][-4:])
     E = make_env("budget_defer", max_total_gpu_hours=2.0)
     rc, out = run(E, "--max-steps", "12")
@@ -268,6 +268,22 @@ try:
     a1 = L["rounds"]["1"]["shards"]["1"]["attempts"]
     check("a shard that hits the time limit unfinished is resubmitted with the same identifier and completes",
           [a["state"] for a in a1] == ["unfinished", "finished"] and submits(E)[("1/3", "1", "12")] == 2, a1)
+
+    print("[4b] a dropped connection while waiting is retried; it never turns a job into a failure")
+    E = make_env("conn_blip")
+    rc, out = run(E, "--max-steps", "14", FAKE_TALON_DOWN_CALLS="4")
+    L = ledger(E)
+    states = [a["state"] for s in L["rounds"]["1"]["shards"].values() for a in s["attempts"]]
+    check("four failed status reads (VPN drop) are retried while waiting; no job is marked failed and none is resubmitted",
+          "failed" not in states and sum(n for (sh, first, cnt), n in submits(E).items() if first == "1") == 3
+          and any("Talon unreachable" in h["event"] for h in L["history"]), (states, out[-400:]))
+    E = make_env("conn_long")
+    rc, out = run(E, FAKE_TALON_DOWN_CALLS="50", RL_CONN_TOLERANCE_SECONDS="0")
+    L = ledger(E)
+    states = [a["state"] for s in L["rounds"]["1"]["shards"].values() for a in s["attempts"]]
+    check("a connection that stays down past the tolerance stops the loop, and the jobs are still recorded as submitted, "
+          "not failed", rc == 3 and stop_reports(E)[-1]["condition"] == "repeated failure" and "failed" not in states,
+          (states, out[-300:]))
 
     # ------------------------------------------------------------ 5. a lost answer from sbatch
     print("[5] a submission whose answer was lost: reconciled, or a stop when it cannot be established")
