@@ -326,3 +326,22 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Validation:** both `RESULT=PASS_QUALITY_WARN` (the findings are the failed attempts that were then asked again), infrastructure PASS, both complete, 0 cut-offs, 0 error words in the server logs; re-validated on the PC with the same result. Confidential computing: "not reported by nvidia-smi -q"; no garbled output seen.
 - **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/2026-11-21_qwen3-6-27b-talon-bf16_smoke_benchmark-v8_bfa35577_shard1of1` and `..._smoke_training-v2_c98f27c1_shard1of1`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_stageG_smoke2_jobs295-297_logs\`. Development material only.
 - **Total:** about **0.42 GPU-hours**. **Outcome:** reviewed; findings in the progress log. **Related progress entry:** "Second smoke test: plain text and printout check work" (2026-11-21).
+
+### 19. Talon jobs 299-309: the benchmark, development and TV sets (stage G), 2026-11-21 (cluster local time 2026-11-20 21:28; UTC 02:28)
+- **Purpose:** generate the benchmark (BM0001-BM1150, 1,000 + 150 spares), the development set (DV0001-DV0230) and the held-out training-style set (TV0001-TV0180), approved by Jaxson on 2026-11-20 (the development and TV sets in the same session: a logged change of order). He refreshed the Talon copy to `00b6dd3` (fingerprints checked: prompts `0ba834e2`, `412d1eb4`; slots `b2d9197f`, `cd7f7e57`, `ff6d0d04`) and submitted six jobs with `QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1 REPLICAS=1 MAX_NUM_SEQS=16 CLIENT_CONCURRENCY=16 GEN_SLOTS=... GEN_PROMPT=... GEN_SHARD=... bash configs/talon/submit_pipeline.sh generate`.
+- **Software:** vLLM 0.32.0; `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; context 20,480, output limit 16,384; thinking on (temperature 1.0, top_p 0.95, top_k 20); up to 3 attempts per slot; concurrency 16 per job. Benchmark and development: prompt benchmark-v8 with the plain-text and printout checks; TV: training-v2.
+- **Requests:** 1 GPU each, wall time 1 day; all started within 2 s of submission (queue wait 0 to 2 s).
+
+  | Job | Set, shard | Node, GPU | UTC start-end | GPU-hours | Calls | Usable / failed all 3 | Output tokens | Min. free GPU memory |
+  |---|---|---|---|---|---|---|---|---|
+  | 299 | benchmark 1/4 (288) | mualhpgp01, 0 | 02:28:49-03:28:42 | 1.00 | 308 | 285 / 3 | 1,605,419 | 6,079 MiB |
+  | 301 | benchmark 2/4 (288) | mualhpgp01, 1 | 02:28:49-03:10:29 | 0.69 | 308 | 283 / 5 | 1,502,472 | 6,867 MiB |
+  | 303 | benchmark 3/4 (287) | mualhpgp02, 0 | 02:28:52-03:27:02 | 0.97 | 290 | 286 / 1 | 1,268,531 | 4,798 MiB |
+  | 305 | benchmark 4/4 (287) | mualhpgp02, 1 | 02:28:53-03:30:04 | 1.02 | 304 | 283 / 4 | 1,623,569 | 4,339 MiB |
+  | 307 | development (230) | mualhpgp02, 2 | 02:28:53-03:16:47 | 0.80 | 235 | 230 / 0 | 1,141,243 | 3,636 MiB |
+  | 309 | TV (180) | mualhpgp02, 3 | 02:28:55-02:51:05 | 0.37 | 182 | 180 / 0 | 740,965 | 5,029 MiB |
+
+- **Total: about 4.85 GPU-hours** (estimate before the run: 8 to 10). Server load 91 to 121 s per job. Client time per 1,000 usable replies: benchmark about 3.0 GPU-hours, development 3.2, TV 1.7.
+- **Validation:** every job `RESULT=PASS_QUALITY_WARN` (the findings are failed attempts that were asked again), infrastructure PASS, every shard complete, 0 transport errors, 0 error words in the server logs; re-validated on the PC against the slot files with identical counts. The most common reason for a second attempt was an inconsistent printout (the new check; for example t = -4.90 on 996 df printed p = 1.2e-05 where 1.1e-06 is right), then answer keys over the length limit and invalid JSON.
+- **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/2026-11-21_qwen3-6-27b-talon-bf16_{benchmark_benchmark-v8_*_shard{1..4}of4, dev_benchmark-v8_cd7f7e57_shard1of1, tv_training-v2_ff6d0d04_shard1of1}`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_stageG_bm-dv-tv_jobs299-309_logs\` (job logs, result files, client, validation and server logs, GPU memory CSVs). Copied by Claude with `scp` (read-only on Talon). Recovery: `recovery/teacher_outputs.md`.
+- **Outcome:** reviewed; collection, repairs and spare filling in the progress log. **Related progress entry:** "Benchmark and development set collected: R keys, verify, repairs and spares" (2026-11-21).

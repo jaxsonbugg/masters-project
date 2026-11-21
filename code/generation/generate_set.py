@@ -706,6 +706,58 @@ def verify_rows(rows, rscript):
     return rows
 
 
+def apply_repairs(rows, decisions, rscript):
+    """Owner-reviewed decisions for verify-flagged questions (added 2026-11-21). Each decision is
+      {"item_id", "action": "repair_check" | "replace", "new_r_check", "reason"}.
+    repair_check: the question and its key are right and only the R check is broken (wrong object names, the random seed
+      not reset, a hard-coded wrong value). The check is replaced (the original is kept as r_check_original) and verify is
+      run again in the R sandbox; the question becomes usable ONLY if the repaired check now accepts the key and rejects
+      the wrong answers. The key itself is never changed here.
+    replace: the key or the question is doubtful; the slot stays failed and fill-bench gives its position to a spare.
+    Returns a report {"repaired", "repair_failed", "replace", "undecided"}."""
+    by_id = {r["item_id"]: r for r in rows}
+    rep = {"repaired": [], "repair_failed": [], "replace": [], "undecided": []}
+    decided = set()
+    for d in decisions:
+        r = by_id.get(d["item_id"])
+        if r is None or r["status"] != "verify_flagged":
+            sys.exit(f"{d['item_id']}: a decision for a slot that is not verify-flagged ({r and r['status']}); nothing applied")
+        decided.add(d["item_id"])
+        r["decision"] = {"action": d["action"], "reason": d["reason"]}
+        if d["action"] == "replace":
+            rep["replace"].append(d["item_id"])
+            continue
+        item = r["item"]
+        item["r_check_original"], item["r_check"] = item["r_check"], d["new_r_check"]
+        status, issues, _ = gb.verify_item(item, rscript)
+        r["verify_status"], r["verify_issues"] = status, issues
+        if status == "FLAGGED":
+            rep["repair_failed"].append((d["item_id"], issues))
+        else:
+            r["status"], r["problems"] = "usable", []
+            r["repaired"] = True
+            rep["repaired"].append(d["item_id"])
+    rep["undecided"] = sorted(r["item_id"] for r in rows if r["status"] == "verify_flagged" and r["item_id"] not in decided)
+    return rep
+
+
+def cmd_apply_repairs(args):
+    rows = [json.loads(l) for l in Path(args.items).read_text(encoding="utf-8").splitlines() if l.strip()]
+    decisions = [d for d in json.loads(Path(args.decisions).read_text(encoding="utf-8"))
+                 if d["item_id"] in {r["item_id"] for r in rows}]
+    rep = apply_repairs(rows, decisions, gb.rscript_path())
+    text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+    Path(args.out).write_text(text, encoding="utf-8", newline="\n")
+    print(f"repaired {len(rep['repaired'])}, repair FAILED {len(rep['repair_failed'])}, replace {len(rep['replace'])}, "
+          f"undecided {len(rep['undecided'])} -> {args.out}")
+    for iid, issues in rep["repair_failed"]:
+        print(f"  REPAIR FAILED {iid}: {'; '.join(issues)}")
+    if rep["undecided"]:
+        print("  undecided (still flagged, will be replaced unless decided):", ", ".join(rep["undecided"]))
+    print("statuses:", dict(Counter(r["status"] for r in rows)))
+    sys.exit(1 if rep["repair_failed"] else 0)
+
+
 def cmd_collect(args):
     rscript = gb.rscript_path() if args.r_keys else None    # the R sandbox, after its self-test (fails closed)
     rows = collect_rows(args.runs, rscript)
@@ -1055,6 +1107,10 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--r-keys", action="store_true", help="benchmark-style sets: R writes number keys and verify tests "
                    "every R check (R sandbox); a broken or vacuous check makes the slot 'verify_flagged' (replaced by a spare)")
+    p = sub.add_parser("apply-repairs", help="apply owner-reviewed repair/replace decisions to verify-flagged items (R sandbox)")
+    p.add_argument("--items", required=True)
+    p.add_argument("--decisions", required=True, help="a JSON list of {item_id, action: repair_check | replace, new_r_check, reason}")
+    p.add_argument("--out", required=True)
     p = sub.add_parser("fill-bench", help="benchmark/dev/smoke: replace failed primaries with like-for-like spares")
     p.add_argument("--items", required=True)
     p.add_argument("--manifest", required=True)
@@ -1079,6 +1135,8 @@ def main(argv=None):
         cmd_validate(args)
     elif args.cmd == "collect":
         cmd_collect(args)
+    elif args.cmd == "apply-repairs":
+        cmd_apply_repairs(args)
     elif args.cmd == "fill-bench":
         cmd_fill_bench(args)
     elif args.cmd == "collect-train":

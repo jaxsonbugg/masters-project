@@ -602,6 +602,26 @@ check("fill-bench treats a verify-flagged slot like any failed slot: the matchin
       fb_pos[0]["item_id"] == "DV0099" and fb_pos[0]["replaces"] == "DV0001" and fb_pos[0]["replaced_status"] == "verify_flagged"
       and not fb_needs, fb_pos)
 
+print("[11] owner-reviewed repairs of broken R checks (apply_repairs, 2026-11-21)")
+ar = [{"item_id": "DV0101", "status": "verify_flagged", "prompt_kind": "benchmark",
+       "item": {**rx, "question": "M <- matrix(1:9, nrow = 3). Write R for the trace of M.", "canonical_answer": "sum(diag(M))",
+                "r_check": "isTRUE(all.equal(eval(parse(text = candidate)), 15))"}},                          # M never created
+      {"item_id": "DV0102", "status": "verify_flagged", "prompt_kind": "benchmark", "item": {**rx, "r_check": "nchar(candidate) >= 0"}},
+      {"item_id": "DV0103", "status": "verify_flagged", "prompt_kind": "benchmark", "item": {**rx, "r_check": "nchar(candidate) >= 0"}},
+      {"item_id": "DV0104", "status": "verify_flagged", "prompt_kind": "benchmark", "item": {**rx, "r_check": "nchar(candidate) >= 0"}}]
+decs = [{"item_id": "DV0101", "action": "repair_check", "reason": "M not created",
+         "new_r_check": "M <- matrix(1:9, nrow = 3); isTRUE(all.equal(eval(parse(text = candidate)), 15))"},
+        {"item_id": "DV0102", "action": "repair_check", "reason": "a repair that is still vacuous", "new_r_check": "is.character(candidate)"},
+        {"item_id": "DV0103", "action": "replace", "reason": "doubtful key", "new_r_check": None}]
+arep = gs.apply_repairs(ar, decs, gb.rscript_path())
+check("a repaired check that now accepts the key and rejects wrong answers makes the question usable; the original check is kept",
+      ar[0]["status"] == "usable" and ar[0]["repaired"] and ar[0]["item"]["r_check_original"].startswith("isTRUE") and arep["repaired"] == ["DV0101"])
+check("a 'repair' that is still vacuous is NOT accepted (verify runs again), and the question stays flagged",
+      ar[1]["status"] == "verify_flagged" and arep["repair_failed"] and arep["repair_failed"][0][0] == "DV0102")
+check("a 'replace' decision keeps the slot flagged for a spare; a flagged slot with no decision is reported as undecided",
+      ar[2]["status"] == "verify_flagged" and arep["replace"] == ["DV0103"] and arep["undecided"] == ["DV0104"])
+check("the key is never changed by a repair", ar[0]["item"]["canonical_answer"] == "sum(diag(M))")
+
 # ------------------------------------------------------------------ 8. the Talon copy keeps the pinned bytes
 print("[8] the files as `git archive` (the Talon copy) writes them keep their pinned SHA-256 (line endings)")
 import hashlib  # noqa: E402

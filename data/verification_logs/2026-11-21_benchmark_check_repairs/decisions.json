@@ -1,0 +1,248 @@
+[
+ {
+  "item_id": "BM0254",
+  "action": "repair_check",
+  "new_r_check": "p <- data.frame(id = 1:3, v = 10:12); q <- data.frame(id = 2:4, w = 20:22); isTRUE(all.equal(eval(parse(text = candidate)), merge(p, q, all.x = TRUE)))",
+  "reason": "the check built test data named x and y while the question and key use p and q"
+ },
+ {
+  "item_id": "BM0458",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "the key '8' is a value, not an R expression, although the answer type is r_expression; the question also asks for a level name"
+ },
+ {
+  "item_id": "BM0474",
+  "action": "repair_check",
+  "new_r_check": "set.seed(42); a <- eval(parse(text = candidate)); set.seed(42); b <- replicate(500, mean(runif(15))); isTRUE(all.equal(a, b))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference"
+ },
+ {
+  "item_id": "BM0498",
+  "action": "repair_check",
+  "new_r_check": "set.seed(101); a <- eval(parse(text = candidate)); set.seed(101); b <- mean(abs(replicate(100000, cor(rnorm(20), rnorm(20)))) > 0.4); isTRUE(all.equal(a, b))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference (the question says set.seed(101) is run immediately before the code)"
+ },
+ {
+  "item_id": "BM0594",
+  "action": "repair_check",
+  "new_r_check": "a <- eval(parse(text = candidate)); set.seed(42); b <- rpois(5, 6); isTRUE(all.equal(a, b))",
+  "reason": "the check compared with hard-coded values c(6, 5, 7, 4, 8) that are not what set.seed(42); rpois(5, 6) gives; the reference is now computed"
+ },
+ {
+  "item_id": "BM0698",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "for a one-column df the key df[sample.int(nrow(df)), ] drops to a vector, and the one-row requirement is not well defined; doubtful key"
+ },
+ {
+  "item_id": "BM0714",
+  "action": "repair_check",
+  "new_r_check": "M <- matrix(1:9, nrow = 3); isTRUE(all.equal(eval(parse(text = candidate)), 15))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (M)"
+ },
+ {
+  "item_id": "BM0738",
+  "action": "repair_check",
+  "new_r_check": "subject <- factor(c(\"S1\", \"S2\", \"S1\")); isTRUE(all.equal(eval(parse(text = candidate)), c(\"tau2_S1\", \"tau2_S2\")))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (subject)"
+ },
+ {
+  "item_id": "BM0794",
+  "action": "repair_check",
+  "new_r_check": "parts <- data.frame(id = 1:5, length_mm = c(10.1, 10.3, 9.9, 10.0, 10.2), defects = c(0, 1, 0, 2, 0)); set.seed(42); a <- eval(parse(text = candidate)); set.seed(42); b <- parts[sample(nrow(parts)), ]; identical(a, b)",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (parts)"
+ },
+ {
+  "item_id": "BM0874",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "matrix(1:3, nrow = 2, ncol = 2) gives only a warning in R, not an error, so the key returns a matrix and never -1: the question's premise is wrong"
+ },
+ {
+  "item_id": "BM0918",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "rownames(M)[upper.tri(M)] indexes a length-3 vector with a 3x3 logical matrix and gives NA values: the key is wrong"
+ },
+ {
+  "item_id": "BM0958",
+  "action": "repair_check",
+  "new_r_check": "occ <- c(0.82, 0.91, NA, 0.76, 0.88, 0.94, 0.79, 0.85, NA, 0.90, 0.83, 0.85); isTRUE(all.equal(eval(parse(text = candidate)), 0.4))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (occ); 0.4 checked by hand: 4 of the 10 observed rates exceed the 10% trimmed mean 0.85375"
+ },
+ {
+  "item_id": "BM0978",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "the key's recursive function calls ext(k - 1) twice per step, so k = 50 needs about 2^50 calls and never finishes (R timed out)"
+ },
+ {
+  "item_id": "BM1014",
+  "action": "repair_check",
+  "new_r_check": "cycles <- c(10, 20, 30, 40, 50); capacity <- c(95, 90, 85, 80, 75); isTRUE(all.equal(unname(eval(parse(text = candidate))), -0.5))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (cycles, capacity); and coef()[2] carries the name 'cycles', which the comparison must ignore"
+ },
+ {
+  "item_id": "BM1078",
+  "action": "repair_check",
+  "new_r_check": "S <- c(100, 200, 400, 800); F <- c(2, 5, 8, 9); ref <- coef(glm(cbind(F, 10 - F) ~ log10(S), family = binomial))[2]; isTRUE(all.equal(unname(suppressWarnings(eval(parse(text = candidate)))), unname(ref)))",
+  "reason": "the coefficient's name differs between the key (log10(c(100, ...))) and the reference (log10(S)); the comparison now ignores names"
+ },
+ {
+  "item_id": "BM1138",
+  "action": "repair_check",
+  "new_r_check": "f <- factor(c(\"alpha\", \"Beta\", \"gamma\")); isTRUE(all.equal(eval(parse(text = candidate)), 14))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (f)"
+ },
+ {
+  "item_id": "BM0003",
+  "action": "repair_check",
+  "new_r_check": "x <- as.Date('2024-06-15'); isTRUE(all.equal(eval(parse(text = candidate)), weekdays(as.Date('2024-06-15'))))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (x)"
+ },
+ {
+  "item_id": "BM0023",
+  "action": "repair_check",
+  "new_r_check": "set.seed(1); d <- data.frame(y = rpois(30, 5), ph_level = rnorm(30, 7, 0.5), treatment = gl(2, 15)); model_reduced <- glm(y ~ ph_level, family = poisson, data = d); model_full <- glm(y ~ ph_level + treatment, family = poisson, data = d); isTRUE(all.equal(eval(parse(text = candidate)), anova(model_reduced, model_full, test = \"Chisq\")))",
+  "reason": "the check compared deparsed text (which never matched) and the models did not exist; it now fits two example Poisson models and compares the results"
+ },
+ {
+  "item_id": "BM0103",
+  "action": "repair_check",
+  "new_r_check": "codes <- c(\"measles\", \"polio\", \"hepatitis_b\", \"rotavirus\"); isTRUE(all.equal(eval(parse(text = candidate)), 11))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (codes)"
+ },
+ {
+  "item_id": "BM0183",
+  "action": "repair_check",
+  "new_r_check": "time <- c(7, 10, 8, 12, 9); isTRUE(all.equal(eval(parse(text = candidate)), 0.4))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (time; without it R's built-in time() function was used)"
+ },
+ {
+  "item_id": "BM0583",
+  "action": "repair_check",
+  "new_r_check": "x <- c(1, 2, 2, 3, 2, 4, 1); isTRUE(all.equal(eval(parse(text = candidate)), table(x)))",
+  "reason": "the check evaluated the candidate in a list, which changes the table's dimension name; it now defines x and compares with table(x)"
+ },
+ {
+  "item_id": "BM0683",
+  "action": "repair_check",
+  "new_r_check": "x <- c(2, 3, 5); isTRUE(all.equal(eval(parse(text = candidate)), c(0.2, 0.5, 1)))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (x)"
+ },
+ {
+  "item_id": "BM0049",
+  "action": "repair_check",
+  "new_r_check": "set.seed(123); a <- eval(parse(text = candidate)); set.seed(123); b <- quantile(colMeans(matrix(rnorm(25 * 10000), 25)), c(0.025, 0.975)); isTRUE(all.equal(unname(a), unname(b)))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference; the check also used numeric() wrongly and an undefined canonical_answer"
+ },
+ {
+  "item_id": "BM0249",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "1:6[-3] is parsed by R as 1:(6[-3]) = 1:6, so the key returns 7 numbers with 3 twice: the key is wrong"
+ },
+ {
+  "item_id": "BM0429",
+  "action": "repair_check",
+  "new_r_check": "x <- c('val_3', 'val_10', 'val_2', 'val_20'); isTRUE(all.equal(eval(parse(text = candidate)), c('val_2', 'val_3', 'val_10', 'val_20')))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (x)"
+ },
+ {
+  "item_id": "BM0509",
+  "action": "repair_check",
+  "new_r_check": "M <- matrix(c(1, 5, 2, 8, 3, 6, 4, 7, 9, 10, 11, 12), nrow = 3); isTRUE(all.equal(eval(parse(text = candidate)), c(9, 8, 10)))",
+  "reason": "the check expected c(7, 4, 3); the row ranges of this matrix (filled by column) are 9, 8 and 10, checked by hand; the key is right"
+ },
+ {
+  "item_id": "BM0649",
+  "action": "repair_check",
+  "new_r_check": "set.seed(123); a <- eval(parse(text = candidate)); set.seed(123); b <- sum(rpois(1000, 3) == 5); isTRUE(all.equal(a, b))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference; the check also used an undefined canonical_answer"
+ },
+ {
+  "item_id": "BM0689",
+  "action": "repair_check",
+  "new_r_check": "loan_outcomes <- c(\"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"D\", \"D\", \"D\", \"D\", \"D\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\", \"R\"); r <- eval(parse(text = candidate)); isTRUE(all.equal(as.vector(r), c(19, 5))) && identical(names(r), c(\"R\", \"D\"))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (loan_outcomes); and a table must be compared by counts and names, not with a plain named vector"
+ },
+ {
+  "item_id": "BM0813",
+  "action": "repair_check",
+  "new_r_check": "set.seed(42); climate <- data.frame(temp = rnorm(50, 20, 5), rh = rnorm(50, 60, 10), pm25 = rnorm(50, 15, 3)); fit <- lm(pm25 ~ temp + rh, data = climate); r <- tryCatch(eval(parse(text = candidate)), error = function(e) NULL); !is.null(r) && isTRUE(all.equal(unname(r), unname(predict(fit, newdata = data.frame(temp = 22, rh = 55)))))",
+  "reason": "the check accepted any single number (vacuous); it now rebuilds the question's data and compares with the correct prediction"
+ },
+ {
+  "item_id": "BM0849",
+  "action": "repair_check",
+  "new_r_check": "a <- eval(parse(text = candidate)); set.seed(42); b <- mean(rnorm(10000) > 1); isTRUE(all.equal(a, b))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference"
+ },
+ {
+  "item_id": "BM0853",
+  "action": "repair_check",
+  "new_r_check": "",
+  "reason": "a number question needs no r_check (its key is compared as a number); the check used return() outside a function; removed"
+ },
+ {
+  "item_id": "BM0969",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "log(1, base = 0) returns 0 in R (log(1) / log(0) = 0 / -Inf), not an error, so the key returns 0 and never 42: the question's premise is wrong"
+ },
+ {
+  "item_id": "BM1049",
+  "action": "repair_check",
+  "new_r_check": "set.seed(1); a <- eval(parse(text = candidate)); set.seed(1); b <- mean(replicate(1000, mean(rnorm(50, 0, 1)))); isTRUE(all.equal(a, b))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference"
+ },
+ {
+  "item_id": "DV0003",
+  "action": "repair_check",
+  "new_r_check": "line <- c(\"L1\", \"L1\", \"L2\", \"L2\"); defects <- c(2, 5, 1, 3); isTRUE(all.equal(c(eval(parse(text = candidate))), c(L1 = 7, L2 = 4)))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (line, defects); and tapply returns a one-dimensional array, so it is compared as a plain named vector"
+ },
+ {
+  "item_id": "DV0038",
+  "action": "repair_check",
+  "new_r_check": "set.seed(42); a <- eval(parse(text = candidate)); set.seed(42); b <- quantile(replicate(10000, var(rnorm(20, sd = 3)) / var(rnorm(25, sd = 2))), 0.9); isTRUE(all.equal(unname(a), unname(b)))",
+  "reason": "random results: the check must reset the seed before running the candidate and again before the reference; the check also had a misplaced parenthesis"
+ },
+ {
+  "item_id": "DV0054",
+  "action": "repair_check",
+  "new_r_check": "x <- c(1, 2, 2, 3, 3, 3, 3); r <- eval(parse(text = candidate)); length(r) == 1 && isTRUE(all.equal(as.numeric(r), 2))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (x)"
+ },
+ {
+  "item_id": "DV0118",
+  "action": "repair_check",
+  "new_r_check": "L <- c(50.8, 49.6, 51.5, 50.1, 51.0, 49.2); u <- c(0.35, 0.50, 0.40, 0.45, 0.20, 0.60); isTRUE(all.equal(eval(parse(text = candidate)), c(1, 3, 5)))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (L, u); c(1, 3, 5) checked by hand"
+ },
+ {
+  "item_id": "DV0134",
+  "action": "repair_check",
+  "new_r_check": "x <- \"abc123def\"; isTRUE(all.equal(unlist(eval(parse(text = candidate))), \"123\"))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (x); and regmatches with regexec returns a list, so the check compares its contents"
+ },
+ {
+  "item_id": "DV0149",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "the question asks for an expression that also creates x, but the key does not create it, and the check built a different matrix"
+ },
+ {
+  "item_id": "DV0163",
+  "action": "replace",
+  "new_r_check": null,
+  "reason": "Filter() takes no extra argument, so Filter(`>`, bonuses, 1000) is an error in R: the key is wrong"
+ },
+ {
+  "item_id": "DV0218",
+  "action": "repair_check",
+  "new_r_check": "fit <- list(iteration = 150, parameters = list(\"log-odds\" = 0.42, \"intercept\" = -1.5), converged = TRUE); isTRUE(all.equal(eval(parse(text = candidate)), 0.42))",
+  "reason": "the question defines the object(s) but the check never creates them, so even the key cannot run (fit)"
+ }
+]
