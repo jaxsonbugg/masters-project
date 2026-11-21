@@ -580,6 +580,28 @@ check("training-v2: a code fence in the worked answer is refused; training-v1 is
       any("code fence" in p for p in sp.check_training_item({**good_tr, "worked_answer": "```r\nx\n```"}, tslot))
       and any("markdown" in p for p in sp.check_training_item({**good_tr, "worked_answer": "```r\nx\n```"}, tslot, version="training-v1")))
 
+print("[10] verify results feed the spare replacement (2026-11-21)")
+rx = {"question": "Write one line of R that returns the sum of the integers from 1 to 10.", "answer_type": "r_expression",
+      "choices": [], "working": "w", "r_solution": "", "canonical_answer": "sum(1:10)", "answer_tolerance": 0,
+      "explanation": "Adds 1 to 10.", "difficulty": "intro", "category": "r_generation", "subtopic": "s"}
+vrows = [{"item_id": f"DV00{k}", "status": "usable", "prompt_kind": "benchmark", "item": {**rx, "r_check": chk}}
+         for k, chk in ((1, "isTRUE(all.equal(eval(parse(text = candidate)), 55))"),     # a good check
+                        (2, "nchar(candidate) >= 0"),                                     # accepts anything: vacuous
+                        (3, "isTRUE(all.equal(eval(parse(text = candidate)), 99))"))]    # rejects its own key
+gs.verify_rows(vrows, gb.rscript_path())
+check("a good R check passes verify and stays usable; a vacuous one and one that rejects its own key become 'verify_flagged'",
+      [r["status"] for r in vrows] == ["usable", "verify_flagged", "verify_flagged"]
+      and any("vacuous" in i for i in vrows[1]["verify_issues"]) and any("does not accept the key" in i for i in vrows[2]["verify_issues"]),
+      [(r["status"], r.get("verify_issues")) for r in vrows])
+rslot = {"category": "r_generation", "difficulty": "intro", "answer_type": "r_expression"}
+fb_rows = [{**vrows[1], "item_id": "DV0001", "slot": {**rslot, "item_id": "DV0001"}},        # primary, verify-flagged
+           {**vrows[0], "item_id": "DV0099", "slot": {**rslot, "item_id": "DV0099"}}]        # a usable spare of the same kind
+fb_rows = [{**r, "slot_scheme": "taxonomy-v2", "slots_file_sha256": "a" * 64} for r in fb_rows]
+fb_pos, fb_needs = gs.fill_bench(fb_rows, {"set": "dev", "slots_sha256": "a" * 64}, 1)
+check("fill-bench treats a verify-flagged slot like any failed slot: the matching spare takes its position",
+      fb_pos[0]["item_id"] == "DV0099" and fb_pos[0]["replaces"] == "DV0001" and fb_pos[0]["replaced_status"] == "verify_flagged"
+      and not fb_needs, fb_pos)
+
 # ------------------------------------------------------------------ 8. the Talon copy keeps the pinned bytes
 print("[8] the files as `git archive` (the Talon copy) writes them keep their pinned SHA-256 (line endings)")
 import hashlib  # noqa: E402

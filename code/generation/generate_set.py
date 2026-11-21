@@ -690,9 +690,27 @@ def collect_rows(run_dirs, rscript=None):
     return list(out.values())
 
 
+def verify_rows(rows, rscript):
+    """Run generate_benchmark.verify_item (R in the sandbox) on every usable benchmark-style row: a number key is
+    recomputed by R, and an R check must accept the key and reject deliberately wrong answers. A row whose check is
+    broken or vacuous becomes status "verify_flagged" (with the issues), so fill-bench replaces it with a spare like any
+    other failed slot (added 2026-11-21). Rows that R cannot check (multiple choice, plain short text) keep status
+    "usable" and are marked "not_machine_checkable": the Codex screen and the audit cover them."""
+    for r in rows:
+        if r["status"] != "usable" or r["prompt_kind"] != "benchmark":
+            continue
+        status, issues, r_value = gb.verify_item(r["item"], rscript)
+        r["verify_status"], r["verify_issues"] = status, issues
+        if status == "FLAGGED":
+            r["status"], r["problems"] = "verify_flagged", issues
+    return rows
+
+
 def cmd_collect(args):
     rscript = gb.rscript_path() if args.r_keys else None    # the R sandbox, after its self-test (fails closed)
     rows = collect_rows(args.runs, rscript)
+    if rscript is not None:
+        verify_rows(rows, rscript)
     text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
     Path(args.out).write_text(text, encoding="utf-8", newline="\n")
     c = Counter(r["status"] for r in rows)
@@ -1035,7 +1053,8 @@ def main(argv=None):
     p = sub.add_parser("collect", help="one row per slot from run folders (PC)")
     p.add_argument("--runs", nargs="+", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--r-keys", action="store_true", help="benchmark-style sets: R writes number keys (R sandbox)")
+    p.add_argument("--r-keys", action="store_true", help="benchmark-style sets: R writes number keys and verify tests "
+                   "every R check (R sandbox); a broken or vacuous check makes the slot 'verify_flagged' (replaced by a spare)")
     p = sub.add_parser("fill-bench", help="benchmark/dev/smoke: replace failed primaries with like-for-like spares")
     p.add_argument("--items", required=True)
     p.add_argument("--manifest", required=True)
