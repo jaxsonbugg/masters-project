@@ -1,4 +1,4 @@
-# Codex alignment instructions, version 1 (draft, 2026-11-21; awaiting Jaxson's approval)
+# Codex alignment instructions, version 1 (2026-11-21; approved by Jaxson 2026-11-21)
 # Human-only header: every line before "=== INSTRUCTIONS ===" is ignored by the code.
 # Used by code/verification/codex_batch.py (build-align, run) on replacement CANDIDATES for the benchmark only: Codex checks
 # whether each question actually tests its stated subtopic, and whether it fits its stated difficulty level. The two verdicts

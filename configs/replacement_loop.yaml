@@ -1,5 +1,5 @@
 # Replacement loop configuration (code/verification/replacement_loop.py). Approved plan "resolve the Codex flags",
-# revision 2 with the owner's three corrections, 2026-11-21. DRAFT until Jaxson approves the execution configuration.
+# revision 2 with the owner's three corrections, 2026-11-21. Execution configuration approved by Jaxson 2026-11-21.
 #
 # What it controls: same-subtopic replacement of flagged benchmark questions by Qwen candidates, checked by R and by the Codex
 # screen and alignment check. The standing approval (1 GPU, Slurm wall time 01:00:00, at most 200 slots per job, 4.0
