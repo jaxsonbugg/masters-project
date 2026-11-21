@@ -76,6 +76,12 @@ DECONTAM_VERSION = "decontaminate-1"
 NGRAM = 8                 # (b) shared word run length
 SHINGLE = 5               # (c) and MinHash: masked 5-word runs
 MIN_SHARED_SHINGLES = 3   # (c) template score only for pairs sharing at least this many masked 5-word runs
+# Boilerplate filter (added 2026-11-20 after the stage G smoke test): a word run that appears in more than this many
+# REFERENCE questions is a stock phrase, not a copy, and is not used to nominate. Example: "give your answer to # decimal
+# places ." is exactly 8 tokens and sits in nearly every number question; without this filter, 49 of 400 smoke-test pairs
+# were nominated (most with cosine below 0.5), which at full scale would be about 130 million pairs.
+MAX_REF_DF_8 = 3          # (b) an 8-word run shared by more than 3 reference questions is ignored
+MAX_REF_DF_5 = 10         # (c) a masked 5-word run shared by more than 10 reference questions is ignored
 TEMPLATE_NOMINATE = 0.60  # (c) nominate at or above this template score
 COSINE_NOMINATE = 0.75    # (d) nominate a top-k neighbor at or above this cosine
 TOP_K = 3                 # (d) neighbors kept per row
@@ -104,7 +110,8 @@ def mask(text):
 
 
 def words(text):
-    return re.findall(r"[a-z#]+|[^\sa-z#]", text)
+    """Tokens: words, whole numbers (0.05 is one token), # (a masked number), or single punctuation marks."""
+    return re.findall(r"[a-z#]+|\d+(?:[.,]\d+)*|[^\sa-z0-9#]", text)
 
 
 def ngrams(tokens, n):
@@ -223,6 +230,10 @@ def nominate(refs, cands, cand_vecs=None, ref_vecs=None):
         for g in ngrams(wm, SHINGLE):
             idx5m[g].add(j)
         rinfo.append((n, m))
+    # drop stock phrases (see MAX_REF_DF_8 / MAX_REF_DF_5)
+    for idx, cap in ((idx8, MAX_REF_DF_8), (idx8m, MAX_REF_DF_8), (idx5m, MAX_REF_DF_5)):
+        for g in [g for g, js in idx.items() if len(js) > cap]:
+            del idx[g]
     pairs = {}
 
     def pair(i, j):
@@ -287,11 +298,24 @@ def minhash_signatures(texts, perm=MINHASH_PERM, seed=20261119):
     rng = np.random.default_rng(seed)
     a = rng.integers(1, _P32, size=perm, dtype=np.uint64)
     b = rng.integers(0, _P32, size=perm, dtype=np.uint64)
-    sigs = np.zeros((len(texts), perm), dtype=np.uint64)
-    for i, t in enumerate(texts):
+    hashed = []
+    for t in texts:
         sh = ngrams(words(mask(t)), SHINGLE) or {mask(t)}
-        h = np.fromiter((stable_hash(s) & 0xFFFFFFFF for s in sh), dtype=np.uint64, count=len(sh))
-        sigs[i] = ((np.outer(h, a) + b) % _P32).min(axis=0)
+        hashed.append(np.unique(np.fromiter((stable_hash(s) & 0xFFFFFFFF for s in sh), dtype=np.uint64, count=len(sh))))
+    # Stock phrases ("give your answer to # decimal places") would make unrelated questions look alike, so a 5-word run
+    # found in more than 1% of the texts (and at least 50 of them) is left out; a text made only of such runs keeps them.
+    df = {}
+    for h in hashed:
+        for x in h.tolist():
+            df[x] = df.get(x, 0) + 1
+    cap = max(50, int(0.01 * len(texts)))
+    common = np.array(sorted(x for x, k in df.items() if k > cap), dtype=np.uint64)
+    sigs = np.zeros((len(texts), perm), dtype=np.uint64)
+    for i, h in enumerate(hashed):
+        keep = h[~np.isin(h, common)] if common.size else h
+        if keep.size == 0:
+            keep = h
+        sigs[i] = ((np.outer(keep, a) + b) % _P32).min(axis=0)
     return sigs
 
 
@@ -518,6 +542,7 @@ def cmd_pairs(args):
     by = Counter(k for p in pairs for k in set(p["nominated_by"]))
     log = {"version": DECONTAM_VERSION, "refs": len(refs), "cands": len(cands), "pairs": len(pairs), "by_check": dict(by),
            "settings": {"ngram": NGRAM, "shingle": SHINGLE, "min_shared_shingles": MIN_SHARED_SHINGLES,
+                        "max_ref_df_8": MAX_REF_DF_8, "max_ref_df_5": MAX_REF_DF_5,
                         "template_nominate": TEMPLATE_NOMINATE, "cosine_nominate": COSINE_NOMINATE, "top_k": TOP_K},
            "embedding": None if emb is None else {"folder": str(emb.folder), "weights_sha256": emb.weights_sha256,
                                                   "truncated_share": round(emb.truncated / max(1, emb.count), 4)},

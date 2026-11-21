@@ -276,3 +276,31 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Output:** `data/verification_logs/2026-11-20_embedding_check/` (texts, results, the reference environment's versions).
 - **Outcome:** reviewed; the implementation is accepted for decontamination.
 - **Related progress entry:** "Full-size generator, Talon stage G and decontamination built and tested locally" (2026-11-20).
+
+### 17. Talon jobs 291 and 293: stage G smoke test of the full-size generator, 2026-11-20 (cluster local time 18:40; UTC 23:40)
+- **Purpose:** the first real run of `code/generation/generate_set.py` (stage G) before any benchmark or training data: do benchmark prompt v7 and training prompt v1 produce usable replies, how long are the training texts, how fast is it, and does stage G (sharding, validation, result files) work on Talon (approved plan of 2026-11-19, Step 10). Approved by Jaxson on 2026-11-20; he refreshed the Talon copy to `b695da0` and submitted both jobs with `QT_SUBMIT=yes GPU_COUNT=1 TENSOR_PARALLEL=1 REPLICAS=1 MAX_NUM_SEQS=16 CLIENT_CONCURRENCY=16 GEN_SLOTS=data/slots/smoke_slots.jsonl GEN_SHARD=1/1 ... bash configs/talon/submit_pipeline.sh generate`.
+- **Software:** repository copy at `b695da0` (build-then-swap; the previous copy kept as `repo_old_<UTC time>`); vLLM 0.32.0; model `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16, weights manifest `8e3e1fc0...` (re-hashed by each job); context 20,480, output limit 16,384; thinking on, temperature 1.0, top_p 0.95, top_k 20, presence penalty 0; up to 3 attempts per slot; client concurrency 16.
+- **Slots:** `data/slots/smoke_slots.jsonl` (seed `smoke-2026-11-20`, slots_sha256 `8a292d84...`), development material only.
+- **Request:** 1 GPU each (`--gres`, wall time 1 day), both on `mualhpgp01`: job 291 on GPU index 0, job 293 on GPU index 1 (H100 NVL, 95,830 MiB, driver 610.57.04).
+
+  | | Job 291 | Job 293 |
+  |---|---|---|
+  | Prompt, slots | benchmark v7 (`980f5570...`), SM0001-SM0020 | training v1 (`db9ca660...`), SM0021-SM0040 |
+  | Submitted / started (UTC) | 23:40:06 / 23:40:06 (wait 0 s) | 23:40:07 / 23:40:09 (wait 2 s) |
+  | Server ready after | 105 s | 110 s |
+  | Client (UTC), wall | 23:43:14-23:48:28, 313.1 s | 23:43:19-23:46:49, 209.3 s |
+  | Job end (result file, UTC) | 23:48:28 | 23:46:49 |
+  | Job wall, GPU-hours | about 8 min 22 s, **0.14** | about 6 min 40 s, **0.11** |
+  | Calls, usable, attempts | 20 calls, 20 usable, all on attempt 1 | 20 calls, 20 usable, all on attempt 1 |
+  | Output tokens (incl. thinking) | 98,187 (median 5,037 per reply, max 7,488) | 79,151 (median 3,820, max 7,287) |
+  | Aggregate output speed | 314 tokens/s | 378 tokens/s |
+  | Peak GPU memory | 89,747 MiB (6,083 free) | 88,963 MiB (6,867 free) |
+
+- **Validation:** both `RESULT=PASS`, infrastructure PASS, complete, 0 model-quality findings, 0 cut-offs, 0 error words in the server logs; re-validated on the PC against the slot file with the same result. The confidential-computing line read "not reported by nvidia-smi -q" (the fixed search no longer mistakes ECC for it; the state itself remains unrecorded); no garbled output was seen in any reply.
+- **Generation cost implied** (small runs, so the batch was never full for long; an upper-side estimate): about 4.3 GPU-hours per 1,000 benchmark-v7 replies and 2.9 per 1,000 training-v1 replies, client time only. Total for the smoke test: about **0.25 GPU-hours**.
+- **Output:**
+  - **On Talon:** `/home/buggjm/talon_project/teacher_outputs/2026-11-20_qwen3-6-27b-talon-bf16_smoke_benchmark_bfa35577_shard1of1` and `..._smoke_training_c98f27c1_shard1of1`; result files `stage_results/stageG_smoke-*_job29{1,3}.txt`.
+  - **On the PC:** the same two folders in `C:\masters_project_large\data\teacher_outputs\`, plus `2026-11-20_stageG_smoke_jobs291-293_logs\` (job logs, result files, client, validation and server logs, GPU memory CSVs). Copied by Claude with `scp` (read-only on Talon).
+  - Development slots only, never benchmark or training data.
+- **Outcome:** reviewed; both PASS. Findings are in the progress log.
+- **Related progress entry:** "Stage G smoke test on Talon (jobs 291 and 293)" (2026-11-20).

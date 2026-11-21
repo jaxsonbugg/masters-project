@@ -21,9 +21,11 @@ Do this from the PC in Git Bash, with the Miami VPN on if you are off campus. It
 1. **Copy the committed repository to Talon.** Build it in `repo_new` and only then swap it in, so the existing copy is untouched until every step has passed. Keep the probe files from job 196, which the submit script needs:
    ```bash
    cd /c/dev/masters-project
-   git archive --format=tar HEAD | ssh talon 'set -e; cd ~/talon_project; test ! -e repo_new; mkdir repo_new; tar -x -C repo_new; cp repo/talon_probe_job.txt repo/qt_talon_probe_196.log repo_new/; cd repo_new; bash configs/talon/probe_talon_part2.sh record > /dev/null; cd ..; mv repo repo_old_$(date -u +%Y%m%dT%H%M%SZ); mv repo_new repo; echo REFRESHED'
+   git archive --format=tar HEAD | ssh talon 'set -e; cd ~/talon_project; test ! -e repo_new; mkdir repo_new; tar -x -C repo_new; cp repo/talon_probe_job.txt repo/qt_talon_probe_196.log repo/talon_verified.txt repo_new/; cd repo_new; bash configs/talon/probe_talon_part2.sh record > /dev/null; grep -q "^PART2_OK=yes" talon_verified.txt; cd ..; mv repo repo_old_$(date -u +%Y%m%dT%H%M%SZ); mv repo_new repo; echo REFRESHED'
    ```
    `git archive` on this PC writes text files with Windows line endings, which is what the v6 prompt's pinned SHA-256 (`348db6ff...`) was computed on. Shell scripts get Unix line endings, because `.gitattributes` forces that.
+   - **The probe record files must travel with every refresh.** The submit script needs `talon_verified.txt`, and regenerating it needs `talon_probe_job.txt` and `qt_talon_probe_196.log` (from the probe job 196). The refresh of 2026-11-18 carried over only `talon_verified.txt`, so the next refresh (2026-11-20) stopped at the copy step, safely, before any swap; the two files were taken from `repo_old_20261118_2118` that time. Since then all three are in `repo` again and the command above copies all three. If `cp` reports a missing file, look in the newest `repo_old_*` folder.
+   - **Line endings:** prompt v7, training prompt v1, the taxonomy and `data/slots/` keep Unix line endings (`.gitattributes`, 2026-11-20), so their pinned SHA-256 values hold on Talon. Check after a refresh: `sha256sum data/prompts/benchmark_generation_v7.md data/prompts/training_generation_v1.md` must start with `980f5570` and `db9ca660`.
 2. **Run the preparation script.** It checks the copied files, then starts the install and download in the background on the login node:
    ```bash
    ssh talon 'cd ~/talon_project/repo && QT_CONFIRM_STORAGE=yes QT_ALLOW_HOME=yes bash -l configs/talon/prep_talon.sh'

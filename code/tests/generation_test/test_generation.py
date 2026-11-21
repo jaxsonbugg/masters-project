@@ -429,6 +429,16 @@ check("an exact copy is nominated as exact", byc["TR000001"]["exact"] and "exact
 check("a template variant (numbers changed) is nominated by the masked 8-word run and has a high template score",
       "TR000002" in byc and byc["TR000002"]["shared8_masked"] > 0 and byc["TR000002"]["template"] > 0.9, byc.get("TR000002"))
 check("an unrelated question is not nominated", "TR000003" not in byc)
+tail = " Give your answer to 3 decimal places."
+refs_bp = [{"id": f"BM{k:04d}", "role": "benchmark", "text": t + tail} for k, t in enumerate([
+    "The mean of a sample of 9 is 4.", "A coin is tossed 6 times.", "A die is rolled twice.", "The variance of x is 2.",
+    "A normal variable has mean 10.", "Twelve plants grew in a plot.", "An urn holds red and blue balls.",
+    "A survey asked forty people.", "The rate of arrivals is high.", "Find the standard error of a proportion.",
+    "Two groups were compared in a trial.", "A regression slope was estimated."], 1)]   # 12 references, as in a real benchmark the phrase is common
+c_bp = [{"id": "TR000009", "role": "c", "text": "The median household income in a town is 52 thousand dollars." + tail}]
+check("a stock phrase shared by many reference questions ('Give your answer to 3 decimal places.') does not nominate a pair",
+      dc.nominate(refs_bp, c_bp) == [])
+check("a number like 0.05 is one token, not four", dc.words("p = 0.05 .") == ["p", "=", "0.05", "."])
 rule = {"approved_by": "test", "approved_utc": "2026-11-20", "against_reference": [{"exact": True}, {"template": 0.9}],
         "within_training": [{"template": 0.95}]}
 rej = dc.apply_rule(pairs, [], rule, {c["id"]: k for k, c in enumerate(cands)})
