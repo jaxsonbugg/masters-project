@@ -147,6 +147,11 @@ rc, out = tool("report", "--date", "2026-11-21", "--items", str(items), "--out-r
 sheet = (OUT / "2026-11-21_codex_screen" / "screen_flags.csv").read_text(encoding="utf-8-sig")
 check("the owner's flag sheet lists the flagged question with Codex's reason, the key and decision columns",
       rc == 0 and "BM0001" in sheet and "a needed value is not given" in sheet and f"{SECRET}-1" in sheet and "owner_decision" in sheet)
+import codex_batch as cb  # noqa: E402
+check("the sheet groups flags: small printout-number mismatches first, then the other issue types",
+      cb.review_group({"issue_type": "invalid_assumption", "reason": "the p-value does not match the statistic"}) == cb.GROUP_ORDER[0]
+      and cb.review_group({"issue_type": "invalid_assumption", "reason": "a misnamed method"}) == cb.GROUP_ORDER[1]
+      and cb.review_group({"issue_type": "ambiguous", "reason": "two readings"}) == cb.GROUP_ORDER[2] and sheet.startswith("group,"))
 
 # ------------------------------------------------------------------ 4. failure handling
 print("[4] failures: each is caught, nothing is imported")

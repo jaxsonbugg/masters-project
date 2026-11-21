@@ -1,10 +1,21 @@
 {
  "date": "2026-11-21",
- "screened": 20,
- "flagged": 4,
- "flag_rate": 0.2,
+ "screened": 1000,
+ "flagged": 172,
+ "flag_rate": 0.172,
  "by_issue_type": {
-  "invalid_assumption": 3,
-  "ambiguous": 1
+  "invalid_assumption": 91,
+  "ambiguous": 25,
+  "no_correct_option": 29,
+  "missing_information": 25,
+  "multiple_correct": 2
+ },
+ "by_review_group": {
+  "1 printout numbers slightly off": 65,
+  "3 ambiguous": 25,
+  "6 no correct option": 29,
+  "2 other invalid assumption": 26,
+  "4 missing information": 25,
+  "5 multiple correct": 2
  }
 }

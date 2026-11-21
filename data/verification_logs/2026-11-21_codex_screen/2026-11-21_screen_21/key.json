@@ -1,0 +1,133 @@
+{
+ "batch": "2026-11-21_screen_21",
+ "kind": "screen",
+ "instructions_file": "data/prompts/screen_v1.md",
+ "instructions_sha256": "2a714fde1a98e99bca3cd44684d8132d30f49d57d7accec38c1c7b1f02b0e17c",
+ "batch_sha256": "65930fa407a151b917faedca5cce526cdf015584d50e37ce352769ceb5e3c355",
+ "items_file": "C:/masters_project_large/data/benchmark_work/2026-11-21_collection/benchmark_filled.jsonl",
+ "manifest": "data/slots/benchmark_slots.manifest.json",
+ "ids": {
+  "S-21-001": {
+   "item_id": "BM0971",
+   "position": 971
+  },
+  "S-21-002": {
+   "item_id": "BM0972",
+   "position": 972
+  },
+  "S-21-003": {
+   "item_id": "BM0973",
+   "position": 973
+  },
+  "S-21-004": {
+   "item_id": "BM0974",
+   "position": 974
+  },
+  "S-21-005": {
+   "item_id": "BM0975",
+   "position": 975
+  },
+  "S-21-006": {
+   "item_id": "BM0976",
+   "position": 976
+  },
+  "S-21-007": {
+   "item_id": "BM0977",
+   "position": 977
+  },
+  "S-21-008": {
+   "item_id": "BM1098",
+   "position": 978
+  },
+  "S-21-009": {
+   "item_id": "BM0979",
+   "position": 979
+  },
+  "S-21-010": {
+   "item_id": "BM0980",
+   "position": 980
+  },
+  "S-21-011": {
+   "item_id": "BM0981",
+   "position": 981
+  },
+  "S-21-012": {
+   "item_id": "BM0982",
+   "position": 982
+  },
+  "S-21-013": {
+   "item_id": "BM0983",
+   "position": 983
+  },
+  "S-21-014": {
+   "item_id": "BM0984",
+   "position": 984
+  },
+  "S-21-015": {
+   "item_id": "BM0985",
+   "position": 985
+  },
+  "S-21-016": {
+   "item_id": "BM0986",
+   "position": 986
+  },
+  "S-21-017": {
+   "item_id": "BM0987",
+   "position": 987
+  },
+  "S-21-018": {
+   "item_id": "BM0988",
+   "position": 988
+  },
+  "S-21-019": {
+   "item_id": "BM0989",
+   "position": 989
+  },
+  "S-21-020": {
+   "item_id": "BM0990",
+   "position": 990
+  },
+  "S-21-021": {
+   "item_id": "BM0991",
+   "position": 991
+  },
+  "S-21-022": {
+   "item_id": "BM0992",
+   "position": 992
+  },
+  "S-21-023": {
+   "item_id": "BM0993",
+   "position": 993
+  },
+  "S-21-024": {
+   "item_id": "BM0994",
+   "position": 994
+  },
+  "S-21-025": {
+   "item_id": "BM0995",
+   "position": 995
+  },
+  "S-21-026": {
+   "item_id": "BM0996",
+   "position": 996
+  },
+  "S-21-027": {
+   "item_id": "BM0997",
+   "position": 997
+  },
+  "S-21-028": {
+   "item_id": "BM0998",
+   "position": 998
+  },
+  "S-21-029": {
+   "item_id": "BM1047",
+   "position": 999
+  },
+  "S-21-030": {
+   "item_id": "BM1000",
+   "position": 1000
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-21T18:51:58+00:00"
+}

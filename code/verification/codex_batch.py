@@ -301,8 +301,10 @@ def cmd_run(args):
     (folder / "events.jsonl").write_text(stdout, encoding="utf-8", newline="\n")
     (folder / "stderr.txt").write_text(stderr, encoding="utf-8", newline="\n")
     problems, usage, model, effort = audit_events(stdout)
-    run.update({"usage": usage, "model": model or "not reported", "reasoning_effort": effort or args.effort or "not reported",
-                "audit_problems": problems})
+    run.update({"usage": usage, "model_requested": args.model or "CLI default", "model_reported": model or "not reported",
+                "model": model or args.model or "not reported",
+                "reasoning_effort_requested": args.effort or "CLI default",
+                "reasoning_effort": effort or args.effort or "not reported", "audit_problems": problems})
     if run["exit_status"] != 0:
         problems = problems + [f"exit status {run['exit_status']}"]
     run["accepted_run"] = not problems
@@ -397,6 +399,23 @@ def cmd_import(args):
 # ---------------------------------------------------------------------------------------------
 # report
 # ---------------------------------------------------------------------------------------------
+GROUP_ORDER = ["1 printout numbers slightly off", "2 other invalid assumption", "3 ambiguous", "4 missing information",
+               "5 multiple correct", "6 no correct option", "7 answer format unclear", "8 other"]
+_NUMERIC = re.compile(r"p-?value|rounding|round|interval|statistic|degrees? of freedom|\bdf\b|inconsistent|contradict|"
+                      r"standard error|t value|f value|chi", re.I)
+
+
+def review_group(r):
+    """A sorting aid for the owner's sheet (owner's request, 2026-11-21): flags that are only small mismatches between
+    printed numbers (a p-value or interval that does not quite fit its statistic) come first, so they can be decided in
+    bulk. It never decides anything; every flag is still the owner's call."""
+    t = r["issue_type"]
+    if t == "invalid_assumption":
+        return GROUP_ORDER[0] if _NUMERIC.search(r["reason"]) else GROUP_ORDER[1]
+    return {"ambiguous": GROUP_ORDER[2], "missing_information": GROUP_ORDER[3], "multiple_correct": GROUP_ORDER[4],
+            "no_correct_option": GROUP_ORDER[5], "answer_format_unclear": GROUP_ORDER[6]}.get(t, GROUP_ORDER[7])
+
+
 def cmd_report(args):
     root = Path(args.out_root or (REPO / "data" / "verification_logs")) / f"{args.date}_codex_screen"
     rows = []
@@ -409,20 +428,24 @@ def cmd_report(args):
                 r = json.loads(l)
                 items[r["item_id"]] = r
     flagged = [r for r in rows if r["verdict"] == "flag"]
+    for r in flagged:
+        r["group"] = review_group(r)
+    order = {g: k for k, g in enumerate(GROUP_ORDER)}
     with open(root / "screen_flags.csv", "w", encoding="utf-8-sig", newline="") as fh:
         w = csv.writer(fh)
-        w.writerow(["position", "item_id", "issue_type", "codex_reason", "question", "choices", "answer_key",
+        w.writerow(["group", "position", "item_id", "issue_type", "codex_reason", "question", "choices", "answer_key",
                     "owner_decision (fix/replace/keep)", "owner_note"])
-        for r in sorted(flagged, key=lambda r: r["position"] or 0):
+        for r in sorted(flagged, key=lambda r: (order.get(r["group"], 99), r["issue_type"], r["position"] or 0)):
             it = (items.get(r["item_id"]) or {}).get("item") or {}
-            w.writerow([r["position"], r["item_id"], r["issue_type"], r["reason"], it.get("question", ""),
+            w.writerow([r["group"], r["position"], r["item_id"], r["issue_type"], r["reason"], it.get("question", ""),
                         "\n".join(f"{L}. {c}" for L, c in zip("ABCD", it.get("choices") or [])),
                         it.get("canonical_answer", ""), "", ""])
-    by_type = {}
+    by_type, by_group = {}, {}
     for r in flagged:
         by_type[r["issue_type"]] = by_type.get(r["issue_type"], 0) + 1
+        by_group[r["group"]] = by_group.get(r["group"], 0) + 1
     summary = {"date": args.date, "screened": len(rows), "flagged": len(flagged),
-               "flag_rate": round(len(flagged) / max(1, len(rows)), 4), "by_issue_type": by_type}
+               "flag_rate": round(len(flagged) / max(1, len(rows)), 4), "by_issue_type": by_type, "by_review_group": by_group}
     (root / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8", newline="\n")
     print(json.dumps(summary, indent=1))
     print(f"owner sheet: {root / 'screen_flags.csv'}")

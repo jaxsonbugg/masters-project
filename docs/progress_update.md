@@ -1150,3 +1150,21 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   - **BM0016 (ambiguous):** the cluster-versus-stratified variance comparison depends on how exactly the clusters mirror the population.
   - **BM0017 (invalid assumption):** a deviance difference of 4.812 on 1 df gives p = 0.02826; the printout says 0.02838.
   - Claude checked BM0004 and BM0017 independently: both p-values are off by about 1%, with no conclusion changed. `output_check.py` missed them because it does not read LRT lines or analysis-of-deviance tables; the screen did.
+
+### The Codex screen of all 1,000 benchmark questions (2026-11-21)
+- **What ran (approved by Jaxson):** the remaining 980 questions in 20 batches (`2026-11-21_screen_02` to `_21`, 19 of 50 and 1 of 30), with the model passed explicitly (`--model gpt-6.2-sol --effort medium`), through the Lee Group Workspace. Every batch passed the audit (no command, tool or file use) and imported with exact coverage. All 21 batches together: about 27 minutes of Codex time; 401,644 input tokens (30,336 cached) and 74,840 output tokens (36,894 of them reasoning). This is provenance, not cost.
+- **Model record:** Codex still does not report the model in its event stream. The requested model is in each batch's saved command. `run.json` now records `model_requested` and `model_reported` separately (for batches after the change); batch 01 used the CLI default, probably GPT-6.2-Sol.
+- **Result:** 172 of 1,000 flagged (17.2%).
+  - **By issue type:** invalid assumption 91, no correct option 29, ambiguous 25, missing information 25, multiple correct 2.
+  - **By category:** output interpretation 86 of 150 (57%), conceptual 38 of 200, numerical 28 of 300, R generation 11 of 200, R interpretation 9 of 150.
+- **The owner's sheet** (`data/verification_logs/2026-11-21_codex_screen/screen_flags.csv`) is sorted into review groups as Jaxson asked:
+  1. printout numbers slightly off: 65;
+  2. other invalid assumption: 26;
+  3. ambiguous: 25;
+  4. missing information: 25;
+  5. multiple correct: 2;
+  6. no correct option: 29.
+
+  The grouping (`codex_batch.review_group`, from the issue type and the wording of the reason) is a sorting aid only; every flag is Jaxson's decision.
+- **Code:** `codex_batch.py report` adds the review-group column and sort; `run.json` records requested versus reported model. Codex tool tests: 43 of 43.
+- **Next (Jaxson):** decide each flag (fix, replace with a spare, or keep with a note). The "no correct option" group matters most: it means Codex thinks the multiple-choice key itself may be wrong.
