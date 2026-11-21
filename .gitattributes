@@ -9,3 +9,5 @@ data/prompts/benchmark_generation_v8.md text eol=lf
 data/prompts/training_generation_v2.md text eol=lf
 data/taxonomy/*.yaml text eol=lf
 data/slots/** text eol=lf
+data/prompts/align_v1.md text eol=lf
+data/prompts/screen_v1.md text eol=lf
