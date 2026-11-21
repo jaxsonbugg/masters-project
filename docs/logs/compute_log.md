@@ -347,9 +347,17 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Outcome:** reviewed; collection, repairs and spare filling in the progress log. **Related progress entry:** "Benchmark and development set collected: R keys, verify, repairs and spares" (2026-11-21).
 
 ### 20. Talon jobs 311, 313 and 315: replacement loop round 1 (stage G, same-subtopic candidates), 2026-11-21 (UTC 21:12)
-- **Status: submitted, NOT YET REVIEWED.** Times, GPU-hours, memory and outcome are filled in when the jobs end.
+- **Status: reviewed** (2026-11-21). All three ended normally, each shard complete.
+
+  | Job | Shard | Node, GPU | UTC start-end | GPU-hours | Usable / failed all 3 | Replies | Min. free GPU memory |
+  |---|---|---|---|---|---|---|---|
+  | 311 | 1/3 (164) | mualhpgp01, 0 | 21:12:19-21:54:10 | 0.70 | 157 / 7 | 187 | 6,079 MiB |
+  | 313 | 2/3 (164) | mualhpgp01, 1 | 21:12:22-21:44:34 | 0.54 | 153 / 11 | 197 | 6,867 MiB |
+  | 315 | 3/3 (164) | mualhpgp02, 0 | 21:12:22-22:05:47 | 0.89 | 154 / 10 | 200 | 4,794 MiB |
+
+  Queue wait 0 to 2 s. **Total 2.13 GPU-hours** (estimate 1.9; budget 4.0). Every job `INFRA=PASS`, re-validated on the PC. After `collect --r-keys`: 436 usable, 28 failed all attempts, 24 verify-flagged (broken R check), 4 R failures.
 - **Purpose:** round 1 of the approved replacement loop (plan "resolve the Codex flags", revision 2; execution configuration approved by Jaxson 2026-11-21): 3 same-subtopic Qwen candidates for each of 164 open benchmark positions (BM1151-BM1642 in `data/slots/benchmark_replacements.jsonl`, SHA-256 `03f30592...`). Submitted by the controller `code/verification/replacement_loop.py` under the standing approval.
 - **Request:** 1 GPU each (H100 NVL), `TIME_GENERATE=01:00:00` (Slurm wall-time limit), `GEN_MARGIN_SECONDS=600`; `GPU_COUNT=1 TENSOR_PARALLEL=1 REPLICAS=1 MAX_NUM_SEQS=16 CLIENT_CONCURRENCY=16`; `GEN_SLOTS=data/slots/benchmark_replacements.jsonl GEN_PROMPT=benchmark GEN_FIRST=1 GEN_COUNT=492 GEN_SHARD=1/3, 2/3, 3/3` (164 slots each).
 - **Software:** vLLM 0.32.0; `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; prompt benchmark-v8 (`0ba834e2`); thinking on (temperature 1.0, top_p 0.95, top_k 20); output limit 16,384; up to 3 attempts per slot. Talon repository copy `00b6dd3` (run code unchanged since).
 - **Estimate before the run:** about 0.62 GPU-hours per job, 1.9 in total (budget 4.0).
-- **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/<date>_qwen3-6-27b-talon-bf16_benchmark_benchmark-v8_<sel>_shard{1,2,3}of3`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_replacement_loop_stageG_r1_logs\`. Ledger: `C:\masters_project_large\data\benchmark_work\2026-11-21_replacement_loop\ledger.json`.
+- **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/2026-11-21_qwen3-6-27b-talon-bf16_benchmark_benchmark-v8_{3343fe61_shard1of3, 86d58d79_shard2of3, 9dafcafa_shard3of3}`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_replacement_loop_stageG_r1_logs\`. Ledger: `C:\masters_project_large\data\benchmark_work\2026-11-21_replacement_loop\ledger.json`.

@@ -1,0 +1,215 @@
+{
+ "batch": "2026-11-21_loop-r1-cand-screen_06",
+ "kind": "screen",
+ "label": "loop-r1-cand-screen",
+ "date": "2026-11-21",
+ "instructions_file": "data/prompts/screen_v1.md",
+ "instructions_sha256": "2a714fde1a98e99bca3cd44684d8132d30f49d57d7accec38c1c7b1f02b0e17c",
+ "batch_sha256": "604202a16e228a22380fbd6babbdee33d0562cddf7312acce681da45207aa7e5",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-21_replacement_loop\\r1_candidates.jsonl",
+ "manifest": "data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "S-06-001": {
+   "item_id": "BM1497",
+   "position": null
+  },
+  "S-06-002": {
+   "item_id": "BM1500",
+   "position": null
+  },
+  "S-06-003": {
+   "item_id": "BM1503",
+   "position": null
+  },
+  "S-06-004": {
+   "item_id": "BM1506",
+   "position": null
+  },
+  "S-06-005": {
+   "item_id": "BM1509",
+   "position": null
+  },
+  "S-06-006": {
+   "item_id": "BM1512",
+   "position": null
+  },
+  "S-06-007": {
+   "item_id": "BM1515",
+   "position": null
+  },
+  "S-06-008": {
+   "item_id": "BM1518",
+   "position": null
+  },
+  "S-06-009": {
+   "item_id": "BM1521",
+   "position": null
+  },
+  "S-06-010": {
+   "item_id": "BM1524",
+   "position": null
+  },
+  "S-06-011": {
+   "item_id": "BM1527",
+   "position": null
+  },
+  "S-06-012": {
+   "item_id": "BM1530",
+   "position": null
+  },
+  "S-06-013": {
+   "item_id": "BM1533",
+   "position": null
+  },
+  "S-06-014": {
+   "item_id": "BM1536",
+   "position": null
+  },
+  "S-06-015": {
+   "item_id": "BM1539",
+   "position": null
+  },
+  "S-06-016": {
+   "item_id": "BM1542",
+   "position": null
+  },
+  "S-06-017": {
+   "item_id": "BM1545",
+   "position": null
+  },
+  "S-06-018": {
+   "item_id": "BM1551",
+   "position": null
+  },
+  "S-06-019": {
+   "item_id": "BM1554",
+   "position": null
+  },
+  "S-06-020": {
+   "item_id": "BM1557",
+   "position": null
+  },
+  "S-06-021": {
+   "item_id": "BM1560",
+   "position": null
+  },
+  "S-06-022": {
+   "item_id": "BM1563",
+   "position": null
+  },
+  "S-06-023": {
+   "item_id": "BM1566",
+   "position": null
+  },
+  "S-06-024": {
+   "item_id": "BM1569",
+   "position": null
+  },
+  "S-06-025": {
+   "item_id": "BM1572",
+   "position": null
+  },
+  "S-06-026": {
+   "item_id": "BM1578",
+   "position": null
+  },
+  "S-06-027": {
+   "item_id": "BM1584",
+   "position": null
+  },
+  "S-06-028": {
+   "item_id": "BM1590",
+   "position": null
+  },
+  "S-06-029": {
+   "item_id": "BM1593",
+   "position": null
+  },
+  "S-06-030": {
+   "item_id": "BM1596",
+   "position": null
+  },
+  "S-06-031": {
+   "item_id": "BM1599",
+   "position": null
+  },
+  "S-06-032": {
+   "item_id": "BM1602",
+   "position": null
+  },
+  "S-06-033": {
+   "item_id": "BM1605",
+   "position": null
+  },
+  "S-06-034": {
+   "item_id": "BM1608",
+   "position": null
+  },
+  "S-06-035": {
+   "item_id": "BM1611",
+   "position": null
+  },
+  "S-06-036": {
+   "item_id": "BM1614",
+   "position": null
+  },
+  "S-06-037": {
+   "item_id": "BM1617",
+   "position": null
+  },
+  "S-06-038": {
+   "item_id": "BM1620",
+   "position": null
+  },
+  "S-06-039": {
+   "item_id": "BM1626",
+   "position": null
+  },
+  "S-06-040": {
+   "item_id": "BM1629",
+   "position": null
+  },
+  "S-06-041": {
+   "item_id": "BM1632",
+   "position": null
+  },
+  "S-06-042": {
+   "item_id": "BM1635",
+   "position": null
+  },
+  "S-06-043": {
+   "item_id": "BM1641",
+   "position": null
+  },
+  "S-06-044": {
+   "item_id": "BM1153",
+   "position": null
+  },
+  "S-06-045": {
+   "item_id": "BM1156",
+   "position": null
+  },
+  "S-06-046": {
+   "item_id": "BM1159",
+   "position": null
+  },
+  "S-06-047": {
+   "item_id": "BM1162",
+   "position": null
+  },
+  "S-06-048": {
+   "item_id": "BM1165",
+   "position": null
+  },
+  "S-06-049": {
+   "item_id": "BM1171",
+   "position": null
+  },
+  "S-06-050": {
+   "item_id": "BM1174",
+   "position": null
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-21T22:09:12+00:00"
+}
