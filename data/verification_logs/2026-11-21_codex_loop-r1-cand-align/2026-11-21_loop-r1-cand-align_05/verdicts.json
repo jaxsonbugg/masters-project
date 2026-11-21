@@ -1,0 +1,354 @@
+{
+  "verdicts": [
+    {
+      "id": "A-05-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question distinguishes what zero correlation implies for linear prediction from stronger properties associated with independence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks students to distinguish implications for a population predictor, a conditional mean, and the sampling behavior of a correlation estimator."
+    },
+    {
+      "id": "A-05-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests exact permutation tail counting after students generate the outcomes from the listed observations.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students must compute an observed mean difference, enumerate group assignments, and count outcomes in the specified tail."
+    },
+    {
+      "id": "A-05-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how increasing sample size affects statistical significance for a fixed effect.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting sample size to standard error and then to the behavior of a two-sided t-test."
+    },
+    {
+      "id": "A-05-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests how a squared predictor changes the marginal effect in a polynomial regression.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Interpreting the sign of a quadratic coefficient through the fitted slope is a standard undergraduate regression exercise."
+    },
+    {
+      "id": "A-05-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to interpret the evidence and direction of association in Fisher's exact test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires combining a significance assessment with an odds ratio and identifying which group it favors."
+    },
+    {
+      "id": "A-05-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for percentile interval bounds from a vector of Monte Carlo estimates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The simulation is already complete, so the R task is a single quantile operation."
+    },
+    {
+      "id": "A-05-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares the effects of model flexibility on bias, variance, and prediction error.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students apply the standard bias-variance trade-off to two familiar regression specifications."
+    },
+    {
+      "id": "A-05-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression uses `tapply` to compute a custom statistic separately for each department.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Returning a named numeric vector requires handling the non-obvious array structure of a grouped `tapply` result as well as missing values."
+    },
+    {
+      "id": "A-05-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests how to set the missing-value argument in `mean`.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The correction requires changing a single argument in a basic R function."
+    },
+    {
+      "id": "A-05-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares canonical and noncanonical links through their effect on GLM estimating equations.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires understanding how the link derivative and variance function enter the GLM score equations."
+    },
+    {
+      "id": "A-05-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a Shapiro-Wilk result supports about the normality assumption.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It requires the standard interpretation of a nonsignificant test and general awareness of limited power."
+    },
+    {
+      "id": "A-05-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to standardize a new observation against a reference sample.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students must compute a reference mean and standard deviation before standardizing the new value."
+    },
+    {
+      "id": "A-05-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question uses printed variance inflation factors to identify a predictor affected by multicollinearity.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It calls for a standard multiple regression diagnostic with realistic reported values."
+    },
+    {
+      "id": "A-05-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to connect predictor-level VIFs with multicollinearity and coefficient variance.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Reading the relative VIFs and distinguishing variance inflation from standard error inflation are standard regression diagnostics."
+    },
+    {
+      "id": "A-05-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a forecast from the supplied AR(1) coefficients and latest observation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The three-step forecast requires repeated application of a standard forecasting recursion."
+    },
+    {
+      "id": "A-05-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question compares treatment-effect inference when blocks are included in the model or ignored.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about residual variability, error degrees of freedom, and the power of the treatment F-test."
+    },
+    {
+      "id": "A-05-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests the interpretation of ROC AUC as a measure of classifier discrimination.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for a standard classifier evaluation concept involving thresholds and the ordering of scores."
+    },
+    {
+      "id": "A-05-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to count occurrences by factor level and identify counts with a specified parity.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Tabulation followed by an oddness check and a count is a short sequence of standard R operations."
+    },
+    {
+      "id": "A-05-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for an exact permutation p-value from a complete list of outcomes.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied rule reduces the task to computing a mean, counting qualifying outcomes, and dividing."
+    },
+    {
+      "id": "A-05-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks how sample size, confidence level, and variability affect interval width.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It is a direct conceptual application of the margin of error for a mean."
+    },
+    {
+      "id": "A-05-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question probes the equal-variance assumption of a pooled two-sample t-test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about how unequal variances and unequal sample sizes jointly affect null calibration."
+    },
+    {
+      "id": "A-05-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests calculation of the median, which is the second quartile.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students find the middle observation in a short list of measurements."
+    },
+    {
+      "id": "A-05-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests how AIC compares models by balancing fit and complexity.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for the standard interpretation of a model selection criterion in a regression setting."
+    },
+    {
+      "id": "A-05-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to connect the fitted-probability warning to the separation pattern in the data.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The small dataset makes the group pattern easy to inspect, and students apply a standard logistic regression diagnostic."
+    },
+    {
+      "id": "A-05-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly concerns the uncertainty represented by a posterior predictive distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students must reason about how averaging over a posterior combines parameter uncertainty with future sampling variability."
+    },
+    {
+      "id": "A-05-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to explain a coefficient reported as missing in rank-deficient regression output.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The displayed setup calls for the standard dummy-variable redundancy check in a regression with an intercept."
+    },
+    {
+      "id": "A-05-027",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The intercept contributes to the point prediction, while most of the work involves constructing the prediction interval for a new observation.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied regression summaries support a routine application of the simple linear regression prediction interval formula."
+    },
+    {
+      "id": "A-05-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how R expands a factor interaction into model matrix columns.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students must expand the formula and count the intercept, main-effect, and interaction columns under standard factor coding."
+    },
+    {
+      "id": "A-05-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly contrasts how stratified and cluster samples select units and how their precision typically differs.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The two designs are presented in simple terms and the comparison is qualitative."
+    },
+    {
+      "id": "A-05-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for a multiple regression slope interpretation with the other predictor held fixed.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students translate one displayed coefficient into a one-unit change using the supplied units."
+    },
+    {
+      "id": "A-05-031",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "Finding the population median is one step in a question whose main task is using the sampling distribution of the sample median.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students combine a population quantile, the density at that quantile, and an asymptotic approximation for an estimator."
+    },
+    {
+      "id": "A-05-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to draw a significance conclusion from exact binomial test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The conclusion follows from one comparison between the reported p-value and the given significance level."
+    },
+    {
+      "id": "A-05-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a specific coefficient in an interaction model's coefficient table represents.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The reference category and contrast coding are supplied, so this is a standard interpretation of an interaction model."
+    },
+    {
+      "id": "A-05-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks students to read the variance explained by one component from a PCA summary.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The requested quantity is a direct lookup in the displayed table."
+    },
+    {
+      "id": "A-05-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a logistic regression confidence bound expressed on the odds ratio scale.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The estimate, standard error, and approximation are supplied, leaving a standard Wald calculation and a transformation."
+    },
+    {
+      "id": "A-05-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares empirical resampling with simulation from a fitted parametric distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks students to connect distributional assumptions and potential misspecification to the reliability of bootstrap uncertainty estimates."
+    },
+    {
+      "id": "A-05-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the component standard deviations in an R PCA summary represent mathematically.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students must connect PCA eigenvalues to the specific scaling and implementation conventions used by `princomp`."
+    },
+    {
+      "id": "A-05-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how participant blinding and placebo-related behavior affect interpretation of the experiment.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks students to distinguish what can be inferred from the randomized comparison, analyst blinding, and a historical baseline."
+    },
+    {
+      "id": "A-05-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests which elements `tail` selects before the sum is taken.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A basic vector selection and a simple sum fit a first-week R exercise."
+    },
+    {
+      "id": "A-05-040",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The deviance output provides the context, while the calculation depends on the degrees of freedom printed beside it.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The arithmetic is simple, but students must apply the fitted GLM's degrees-of-freedom convention to infer sample size."
+    },
+    {
+      "id": "A-05-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how p-values can change with sample size when the reported effect estimate is held fixed.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The comparison follows from standard error scaling in a conventional two-sample test with known variances."
+    },
+    {
+      "id": "A-05-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks students to obtain a likelihood ratio p-value from model deviance and degrees-of-freedom differences.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The supplied rule leaves a standard sequence of computing two differences and evaluating a chi-square tail."
+    },
+    {
+      "id": "A-05-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks students to replace the inappropriate `glm` family for the simulated count response.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The code edit is short and requires standard GLM knowledge about choosing a family for count data."
+    },
+    {
+      "id": "A-05-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks students to explain the horizon-dependent widths shown in time series forecast output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting multi-step forecast error variance with innovations and the moving-average representation."
+    },
+    {
+      "id": "A-05-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks students to interpret the directions and significance of pairwise Tukey comparisons.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students make direct significance comparisons and read the signs of the reported differences."
+    },
+    {
+      "id": "A-05-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a Benjamini-Hochberg adjusted p-value means for decisions across the tested genes.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires understanding the repeated-sampling meaning of false discovery rate and applying it to an adjusted-p-value threshold."
+    },
+    {
+      "id": "A-05-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for an odds ratio confidence bound from the four cell counts.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It calls for a standard sequence of obtaining the odds ratio, computing a log-scale bound, and transforming it back."
+    },
+    {
+      "id": "A-05-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the effect of stopping data collection at the first significant result.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The choices require only a qualitative comparison with the nominal false-positive rate."
+    },
+    {
+      "id": "A-05-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks students to obtain a group-specific Mann-Whitney U statistic from pooled ranks.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Sorting nine values, summing the relevant ranks, and applying the standard conversion is a routine rank-test calculation."
+    },
+    {
+      "id": "A-05-050",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The cross-tabulation identifies the marginal proportion of interest, while the question mainly tests its sampling distribution under multinomial sampling.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Students must reason about how collapsing multinomial cells determines the distribution of a marginal proportion even when the table variables are associated."
+    }
+  ]
+}

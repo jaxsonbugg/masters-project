@@ -7,6 +7,10 @@ import generate_benchmark as gb
 # helper used inside checks: evaluate the candidate in a fresh environment holding the given objects
 EV = "ev <- function(...) { e <- new.env(); vals <- list(...); for (n in names(vals)) assign(n, vals[[n]], envir = e); eval(parse(text = candidate), envir = e) }; "
 
+# the uppercase step: toupper(...) or casefold(..., upper = TRUE) (owner's decision, 2026-11-21)
+UP = ('(grepl("toupper\\\\s*\\\\(", candidate) || (grepl("casefold\\\\s*\\\\(", candidate) && '
+      'grepl("upper\\\\s*=\\\\s*(TRUE|T)\\\\b", candidate)))')
+
 C = {
  "BM0958": (EV + "q <- c(0.82, 0.91, NA, 0.76, 0.88, 0.94, 0.79, 0.85, NA, 0.90, 0.83, 0.85); "
             "o2 <- c(0.10, 0.20, NA, 0.80, 0.82, 0.84, 0.86, 0.88, 0.90, 0.92, 0.99); "
@@ -14,12 +18,13 @@ C = {
             "isTRUE(all.equal(ev(occ = q), 0.4)) && isTRUE(all.equal(ev(occ = o2), ref(o2)))",
             [("mean(occ > median(occ, na.rm = TRUE), na.rm = TRUE)", False), ("0.4", False),
              ("sum(occ > mean(occ, trim = 0.1, na.rm = TRUE), na.rm = TRUE) / sum(!is.na(occ))", True)]),
- "BM1138": ('f <- factor(c("alpha", "Beta", "gamma")); grepl("toupper\\\\s*\\\\(", candidate) && '
+ "BM1138": ('f <- factor(c("alpha", "Beta", "gamma")); ' + UP + ' && '
             "isTRUE(all.equal(eval(parse(text = candidate)), 14))",
-            [("sum(nchar(as.character(f)))", False), ("sum(nchar(toupper(levels(f)[as.integer(f)])))", True), ("14", False)]),
- "BM0103": ('codes <- c("measles", "polio", "hepatitis_b", "rotavirus"); grepl("toupper\\\\s*\\\\(", candidate) && '
+            [("sum(nchar(as.character(f)))", False), ("sum(nchar(casefold(as.character(f), upper = TRUE)))", True),
+             ("sum(nchar(casefold(as.character(f))))", False),("sum(nchar(toupper(levels(f)[as.integer(f)])))", True), ("14", False)]),
+ "BM0103": ('codes <- c("measles", "polio", "hepatitis_b", "rotavirus"); ' + UP + ' && '
             "isTRUE(all.equal(eval(parse(text = candidate)), 11))",
-            [("max(nchar(codes))", False), ("max(nchar(toupper(codes)))", True), ("11", False)]),
+            [("max(nchar(codes))", False), ("max(nchar(casefold(codes, upper = TRUE)))", True), ("max(nchar(casefold(codes)))", False),("max(nchar(toupper(codes)))", True), ("11", False)]),
  "BM0689": ('loan_outcomes <- c("R", "R", "R", "R", "R", "R", "R", "R", "R", "R", "D", "D", "D", "D", "D", "R", "R", "R", "R", "R", "R", "R", "R", "R"); '
             'r <- eval(parse(text = candidate)); inherits(r, "table") && isTRUE(all.equal(as.vector(r), c(19, 5))) && identical(names(r), c("R", "D"))',
             [("c(R = 19, D = 5)", False), ('table(loan_outcomes)[c("R", "D")]', True), ("table(loan_outcomes)", False)]),

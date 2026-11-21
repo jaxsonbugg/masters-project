@@ -1,0 +1,215 @@
+{
+ "batch": "2026-11-21_loop-r1-cand-align_05",
+ "kind": "align",
+ "label": "loop-r1-cand-align",
+ "date": "2026-11-21",
+ "instructions_file": "data/prompts/align_v1.md",
+ "instructions_sha256": "deffdd902622bb2ca04df36e550873beb31c2779e5e4e5a0fd6740b8fd513433",
+ "batch_sha256": "355fcf7155bbad9e79506d2b03bc7617519b20356d1e4e963bc9d632ebd1bfb9",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-21_replacement_loop\\r1_candidates.jsonl",
+ "manifest": "data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "A-05-001": {
+   "item_id": "BM1326",
+   "position": null
+  },
+  "A-05-002": {
+   "item_id": "BM1329",
+   "position": null
+  },
+  "A-05-003": {
+   "item_id": "BM1332",
+   "position": null
+  },
+  "A-05-004": {
+   "item_id": "BM1335",
+   "position": null
+  },
+  "A-05-005": {
+   "item_id": "BM1341",
+   "position": null
+  },
+  "A-05-006": {
+   "item_id": "BM1344",
+   "position": null
+  },
+  "A-05-007": {
+   "item_id": "BM1347",
+   "position": null
+  },
+  "A-05-008": {
+   "item_id": "BM1350",
+   "position": null
+  },
+  "A-05-009": {
+   "item_id": "BM1353",
+   "position": null
+  },
+  "A-05-010": {
+   "item_id": "BM1356",
+   "position": null
+  },
+  "A-05-011": {
+   "item_id": "BM1359",
+   "position": null
+  },
+  "A-05-012": {
+   "item_id": "BM1362",
+   "position": null
+  },
+  "A-05-013": {
+   "item_id": "BM1365",
+   "position": null
+  },
+  "A-05-014": {
+   "item_id": "BM1368",
+   "position": null
+  },
+  "A-05-015": {
+   "item_id": "BM1371",
+   "position": null
+  },
+  "A-05-016": {
+   "item_id": "BM1377",
+   "position": null
+  },
+  "A-05-017": {
+   "item_id": "BM1380",
+   "position": null
+  },
+  "A-05-018": {
+   "item_id": "BM1383",
+   "position": null
+  },
+  "A-05-019": {
+   "item_id": "BM1386",
+   "position": null
+  },
+  "A-05-020": {
+   "item_id": "BM1389",
+   "position": null
+  },
+  "A-05-021": {
+   "item_id": "BM1392",
+   "position": null
+  },
+  "A-05-022": {
+   "item_id": "BM1395",
+   "position": null
+  },
+  "A-05-023": {
+   "item_id": "BM1398",
+   "position": null
+  },
+  "A-05-024": {
+   "item_id": "BM1401",
+   "position": null
+  },
+  "A-05-025": {
+   "item_id": "BM1404",
+   "position": null
+  },
+  "A-05-026": {
+   "item_id": "BM1407",
+   "position": null
+  },
+  "A-05-027": {
+   "item_id": "BM1413",
+   "position": null
+  },
+  "A-05-028": {
+   "item_id": "BM1416",
+   "position": null
+  },
+  "A-05-029": {
+   "item_id": "BM1419",
+   "position": null
+  },
+  "A-05-030": {
+   "item_id": "BM1422",
+   "position": null
+  },
+  "A-05-031": {
+   "item_id": "BM1425",
+   "position": null
+  },
+  "A-05-032": {
+   "item_id": "BM1428",
+   "position": null
+  },
+  "A-05-033": {
+   "item_id": "BM1431",
+   "position": null
+  },
+  "A-05-034": {
+   "item_id": "BM1434",
+   "position": null
+  },
+  "A-05-035": {
+   "item_id": "BM1437",
+   "position": null
+  },
+  "A-05-036": {
+   "item_id": "BM1440",
+   "position": null
+  },
+  "A-05-037": {
+   "item_id": "BM1443",
+   "position": null
+  },
+  "A-05-038": {
+   "item_id": "BM1446",
+   "position": null
+  },
+  "A-05-039": {
+   "item_id": "BM1449",
+   "position": null
+  },
+  "A-05-040": {
+   "item_id": "BM1452",
+   "position": null
+  },
+  "A-05-041": {
+   "item_id": "BM1455",
+   "position": null
+  },
+  "A-05-042": {
+   "item_id": "BM1458",
+   "position": null
+  },
+  "A-05-043": {
+   "item_id": "BM1464",
+   "position": null
+  },
+  "A-05-044": {
+   "item_id": "BM1467",
+   "position": null
+  },
+  "A-05-045": {
+   "item_id": "BM1470",
+   "position": null
+  },
+  "A-05-046": {
+   "item_id": "BM1473",
+   "position": null
+  },
+  "A-05-047": {
+   "item_id": "BM1476",
+   "position": null
+  },
+  "A-05-048": {
+   "item_id": "BM1485",
+   "position": null
+  },
+  "A-05-049": {
+   "item_id": "BM1488",
+   "position": null
+  },
+  "A-05-050": {
+   "item_id": "BM1491",
+   "position": null
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-21T22:27:49+00:00"
+}

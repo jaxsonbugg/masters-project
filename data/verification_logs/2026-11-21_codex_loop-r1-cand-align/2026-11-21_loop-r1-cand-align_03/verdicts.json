@@ -1,0 +1,363 @@
+{
+  "verdicts": [
+    {
+      "id": "A-03-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a confidence bound for an odds ratio from a two-by-two table using the log-scale method.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires computing the log odds ratio and its standard error, then transforming the resulting bound."
+    },
+    {
+      "id": "A-03-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the overall F-statistic in a multiple regression summary tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Distinguishing the overall model test from the individual coefficient tests is standard second-course regression interpretation."
+    },
+    {
+      "id": "A-03-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The choices test whether the fitted logistic slope is understood as a multiplicative effect on odds for a one-unit change.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task requires routine interpretation of a single logistic slope with the transformed value supplied in the choices."
+    },
+    {
+      "id": "A-03-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks how stopping at the first significant result affects the overall false-positive rate.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for a single qualitative inference about repeated opportunities for a false positive."
+    },
+    {
+      "id": "A-03-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested statistic is the Mann–Whitney U computed from pooled ranks with ties.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt supplies the entire calculation procedure, leaving routine ranking and arithmetic on eight values."
+    },
+    {
+      "id": "A-03-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks which group and denominator define a displayed cross-tabulation proportion.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The conditional proportion is already displayed, so answering requires only interpreting a table entry and its denominator."
+    },
+    {
+      "id": "A-03-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression shuffles data-frame rows under a specified random ordering rule.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt gives the shuffling method, leaving a standard composition of random generation, ordering, and row indexing."
+    },
+    {
+      "id": "A-03-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The choices ask the reader to recognize a standard condition for applying Pearson’s chi-square test of independence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires recalling a single familiar condition."
+    },
+    {
+      "id": "A-03-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what happens when correlated measurements within experimental units are treated as independent replicates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting within-unit dependence to estimated standard errors and then to Type I error."
+    },
+    {
+      "id": "A-03-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task interprets a Bartlett variance test result in light of a distributional feature relevant to the test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Interpreting the significance requires reasoning about how departures from normality affect the variance test."
+    },
+    {
+      "id": "A-03-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The output is a normality diagnostic applied to regression residuals, and the question asks what it implies.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task asks for standard interpretation of a regression diagnostic and identification of the assumption it addresses."
+    },
+    {
+      "id": "A-03-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question distinguishes confounding from marginal association and other causal roles in a diagram.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task asks for recognition of a standard causal structure from descriptions without requiring analysis of a specific graph."
+    },
+    {
+      "id": "A-03-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the per-group sample size needed to achieve specified power in a two-group comparison.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The formula is supplied, leaving standard normal quantile lookups and substitution."
+    },
+    {
+      "id": "A-03-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how to interpret raw and standardized multiple regression coefficients on their respective scales.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must connect predictor units and standard deviations to the interpretation and comparison of two fitted slopes."
+    },
+    {
+      "id": "A-03-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the normality conclusion supported by a Shapiro–Wilk test result.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It is a standard test-output interpretation that links a significance decision to the test’s null hypothesis."
+    },
+    {
+      "id": "A-03-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Reversing the character vector is the central operation that determines the printed order.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must trace two nested transformations, reversing a vector and collapsing its elements into one string."
+    },
+    {
+      "id": "A-03-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to distinguish precision and specificity by their conditioning groups in a confusion matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Identifying the relevant totals and computing two conditional proportions is a routine multistep calculation."
+    },
+    {
+      "id": "A-03-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for precision and specificity from actual and predicted class counts.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must identify the appropriate totals and compute two ratios from a realistic confusion matrix."
+    },
+    {
+      "id": "A-03-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task explains a feature reported in two-proportion test output and connects it to the statistic and p-value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting the discrete-to-continuous approximation to the way the correction changes the test results."
+    },
+    {
+      "id": "A-03-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a significance interpretation of the displayed Wilcoxon rank-sum output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a direct comparison of a reported p-value with a supplied threshold."
+    },
+    {
+      "id": "A-03-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The choices distinguish likelihood-based tests by the estimates and likelihood quantities used in their construction.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must understand how restricted and unrestricted fits enter the construction of different likelihood-based tests."
+    },
+    {
+      "id": "A-03-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how to interpret a multiple regression slope when the interacting predictor is held at a particular value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The interaction requires reasoning about how the conditional slope depends on the other predictor and its uncentered reference point."
+    },
+    {
+      "id": "A-03-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested probability is the power of a two-sided z-test under a specified alternative mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The calculation requires finding the null rejection cutoffs and evaluating both tails under the alternative sampling distribution."
+    },
+    {
+      "id": "A-03-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks which properties of OLS depend on conditional mean zero and which depend on constant error variance.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires separating the properties of the estimator from the validity of its conventional covariance estimate under heteroskedasticity."
+    },
+    {
+      "id": "A-03-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the hypothesis tested by the overall regression F-statistic.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Identifying the hypothesis requires knowledge of joint coefficient testing in multiple regression."
+    },
+    {
+      "id": "A-03-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested value combines a first difference with a subsequent seasonal difference at a specified time point.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires locating the relevant lagged observations and applying two successive differences."
+    },
+    {
+      "id": "A-03-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task compares how ordinary and adjusted R-squared respond when a predictor is added.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires standard multiple regression reasoning about improved fit and the adjustment for model size."
+    },
+    {
+      "id": "A-03-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how to interpret the reported score statistic relative to its reference critical value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reference cutoff is provided, so the reader makes one numerical comparison and applies the decision rule."
+    },
+    {
+      "id": "A-03-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested output is the column count of a model matrix with a factor, a continuous predictor, and their interaction.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must expand a standard regression formula and account for factor coding, interaction columns, and intercept removal."
+    },
+    {
+      "id": "A-03-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question examines what residual standard error estimates and how R-squared behaves when the response is rescaled.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines reasoning about the model’s error parameter with the effect of changing measurement units on a fit statistic."
+    },
+    {
+      "id": "A-03-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks how a confidence interval and a two-sided hypothesis test based on the same pivot correspond."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for the standard connection between interval membership and a test decision, with the matching conditions supplied."
+    },
+    {
+      "id": "A-03-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The choices ask the reader to translate cumulative class counts into statements about the observed distribution.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task uses direct table reading and a simple conversion from a cumulative count to a proportion."
+    },
+    {
+      "id": "A-03-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question examines how shrinking separate sample means toward a common target affects estimation error.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader applies the standard bias–variance tradeoff to a concrete example of shrinkage."
+    },
+    {
+      "id": "A-03-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested calculation is the lag-1 sample autocorrelation of a six-observation series.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Computing the statistic requires centering the series, combining adjacent observations, and normalizing the result."
+    },
+    {
+      "id": "A-03-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the meaning of a slope estimate taken from a multiple regression coefficient table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Interpreting the direction and magnitude of a fitted slope while holding the other predictor fixed is standard multiple regression work."
+    },
+    {
+      "id": "A-03-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested output is the number of factor levels retained after subsetting and applying droplevels.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must trace the filter and distinguish the observed factor values from the levels retained before cleanup."
+    },
+    {
+      "id": "A-03-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the probability of a specified number of failures before a fixed number of successes.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires identifying the stopping-time distribution and mapping the story’s counts and probability to its parameters."
+    },
+    {
+      "id": "A-03-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Extracting the strict upper triangle is the required indexing step for obtaining all unique correlations to transform."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt supplies the transformation and variance, leaving standard matrix indexing and vectorized calculation."
+    },
+    {
+      "id": "A-03-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks why a pooled association can reverse the associations observed within each group.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The reversal is given, and the reader recognizes its standard explanation from a familiar stratified example."
+    },
+    {
+      "id": "A-03-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a rate ratio derived from a single Poisson regression coefficient for a group contrast.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Once the displayed coefficient is located, the task requires one standard transformation."
+    },
+    {
+      "id": "A-03-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested rejection probability depends on the exact binomial rejection region of a two-sided sign test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must determine the discrete rejection region under the null and then evaluate that region under a different sampling distribution."
+    },
+    {
+      "id": "A-03-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt directly requires tryCatch with an error handler that returns a specified fallback value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task combines a normal function call with a handler and requires preserving the appropriate result on each path."
+    },
+    {
+      "id": "A-03-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt explicitly requires a while loop that updates a running count.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The expression requires initializing two variables, updating both in a loop, and returning the final count."
+    },
+    {
+      "id": "A-03-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R function must implement a base case and a recursive call."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt supplies the complete recurrence, leaving a direct translation into a conditional recursive function."
+    },
+    {
+      "id": "A-03-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for BIC from a reported likelihood quantity, a parameter count, and a sample size."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The calculation requires tracking the sign convention and substituting the reported values into a standard formula."
+    },
+    {
+      "id": "A-03-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the reported Wilcoxon rank-sum result implies about the stated location-shift hypothesis."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires standard nonparametric test interpretation across significance levels and in terms of the stated null hypothesis."
+    },
+    {
+      "id": "A-03-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The final calculation is a normal percentile using the mean and standard deviation obtained by combining the two phases."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The reader applies the standard rule for sums of independent normals and then computes a single normal quantile."
+    },
+    {
+      "id": "A-03-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a pairwise comparison based on Tukey-adjusted output."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must track the direction of a contrast and interpret its adjusted p-value and confidence interval."
+    },
+    {
+      "id": "A-03-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question compares the precision of stratified and cluster sampling using within-group and between-group variability."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for a standard sampling-design comparison expressed in variance terms."
+    },
+    {
+      "id": "A-03-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks the reader to interpret the percentile label associated with a displayed sample quantile."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The requested percentage can be identified in one step from a labeled output row."
+    }
+  ]
+}
