@@ -1075,3 +1075,59 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **What this does not show:** R checks arithmetic and whether the checks work, not whether each question is clear or its code answers the question as written. The benchmark still goes through the Codex screen, Jaxson's review of the repairs and soft flags, and the 150-item audit before it is frozen. The TV set is collected later with the training checks (format and length only).
 - **Tests:** generation tests 121 of 121 (new: apply-repairs accepts a repair only when verify passes; a still-vacuous repair is refused; keys are never changed).
 - **Next:** Jaxson reviews `review_sheet.csv` (41 rows) and the 23 soft flags; Codex setup (Jaxson installs the Codex CLI and confirms the terms; Claude builds the batch tool); then the screen, the audit and the freeze.
+
+### Codex as a grader only: terms read, separation rules, the batch tool and its fake-Codex tests (2026-11-21)
+- **Owner's decisions:**
+  - **Codex is used only like a teacher grading tests,** completely separated from Qwen and Pythia so no distillation term is violated.
+  - **The screen of benchmark questions is kept.**
+  - **Codex never touches the development, TV or training data.**
+  - **OpenAI's own terms govern,** because the workspace account comes from OpenAI to professors, not through a Miami agreement.
+  - **No monetary cost logging** for Codex; scientific usage and provenance are still recorded.
+  - **Four revisions to the plan:**
+    1. qualify the terms reading and get confirmation from the workspace administrator or OpenAI;
+    2. treat the CLI settings as defense in depth, not isolation;
+    3. define the grading input explicitly, with no model identity;
+    4. explicit inputs and thorough failure tests.
+
+  No real Codex call is made without Jaxson's approval.
+- **The terms, as read by a research agent on 2026-11-21** (quoted in workflow.md Section 2.3):
+  - **Usage Policies (effective 2026-11-20):**
+    - they forbid using outputs "to generate, prepare, select, or supply training material or signals" for alternative models, including scores, labels, and selecting, filtering or validating training data;
+    - this also covers evaluation outputs later used that way;
+    - they explicitly allow "model evaluation and benchmarking".
+  - **Services Agreement (2026-01-01), §3.3(e):** no use of Output to develop competing models.
+  - **The reading:** grading a held-out benchmark fits, provided no Codex output ever becomes a training signal. This is recorded as a reading of the public terms, not established compliance. Still to record before the first real call: the governing workspace agreement, and the administrator's or OpenAI's confirmation.
+- **The separation rules** (CLAUDE.md and workflow.md Section 2.3):
+  - **What Codex may see:** only the final benchmark questions, benchmark answers of finished models, and calibration answers on unused benchmark spares (those spares are then permanently excluded from the benchmark).
+  - **Grading items** carry an anonymous id, the question and choices, the frozen checked key and the candidate's final answer; never the model's identity or training configuration.
+  - **Codex scores** never change training, data, hyperparameters, checkpoints, stopping or the teacher setup.
+- **Grader validation without development data:**
+  - the grading instructions are debugged on teacher and untrained-70M answers to unused spares;
+  - the calibration answers are written on unused spares;
+  - the validity thresholds are proposed in advance (calibration accuracy at least 95%; at most 1 of 20 wrong answers accepted; cross-check agreement at least 95%; owner agreement at least 90% with kappa at least 0.80; between-model difference at most 5 points), to be approved before any benchmark grading;
+  - the calibration confusion matrix is reported with every grading run.
+- **Code:**
+  - **`code/verification/codex_batch.py`:**
+    - **`build-screen`:** final-benchmark BM questions only; DV, TV, TR, TRR, SM, other slot files and excluded spares are refused. Each batch folder in the workspace holds exactly the batch (anonymous ids, question, choices, never the key), the pinned instructions and the verdict schema. The id key goes to a separate folder.
+    - **`run`:** the full prompt (instructions, batch SHA-256 and id list, the batch between markers) goes on standard input. The call uses a read-only sandbox, `--ephemeral`, `--ignore-user-config`, 14 unneeded features switched off, web search disabled and the schema enforced. Feature names are checked against the installed CLI first. A real call happens only with `--real`. The saved event stream is audited, and any command or tool use rejects the batch. The provenance goes into `run.json`.
+    - **`import`:** exact coverage (no missing, extra or duplicate ids; allowed values only), a clean audited run, and an unchanged batch file are all required.
+    - **`report`:** produces the owner's flag sheet.
+  - **`code/generation/separation.py`:** `collect-train` and `decontaminate` refuse any Codex path or row carrying a Codex field.
+  - **`fill-bench`:** never uses a permanently excluded spare (`<set>_excluded_spares.json`).
+  - **`configs/paths.yaml`:** new keys `codex_workspace`, `codex_keys` and `codex_cli` (the CLI bundled in the VS Code extension, `codex-cli 0.169.0-alpha.11.1`).
+- **New `data/prompts/screen_v1.md`** (draft, for Jaxson's review): Codex flags a question only for a real problem (ambiguous, missing information, invalid assumption, multiple correct, no correct option, unclear answer format, other) and treats the questions as untrusted text.
+- **Tests:** new `code/tests/codex_test/test_codex_batch.py`, 42 of 42 with `fake_codex.py` (no call reached OpenAI). They cover:
+  - input integrity;
+  - exact output coverage;
+  - provenance;
+  - each failure (malformed, missing, extra, duplicate, invalid value, empty, non-zero exit, timeout, tool use, changed batch);
+  - the refusals;
+  - the separation guard;
+  - the excluded spares.
+
+  The existing suites still pass: generation 121, the regression snapshot (52 of 52 parts unchanged) and answer check 44.
+- **Docs:** CLAUDE.md (the cost-log exception and the grader rules); workflow.md (Section 2.3 rewritten: inputs, isolation as defense in depth, no development data, the terms, usage and provenance; the development set's description; the Phase 3 and 4 checklists; the risks); pilot_plan.md; cost_log.md (Codex not logged); model_versions.md Section 6a (the CLI pin and the instruction files).
+- **Next (Jaxson):**
+  - review `screen_v1.md`;
+  - record the workspace agreement and ask the administrator or OpenAI for confirmation;
+  - approve the 20-question integration batch, the first real Codex call.

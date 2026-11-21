@@ -781,10 +781,19 @@ def require_fingerprint(row, manifest):
         sys.exit(f"{row['item_id']}: its slot-file fingerprint does not belong to this manifest; refused")
 
 
-def fill_bench(rows, manifest, primary):
+def excluded_spares(manifest_path):
+    """Spares permanently excluded from the benchmark: those later used for Codex calibration answers
+    (<set>_excluded_spares.json beside the slot manifest: {"ids": [...], "reason": ...}). Never used as replacements."""
+    m = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+    f = Path(manifest_path).parent / f"{m['set']}_excluded_spares.json"
+    return set(json.loads(f.read_text(encoding="utf-8"))["ids"]) if f.exists() else set()
+
+
+def fill_bench(rows, manifest, primary, excluded=()):
     """(positions, needs): position k (1..primary) gets primary slot k if usable, else the next unused usable spare with
     the same category, difficulty and answer type (spares are the slots after the primary block and any replacements
-    dealt later, taken in id order). `needs` lists the primary slots with no matching spare left."""
+    dealt later, taken in id order). `needs` lists the primary slots with no matching spare left. Spares in `excluded`
+    (permanently excluded, for example Codex calibration spares) are never used, and a primary slot in it is refused."""
     for r in rows:
         require_fingerprint(r, manifest)
     by_id = {r["item_id"]: r for r in rows}
@@ -793,7 +802,11 @@ def fill_bench(rows, manifest, primary):
     missing = [i for i in ids if i not in by_id]
     if missing:
         sys.exit(f"primary slots not collected yet: {missing[:5]} ... ({len(missing)})")
-    spares = sorted((r for r in rows if r["item_id"] not in set(ids)), key=lambda r: r["item_id"])
+    bad = sorted(set(ids) & set(excluded))
+    if bad:
+        sys.exit(f"primary slots {bad[:5]} are in the permanently excluded list; refused")
+    spares = sorted((r for r in rows if r["item_id"] not in set(ids) and r["item_id"] not in set(excluded)),
+                    key=lambda r: r["item_id"])
     used, positions, needs = set(), [], []
     for k, iid in enumerate(ids, 1):
         r = by_id[iid]
@@ -815,7 +828,7 @@ def fill_bench(rows, manifest, primary):
 def cmd_fill_bench(args):
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     rows = [json.loads(l) for l in Path(args.items).read_text(encoding="utf-8").splitlines() if l.strip()]
-    positions, needs = fill_bench(rows, manifest, args.primary)
+    positions, needs = fill_bench(rows, manifest, args.primary, excluded_spares(args.manifest))
     text = "".join(json.dumps(p, ensure_ascii=False) + "\n" for p in positions)
     Path(args.out).write_text(text, encoding="utf-8", newline="\n")
     n_rep = sum(1 for p in positions if p.get("replaces"))
@@ -975,6 +988,9 @@ def compact_row(p, row, n_tokens, slot):
 
 
 def cmd_collect_train(args, length=None):
+    import separation   # Codex output must never reach training-side material (workflow.md Section 2.3)
+    for pth in (args.manifest, args.items, args.decontam, args.out_dir):
+        separation.refuse_codex_path(pth, "collect-train")
     man_path = Path(args.manifest)
     man = json.loads(man_path.read_text(encoding="utf-8"))
     if man["set"] not in ("train", "tv", "smoke"):
@@ -985,6 +1001,7 @@ def cmd_collect_train(args, length=None):
     rep_path = man_path.parent / f"{man['set']}_replacements.jsonl"
     replacements = load_source(rep_path)[0] if rep_path.exists() else []
     rows = [json.loads(l) for l in Path(args.items).read_text(encoding="utf-8").splitlines() if l.strip()]
+    separation.refuse_codex_rows(rows, "collect-train", args.items)
     rows_by_id = {}
     for r in rows:
         if r.get("prompt_kind") != "training":

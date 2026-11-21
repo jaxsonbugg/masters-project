@@ -170,8 +170,9 @@ It deliberately does **not** stop at the first blank line, because a model may p
   - simple rules (a number within tolerance, the multiple-choice letter, the R check) re-grade every item they can.
 
   All three are reported next to the scores.
-- **Thresholds and failure rules are decided before the benchmark is graded.** How well Codex must do is decided on development data, together with what happens if it fails.
-  - **If it fails on development data:** the instructions are revised there, or a pre-registered fallback grading by rules and by hand becomes the main score.
+- **Codex is kept completely apart from the models' development** (your decision of 2026-11-21). It only screens benchmark questions and grades benchmark answers of finished models, like a teacher grading tests. It never sees the development, TV or training data, and nothing it outputs ever reaches Qwen or Pythia.
+- **Thresholds and failure rules are decided before the benchmark is graded.** How well Codex must do is proposed in advance and approved by you, together with what happens if it fails. Its grading instructions are debugged on answers to unused benchmark spares, never on development data.
+  - **If it fails on the unused spares:** the instructions are revised there, or a pre-registered fallback grading by rules and by hand becomes the main score.
   - **If it fails on the benchmark:** the failure is reported as such, and the main conclusions use the pre-registered fallback scores (rules for numbers, letters and R expressions, plus your blind grading of short-text answers). That fallback is computed every time anyway. Codex's scores are still reported, labeled as having failed. Which score counts is decided by the frozen thresholds alone, checked before anyone looks at the per-model results, so neither method can be picked for giving the "better" answer. The instructions are never changed after benchmark results are seen.
 
 **The benchmark is used only for this prespecified evaluation.** The hyperparameters and the evaluation code are chosen and debugged on a separate development set of about 200 items, and frozen in a dated pre-registration before the training run that is evaluated. After the benchmark scores are seen, only documented bug fixes are allowed. Any further experiment prompted by the scores is labeled exploratory and never replaces these results.
@@ -197,7 +198,7 @@ We then answer these questions and write the results in `docs/methodology/workfl
 - Are the R-code and format success thresholds (90% each, `docs/methodology/workflow.md` Section 1.1) realistic for these models?
 - How many benchmark questions did the screen flag, what error rate did the 150-item audit find, and is the benchmark good enough to keep?
 - Did Codex pass its validity thresholds, and did it agree with you and with the simple rules equally well for every model?
-- How much Codex usage did the screen and the grading take, and what does that project to for the full grid (about 25,000 answers)? Does it fit the plan's allowance?
+- How long did the screen and the grading take, and what does that project to for the full grid (about 25,000 answers)?
 - Did the criterion-4b timing protocol give stable, repeatable numbers?
 
 If the answers are acceptable, we scale up. If not, we fix the weakest part first.
@@ -221,8 +222,8 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
 4. **Benchmark and development set:**
    1. generate;
    2. R keys, `verify`, spares for failed slots, near-duplicate checks;
-   3. Codex setup: you install it and confirm the terms; the batch tool is built and tested;
-   4. the Codex usage pilot;
+   3. Codex setup: found in your VS Code extension; terms read; the workspace agreement and the administrator's confirmation recorded; the batch tool built and tested with a fake Codex;
+   4. a 20-question integration batch of the screen (your approval);
    5. the Codex screen, and your review of the flags;
    6. the 150-item audit;
    7. fixes;
@@ -233,9 +234,8 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
    - the deterministic graders;
    - the "R code runs" check;
    - the held-out loss and teacher match;
-   - Codex grading;
-   - grader validation and its thresholds;
-   - the calibration sets.
+   - (no Codex here: Codex never touches the development set);
+   - separately, Codex grading prepared on unused benchmark spares: the instructions, about 40 calibration answers and the thresholds.
 8. **Choose the hyperparameters** on the development set, then freeze everything, including the grader setup and its failure rules.
 9. **The confirmatory run:**
    1. train once;
@@ -249,8 +249,4 @@ If the answers are acceptable, we scale up. If not, we fix the weakest part firs
 
 Generation, training and evaluation run on Miami's clusters and cost **no money**; their cost is GPU-hours, which are logged per job in `docs/logs/compute_log.md` and summed there.
 
-The one service that is not free is **Codex**, which screens the benchmark questions and grades the answers.
-- **What it costs:** it runs on your workspace subscription, so its use counts against the plan's included allowance, and work beyond that may need purchased credits. It is not assumed to be free.
-- **The usage pilot:** a small run on development items measures how much it uses per question.
-- **Before every run:** the expected usage is written down.
-- **Afterward:** the actual usage is logged in `docs/logs/cost_log.md`.
+**Codex**, which screens the benchmark questions and grades the answers, runs on a workspace account provided through OpenAI to professors. It is **not cost-logged** (your decision of 2026-11-21); each batch still records its usage and provenance (version, model, token counts, times) as part of the scientific record.

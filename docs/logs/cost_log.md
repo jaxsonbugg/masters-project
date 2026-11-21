@@ -7,16 +7,7 @@ This file records every dollar the project spends and every use of a metered ser
 2. Afterwards, add one row here in the same session.
 3. Compare the actual cost or usage with the expected one in the note.
 
-**The service now planned (decided 2026-11-12): Codex, the grader** (`docs/methodology/workflow.md` Section 2.3). It screens the benchmark questions and grades the benchmark answers. It runs through the Codex command-line tool on the owner's **workspace subscription**, so it is not billed per call like an API. That does not make it free:
-- its use counts against the plan's included allowance;
-- work beyond the allowance may need purchased credits.
-
-**How a Codex batch is logged:**
-- one row per batch, with the purpose, the Codex CLI version and model, the reasoning setting, and the input and output tokens if Codex reports them;
-- the share of the allowance used, if the plan shows it;
-- in the cost column, **$0.00 when the batch stayed within the included allowance**, or the dollars of any credits used.
-
-A usage pilot on development items (about 100 screened questions and 100 graded answers) comes first, to measure usage per judgment and project the full runs.
+**Codex, the grader, is not logged here (owner's decision, 2026-11-21).** It screens the benchmark questions and grades the benchmark answers (`docs/methodology/workflow.md` Section 2.3) on a workspace account provided through OpenAI to professors, at no cost to the project. Its scientific usage and provenance (CLI version, model, reasoning setting, SHA-256 values, times, token counts, exit status) are recorded with each batch in `run.json` and in `results/codex/` instead. (Until 2026-11-21 this file planned one row per Codex batch and a usage pilot on development items; both were dropped.)
 
 The verifier planned earlier (an external model checking the training data) was retired on 2026-11-12 and never made a call (`docs/archive/retired_verification_2026-11-12.md`).
 

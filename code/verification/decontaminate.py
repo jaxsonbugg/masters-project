@@ -130,12 +130,15 @@ def stable_hash(s):
 # Loading items (collect output rows, fill-bench rows, compact training rows or plain items)
 # ---------------------------------------------------------------------------------------------
 def load_items(paths, role):
+    import separation   # Codex output must never reach training-side material (workflow.md Section 2.3)
     out = []
     for p in paths:
+        separation.refuse_codex_path(p, "decontaminate")
         for line in Path(p).read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             r = json.loads(line)
+            separation.refuse_codex_rows([r], "decontaminate", p)
             if r.get("status") not in (None, "usable"):
                 continue
             item = r.get("item") or r

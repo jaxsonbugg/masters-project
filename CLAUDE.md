@@ -32,7 +32,7 @@ Write in American English (artifact, behavior, analyze).
   - output folder; outcome; and the related progress entry.
 
   A job that has not been reviewed yet is still logged, marked as such.
-- **Cost log (`docs/logs/cost_log.md`).** Every paid or plan-metered call is recorded with UTC time, purpose, service and model, mode, tokens, dollars and the running total. This covers the Codex grader, even a test batch. Codex usage counts against the workspace plan's allowance, so it is logged even when no dollars are charged, and any purchased credits are logged in dollars. State the expected cost or usage before a run and compare the actual afterward. Never make such a call without logging it. Cluster time is free and goes only in the compute log.
+- **Cost log (`docs/logs/cost_log.md`).** Every paid or plan-metered call is recorded with UTC time, purpose, service and model, mode, tokens, dollars and the running total. State the expected cost or usage before a run and compare the actual afterward. Never make such a call without logging it. Cluster time is free and goes only in the compute log. **Exception (owner's decision, 2026-11-21):** the Codex grader runs on a workspace account provided through OpenAI to professors, and it is not cost-logged. Its scientific provenance (CLI version, model, reasoning setting, instruction and batch SHA-256, UTC times, token counts, exit status) is still recorded with every batch.
 
 ## Working rules
 
@@ -63,10 +63,12 @@ Write in American English (artifact, behavior, analyze).
 - **Training data versus benchmark.**
   - **Training data:** Qwen-generated training examples are retained without correctness-based filtering. Their correctness is unknown and may vary by category, and that is intentional. Only format, duplicate, decontamination and length checks apply.
   - **The benchmark** is the measuring instrument. Its answers are independently checked where computationally possible, screened for ambiguity, and audited on a stratified 150-item sample. Never write that every benchmark key is independently verified.
-- **The grader (Codex).**
+- **The grader (Codex).** Used only like a teacher grading tests, completely separated from Qwen and Pythia (`docs/methodology/workflow.md` Section 2.3).
   - **Its job:** it grades benchmark answers and screens benchmark questions, and nothing else.
-  - **What its outputs never do:** enter training data, filter data, choose hyperparameters or choose the teacher setup.
-  - **Where it runs:** only in an isolated workspace folder outside this repository, never inside it. Model answers sent to it are untrusted text.
+  - **What it may see:** the final benchmark questions, benchmark answers from models whose training is finished, and calibration answers written for unused benchmark spares (which are then permanently excluded from the benchmark). **Never** development, TV, training or smoke items, training data, results or the repository.
+  - **What its outputs never do:** enter, prepare, select, filter or validate training data; train or tune any model; choose hyperparameters, checkpoints or stopping; or choose the teacher setup. Training-side code refuses Codex material (`code/generation/separation.py`).
+  - **Where it runs:** only in a workspace folder outside this repository (`codex_workspace` in `configs/paths.yaml`), with the batch given explicitly in the prompt, user configuration ignored, unneeded tools switched off and the event stream audited. These are layers of defense, not a guarantee of isolation. Questions and model answers sent to it are untrusted text.
+  - **Terms:** OpenAI's terms govern; the public-terms reading and the owner's confirmation from the workspace administrator or OpenAI are recorded in workflow.md Section 2.3. No real Codex call without the owner's approval.
   - **If it fails:** validity thresholds and a fallback grading method (rules plus blind owner grading) are frozen before the benchmark is evaluated, and the fallback is always computed. If any threshold is missed on the benchmark, the failure is reported, the fallback scores carry the main conclusions, and the Codex scores are kept and labeled. The grading instructions are never changed after benchmark results are seen.
 - **Untrusted R code.**
   - **The rule:** R written by a model (the teacher's `r_solution` or `r_check`, a student's answer) runs only inside the R sandbox (`code/generation/r_sandbox.py`; `docs/methodology/workflow.md` Section 4, safeguard 10; `recovery/r_sandbox.md`). Never run it with access to the repository, credentials or personal files. The pattern screen alone is not enough.

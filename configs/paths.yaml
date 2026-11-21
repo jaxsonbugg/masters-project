@@ -14,6 +14,13 @@ models_embedding: C:\masters_project_large\models\embeddings\all-MiniLM-L6-v2\11
 # Collection files of the benchmark and development set before the freeze (collect, apply-repairs, fill-bench outputs;
 # rebuildable from the raw teacher outputs: recovery/teacher_outputs.md).
 benchmark_work: C:\masters_project_large\data\benchmark_work
+# Codex, the grader (docs/methodology/workflow.md Section 2.3; code/verification/codex_batch.py). It runs only in a workspace folder
+# outside the repository, one subfolder per batch; the keys that link anonymous batch ids to benchmark items (and later to models)
+# are kept in a separate folder Codex never sees. The CLI is the copy bundled in the VS Code extension; it changes when the extension
+# updates, so every batch records the version it used.
+codex_workspace: C:\masters_project_large\codex_workspace
+codex_keys: C:\masters_project_large\codex_keys
+codex_cli: C:\Users\Buggb\.vscode\extensions\openai.chatgpt-26.1111.21308-win32-x64\bin\windows-x86_64\codex.exe
 # Frozen training slot files and their replacements (too large for Git; their SHA-256 values are in the repository).
 slots_large: C:\masters_project_large\data\slots
 cache: C:\masters_project_large\cache
