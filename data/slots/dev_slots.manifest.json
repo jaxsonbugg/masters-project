@@ -1,0 +1,48 @@
+{
+  "set": "dev",
+  "n": 230,
+  "seed": "dev-2026-11-20",
+  "slot_scheme": "taxonomy-v2",
+  "dealer_version": "variety-1",
+  "slots_file": "dev_slots.jsonl",
+  "slots_sha256": "cd7f7e574215a90d4176ebd57a8f7f10741ce4f138e7070bdfd220cf58914df4",
+  "taxonomy_file": "C:/dev/masters-project/data/taxonomy/subtopics.yaml",
+  "taxonomy_sha256": "17d7340a913a9ca27b149273259edf217ac380e8e3492af490e74eb37247829b",
+  "contexts_file": "C:/dev/masters-project/data/taxonomy/contexts.yaml",
+  "contexts_sha256": "100d9102af1a3a2384b6d698fb1f5a7fd605b5ba06d0aedd47709e193cdc82f4",
+  "deck_state": {
+    "sub": {
+      "numerical|intro": 23,
+      "numerical|intermediate": 23,
+      "numerical|graduate": 23,
+      "conceptual|intro": 12,
+      "conceptual|intermediate": 23,
+      "conceptual|graduate": 11,
+      "r_generation|intro": 23,
+      "r_generation|intermediate": 12,
+      "r_generation|graduate": 11,
+      "r_interpretation_number|intro": 15,
+      "r_interpretation_number|intermediate": 7,
+      "r_interpretation_number|graduate": 0,
+      "r_interpretation_text|intro": 8,
+      "r_interpretation_text|intermediate": 4,
+      "r_interpretation_text|graduate": 0,
+      "output_interpretation|intro": 12,
+      "output_interpretation|intermediate": 12,
+      "output_interpretation|graduate": 11
+    },
+    "ctx": {
+      "numerical": 69,
+      "conceptual": 46,
+      "r_generation": 46,
+      "r_interpretation": 34,
+      "output_interpretation": 35
+    },
+    "counters": {
+      "r_interp": 34,
+      "mc": 81
+    }
+  },
+  "replacements": [],
+  "created_utc": "2026-11-21T02:18:41+00:00"
+}

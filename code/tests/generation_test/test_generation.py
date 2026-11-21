@@ -537,6 +537,13 @@ sm0010 = ("Coefficients:\n               Estimate Std. Error t value Pr(>|t|)   
           "95% confidence intervals:\n               lower    upper\nspeed         0.992    1.408\ntemp         -0.709   -0.091\n")
 check("SM0010's impossible interval (0.992 to 1.408 for estimate 1.2 with SE 0.24) is caught, and only that row",
       len(oc.check(sm0010)) == 1 and "interval for speed" in oc.check(sm0010)[0], oc.check(sm0010))
+inline = ("Coefficients:\n               Estimate Std. Error t value Pr(>|t|)   2.5 %  97.5 %\n"
+          "(Intercept)    100.000      2.000  50.000   <2e-16  96.080 103.920\n"
+          "temperature      0.500      0.100   5.000 1.2e-06   0.304   0.696\n"
+          "speed           -0.200      0.050  -4.000 3.4e-05  -0.298  -0.102\n")
+check("intervals printed as two extra columns of the coefficient table are read: consistent ones pass (smoke test 2, SM0010)",
+      oc.check(inline) == [], oc.check(inline))
+check("an impossible interval in those columns is caught", any("interval for speed" in p for p in oc.check(inline.replace("-0.298  -0.102", "-0.250  -0.150"))))
 sm0004 = ("\tTwo Sample t-test\n\ndata:  x and y\nt = 2.145, df = 18, p-value = 0.04546\nalternative hypothesis: true difference "
           "in means is not equal to 0\n95 percent confidence interval:\n 0.0288 2.7712\nsample estimates:\nmean of x mean of y \n    5.40      4.00 \n")
 check("SM0004 (p 0.04546 where 0.04585 is exact: 0.85%, within the 1% allowance; a correct interval) passes", oc.check(sm0004) == [])

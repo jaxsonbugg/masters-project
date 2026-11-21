@@ -1,0 +1,48 @@
+{
+  "set": "benchmark",
+  "n": 1150,
+  "seed": "benchmark-2026-11-20",
+  "slot_scheme": "taxonomy-v2",
+  "dealer_version": "variety-1",
+  "slots_file": "benchmark_slots.jsonl",
+  "slots_sha256": "b2d9197f4f139b6b16e9755063f136c726f95f7c5c44c289563180d7134abe30",
+  "taxonomy_file": "C:/dev/masters-project/data/taxonomy/subtopics.yaml",
+  "taxonomy_sha256": "17d7340a913a9ca27b149273259edf217ac380e8e3492af490e74eb37247829b",
+  "contexts_file": "C:/dev/masters-project/data/taxonomy/contexts.yaml",
+  "contexts_sha256": "100d9102af1a3a2384b6d698fb1f5a7fd605b5ba06d0aedd47709e193cdc82f4",
+  "deck_state": {
+    "sub": {
+      "numerical|intro": 115,
+      "numerical|intermediate": 115,
+      "numerical|graduate": 115,
+      "conceptual|intro": 58,
+      "conceptual|intermediate": 115,
+      "conceptual|graduate": 57,
+      "r_generation|intro": 115,
+      "r_generation|intermediate": 58,
+      "r_generation|graduate": 57,
+      "r_interpretation_number|intro": 77,
+      "r_interpretation_number|intermediate": 38,
+      "r_interpretation_number|graduate": 0,
+      "r_interpretation_text|intro": 38,
+      "r_interpretation_text|intermediate": 19,
+      "r_interpretation_text|graduate": 0,
+      "output_interpretation|intro": 58,
+      "output_interpretation|intermediate": 58,
+      "output_interpretation|graduate": 57
+    },
+    "ctx": {
+      "numerical": 345,
+      "conceptual": 230,
+      "r_generation": 230,
+      "r_interpretation": 172,
+      "output_interpretation": 173
+    },
+    "counters": {
+      "r_interp": 172,
+      "mc": 403
+    }
+  },
+  "replacements": [],
+  "created_utc": "2026-11-21T02:18:40+00:00"
+}

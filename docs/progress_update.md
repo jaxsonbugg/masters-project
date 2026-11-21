@@ -1014,3 +1014,38 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 - **Tests:** generation tests 112 of 112 (new: the printout checker against R and on the smoke and trial cases; the plain-text rule; v8 = v7 plus one rule; v2 = v1 plus one rule; old versions keep their checks); Talon shell tests 45, 43 and 73 of the same counts (all pass).
 - **Docs:** `docs/methodology/workflow.md` (Section 3 mix approved; safeguard 1 prompts v8 and v2; new safeguard 6 (a2), the printout check; Phase 3 checklist; Section 10.2 blueprint closed), `docs/clusters/talon_setup.md` Section 8, `docs/methodology/pilot_plan.md`, `README.md`.
 - **Next (needs Jaxson's approval):** a second short stage G smoke test with v8 and training v2 on the same 40 smoke slots (2 one-GPU jobs, about 0.25 GPU-hours), then the seeds and the benchmark, development and TV slot files.
+
+### Second smoke test: plain text and printout check work (2026-11-21)
+- **What ran:** Jaxson refreshed the Talon copy to `9cc9232` and submitted the approved second smoke test: job 295 (benchmark prompt v8, SM0001-SM0020) and job 297 (training prompt v2, SM0021-SM0040), the same 40 slots as jobs 291 and 293. About 0.42 GPU-hours; compute log entry 18. Claude checked the jobs and copied both run folders and the logs to the PC (read-only on Talon).
+- **Results, compared slot by slot with v7 and training v1 (jobs 291 and 293):**
+
+  | | v7 (job 291) | v8 (job 295) | training v1 (job 293) | training v2 (job 297) |
+  |---|---|---|---|---|
+  | Usable / usable on attempt 1 | 20 / 20 | 20 / 19 | 20 / 20 | 20 / 19 |
+  | Questions with code fences | 2 | **0** | 0 | 0 |
+  | Questions with LaTeX | 1 | **0** | 0 | 0 |
+  | Usable questions with an inconsistent printout | 1 (SM0010) | **0** | - | - |
+  | Output tokens per reply (median) | 5,037 | 4,969 | 3,820 | 4,351 |
+  | Student text, Pythia tokens (min / median / max) | - | - | 125 / 267 / 450 | 122 / 273 / 476 |
+
+  - **Plain text:** every v8 and training-v2 question is plain text. SM0011 (the graduate central-limit-theorem question) now writes "mu", "sigma^2" and "X_1, X_2, ..." instead of LaTeX; SM0007 and SM0017 show their R code and output as plain lines.
+  - **Printouts:** SM0010 is a new, consistent regression table (0.5 +/- 1.96 x 0.1 = 0.304 to 0.696). All 8 number keys were computed by R in the sandbox with 0 soft flags.
+  - **The two retries were long answer keys, not the new rules:** SM0018 (R generation, weekdays and months) wrote keys over the 100-character limit twice before a usable one (`sum(weekdays(as.Date(d)) == "Friday" & nchar(months(as.Date(d))) == 5)`); SM0038 (training, `cut()` with labels) once. That retry happened at the end of the run and made job 295 take 18 minutes instead of about 8 (job 291).
+- **One gap found and fixed:** v8's SM0010 printed its confidence intervals as two extra columns of the coefficient table ("2.5 %  97.5 %" after the p-value), which `output_check.py` did not read. It now does (the table above passes; a planted impossible interval in that layout is caught). While writing the test, a parser bug was found and fixed: `{1,3}` inside a Python f-string was read as code, which shifted the column numbers so that no inline interval was ever read. Generation tests: 115 of 115.
+- **For the screen, not the checker:** SM0017 (v8) prints a custom "Score test" table, a format the checker cannot read; its p-value 0.00168 is about 3% from the 0.00163 that a chi-square of 12.843 on 2 df gives, and 2 degrees of freedom for testing one coefficient look doubtful. This is the kind of question the Codex screen and the 150-item audit exist for.
+- **Small fix:** a brand-new run printed "(done-index rebuilt)" although nothing was rebuilt; it no longer does.
+- **Files:** `code/generation/output_check.py`, `code/generation/generate_set.py`, `code/tests/generation_test/test_generation.py`, `docs/logs/compute_log.md` (entry 18).
+- **Next (needs Jaxson's approval):** the seeds and the benchmark (1,150), development (230) and TV (180) slot files; then benchmark generation on Talon.
+
+### Benchmark, development and held-out slot files dealt (2026-11-20 local, 2026-11-21 UTC)
+- **Seed rule (Jaxson, 2026-11-20):** every slot file's seed is `<set>-<YYYY-MM-DD>`, with the date of the day it is dealt; a deal on a later date carries that later date. No further approval is asked for the seed format.
+- **What was dealt** (`code/generation/variety.py deal`, taxonomy `17d7340a...`, contexts `100d9102...`), committed to `data/slots/` with their manifests. Dealing generates nothing and uses no GPU; it fixes which category, subtopic, difficulty, answer type, setting and preferred letter each question gets. Each slot file's fingerprint (SHA-256), as the plan requires:
+
+  | Set | IDs | Seed | slots_sha256 |
+  |---|---|---|---|
+  | Benchmark | BM0001-BM1150 (1,000 + 150 spares) | `benchmark-2026-11-20` | `b2d9197f4f139b6b16e9755063f136c726f95f7c5c44c289563180d7134abe30` |
+  | Development | DV0001-DV0230 (200 + 30 spares) | `dev-2026-11-20` | `cd7f7e574215a90d4176ebd57a8f7f10741ce4f138e7070bdfd220cf58914df4` |
+  | Held-out training-style (TV) | TV0001-TV0180 (about 150 + 30) | `tv-2026-11-20` | `ff6d0d04abcf8925fad0427b2aaeba29683ad381d653f2c655bb668c2cbb9b23` |
+
+- **Checks:** the first 1,000 benchmark slots have exactly the approved mix (numerical 30%, conceptual 20%, R generation 20%, R interpretation 15%, output interpretation 15%; intro 40%, intermediate 35%, graduate 25%; answer types 40% number, 35% multiple choice, 20% R expression, 5% short text). No (subtopic, difficulty) pair repeats in any of the three files; the benchmark uses 592 different subtopics, each at most 3 times (once per difficulty). The "no applied context" share per category is on target (benchmark: conceptual 50%, numerical 25%, output interpretation 24%, R generation 60%, R interpretation 59%). The benchmark and the development set share 184 of the development set's 202 subtopics: by design they use the same taxonomy, sampled independently with separate seeds (workflow.md Section 4, safeguard 4); their questions are written separately and the development set is checked against the benchmark by decontamination.
+- **Next (needs Jaxson's approval):** generate the benchmark on Talon with prompt v8 (4 shards of the 1,150 slots), then the development and TV sets.

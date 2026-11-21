@@ -18,7 +18,8 @@ WHAT IS CHECKED (only what is printed; nothing is assumed)
      error is the mean difference divided by t).
   2. Coefficient tables ("Estimate Std. Error t value Pr(>|t|)", or z for glm): t = estimate / standard error; the p-value
      when the degrees of freedom are printed ("on 25 degrees of freedom") or the table uses z (the normal distribution).
-  3. Confidence-interval tables for coefficients ("2.5 % 97.5 %" or "lower upper" under a 95% heading): centre = estimate
+  3. Confidence intervals for coefficients (a separate "2.5 % 97.5 %" or "lower upper" table under a 95% heading, or
+     two "2.5 % 97.5 %" columns inside the coefficient table): centre = estimate
      and half-width = critical value x standard error (critical value t(0.975, df) if df is printed, else between 1.95
      and 3.2, which covers every t distribution with at least 3 degrees of freedom).
   4. "F-statistic: 25.3 on 2 and 27 DF, p-value: 6.1e-07", ANOVA tables (mean square = sum of squares / df; F = mean square /
@@ -261,18 +262,42 @@ def _residual_df(text):
 
 
 def coefficient_rows(text):
-    """{name: (est, hest, se, hse)} and the statistic kind ('t' or 'z') of R coefficient tables."""
+    """{name: (estimate, std. error, t or z, p, interval or None)} and the statistic kind ('t' or 'z') of R coefficient
+    tables. The interval is read when the table carries two extra columns "2.5 %  97.5 %" after the p-value (a layout the
+    teacher used in the second smoke test, SM0010 of job 295)."""
     rows, kind = {}, None
-    for hm in re.finditer(r"Estimate\s+Std\. Error\s+([tz]) value\s+Pr\(>\|[tz]\|\)", text):
-        kind = hm.group(1)
+    for hm in re.finditer(r"Estimate\s+Std\. Error\s+([tz]) value\s+Pr\(>\|[tz]\|\)(\s+2\.5\s*%\s+97\.5\s*%)?", text):
+        kind, inline = hm.group(1), bool(hm.group(2))
         for line in text[hm.end():].split("\n")[1:]:
             if not line.strip() or line.strip().startswith(("---", "Signif")):
                 break
-            r = re.match(rf"\s*(\S+)\s+({NUM})\s+({NUM})\s+({NUM})\s+({PVAL})", line)
+            r = re.match(rf"\s*(\S+)\s+({NUM})\s+({NUM})\s+({NUM})\s+({PVAL})(?:\s+(?:\*{{1,3}}|\.)(?=\s|$))?(?:\s+({NUM})\s+({NUM}))?", line)
             if not r:
                 break
-            rows[r.group(1)] = (r.group(2), r.group(3), r.group(4), r.group(5))
+            ci = (r.group(6), r.group(7)) if inline and r.group(6) else None
+            rows[r.group(1)] = (r.group(2), r.group(3), r.group(4), r.group(5), ci)
     return rows, kind
+
+
+def _check_interval(name, lo_t, hi_t, est_t, se_t, df, level, problems):
+    """An interval for one coefficient: centred at its estimate, half-width = critical value x standard error."""
+    (l, hl), (u, hu) = num(lo_t), num(hi_t)
+    (e, he), (s, hs) = num(est_t), num(se_t)
+    centre, hc = (l + u) / 2, (hl + hu) / 2
+    w, hw = (u - l) / 2, (hl + hu) / 2
+    if not overlaps(centre, hc, e - he, e + he):
+        problems.append(f"interval for {name} ({lo_t} to {hi_t}) is not centred at its estimate {est_t}")
+        return
+    if df is not None:
+        c_lo = c_hi = t_crit(level, df)
+    else:
+        c_lo, c_hi = (1.95, 3.2) if abs(level - 0.95) < 1e-9 else (None, None)
+    if c_lo is None or s - hs <= 0:
+        return
+    if not overlaps(w, hw, c_lo * (s - hs), c_hi * (s + hs), rel=0.02):
+        expect = f"{c_lo * s:.4g}" if c_lo == c_hi else f"between {c_lo * s:.3g} and {c_hi * s:.3g}"
+        problems.append(f"interval for {name} ({lo_t} to {hi_t}) has half-width {w:.4g}, but estimate {est_t} with standard "
+                        f"error {se_t} gives a half-width of {expect} for a {level:.0%} interval")
 
 
 def check_coefficients(text, problems):
@@ -280,7 +305,9 @@ def check_coefficients(text, problems):
     if not rows:
         return
     df = math.inf if kind == "z" else _residual_df(text)
-    for name, (e_t, s_t, t_t, p_t) in rows.items():
+    for name, (e_t, s_t, t_t, p_t, ci) in rows.items():
+        if ci:
+            _check_interval(name, ci[0], ci[1], e_t, s_t, df, 0.95, problems)
         (e, he), (s, hs), (t, ht) = num(e_t), num(s_t), num(t_t)
         if s - hs <= 0:
             continue
@@ -309,26 +336,8 @@ def check_coefficients(text, problems):
         if not r:
             break
         name = r.group(1)
-        if name not in rows:
-            continue
-        (l, hl), (u, hu) = num(r.group(2)), num(r.group(3))
-        (e, he), (s, hs) = num(rows[name][0]), num(rows[name][1])
-        centre, hc = (l + u) / 2, (hl + hu) / 2
-        w, hw = (u - l) / 2, (hl + hu) / 2
-        if not overlaps(centre, hc, e - he, e + he):
-            problems.append(f"interval for {name} ({r.group(2)} to {r.group(3)}) is not centred at its estimate {rows[name][0]}")
-            continue
-        if df is not None:
-            c_lo = c_hi = t_crit(level, df)
-        else:
-            c_lo, c_hi = (1.95, 3.2) if abs(level - 0.95) < 1e-9 else (None, None)
-        if c_lo is None or s - hs <= 0:
-            continue
-        if not overlaps(w, hw, c_lo * (s - hs), c_hi * (s + hs), rel=0.02):
-            expect = f"{c_lo * s:.4g}" if c_lo == c_hi else f"between {c_lo * s:.3g} and {c_hi * s:.3g}"
-            problems.append(f"interval for {name} ({r.group(2)} to {r.group(3)}) has half-width {w:.4g}, but estimate "
-                            f"{rows[name][0]} with standard error {rows[name][1]} gives a half-width of {expect} for a "
-                            f"{level:.0%} interval")
+        if name in rows and not rows[name][4]:
+            _check_interval(name, r.group(2), r.group(3), rows[name][0], rows[name][1], df, level, problems)
 
 
 def check_f_and_anova(text, problems):

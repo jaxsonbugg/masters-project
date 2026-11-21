@@ -215,6 +215,8 @@ def load_index(run_dir, slots_by_id, prompt_kind, version):
     """The done-index, rebuilt if it disagrees with responses.jsonl (a crash between the two appends)."""
     idx_path, resp_path = run_dir / "done_index.jsonl", run_dir / "responses.jsonl"
     n_resp = count_lines(resp_path)
+    if n_resp == 0 and not idx_path.exists():
+        return [], False                    # a brand-new run: nothing to rebuild
     if idx_path.exists():
         rows = [json.loads(l) for l in idx_path.read_text(encoding="utf-8").splitlines() if l.strip()]
         if len(rows) == n_resp:

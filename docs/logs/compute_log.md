@@ -304,3 +304,25 @@ This is the record of every cluster job, scheduler test and measured local run i
   - Development slots only, never benchmark or training data.
 - **Outcome:** reviewed; both PASS. Findings are in the progress log.
 - **Related progress entry:** "Stage G smoke test on Talon (jobs 291 and 293)" (2026-11-20).
+
+### 18. Talon jobs 295 and 297: second stage G smoke test (prompts v8 and training v2), 2026-11-21 (cluster local time 2026-11-20 20:47; UTC 01:47)
+- **Purpose:** check the owner's decisions of 2026-11-20 on real hardware before any benchmark is generated: the plain-text rule (benchmark prompt v8, training prompt v2) and the printout consistency check, on the same 40 smoke slots as jobs 291 and 293, so the two prompt versions can be compared slot by slot. Approved by Jaxson on 2026-11-20; he refreshed the Talon copy to `9cc9232` and submitted both jobs with the same command as entry 17.
+- **Software:** repository copy `9cc9232`; vLLM 0.32.0; `Qwen/Qwen3.6-27B` @ `6a9e13bd`, BF16; context 20,480, output limit 16,384; thinking on, temperature 1.0, top_p 0.95, top_k 20; up to 3 attempts; concurrency 16. Prompts: benchmark v8 `0ba834e2...`, training v2 `412d1eb4...`. Slots: `data/slots/smoke_slots.jsonl` (`8a292d84...`).
+- **Request:** 1 GPU each, wall time 1 day, both on `mualhpgp01`: job 295 on GPU index 0, job 297 on GPU index 1.
+
+  | | Job 295 | Job 297 |
+  |---|---|---|
+  | Prompt, slots | benchmark v8, SM0001-SM0020 | training v2, SM0021-SM0040 |
+  | Submitted / started (UTC) | 01:47:43 / 01:47:43 (wait 0 s) | 01:47:45 / 01:47:46 (wait 1 s) |
+  | Server ready after | 85 s | 90 s |
+  | Client (UTC), wall | 01:50:29-02:05:38, 908.6 s | 01:50:34-01:54:48, 253.3 s |
+  | Job end (result file, UTC) | 02:05:39 | 01:54:48 |
+  | Job wall, GPU-hours | about 17 min 56 s, **0.30** | about 7 min 2 s, **0.12** |
+  | Calls; usable | 22; 20 of 20 (19 on attempt 1; SM0018 on attempt 3) | 21; 20 of 20 (19 on attempt 1; SM0038 on attempt 2) |
+  | Output tokens (incl. thinking) | 125,964 (median 4,969 per reply) | 87,957 (median 4,351) |
+  | Peak GPU memory, minimum free | 6,083 MiB free | 9,221 MiB free |
+
+- **Why job 295 took longer:** SM0018 (R generation, "weekdays and months") wrote an answer key longer than the limit twice, so it was asked three times, each with about 9,000 to 10,500 tokens of thinking (about 4 to 5 minutes each), one after the other at the end of the run. The other 19 replies were done after about 4 minutes.
+- **Validation:** both `RESULT=PASS_QUALITY_WARN` (the findings are the failed attempts that were then asked again), infrastructure PASS, both complete, 0 cut-offs, 0 error words in the server logs; re-validated on the PC with the same result. Confidential computing: "not reported by nvidia-smi -q"; no garbled output seen.
+- **Output:** on Talon `/home/buggjm/talon_project/teacher_outputs/2026-11-21_qwen3-6-27b-talon-bf16_smoke_benchmark-v8_bfa35577_shard1of1` and `..._smoke_training-v2_c98f27c1_shard1of1`; on the PC the same folders in `C:\masters_project_large\data\teacher_outputs\` plus `2026-11-21_stageG_smoke2_jobs295-297_logs\`. Development material only.
+- **Total:** about **0.42 GPU-hours**. **Outcome:** reviewed; findings in the progress log. **Related progress entry:** "Second smoke test: plain text and printout check work" (2026-11-21).
