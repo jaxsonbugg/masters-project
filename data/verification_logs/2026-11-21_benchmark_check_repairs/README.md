@@ -8,6 +8,7 @@
 
 **Files.**
 - `decisions.json`: the 41 decisions, each with its reason and (for a repair) the new check. Applied with `python code/generation/generate_set.py apply-repairs`.
+- `soft_flags_sheet.csv`: the 28 number questions in the final benchmark (23) and development set (5) whose typed key differed from R's value; R's rounded value is the key. **For Jaxson's look:** does R's code answer the question as written?
 - `review_sheet.csv`: one row per decision, with the question, the key, the original and the new check, and the verify result after the repair. **For Jaxson's review:** fill `owner_ok` (yes or no) and a note; a "no" is handled before the freeze (the question is fixed or replaced, and the change is logged).
 
 **Example.** BM0714: "A 3 x 3 matrix is defined as M <- matrix(1:9, nrow = 3). Write a one-line R expression that computes the sum of the diagonal elements of M." Key `sum(diag(M))`. The original check `isTRUE(all.equal(eval(parse(text = candidate)), 15))` never created `M`, so even the key failed. Repaired check: `M <- matrix(1:9, nrow = 3); isTRUE(all.equal(eval(parse(text = candidate)), 15))`.
