@@ -1,0 +1,173 @@
+{
+  "verdicts": [
+    {
+      "id": "A-03-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for specificity and precision from the cells of a confusion matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Both metrics follow from routine ratios using small counts."
+    },
+    {
+      "id": "A-03-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for both metrics from the confusion matrix and probes how their interpretations depend on prevalence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Assessing a prevalence shift requires reasoning about the conditioning behind each metric in addition to calculating the ratios."
+    },
+    {
+      "id": "A-03-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to compute specificity and precision for a designated positive class from a confusion matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The work consists of selecting the relevant counts, forming two standard ratios, and rounding."
+    },
+    {
+      "id": "A-03-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares the fitted models required by the Wald, score, and likelihood ratio tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Recognizing the fitting requirements of three standard tests is a second-course inference task."
+    },
+    {
+      "id": "A-03-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question distinguishes the three tests by the quantities they use and where those quantities are evaluated.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task asks for recognition of standard test constructions from their definitions."
+    },
+    {
+      "id": "A-03-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The choices test whether the reader can distinguish how the Wald, score, and likelihood ratio statistics are constructed or justified.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader can resolve the comparison using standard definitions and familiar asymptotic properties of the tests."
+    },
+    {
+      "id": "A-03-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the power of a one-sided z-test at a specified true mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The calculation requires a standard error, a rejection cutoff under the null, and a tail probability under the alternative."
+    },
+    {
+      "id": "A-03-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The known process standard deviation and specified mean shift set up a direct z-test power calculation.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must translate the significance level into a cutoff and then evaluate the probability of crossing it under the shifted mean."
+    },
+    {
+      "id": "A-03-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for the power of a one-sided z-test against a particular mean increase.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Even with friendly numbers, computing the standard error and using the null and alternative distributions makes this a multistep task."
+    },
+    {
+      "id": "A-03-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks what hypothesis the overall F-statistic in an R regression summary tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader only needs to recognize the purpose of one reported statistic in a simple regression."
+    },
+    {
+      "id": "A-03-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to identify the null hypothesis associated with the reported regression F-statistic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Identifying the overall test's null hypothesis is a single interpretation step."
+    },
+    {
+      "id": "A-03-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how to interpret R-squared and residual standard error when two predictors are highly correlated.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The choices can be evaluated using the standard multiple-regression distinction between overall fit and individual coefficient uncertainty."
+    },
+    {
+      "id": "A-03-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the mathematical relationship between R-squared and residual standard error.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Identifying the exact relationship requires connecting the regression sums-of-squares decomposition with the degrees-of-freedom scaling of two variance estimates."
+    },
+    {
+      "id": "A-03-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression must use tryCatch with an error handler that returns a specified fallback.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Writing an error-handler callback and understanding how tryCatch returns its result go beyond first-week R syntax."
+    },
+    {
+      "id": "A-03-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The expression must extract the entries strictly above the main diagonal in R's default order.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A standard matrix mask and ordinary logical indexing suffice because the requested order is the default."
+    },
+    {
+      "id": "A-03-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task centers on upper-triangle extraction with an additional filter for missing values.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The expression combines routine upper-triangle and missing-value filters while retaining the default extraction order."
+    },
+    {
+      "id": "A-03-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for strict upper-triangle extraction with a specific ordering of the resulting entries.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Producing row-major output requires reasoning about how R's column-major indexing interacts with the triangular region."
+    },
+    {
+      "id": "A-03-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests interpretation of the interaction and main-effect rows in a two-way ANOVA table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Reading the interaction test and relating it to the main effects is a standard second-course ANOVA interpretation."
+    },
+    {
+      "id": "A-03-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task uses the reported negative log-likelihood, sample size, and regression parameter count to compute BIC.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The work consists of counting estimated parameters, handling the reported sign convention, and substituting into a supplied formula."
+    },
+    {
+      "id": "A-03-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly uses the supplied log-likelihoods and parameter counts to compare two BIC values.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "All inputs and the formula are supplied, leaving routine arithmetic to calculate the difference."
+    },
+    {
+      "id": "A-03-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to determine the model's parameter count and use the maximized log-likelihood to compute BIC.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Counting the estimated regression parameters and substituting into the given formula are standard intermediate steps."
+    },
+    {
+      "id": "A-03-022",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The final step is a normal percentile calculation, while the main work is deriving the distribution of a correlated linear combination."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires using joint normality and covariance to derive the distribution of a composite score before finding its percentile."
+    },
+    {
+      "id": "A-03-023",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "A normal percentile is an intermediate step between recovering the log-scale distribution from a reference interval and transforming the result back to days.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must infer distribution parameters from interval endpoints and reason about how a monotone transformation carries a percentile to a new scale."
+    },
+    {
+      "id": "A-03-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question centers on finding a normal percentile from the supplied mean and standard deviation under a simple rescaling.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The calculation uses a standard normal percentile and a routine positive linear transformation."
+    }
+  ]
+}
