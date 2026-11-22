@@ -83,6 +83,7 @@ APPROVED_ENV = {"GPU_COUNT": "1", "TENSOR_PARALLEL": "1", "REPLICAS": "1", "MAX_
                 "TIME_GENERATE": "01:00:00", "GEN_MARGIN_SECONDS": "600"}
 GEN_SLOTS = "data/slots/benchmark_replacements.jsonl"
 MAX_GPU_HOURS_PER_JOB = 1.0
+MAX_CANDIDATES = 6         # raised from 3 by the owner on 2026-11-22 ("a few options") for the 2-position loop
 MAX_TOTAL_GPU_HOURS = 5.3   # raised from 4.0 to 5.0 (round 3), then to 5.3 (the 2 unfinished round-3 slots) by the owner on 2026-11-22
 MAX_SLOTS_PER_JOB = 200
 TAG_RE = r"benchmark-benchmark-p[1-9]\d*n[1-9]\d*-[1-9]\d*of[1-9]\d*"
@@ -152,9 +153,9 @@ def load_config(path):
         if APPROVED_ENV.get(k) != str(v):
             problems.append(f"talon env {k}={v} is not the approved {APPROVED_ENV.get(k)!r}")
     if cfg["max_total_gpu_hours"] > MAX_TOTAL_GPU_HOURS or cfg["max_codex_batches"] > 40 or cfg["max_retries_per_step"] > 1 \
-            or cfg["rounds"] > 3 or cfg["candidates_per_position"] > 3:
+            or cfg["rounds"] > 3 or cfg["candidates_per_position"] > MAX_CANDIDATES:
         problems.append(f"a limit is above the approved value ({MAX_TOTAL_GPU_HOURS} GPU-hours, 40 Codex batches, 1 retry, "
-                        f"3 rounds, 3 candidates)")
+                        f"3 rounds, {MAX_CANDIDATES} candidates)")
     if problems:
         sys.exit("configuration refused (it would widen the standing approval): " + "; ".join(problems))
     return cfg
@@ -273,6 +274,15 @@ def screen_flags(folder):
 def open_positions(cfg):
     """{position: [reasons]} for round 1 (plan revision 2, 'Each round', step 1)."""
     inp = cfg["inputs"]
+    if inp.get("only_extra_open"):
+        # a follow-up loop for owner-listed positions only (owner's decision, 2026-11-22): the screen flags and earlier
+        # substitutions of the main loop are not re-opened
+        reasons = {}
+        for f in inp.get("extra_open") or []:
+            for line in Path(f).read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    reasons.setdefault(int(line.split()[0]), []).append(f"owner-listed ({Path(f).name})")
+        return reasons
     positions = read_jsonl(inp["positions"])
     prefix, width = variety.SETS["benchmark"]
     fixc = json.loads(Path(inp["fix_classification"]).read_text(encoding="utf-8"))
