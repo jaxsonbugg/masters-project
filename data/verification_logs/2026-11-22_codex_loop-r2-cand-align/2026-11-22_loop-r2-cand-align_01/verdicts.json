@@ -1,0 +1,373 @@
+{
+  "verdicts": [
+    {
+      "id": "A-01-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to interpret adjusted significance and effect direction across several Tukey contrasts.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Reconciling several pairwise comparisons is a standard second-course post hoc analysis task."
+    },
+    {
+      "id": "A-01-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It requires reading the signs and adjusted p-values of the Tukey contrasts to compare all three groups.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Combining the direction and significance of multiple contrasts fits intermediate output interpretation."
+    },
+    {
+      "id": "A-01-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the hypothesis-test conclusion supported by the displayed Welch output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Interpreting a standard two-sample test at a specified significance level fits intermediate coursework."
+    },
+    {
+      "id": "A-01-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly tests how a randomized control group supplies information about an unobserved counterfactual for treated units.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Connecting randomized assignment to counterfactual identification requires reasoning about exchangeability."
+    },
+    {
+      "id": "A-01-005",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The control-group mean enters the contrast, while the question chiefly tests assumptions for identifying a causal effect.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Evaluating identification conditions in the potential-outcomes framework requires graduate-level reasoning about model assumptions."
+    },
+    {
+      "id": "A-01-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks for the number needed to treat using the difference between the two observed rates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The supplied definition and equal denominators make this a straightforward substitution with friendly numbers."
+    },
+    {
+      "id": "A-01-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks for relative risk reduction from treatment and control event rates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Equal group sizes make this a direct relative-change calculation with small, friendly counts."
+    },
+    {
+      "id": "A-01-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It tests how precision and recall respond to a change in class prevalence at a fixed threshold.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about a prior change while holding class-conditional score distributions fixed."
+    },
+    {
+      "id": "A-01-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to distinguish precision from recall under a change in positive-class prevalence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Assessing both metrics under a prevalence shift requires tracking the two directions of conditioning."
+    },
+    {
+      "id": "A-01-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the paired t statistic using the mean and reconstructed variance of the within-pair differences.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Applying the variance rule for a difference and then the standard paired t formula is an intermediate calculation."
+    },
+    {
+      "id": "A-01-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks what inferential procedure produces a coefficient p-value in a logistic regression summary.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Distinguishing the test from other likelihood-based procedures requires knowledge of the estimator's asymptotic distribution."
+    },
+    {
+      "id": "A-01-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It tests which coefficient hypothesis a reported p-value refers to in a regression with an interaction.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Interpreting a slope coefficient under standard reference-group coding is an intermediate regression task."
+    },
+    {
+      "id": "A-01-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks for the probability of failing to reject at a specified alternative mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The calculation requires finding a rejection cutoff under the null and evaluating a probability under a different sampling distribution."
+    },
+    {
+      "id": "A-01-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to connect an undefined coefficient and a singularity message to exact predictor dependence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Connecting a known linear dependency to a standard regression diagnostic fits intermediate coursework."
+    },
+    {
+      "id": "A-01-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It tests whether the reader recognizes an undefined coefficient row as a sign of rank deficiency.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Diagnosing an aliased coefficient from a conventional regression summary fits intermediate regression interpretation."
+    },
+    {
+      "id": "A-01-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to choose a threshold by maximizing a metric computed from the table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The formula is supplied and can be applied directly across four rows with friendly decimals."
+    },
+    {
+      "id": "A-01-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the threshold corresponding to the highest accuracy in a metric table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a single lookup of the maximum in a short column."
+    },
+    {
+      "id": "A-01-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It requires interpreting the p-value and directional alternative in exact binomial test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Drawing a directional conclusion from a standard one-sided test fits intermediate statistics."
+    },
+    {
+      "id": "A-01-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks what a significant lack-of-fit result says about the fitted linear model.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Significance is given, leaving a single interpretation of the labeled test result."
+    },
+    {
+      "id": "A-01-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks for the meaning of the ANOVA p-value in terms of the null hypothesis and the observed F statistic.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Applying the standard p-value definition to an ANOVA table fits routine undergraduate inference."
+    },
+    {
+      "id": "A-01-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The main task is combining two group means using their sample sizes after updating one mean for a transformation.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Updating a mean under a linear transformation and then taking a weighted average is a short intermediate calculation."
+    },
+    {
+      "id": "A-01-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It specifically requires using qnorm to obtain a normal quantile from an upper-tail log probability.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The desired tail and both argument names are supplied, leaving a routine probability conversion and function call."
+    },
+    {
+      "id": "A-01-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It requires converting a percentile of a restricted normal population into a probability that can be passed to qnorm.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must reason about the conditional distribution induced by truncation before inverting the normal CDF."
+    },
+    {
+      "id": "A-01-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to interpret the deviance change and p-value for a likelihood ratio comparison of nested models.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The test statistic and p-value are supplied, so the task is a standard nested-model comparison."
+    },
+    {
+      "id": "A-01-025",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "A random permutation defines the setting, but the expected cycle count is supplied and the task chiefly tests summing reciprocals in R.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With the expectation already identified as a harmonic number, only a short vector calculation is required."
+    },
+    {
+      "id": "A-01-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly tests the margin-of-error calculation for a Wald interval comparing two proportions.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires calculating two sample proportions, forming their combined standard error, and applying a normal critical value."
+    },
+    {
+      "id": "A-01-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks the reader to compare two models by their reported AIC values.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The question reduces to applying a single selection rule to two displayed numbers."
+    },
+    {
+      "id": "A-01-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for both the model favored by AIC and the evidential interpretation of the difference.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Comparing the models and interpreting the size of the AIC difference fits intermediate model selection."
+    },
+    {
+      "id": "A-01-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It tests the source of the width difference between a confidence interval for the mean response and a prediction interval for an individual response.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Recognizing the usual extra error component in a prediction interval is standard intermediate regression inference."
+    },
+    {
+      "id": "A-01-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It requires interpreting the patterns across lags in both the ACF and the PACF.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Identifying a time-series model requires comparing two lag patterns and applying a model-identification rule."
+    },
+    {
+      "id": "A-01-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to use the contrasting ACF and PACF patterns to select a time-series model.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The task requires recognizing two lag patterns and connecting their combination to a model class."
+    },
+    {
+      "id": "A-01-032",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The frequency table supplies the counts, while the main skill is computing an expected count and a Pearson chi-squared contribution."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Computing a cell's expected count and applying the standard chi-squared formula is an intermediate calculation."
+    },
+    {
+      "id": "A-01-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the conclusion supported jointly by the t-test p-value and confidence interval."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The conclusion follows from standard undergraduate interpretation of a two-sample test and its confidence interval."
+    },
+    {
+      "id": "A-01-034",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "It uses t-test output but chiefly asks what the fractional degrees of freedom reveal about the procedure."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Explaining fractional degrees of freedom involves understanding the reference-distribution approximation used under unequal variances."
+    },
+    {
+      "id": "A-01-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks how to interpret a coefficient for an orthogonal polynomial regression term."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The distinction between an orthogonal basis component and a raw power requires reasoning about the model parameterization."
+    },
+    {
+      "id": "A-01-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks how model complexity affects bias, variance, and expected test error together."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Connecting polynomial degree to all three quantities fits a standard intermediate modeling exercise."
+    },
+    {
+      "id": "A-01-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for a contextual interpretation of a significant Shapiro-Wilk result on regression residuals."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires relating sample size and test sensitivity to the practical implications for regression inference."
+    },
+    {
+      "id": "A-01-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks what the Shapiro-Wilk p-value implies about the normality hypothesis for the measurements."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is a standard significance-level comparison followed by interpretation of the test's null hypothesis."
+    },
+    {
+      "id": "A-01-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks the reader to identify collinearity-related uncertainty from the reported variance inflation factors."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Interpreting large VIFs as a standard regression diagnostic is an intermediate skill."
+    },
+    {
+      "id": "A-01-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly tests how ROC AUC relates to ranking quality and to a single operational threshold."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Distinguishing a threshold-wide performance measure from measures at one threshold fits intermediate classifier evaluation."
+    },
+    {
+      "id": "A-01-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the probabilistic interpretation of ROC AUC in terms of positive and negative scores."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Recognizing the ranking interpretation of AUC is a standard intermediate classifier-evaluation concept."
+    },
+    {
+      "id": "A-01-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly tests factor-based counting with an explicit level order and a level absent from the observations."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The one-liner requires managing unused factor levels and the distinction between tabulated counts and a named integer vector."
+    },
+    {
+      "id": "A-01-043",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "It tests an exact permutation p-value, with permutation outcomes to be generated from raw observations."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must construct the exact null distribution under fixed group sizes and determine the two-sided tail."
+    },
+    {
+      "id": "A-01-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks for a two-sided permutation p-value from a supplied list of null outcomes."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With the null outcomes and extremeness rule supplied, the work consists of counting and dividing."
+    },
+    {
+      "id": "A-01-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the statistical interpretation of the fitted-probabilities warning in the displayed logistic regression."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Recognizing separation from standard logistic regression diagnostics fits intermediate applied regression."
+    },
+    {
+      "id": "A-01-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly asks how design-matrix rank deficiency produces a missing coefficient and a singularity message."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Recognizing exact collinearity from a singularity message and an undefined coefficient is routine intermediate regression interpretation."
+    },
+    {
+      "id": "A-01-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks why a redundant indicator makes a regression coefficient undefined in the output."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The displayed factor contrast makes the duplicate predictor recognizable through standard intermediate dummy-variable coding."
+    },
+    {
+      "id": "A-01-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for a prediction interval endpoint based on the fitted regression line at a new predictor value."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Computing a fitted value and applying the standard simple-regression prediction interval formula is intermediate work."
+    },
+    {
+      "id": "A-01-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It directly tests estimation of a regression intercept and quantification of its uncertainty."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The endpoint follows by applying the standard intercept estimate and t-interval formulas to supplied summaries."
+    },
+    {
+      "id": "A-01-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "It asks for the interquartile range after converting the two quartiles back to the original measurement scale."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Back-transforming the two percentiles under a monotone transformation and subtracting is a short intermediate calculation."
+    }
+  ]
+}

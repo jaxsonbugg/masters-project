@@ -1,0 +1,356 @@
+{
+  "verdicts": [
+    {
+      "id": "A-02-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a specific coefficient represents in a regression table with an interaction.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Interpreting a main-effect slope under reference coding is a standard undergraduate regression task."
+    },
+    {
+      "id": "A-02-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how to interpret the linear coefficient in a regression table that also contains a quadratic term.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The interpretation requires combining the derivative of the fitted quadratic with the meaning of centering on the original predictor scale."
+    },
+    {
+      "id": "A-02-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is an endpoint of a confidence interval for a logistic regression odds ratio.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied estimate and standard error make this a routine interval calculation followed by a scale transformation."
+    },
+    {
+      "id": "A-02-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to relate a PCA variance summary to the variance in the original variables.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The calculation uses the standard conversion from component standard deviations to variances and a short sum."
+    },
+    {
+      "id": "A-02-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the proportion and cumulative proportion rows of a PCA variance summary mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The explanation links the variance proportions to how a complete set of orthogonal components represents the original feature space."
+    },
+    {
+      "id": "A-02-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks about the purposes of a placebo arm and analyst blinding in an experiment.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Recognizing the two standard experimental design safeguards is sufficient to distinguish the choices."
+    },
+    {
+      "id": "A-02-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question uses logistic regression deviances to obtain a likelihood-ratio statistic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires recognizing a standard nested-model comparison and applying it to the reported values."
+    },
+    {
+      "id": "A-02-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the difference between null and residual deviance means in a logistic regression.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines a standard likelihood-ratio comparison with interpretation of the model degrees of freedom."
+    },
+    {
+      "id": "A-02-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly examines how effect size and sample size relate to test statistics and p-values.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The choices can be distinguished using the standard undergraduate relationship among effect estimates, sampling precision, and significance."
+    },
+    {
+      "id": "A-02-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks how to interpret the p-value in the lack-of-fit row.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is a direct interpretation of an already computed regression diagnostic."
+    },
+    {
+      "id": "A-02-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a significant lack-of-fit result implies for the fitted linear model.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt identifies the result as significant and asks for the standard interpretation of the test."
+    },
+    {
+      "id": "A-02-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to interpret how time series forecast interval widths change across horizons.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning from the evolution of forecast uncertainty to the behavior of competing stochastic models."
+    },
+    {
+      "id": "A-02-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which pairwise conclusion is supported by the displayed Tukey confidence intervals.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader applies a simple zero-inclusion and sign check to intervals already provided."
+    },
+    {
+      "id": "A-02-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests interpretation of pairwise results in Tukey output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A direct comparison of a displayed adjusted p-value with the usual significance threshold is sufficient."
+    },
+    {
+      "id": "A-02-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks what a Benjamini–Hochberg adjusted p-value means in a family of tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The choices require distinguishing control of an expected false discovery proportion from individual and family-wise probability statements."
+    },
+    {
+      "id": "A-02-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which hypothesis the overall F-statistic in a multiple regression summary tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Identifying the joint slope hypothesis is a standard multiple regression inference task."
+    },
+    {
+      "id": "A-02-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an odds-ratio interpretation of a logistic regression coefficient.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task uses the standard coefficient transformation and a basic distinction between odds and probabilities."
+    },
+    {
+      "id": "A-02-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to pool and rank observations and use the resulting ranks to calculate a Mann–Whitney statistic.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Ranking the small sample, averaging a tie, and substituting into a supplied formula are routine undergraduate steps."
+    },
+    {
+      "id": "A-02-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the Mann–Whitney statistic from the supplied group ranks.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The ranks and formula are supplied, leaving a short sum and substitution."
+    },
+    {
+      "id": "A-02-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to identify a conditional proportion and its denominator in a cross-tabulation.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task consists of choosing the appropriate marginal total for a single division."
+    },
+    {
+      "id": "A-02-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression must randomly reorder the rows of a data frame.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The sampling function is specified, and the remaining work is standard data-frame indexing."
+    },
+    {
+      "id": "A-02-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a row permutation that preserves columns and handles a singleton data frame.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The singleton and attribute requirements bring non-obvious base R sampling and subsetting behavior into the choice of expression."
+    },
+    {
+      "id": "A-02-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the inference supported by Bartlett test output and how its assumptions qualify that inference.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The interpretation requires connecting a test decision with Bartlett's sensitivity to violations of its distributional assumption."
+    },
+    {
+      "id": "A-02-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which causal structure creates confounding and how adjustment affects that structure.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires comparing how conditioning affects paths through common causes, mediators, and colliders."
+    },
+    {
+      "id": "A-02-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question links adjustment for a confounder to the causal interpretation of a regression coefficient.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks the reader to connect graphical identification with an asymptotic property of an adjusted regression estimator."
+    },
+    {
+      "id": "A-02-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks about specificity and precision calculated from a confusion matrix and interpreted under a prevalence shift.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Beyond calculating the metrics, the reader must reason about how their different conditioning events affect sensitivity to prevalence."
+    },
+    {
+      "id": "A-02-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what distinguishes the score test from the Wald and likelihood-ratio tests.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The comparison requires familiarity with how likelihood derivatives, Fisher information, and restricted fitting enter the construction of a test."
+    },
+    {
+      "id": "A-02-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question compares the construction and null behavior of the Wald, score, and likelihood-ratio tests.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires knowledge of likelihood-based test construction and the asymptotic null distributions of the statistics."
+    },
+    {
+      "id": "A-02-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the power of a specified one-sided z-test at a particular alternative mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must establish a rejection cutoff under the null and evaluate a tail probability under the alternative."
+    },
+    {
+      "id": "A-02-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the F-statistic in a simple regression summary tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "With a single predictor, the task is a direct identification of the hypothesis associated with the displayed statistic."
+    },
+    {
+      "id": "A-02-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how adding a particular observation changes R-squared and residual standard error.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must reason through the effect of the added observation on the fitted model, sums of squares, and residual degrees of freedom."
+    },
+    {
+      "id": "A-02-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested edit makes the matrix dimensions consistent with the vector length.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Finding the column count requires one small division and a single argument edit."
+    },
+    {
+      "id": "A-02-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to fix incompatible matrix dimensions for elementwise addition.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The fix requires matching two visible dimension arguments in a small example."
+    },
+    {
+      "id": "A-02-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to trace a counting closure across repeated calls.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Tracing the output requires understanding persistent closure state and R's superassignment operator."
+    },
+    {
+      "id": "A-02-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression extracts the strict upper triangle in column-major order.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task uses a standard matrix mask and ordinary logical indexing."
+    },
+    {
+      "id": "A-02-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested one-liner extracts the strictly upper triangular entries of a matrix in column-major order.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The requested expression uses routine matrix indexing, with the likelihood setting supplying context."
+    },
+    {
+      "id": "A-02-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the rate ratio associated with a one-unit increase in a Poisson regression predictor.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The question requires one standard transformation of a displayed coefficient."
+    },
+    {
+      "id": "A-02-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an R function that calls itself and implements a specified base case.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The recurrence and base case are given, leaving a routine translation into a conditional and a recursive call."
+    },
+    {
+      "id": "A-02-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for BIC from a maximized log-likelihood, a parameter count, and a sample size.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The formula and all inputs are supplied, leaving a direct numerical substitution."
+    },
+    {
+      "id": "A-02-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested calculation uses the fitted model's log-likelihood, parameter count, and sample size to obtain BIC.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task consists of recalling the standard BIC formula and evaluating it with supplied inputs."
+    },
+    {
+      "id": "A-02-041",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The code illustrates endpoint extraction, while the requested numeric answer chiefly requires determining the interval returned by the test."
+    ,
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Determining the numeric endpoint from the raw data requires a one-sample t interval calculation."
+    },
+    {
+      "id": "A-02-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a normal percentile using the given mean and standard deviation.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task uses a standard normal quantile and a simple location-scale transformation."
+    },
+    {
+      "id": "A-02-043",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The question uses a normal percentile calculation and centrally tests how to obtain the sampling distribution of a sample mean."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Computing a standard error and using it in a normal quantile calculation is a standard undergraduate exercise."
+    },
+    {
+      "id": "A-02-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to summarize the three pairwise results in a Tukey comparison table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires combining several comparisons from a standard post-ANOVA procedure into one conclusion."
+    },
+    {
+      "id": "A-02-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an inference about two population means from Welch t-test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Interpreting a standard two-sample test and its reported p-value fits undergraduate inference at this level."
+    },
+    {
+      "id": "A-02-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to interpret the significance and direction of a difference using Welch t-test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines a standard two-sample significance decision with interpretation of the direction of the estimated difference."
+    },
+    {
+      "id": "A-02-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly examines how a control group informs estimation of a counterfactual outcome mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting potential outcomes and exchangeability to the use of a control group in causal estimation."
+    },
+    {
+      "id": "A-02-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested correction makes the predictor column in newdata agree with the fitted model formula.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a single column-name substitution using the formula shown."
+    },
+    {
+      "id": "A-02-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests calculation of number needed to treat from two groups' event counts.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must calculate group risks, find their absolute difference, and take its reciprocal."
+    },
+    {
+      "id": "A-02-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to identify the confidence interval endpoints in t-test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Both endpoints can be read directly from a labeled line."
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "verdicts": [
+    {
+      "id": "A-04-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how the magnitude of an estimated effect relates to the two-sided p-value when other quantities are held fixed.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The comparison relies on the standard relationship between a t-statistic and its tail probability."
+    },
+    {
+      "id": "A-04-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly compares the limiting behavior of a standardized effect estimate and its associated p-value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must distinguish convergence of the effect estimator from the sample-size scaling of the test statistic under a fixed alternative."
+    },
+    {
+      "id": "A-04-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks what the lower and upper bounds in a time series forecast table represent.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It calls for recognizing the standard meaning of prediction interval columns in forecast output."
+    },
+    {
+      "id": "A-04-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks what the behavior of forecast interval widths across horizons reveals about forecast uncertainty.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting long-horizon prediction interval widths with the behavior of forecast error variance under a time series model assumption."
+    },
+    {
+      "id": "A-04-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks which pairwise significance claims are supported by the Tukey HSD output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver can check the claims by reading the reported adjusted p-values against a single familiar cutoff."
+    },
+    {
+      "id": "A-04-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the meaning of a specific Benjamini–Hochberg adjusted p-value.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is to recognize the standard interpretation of a reported adjusted p-value."
+    },
+    {
+      "id": "A-04-007",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The adjusted p-value cutoff sets the context, but the question mainly tests the error rate controlled by the Benjamini–Hochberg procedure."
+    ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Identifying the procedure's long-run error criterion is a standard multiple-testing concept."
+    },
+    {
+      "id": "A-04-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the odds-ratio interpretation of a continuous predictor's logistic regression coefficient.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It requires a routine coefficient transformation and interpretation from standard logistic regression output."
+    },
+    {
+      "id": "A-04-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested Mann–Whitney statistic is computed directly from pooled ranks with averaging for ties.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Ranking nine observations, handling one tie, and applying the standard rank-sum conversion are routine test calculations."
+    },
+    {
+      "id": "A-04-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks the solver to distinguish a row-conditional proportion from a marginal proportion in a cross-tabulation.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The main step is identifying the conditioning group from the displayed row proportions."
+    },
+    {
+      "id": "A-04-011",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The cross-tabulation provides group proportions and sample sizes, but the main task is choosing the standard error formula for their difference.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The solver selects a standard large-sample formula using the supplied proportions and group totals."
+    },
+    {
+      "id": "A-04-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression must randomly permute the row indices and use them to reorder a data frame.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt identifies the relevant sampling function and leaves a routine combination of sampling and row indexing."
+    },
+    {
+      "id": "A-04-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks what a Bartlett test result implies about the equal-variance assumption in one-way ANOVA.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It involves reading a standard test p-value and relating the result to a familiar ANOVA assumption."
+    },
+    {
+      "id": "A-04-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how the p-value and confidence interval in an F-test output bear on the hypothesis of equal variances.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task applies the standard correspondence between a two-sided test decision and its confidence interval."
+    },
+    {
+      "id": "A-04-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how conditioning on a variable in a causal graph affects confounding of an exposure–outcome relationship.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must use the graph's causal assumptions to reason about backdoor paths and the effect of regression adjustment."
+    },
+    {
+      "id": "A-04-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for precision and specificity from an actual-by-predicted confusion matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt identifies the relevant conditional directions, leaving two straightforward proportions to compute."
+    },
+    {
+      "id": "A-04-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks the solver to compute and interpret precision and specificity from a predicted-by-actual confusion matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The solver identifies the two denominators, computes the ratios, and interprets them in context."
+    },
+    {
+      "id": "A-04-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks the solver to distinguish properties of the Wald, score, and likelihood ratio tests.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Evaluating the claims requires comparing how likelihood-based test statistics behave under reparameterization and asymptotic theory."
+    },
+    {
+      "id": "A-04-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for the power of a two-sided z-test under a specified mean shift.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must establish a two-sided rejection region and evaluate its probability under the shifted sampling distribution."
+    },
+    {
+      "id": "A-04-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for the power of a one-sided z-test at a specified alternative mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must connect a rejection cutoff calibrated under the null with a tail probability under the alternative."
+    },
+    {
+      "id": "A-04-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item focuses on how the residual standard error is constructed in an R regression summary.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for the estimation rationale behind the residual degrees-of-freedom correction after fitting regression coefficients."
+    },
+    {
+      "id": "A-04-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The solver must change a matrix dimension to make the operands conformable for multiplication.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The item requires applying one matrix dimension rule and making a single edit to a small example."
+    },
+    {
+      "id": "A-04-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression uses tryCatch to return a fallback value when an R call signals an error.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must supply a handler function and understand how tryCatch uses its return value when a call fails."
+    },
+    {
+      "id": "A-04-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for an R expression that extracts the strictly upper triangular entries of a matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is a standard use of logical matrix indexing with a built-in triangle selector."
+    },
+    {
+      "id": "A-04-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the multiplicative interpretation of a Poisson regression coefficient relative to a reference category.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must interpret a log-link regression coefficient on the response scale and apply it to the specified reference group."
+    },
+    {
+      "id": "A-04-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the expected-count multiplier associated with a one-unit increase in a Poisson regression predictor.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver needs the standard Poisson regression link to convert the displayed slope into a response-scale multiplier."
+    },
+    {
+      "id": "A-04-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for a recursive R function that implements a supplied recurrence and its two base cases.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires using R's Recall mechanism for self-invocation and organizing the base cases so recursion terminates on either input parity."
+    },
+    {
+      "id": "A-04-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for an R function that recursively implements the given recurrence.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied recurrence translates directly into one base case and one recursive call."
+    },
+    {
+      "id": "A-04-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for BIC from a maximized log-likelihood, parameter count, and sample size.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The formula and all its inputs are supplied, leaving straightforward substitution and arithmetic."
+    },
+    {
+      "id": "A-04-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Finding a normal percentile from the given mean and standard deviation is the main statistical step before the unit conversion.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A standard normal quantile calculation followed by the supplied temperature conversion is a routine multistep problem."
+    }
+  ]
+}

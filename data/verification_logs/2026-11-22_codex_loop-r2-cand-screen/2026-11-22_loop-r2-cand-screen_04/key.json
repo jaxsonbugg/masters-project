@@ -1,0 +1,135 @@
+{
+ "batch": "2026-11-22_loop-r2-cand-screen_04",
+ "kind": "screen",
+ "label": "loop-r2-cand-screen",
+ "date": "2026-11-22",
+ "instructions_file": "data/prompts/screen_v1.md",
+ "instructions_sha256": "2a714fde1a98e99bca3cd44684d8132d30f49d57d7accec38c1c7b1f02b0e17c",
+ "batch_sha256": "1a3b9da8a23643956fb8d7ff637e9cfa7932a3a44fdede6c2b6fa6600d2a8f78",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-21_replacement_loop\\r2_candidates.jsonl",
+ "manifest": "data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "S-04-001": {
+   "item_id": "BM1778",
+   "position": null
+  },
+  "S-04-002": {
+   "item_id": "BM1780",
+   "position": null
+  },
+  "S-04-003": {
+   "item_id": "BM1784",
+   "position": null
+  },
+  "S-04-004": {
+   "item_id": "BM1786",
+   "position": null
+  },
+  "S-04-005": {
+   "item_id": "BM1788",
+   "position": null
+  },
+  "S-04-006": {
+   "item_id": "BM1790",
+   "position": null
+  },
+  "S-04-007": {
+   "item_id": "BM1792",
+   "position": null
+  },
+  "S-04-008": {
+   "item_id": "BM1798",
+   "position": null
+  },
+  "S-04-009": {
+   "item_id": "BM1800",
+   "position": null
+  },
+  "S-04-010": {
+   "item_id": "BM1802",
+   "position": null
+  },
+  "S-04-011": {
+   "item_id": "BM1804",
+   "position": null
+  },
+  "S-04-012": {
+   "item_id": "BM1806",
+   "position": null
+  },
+  "S-04-013": {
+   "item_id": "BM1808",
+   "position": null
+  },
+  "S-04-014": {
+   "item_id": "BM1810",
+   "position": null
+  },
+  "S-04-015": {
+   "item_id": "BM1812",
+   "position": null
+  },
+  "S-04-016": {
+   "item_id": "BM1814",
+   "position": null
+  },
+  "S-04-017": {
+   "item_id": "BM1816",
+   "position": null
+  },
+  "S-04-018": {
+   "item_id": "BM1818",
+   "position": null
+  },
+  "S-04-019": {
+   "item_id": "BM1820",
+   "position": null
+  },
+  "S-04-020": {
+   "item_id": "BM1822",
+   "position": null
+  },
+  "S-04-021": {
+   "item_id": "BM1828",
+   "position": null
+  },
+  "S-04-022": {
+   "item_id": "BM1830",
+   "position": null
+  },
+  "S-04-023": {
+   "item_id": "BM1834",
+   "position": null
+  },
+  "S-04-024": {
+   "item_id": "BM1842",
+   "position": null
+  },
+  "S-04-025": {
+   "item_id": "BM1844",
+   "position": null
+  },
+  "S-04-026": {
+   "item_id": "BM1846",
+   "position": null
+  },
+  "S-04-027": {
+   "item_id": "BM1850",
+   "position": null
+  },
+  "S-04-028": {
+   "item_id": "BM1852",
+   "position": null
+  },
+  "S-04-029": {
+   "item_id": "BM1854",
+   "position": null
+  },
+  "S-04-030": {
+   "item_id": "BM1860",
+   "position": null
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-22T00:02:17+00:00"
+}
