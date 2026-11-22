@@ -1,0 +1,40 @@
+{
+  "verdicts": [
+    {
+      "id": "S-01-001",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The supplied data, naming pattern, and argument constraints define the requested transformation."
+    },
+    {
+      "id": "S-01-002",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The input columns and requested output define how the repeated measurements must be grouped."
+    },
+    {
+      "id": "S-01-003",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The input data and requested long format are clear."
+    },
+    {
+      "id": "S-01-004",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The supplied line gives enough information to make the sampling reproducible."
+    },
+    {
+      "id": "S-01-005",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "Both statements and the required one-line format are specified."
+    },
+    {
+      "id": "S-01-006",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The description specifies the behavior needed from the added line and leaves the choice of seed open."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+ "batch": "2026-11-22_loop-r1-cand-align_01",
+ "kind": "align",
+ "label": "loop-r1-cand-align",
+ "date": "2026-11-22",
+ "instructions_file": "data/prompts/align_v1.md",
+ "instructions_sha256": "deffdd902622bb2ca04df36e550873beb31c2779e5e4e5a0fd6740b8fd513433",
+ "batch_sha256": "8e75b462f0b060caf127a6f0a86477efbc9b233b888e62e49b671176485f76f0",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-22_replacement_loop_d\\r1_candidates.jsonl",
+ "manifest": "data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "A-01-001": {
+   "item_id": "BM2015",
+   "position": null
+  },
+  "A-01-002": {
+   "item_id": "BM2018",
+   "position": null
+  },
+  "A-01-003": {
+   "item_id": "BM2019",
+   "position": null
+  },
+  "A-01-004": {
+   "item_id": "BM2022",
+   "position": null
+  },
+  "A-01-005": {
+   "item_id": "BM2023",
+   "position": null
+  },
+  "A-01-006": {
+   "item_id": "BM2025",
+   "position": null
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-22T03:59:15+00:00"
+}

@@ -1,0 +1,39 @@
+{
+ "batch": "2026-11-22_loop-r1-cand-screen_01",
+ "kind": "screen",
+ "label": "loop-r1-cand-screen",
+ "date": "2026-11-22",
+ "instructions_file": "data/prompts/screen_v1.md",
+ "instructions_sha256": "2a714fde1a98e99bca3cd44684d8132d30f49d57d7accec38c1c7b1f02b0e17c",
+ "batch_sha256": "80920f38047098a4e4efbe3a2342335cd52ba7d148477f42fb7b03f2b844f2f4",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-22_replacement_loop_d\\r1_candidates.jsonl",
+ "manifest": "data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "S-01-001": {
+   "item_id": "BM2015",
+   "position": null
+  },
+  "S-01-002": {
+   "item_id": "BM2018",
+   "position": null
+  },
+  "S-01-003": {
+   "item_id": "BM2019",
+   "position": null
+  },
+  "S-01-004": {
+   "item_id": "BM2022",
+   "position": null
+  },
+  "S-01-005": {
+   "item_id": "BM2023",
+   "position": null
+  },
+  "S-01-006": {
+   "item_id": "BM2025",
+   "position": null
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-22T03:58:52+00:00"
+}
