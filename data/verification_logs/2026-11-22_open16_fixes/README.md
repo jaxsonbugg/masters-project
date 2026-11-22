@@ -15,7 +15,7 @@ alignment check.
   text. No key changes; no threshold crossed.
 - **C (3 positions):** the printout needs a decision first (which residual df; drop the raw data or refit; new deviances).
   Write your decision in `owner_note`; Claude then computes consistent values in R and adds rows for you to type.
-- **D (2 positions, 218 and 499):** no usable candidate at all; a new Qwen attempt (6 candidates each, loop D) is running.
+- **D (positions 218 and 499):** no usable candidate at all; handled by a new Qwen attempt (6 candidates each, loop D), so they are not on the sheet. They are added back only if no new candidate passes.
 
 Rule for all computed values (owner's rule, 2026-11-21): inputs, estimates, test statistics and degrees of freedom stay as
 printed; only final values (p-values, intervals, derived statistics such as adjusted R-squared) are recomputed.
