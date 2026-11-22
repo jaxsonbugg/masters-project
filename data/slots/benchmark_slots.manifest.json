@@ -1798,14 +1798,48 @@
       ],
       "mode": "same_subtopic",
       "tag": "2026-11-21_replacement_loop-r3"
+    },
+    {
+      "utc": "2026-11-22T03:44:04+00:00",
+      "ids": [
+        "BM2015",
+        "BM2016",
+        "BM2017",
+        "BM2018",
+        "BM2019",
+        "BM2020",
+        "BM2021",
+        "BM2022",
+        "BM2023",
+        "BM2024",
+        "BM2025",
+        "BM2026"
+      ],
+      "replaces": [
+        "BM0218",
+        "BM0218",
+        "BM0218",
+        "BM0218",
+        "BM0218",
+        "BM0218",
+        "BM0499",
+        "BM0499",
+        "BM0499",
+        "BM0499",
+        "BM0499",
+        "BM0499"
+      ],
+      "mode": "same_subtopic",
+      "tag": "2026-11-22_replacement_loop_d-r1"
     }
   ],
   "created_utc": "2026-11-21T02:18:40+00:00",
   "replacements_file": "benchmark_replacements.jsonl",
-  "replacements_sha256": "3a1694c0f6c4106110b1512d318cdc4db465edaadef465c5150a9dc03a21aa84",
+  "replacements_sha256": "5e5130f0f49dd31aff8e0b13e27182b836aff53b86fc7809dbf0e2bef8907fb6",
   "replacements_sha256_history": [
     "03f305929732ae7f9c63c23d79ac3c226c1f38d30c4a033394892ce623c80ffb",
     "37d990fdaedde95808e4c10e140f76339b788a0ddf9013cb3319ae3b067ed9f3",
-    "3a1694c0f6c4106110b1512d318cdc4db465edaadef465c5150a9dc03a21aa84"
+    "3a1694c0f6c4106110b1512d318cdc4db465edaadef465c5150a9dc03a21aa84",
+    "5e5130f0f49dd31aff8e0b13e27182b836aff53b86fc7809dbf0e2bef8907fb6"
   ]
 }
