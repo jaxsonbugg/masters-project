@@ -146,7 +146,7 @@ try:
     cfg0 = rl.load_config(E0 / "config.yaml")
     for label, change in [("TIME_GENERATE 02:00:00", lambda c: c["talon"]["env"].__setitem__("TIME_GENERATE", "02:00:00")),
                           ("GPU_COUNT 2", lambda c: c["talon"]["env"].__setitem__("GPU_COUNT", 2)),
-                          ("a 5 GPU-hour budget", lambda c: c.__setitem__("max_total_gpu_hours", 5.0)),
+                          ("a 6 GPU-hour budget (above the 5.0 cap)", lambda c: c.__setitem__("max_total_gpu_hours", 6.0)),
                           ("300 slots per job", lambda c: c.__setitem__("slots_per_job_max", 300)),
                           ("2 retries", lambda c: c.__setitem__("max_retries_per_step", 2)),
                           ("4 rounds", lambda c: c.__setitem__("rounds", 4))]:
@@ -256,6 +256,31 @@ try:
           and not (L.get("stopped") or {}).get("condition") == "budget", (submits(E), L.get("stopped")))
 
     # ------------------------------------------------------------ 4. bounded retries, unfinished shards
+    print("[3b] amend-budget: only the GPU budget may change, the old version must be the one the loop started with")
+    E = make_env("amend", max_total_gpu_hours=2.0)
+    rc, out = run(E, FAKE_TALON_HOURS="0.8")
+    old_cfg = E / "config_old.yaml"
+    shutil.copy2(E / "config.yaml", old_cfg)
+    def amend(*extra):
+        r = subprocess.run([PY, str(CODE / "verification" / "replacement_loop.py"), "amend-budget", "--config",
+                            str(E / "config.yaml"), *extra], capture_output=True, text=True, encoding="utf-8")
+        return r.returncode, r.stdout + r.stderr
+    c = yaml.safe_load(old_cfg.read_text()); c["max_total_gpu_hours"] = 3.0; c["candidates_per_position"] = 2
+    (E / "config.yaml").write_text(yaml.safe_dump(c, sort_keys=False))
+    rca, outa = amend("--old-config", str(old_cfg), "--reason", "test")
+    check("an amendment that also changes another setting is refused, and the ledger is unchanged",
+          rca != 0 and "only max_total_gpu_hours" in outa and not ledger(E).get("amendments"), outa[-300:])
+    c["candidates_per_position"] = 3
+    (E / "config.yaml").write_text(yaml.safe_dump(c, sort_keys=False))
+    rca, outa = amend("--old-config", str(E / "positions.jsonl"), "--reason", "test")
+    check("an amendment whose --old-config is not the starting version is refused", rca != 0 and "not the configuration" in outa)
+    rca, outa = amend("--old-config", str(old_cfg), "--reason", "owner raised the budget (test)")
+    rc, out = run(E, "--max-steps", "6")
+    L = ledger(E)
+    check("a budget-only amendment is recorded in the ledger and the loop resumes: the third job is submitted",
+          rca == 0 and L["amendments"][-1]["new"] == 3.0 and sum(n for (sh, first, cnt), n in submits(E).items() if first == "1") == 3,
+          (outa[-200:], out[-300:], submits(E)))
+
     print("[4] a failing job is retried once; an unfinished shard resumes under the same identifier")
     E = make_env("retry")
     rc, out = run(E, FAKE_TALON_FAIL_TAG="benchmark-benchmark-p1n12-2of3")

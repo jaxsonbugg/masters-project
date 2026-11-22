@@ -12,7 +12,7 @@ loop_id: 2026-11-21_replacement_loop
 
 rounds: 3                      # rounds of generate -> check -> screen -> fill; then the owner-review packet
 candidates_per_position: 3     # Qwen candidates per open position per round (about 40% come through all checks)
-max_total_gpu_hours: 4.0       # hard stop; each running or unmeasured job is charged the full 1.0 until measured
+max_total_gpu_hours: 5.0       # hard stop; each running or unmeasured job is charged the full 1.0 until measured (raised from 4.0 by Jaxson on 2026-11-22 for round 3; recorded as a ledger amendment)
 max_gpu_hours_per_job: 1.0     # enforced by Slurm itself through TIME_GENERATE=01:00:00 (below)
 slots_per_job_max: 200         # jobs are split evenly so none has more
 max_codex_batches: 40          # Codex batch runs in total (screen and alignment, retries included)

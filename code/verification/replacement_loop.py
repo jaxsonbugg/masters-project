@@ -83,6 +83,7 @@ APPROVED_ENV = {"GPU_COUNT": "1", "TENSOR_PARALLEL": "1", "REPLICAS": "1", "MAX_
                 "TIME_GENERATE": "01:00:00", "GEN_MARGIN_SECONDS": "600"}
 GEN_SLOTS = "data/slots/benchmark_replacements.jsonl"
 MAX_GPU_HOURS_PER_JOB = 1.0
+MAX_TOTAL_GPU_HOURS = 5.0   # raised from 4.0 by the owner on 2026-11-22, for round 3 of the 2026-11-21 loop only
 MAX_SLOTS_PER_JOB = 200
 TAG_RE = r"benchmark-benchmark-p[1-9]\d*n[1-9]\d*-[1-9]\d*of[1-9]\d*"
 RUN_RE = r"\d{4}-\d{2}-\d{2}_qwen3-6-27b-talon-bf16_benchmark_benchmark-v8_[0-9a-f]{8}_shard[1-9]\d*of[1-9]\d*"
@@ -150,9 +151,10 @@ def load_config(path):
     for k, v in (t.get("env") or {}).items():
         if APPROVED_ENV.get(k) != str(v):
             problems.append(f"talon env {k}={v} is not the approved {APPROVED_ENV.get(k)!r}")
-    if cfg["max_total_gpu_hours"] > 4.0 or cfg["max_codex_batches"] > 40 or cfg["max_retries_per_step"] > 1 \
+    if cfg["max_total_gpu_hours"] > MAX_TOTAL_GPU_HOURS or cfg["max_codex_batches"] > 40 or cfg["max_retries_per_step"] > 1 \
             or cfg["rounds"] > 3 or cfg["candidates_per_position"] > 3:
-        problems.append("a limit is above the approved value (4.0 GPU-hours, 40 Codex batches, 1 retry, 3 rounds, 3 candidates)")
+        problems.append(f"a limit is above the approved value ({MAX_TOTAL_GPU_HOURS} GPU-hours, 40 Codex batches, 1 retry, "
+                        f"3 rounds, 3 candidates)")
     if problems:
         sys.exit("configuration refused (it would widen the standing approval): " + "; ".join(problems))
     return cfg
@@ -944,9 +946,37 @@ def cmd_status(cfg, args):
     return 0
 
 
+def cmd_amend_budget(cfg, args):
+    """Accept a configuration whose ONLY change is max_total_gpu_hours (owner-approved amendment, logged in the ledger).
+    --old-config is the previous version (for example `git show HEAD:configs/replacement_loop.yaml`); its SHA-256 must be
+    the one the ledger recorded, and every other setting must be identical."""
+    led = json.loads((state_dir(cfg) / "ledger.json").read_text(encoding="utf-8"))
+    old_text = Path(args.old_config).read_text(encoding="utf-8")
+    old_sha = hashlib.sha256(old_text.encode("utf-8")).hexdigest()
+    if old_sha != led["config_sha256"]:
+        sys.exit("--old-config is not the configuration this loop started with (SHA-256 differs); nothing changed")
+    old, new = yaml.safe_load(old_text), yaml.safe_load(Path(cfg["_path"]).read_text(encoding="utf-8"))
+    changed = sorted(k for k in set(old) | set(new) if old.get(k) != new.get(k))
+    if changed != ["max_total_gpu_hours"]:
+        sys.exit(f"only max_total_gpu_hours may change in an amendment; changed: {changed}. Nothing changed.")
+    if new["max_total_gpu_hours"] < old["max_total_gpu_hours"] - 1e-9 and gpu_committed(led)[0] > new["max_total_gpu_hours"]:
+        sys.exit("the new budget is below the hours already used; nothing changed")
+    led.setdefault("amendments", []).append({"utc": utc_now(), "field": "max_total_gpu_hours",
+                                             "old": old["max_total_gpu_hours"], "new": new["max_total_gpu_hours"],
+                                             "old_config_sha256": old_sha, "new_config_sha256": cfg["_sha256"],
+                                             "reason": args.reason})
+    led["config_sha256"] = cfg["_sha256"]
+    log_event(led, f"configuration amended: max_total_gpu_hours {old['max_total_gpu_hours']} -> "
+                   f"{new['max_total_gpu_hours']} ({args.reason})")
+    save_ledger(cfg, led)
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["plan", "run", "status"])
+    ap.add_argument("cmd", choices=["plan", "run", "status", "amend-budget"])
+    ap.add_argument("--old-config", help="amend-budget: the configuration version the loop started with")
+    ap.add_argument("--reason", default="", help="amend-budget: why (recorded in the ledger)")
     ap.add_argument("--config", default=str(REPO / "configs" / "replacement_loop.yaml"))
     ap.add_argument("--poll-seconds", type=float, default=300)
     ap.add_argument("--once", action="store_true", help="return instead of sleeping while jobs run")
@@ -954,7 +984,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     cfg = load_config(args.config)
     return {"plan": lambda: cmd_plan(cfg, args) and 0, "run": lambda: cmd_run(cfg, args),
-            "status": lambda: cmd_status(cfg, args)}[args.cmd]()
+            "status": lambda: cmd_status(cfg, args), "amend-budget": lambda: cmd_amend_budget(cfg, args)}[args.cmd]()
 
 
 if __name__ == "__main__":
