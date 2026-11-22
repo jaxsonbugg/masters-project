@@ -379,6 +379,6 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Request and software:** as entries 20-22 (`GEN_FIRST=712 GEN_COUNT=153 GEN_SHARD=1/1`; 1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
 
 ### 24. Talon job 323: replacement loop round 3, resume of job 321 (stage G), 2026-11-22 (UTC 02:10)
-- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Status: reviewed.** Ended normally (UTC about 02:16): **0.092 GPU-hours**; `INFRA=PASS`, shard now complete: both remaining slots failed all 3 attempts, so round 3 ends at 132 usable / 21 failed / 0 unfinished. Loop total about 4.35 GPU-hours.
 - **Purpose:** finish the 2 slots job 321 left unfinished at its 1-hour limit. Same identifier and run folder as job 321 (`GEN_FIRST=712 GEN_COUNT=153 GEN_SHARD=1/1`); the generator resumes from the done-index, so only the 2 open slots are asked. Submitted by the controller after Jaxson raised the loop's budget to 5.3 GPU-hours (ledger amendment, 2026-11-22). Expected cost: server start plus 2 slots, about 0.1 GPU-hours.
 - **Request and software:** as entry 23.
