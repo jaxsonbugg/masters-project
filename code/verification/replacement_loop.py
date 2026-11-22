@@ -83,7 +83,7 @@ APPROVED_ENV = {"GPU_COUNT": "1", "TENSOR_PARALLEL": "1", "REPLICAS": "1", "MAX_
                 "TIME_GENERATE": "01:00:00", "GEN_MARGIN_SECONDS": "600"}
 GEN_SLOTS = "data/slots/benchmark_replacements.jsonl"
 MAX_GPU_HOURS_PER_JOB = 1.0
-MAX_TOTAL_GPU_HOURS = 5.0   # raised from 4.0 by the owner on 2026-11-22, for round 3 of the 2026-11-21 loop only
+MAX_TOTAL_GPU_HOURS = 5.3   # raised from 4.0 to 5.0 (round 3), then to 5.3 (the 2 unfinished round-3 slots) by the owner on 2026-11-22
 MAX_SLOTS_PER_JOB = 200
 TAG_RE = r"benchmark-benchmark-p[1-9]\d*n[1-9]\d*-[1-9]\d*of[1-9]\d*"
 RUN_RE = r"\d{4}-\d{2}-\d{2}_qwen3-6-27b-talon-bf16_benchmark_benchmark-v8_[0-9a-f]{8}_shard[1-9]\d*of[1-9]\d*"
