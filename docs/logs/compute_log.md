@@ -369,6 +369,6 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Shard 2/2 was not submitted:** the controller's budget rule stopped it (2.12 GPU-hours measured + 1.0 charged for job 317 while it runs + 1.0 for the next job > 4.0). Round 1 outcome: 91 of 164 positions filled.
 
 ### 22. Talon job 319: replacement loop round 2, shard 2 of 2 (stage G), 2026-11-21 (UTC 23:20)
-- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Status: reviewed.** Ended normally 2026-11-22 (UTC about 00:00); 0.649 GPU-hours; shard complete; `INFRA=PASS`; 93 usable / 16 failed all 3 attempts (152 replies). Loop total after this job: 3.38 of 4.0 GPU-hours.
 - **Purpose:** shard 2 of 2 of round 2 (about 110 of the 219 candidates BM1643-BM1861). Submitted by the controller after job 317 was measured (2.73 GPU-hours used + 1.0 for this job = 3.73, within the 4.0 budget).
 - **Request and software:** as entries 20 and 21 (`GEN_FIRST=493 GEN_COUNT=219 GEN_SHARD=2/2`; 1 GPU, `TIME_GENERATE=01:00:00`).
