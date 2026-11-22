@@ -372,3 +372,8 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Status: reviewed.** Ended normally 2026-11-22 (UTC about 00:00); 0.649 GPU-hours; shard complete; `INFRA=PASS`; 93 usable / 16 failed all 3 attempts (152 replies). Loop total after this job: 3.38 of 4.0 GPU-hours.
 - **Purpose:** shard 2 of 2 of round 2 (about 110 of the 219 candidates BM1643-BM1861). Submitted by the controller after job 317 was measured (2.73 GPU-hours used + 1.0 for this job = 3.73, within the 4.0 budget).
 - **Request and software:** as entries 20 and 21 (`GEN_FIRST=493 GEN_COUNT=219 GEN_SHARD=2/2`; 1 GPU, `TIME_GENERATE=01:00:00`).
+
+### 23. Talon job 321: replacement loop round 3 (stage G), 2026-11-22 (UTC 01:10)
+- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Purpose:** round 3, the last round of the replacement loop: 3 same-subtopic candidates for each of the 51 positions still open after round 2 (BM1862-BM2014, `benchmark_replacements.jsonl` SHA-256 `3a1694c0...`), one job of 153 slots. Submitted by the controller after Jaxson raised the loop's GPU budget from 4.0 to 5.0 (ledger amendment, 2026-11-22); 3.38 GPU-hours used before this job.
+- **Request and software:** as entries 20-22 (`GEN_FIRST=712 GEN_COUNT=153 GEN_SHARD=1/1`; 1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
