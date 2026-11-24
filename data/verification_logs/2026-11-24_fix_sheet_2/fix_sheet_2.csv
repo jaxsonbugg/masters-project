@@ -1,25 +1,25 @@
 ﻿position,item_id,field,current_text,suggested_text,computation,new_text,owner_note
-124,BM0124,question, -0.1  2.1, -0.2  2.2,"Welch CI from the printed difference, t and df: SE = 1.0/1.80; 1.0 -/+ qt(0.975, 14.23)*SE = (-0.190, 2.190); printed to 1 decimal",,
-964,BM0964,question, 0.65 3.35, 0.15 3.85,"paired CI: SE = 2.0/2.45; 2.0 -/+ qt(0.975, 9)*SE = (0.153, 3.847)",,
-537,BM0537,question, 0.81 4.08, 0.72 4.60,"var.test CI: 1.82/qf(0.975, 19, 19) = 0.720, 1.82/qf(0.025, 19, 19) = 4.598",,
-484,BM0484,question, 0.268 0.805, 0.269 0.804,"Fisher z interval for r = 0.600, n = 25 (df 23): tanh(atanh(0.6) -/+ 1.96/sqrt(22)) = (0.2685, 0.8044)",,
-897,BM0897,question,"t = 3.368, df = 18, p-value = 0.00343","t = 3.353, df = 18, p-value = 0.00354","statistic recomputed from its inputs first (owner's rule): t = 0.620*sqrt(18/(1 - 0.620^2)) = 3.3526; p = 2*pt(-3.3526, 18) = 0.003545",,
-897,BM0897,question, 0.301 0.832, 0.245 0.834,"Fisher z interval for r = 0.620, n = 20: tanh(atanh(0.62) -/+ 1.96/sqrt(17)) = (0.2446, 0.8338)",,
-364,BM0364,question,"X-squared = 4.75, df = 1, p-value = 0.02930","X-squared = 4.7619, df = 1, p-value = 0.0291","statistic recomputed from the counts (owner's rule): prop.test(c(20, 10), c(50, 50), correct = FALSE): X-squared 4.7619, p 0.02910",,
-364,BM0364,question, 0.0405796 0.3594204, 0.0246955 0.3753045,"same prop.test: 95 percent interval for the difference (0.0246955, 0.3753045)",,
-810,BM0810,question,"X-squared = 6.7324, df = 1, p-value = 0.009468","X-squared = 6.962, df = 1, p-value = 0.008326","statistic recomputed from the counts: prop.test(280, 500, p = 0.5) (continuity correction): X-squared 6.962, p 0.0083259",,
-810,BM0810,question, 0.512858 0.605224, 0.515194 0.603870,"same prop.test: interval (0.515194, 0.603870); still excludes 0.50, key unchanged",,
-597,BM0597,question, 0.10043 0.15957, 0.10332 0.16232,"prop.test(65, 500, p = 0.10, correct = FALSE) Wilson score interval (0.10332, 0.16232)",,
-597,BM0597,choice_D,p-value of 0.02565 means there is a 2.565 percent,p-value of 0.02535 means there is a 2.535 percent,"choice D quoted the old p-value; the printout now says 0.02535 (pchisq(5, 1, lower.tail = FALSE) = 0.025347); key B unchanged",,
-257,BM1265,question,Pr(>F) value of 0.0447?,Pr(>F) value of 0.0445?,"the question text quoted the old p-value; printout now 0.0445 (pf(3.5, 2, 27, lower.tail = FALSE) = 0.044509)",,
-257,BM1265,choice_A,4.47 percent,4.45 percent,choice A quoted the old p-value (4.47 percent); now 4.45 percent,,
-257,BM1265,choice_B,4.47 percent,4.45 percent,choice B quoted the old p-value (4.47 percent); now 4.45 percent,,
-257,BM1265,choice_C,4.47 percent,4.45 percent,choice C quoted the old p-value (4.47 percent); now 4.45 percent,,
-257,BM1265,choice_D,95.53 percent,95.55 percent,1 - 0.0445 = 0.9555,,
-970,BM2003,question,18.800 0.000214,18.800 0.000208,"pf(18.8, 1, 25, lower.tail = FALSE) = 0.00020832 (still '***')",,
-490,BM1401,question,The R code and output are shown below.,The R output is shown below.,"option b: the code and data are removed, so the question no longer claims R output for data that would not give the warning",,
-490,BM1401,question,"data <- data.frame(Prior = c(0, 0, 0, 0, 5, 5, 5, 5), High = c(0, 0, 0, 0, 1, 1, 1, 1))",(delete line),option b: remove the data line (R gives no warning for this data),,
-490,BM1401,question,"fit <- glm(High ~ Prior, data = data, family = binomial)",(delete line),option b: remove the code line,,
-490,BM1401,question,summary(fit),(delete line),option b: remove the code line,,
-490,BM1401,question,(Intercept)   -24.566  65505.349   0.000        1,(Intercept)   -42.45      45.12  -0.941    0.347,"option b: the original row, with z corrected to estimate/SE: -42.45/45.12 = -0.9408 -> -0.941; p = 2*pnorm(-0.941) = 0.3467 -> 0.347. Fitted probability at Prior = 0 is plogis(-42.45) = 3.7e-19, below R's threshold, so the warning is consistent",,
-490,BM1401,question,Prior           9.826  18527.711   0.001        1,Prior           84.90      90.24   0.941    0.347,option b: the original row (84.90/90.24 = 0.9408 -> 0.941; p 0.347),,
+124,BM0124,question, -0.1  2.1, -0.2  2.2,"Welch CI from the printed difference, t and df: SE = 1.0/1.80; 1.0 -/+ qt(0.975, 14.23)*SE = (-0.190, 2.190); printed to 1 decimal", -0.2  2.2,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+964,BM0964,question, 0.65 3.35, 0.15 3.85,"paired CI: SE = 2.0/2.45; 2.0 -/+ qt(0.975, 9)*SE = (0.153, 3.847)", 0.15 3.85,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+537,BM0537,question, 0.81 4.08, 0.72 4.60,"var.test CI: 1.82/qf(0.975, 19, 19) = 0.720, 1.82/qf(0.025, 19, 19) = 4.598", 0.72 4.60,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+484,BM0484,question, 0.268 0.805, 0.269 0.804,"Fisher z interval for r = 0.600, n = 25 (df 23): tanh(atanh(0.6) -/+ 1.96/sqrt(22)) = (0.2685, 0.8044)", 0.269 0.804,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+897,BM0897,question,"t = 3.368, df = 18, p-value = 0.00343","t = 3.353, df = 18, p-value = 0.00354","statistic recomputed from its inputs first (owner's rule): t = 0.620*sqrt(18/(1 - 0.620^2)) = 3.3526; p = 2*pt(-3.3526, 18) = 0.003545","t = 3.353, df = 18, p-value = 0.00354",
+897,BM0897,question, 0.301 0.832, 0.245 0.834,"Fisher z interval for r = 0.620, n = 20: tanh(atanh(0.62) -/+ 1.96/sqrt(17)) = (0.2446, 0.8338)", 0.245 0.834,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+364,BM0364,question,"X-squared = 4.75, df = 1, p-value = 0.02930","X-squared = 4.7619, df = 1, p-value = 0.0291","statistic recomputed from the counts (owner's rule): prop.test(c(20, 10), c(50, 50), correct = FALSE): X-squared 4.7619, p 0.02910","X-squared = 4.7619, df = 1, p-value = 0.0291",
+364,BM0364,question, 0.0405796 0.3594204, 0.0246955 0.3753045,"same prop.test: 95 percent interval for the difference (0.0246955, 0.3753045)", 0.0246955 0.3753045,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+810,BM0810,question,"X-squared = 6.7324, df = 1, p-value = 0.009468","X-squared = 6.962, df = 1, p-value = 0.008326","statistic recomputed from the counts: prop.test(280, 500, p = 0.5) (continuity correction): X-squared 6.962, p 0.0083259","X-squared = 6.962, df = 1, p-value = 0.008326",
+810,BM0810,question, 0.512858 0.605224, 0.515194 0.603870,"same prop.test: interval (0.515194, 0.603870); still excludes 0.50, key unchanged", 0.515194 0.603870,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+597,BM0597,question, 0.10043 0.15957, 0.10332 0.16232,"prop.test(65, 500, p = 0.10, correct = FALSE) Wilson score interval (0.10332, 0.16232)", 0.10332 0.16232,Leading space restored by Claude (Excel trims it on save); value as typed by the owner.
+597,BM0597,choice_D,p-value of 0.02565 means there is a 2.565 percent,p-value of 0.02535 means there is a 2.535 percent,"choice D quoted the old p-value; the printout now says 0.02535 (pchisq(5, 1, lower.tail = FALSE) = 0.025347); key B unchanged",p-value of 0.02535 means there is a 2.535 percent,
+257,BM1265,question,Pr(>F) value of 0.0447?,Pr(>F) value of 0.0445?,"the question text quoted the old p-value; printout now 0.0445 (pf(3.5, 2, 27, lower.tail = FALSE) = 0.044509)",Pr(>F) value of 0.0445?,
+257,BM1265,choice_A,4.47 percent,4.45 percent,choice A quoted the old p-value (4.47 percent); now 4.45 percent,4.45 percent,
+257,BM1265,choice_B,4.47 percent,4.45 percent,choice B quoted the old p-value (4.47 percent); now 4.45 percent,4.45 percent,
+257,BM1265,choice_C,4.47 percent,4.45 percent,choice C quoted the old p-value (4.47 percent); now 4.45 percent,4.45 percent,
+257,BM1265,choice_D,95.53 percent,95.55 percent,1 - 0.0445 = 0.9555,95.55 percent,
+970,BM2003,question,18.800 0.000214,18.800 0.000208,"pf(18.8, 1, 25, lower.tail = FALSE) = 0.00020832 (still '***')",18.800 0.000208,
+490,BM1401,question,The R code and output are shown below.,The R output is shown below.,"option b: the code and data are removed, so the question no longer claims R output for data that would not give the warning",The R output is shown below.,
+490,BM1401,question,"data <- data.frame(Prior = c(0, 0, 0, 0, 5, 5, 5, 5), High = c(0, 0, 0, 0, 1, 1, 1, 1))",(delete line),option b: remove the data line (R gives no warning for this data),(delete line),
+490,BM1401,question,"fit <- glm(High ~ Prior, data = data, family = binomial)",(delete line),option b: remove the code line,(delete line),
+490,BM1401,question,summary(fit),(delete line),option b: remove the code line,(delete line),
+490,BM1401,question,(Intercept)   -24.566  65505.349   0.000        1,(Intercept)   -42.45      45.12  -0.941    0.347,"option b: the original row, with z corrected to estimate/SE: -42.45/45.12 = -0.9408 -> -0.941; p = 2*pnorm(-0.941) = 0.3467 -> 0.347. Fitted probability at Prior = 0 is plogis(-42.45) = 3.7e-19, below R's threshold, so the warning is consistent",(Intercept)   -42.45      45.12  -0.941    0.347,
+490,BM1401,question,Prior           9.826  18527.711   0.001        1,Prior           84.90      90.24   0.941    0.347,option b: the original row (84.90/90.24 = 0.9408 -> 0.941; p 0.347),Prior           84.90      90.24   0.941    0.347,
