@@ -1,0 +1,354 @@
+{
+  "verdicts": [
+    {
+      "id": "A-08-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The calculation depends on tracing how apply passes each matrix row to a function that selects named entries.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task combines tracing a row-wise operation, calculating several ratios, and averaging the results."
+    },
+    {
+      "id": "A-08-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested code constructs a table of all pairwise products with a specified row and column orientation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The function is named and the short vectors already exist, so only one direct call is needed."
+    },
+    {
+      "id": "A-08-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the residual for a specific observation from a fitted regression.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The learner must fit a standard simple regression from the data, predict one response, and calculate its residual."
+    },
+    {
+      "id": "A-08-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares experimental assignment with observing a predictor as it occurs.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Distinguishing the causal implications of random assignment from its implications for sampling and measurement calls for standard study-design reasoning."
+    },
+    {
+      "id": "A-08-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression selects vector entries at regular positional intervals from a specified starting point.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A routine sequence of integer indices handles the endpoint, and the statistical background requires no calculation or reasoning."
+    },
+    {
+      "id": "A-08-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt asks for the exact name of a component of a fitted lm object.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires recalling one object component and involves no regression computation."
+    },
+    {
+      "id": "A-08-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a tail probability for the number of target items drawn without replacement from a finite pool.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Translating the majority condition into a count threshold and evaluating the corresponding hypergeometric tail are standard undergraduate steps."
+    },
+    {
+      "id": "A-08-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a confidence interval endpoint using the sample size, mean, and standard deviation.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The learner must select a critical value, calculate the standard error, and combine them to obtain the upper endpoint."
+    },
+    {
+      "id": "A-08-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question connects tail heaviness with the frequency of extreme values and the sensitivity of summary statistics.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a direct conceptual identification with no calculation."
+    },
+    {
+      "id": "A-08-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression returns the running maximum of a numeric vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single vector function call on five small integers suffices."
+    },
+    {
+      "id": "A-08-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The learner must read and combine the relevant counts from a displayed frequency table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Reading one row and adding its two small counts is a single straightforward operation."
+    },
+    {
+      "id": "A-08-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly contrasts what family-wise error rate and false discovery rate control.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied definitions make this a direct match between mathematical notation and its verbal interpretation."
+    },
+    {
+      "id": "A-08-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the number of elements in an R sequence specified by its start, endpoint, and increment.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The evenly spaced checkpoints can be counted directly using simple numbers."
+    },
+    {
+      "id": "A-08-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The estimator's variability depends on the distribution of the count in two draws without replacement.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Finding the standard deviation requires reasoning about the sampling distribution of a proportion estimator under dependent draws."
+    },
+    {
+      "id": "A-08-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the rate ratio associated with a supplied Poisson regression coefficient.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Once the coefficient's scale is recognized, a single numerical transformation gives the requested quantity."
+    },
+    {
+      "id": "A-08-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task explicitly asks the learner to correct a misspelled R function name.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The misspelled line is identified and the correction requires recalling one common function."
+    },
+    {
+      "id": "A-08-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The learner must add a named data frame column computed from an existing column.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation is supplied, leaving one straightforward column assignment."
+    },
+    {
+      "id": "A-08-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the bias induced by a specified sample variance formula.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The standard degrees-of-freedom correction gives the estimator's expectation and allows a short bias calculation."
+    },
+    {
+      "id": "A-08-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the learner to identify column types from how they are displayed in a data frame summary.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The visible class label and category counts make the interpretation a routine reading of summary output."
+    },
+    {
+      "id": "A-08-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The final expression compares the AIC values of two fitted models by subtraction.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Obtaining a numerical result requires evaluating two regression fits and their AIC values before taking the difference."
+    },
+    {
+      "id": "A-08-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt asks for the exact one-sided probability used in a sign test with a tie.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The learner must determine the effective sample size, identify the correct tail, and evaluate a standard exact test."
+    },
+    {
+      "id": "A-08-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt explicitly asks for relevel code that sets the reference category of a factor.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The factor, target level, and function are supplied, so the task is one direct operation."
+    },
+    {
+      "id": "A-08-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The learner must choose between two models by interpreting their reported BIC values.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The two BIC values are already given, so one comparison rule suffices."
+    },
+    {
+      "id": "A-08-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the variance of a binomial count aggregated across sessions.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The learner first determines the total number of trials and then applies the binomial variance formula."
+    },
+    {
+      "id": "A-08-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how changing individual inputs affects confidence interval width.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The item only requires recognizing the direction of a familiar relationship while the other inputs are held fixed."
+    },
+    {
+      "id": "A-08-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The output type depends directly on how sapply handles results of unequal lengths.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The key step is predicting R's conditional simplification behavior with unequal-length results."
+    },
+    {
+      "id": "A-08-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The learner must standardize one specified observation using the provided conventions for center and scale.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The variance convention is supplied, so the work is routine calculation of a mean, a standard deviation, and a standardized value."
+    },
+    {
+      "id": "A-08-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for an interaction factor formed directly from two existing data frame columns.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Both inputs, the function, and the separator are supplied, leaving one direct function call."
+    },
+    {
+      "id": "A-08-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The learner must infer the direction of skewness from numerical summary statistics.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task combines a comparison of mean and median with a comparison of the distances to the extremes."
+    },
+    {
+      "id": "A-08-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The final value depends on applying two different R rounding operations to the computed summaries.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The learner computes two summaries, applies the specified rounding rules, and combines the results."
+    },
+    {
+      "id": "A-08-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression uses replicate to rerun a simulation and collect the resulting statistics.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The expression must combine random sample generation, a summary calculation, and repeated evaluation."
+    },
+    {
+      "id": "A-08-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the Pearson chi-square statistic computed from a contingency table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Calculating margins, expected counts, and cell contributions is a standard chi-square test calculation."
+    },
+    {
+      "id": "A-08-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the distributional interpretation of the supplied memoryless property.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The learner must interpret the conditional survival equation in terms of a shifted random variable."
+    },
+    {
+      "id": "A-08-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks the learner to interpret a warning in chi-square test output and connect it to the reported p-value.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Recognizing a standard expected-count diagnostic and its effect on the reference approximation is routine test interpretation."
+    },
+    {
+      "id": "A-08-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression computes an ANOVA p-value from information used to construct the ANOVA table.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Deriving mean squares and degrees of freedom and evaluating an F tail are standard one-way ANOVA steps."
+    },
+    {
+      "id": "A-08-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the vector position returned by match for a specified code.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Only one lookup in a short vector is required."
+    },
+    {
+      "id": "A-08-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt directly asks for the pooled two-proportion z statistic.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is a standard undergraduate test calculation using sample proportions and a pooled standard error."
+    },
+    {
+      "id": "A-08-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested value is a simple moving average at one specified point in a time series.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The window is explicitly identified, so the calculation is one average of three small numbers."
+    },
+    {
+      "id": "A-08-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the meaning of a coefficient on a binary indicator in a fitted linear model.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The supplied equation and binary coding allow a direct interpretation of one coefficient."
+    },
+    {
+      "id": "A-08-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression calculates a measure of spread from the two extremes of a vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The definition is given and implementing it for a short vector is a direct translation into R."
+    },
+    {
+      "id": "A-08-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The variance of the commission depends on the variance computed from the supplied discrete probability distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The learner computes moments of the discrete variable and applies the variance rule for a linear transformation."
+    },
+    {
+      "id": "A-08-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code returns the count of distinct values in the supplied vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The output can be determined by directly counting distinct ratings in a short vector."
+    },
+    {
+      "id": "A-08-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the minimum sample size meeting a specified margin-of-error bound.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The critical value depends on the unknown sample size, so the learner must find and verify the integer cutoff with changing degrees of freedom."
+    },
+    {
+      "id": "A-08-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression computes the proportion of vector elements satisfying a data-dependent condition.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression combines calculation of a threshold, an elementwise comparison, and aggregation to a proportion."
+    },
+    {
+      "id": "A-08-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task obtains a conditional probability from joint and marginal counts in a two-way classification.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Selecting the conditioning group and forming a ratio uses small counts in a straightforward calculation."
+    },
+    {
+      "id": "A-08-046",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "Summing the diagonal is explicit, while the main work is obtaining the sample variances that populate it.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The learner must interpret the matrix layout, calculate the relevant covariance-matrix entries, and sum them."
+    },
+    {
+      "id": "A-08-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression simulates the sampling distribution of the sample mean through repeated samples.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The learner must combine a Poisson generator, a sample statistic, and repeated evaluation in one expression."
+    },
+    {
+      "id": "A-08-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The interquartile range is obtained by computing the two quartiles using the specified quantile convention.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires locating and interpolating two quantiles and then taking their difference."
+    },
+    {
+      "id": "A-08-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks about a limitation of jackknife standard error estimation for the median.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The multiple-choice task calls for applying a standard resampling limitation to a familiar statistic."
+    },
+    {
+      "id": "A-08-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code must simulate a sampling distribution of the sample correlation and estimate a tail probability from it.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression must implement the joint null sampling model, recompute the estimator for each dataset, and summarize its two-sided tail."
+    }
+  ]
+}

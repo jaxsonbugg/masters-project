@@ -1,0 +1,50 @@
+{
+ "type": "object",
+ "properties": {
+  "verdicts": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "subtopic_verdict": {
+      "type": "string",
+      "enum": [
+       "aligned",
+       "partly",
+       "not_aligned"
+      ]
+     },
+     "subtopic_reason": {
+      "type": "string"
+     },
+     "difficulty_verdict": {
+      "type": "string",
+      "enum": [
+       "matches",
+       "easier",
+       "harder"
+      ]
+     },
+     "difficulty_reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "subtopic_verdict",
+     "subtopic_reason",
+     "difficulty_verdict",
+     "difficulty_reason"
+    ],
+    "additionalProperties": false
+   }
+  }
+ },
+ "required": [
+  "verdicts"
+ ],
+ "additionalProperties": false
+}

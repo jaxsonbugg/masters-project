@@ -1,0 +1,354 @@
+{
+  "verdicts": [
+    {
+      "id": "A-16-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for deduplication by a pair of columns while keeping the first row for each pair.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines identifying duplicates on selected columns with filtering the full data frame."
+    },
+    {
+      "id": "A-16-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a one-sample Kolmogorov–Smirnov test says about fit to a specified distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires applying a significance threshold and interpreting the result in terms of the null hypothesis of a standard test."
+    },
+    {
+      "id": "A-16-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the expected count in a particular contingency-table cell under independence.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must construct the relevant marginal totals from the observed counts before applying the expected-count formula."
+    },
+    {
+      "id": "A-16-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the first class label of the object returned by an R model method.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires tracking the object returned by the ANOVA method and interpreting the indexing of its class vector."
+    },
+    {
+      "id": "A-16-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a mean across the columns of each participant's matrix row.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single standard row-wise operation computes the requested means on the supplied small matrix."
+    },
+    {
+      "id": "A-16-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an overall probability by combining group shares with group-specific conditional probabilities.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires weighting the three conditional probabilities and summing the contributions in a realistic setting."
+    },
+    {
+      "id": "A-16-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks what the slopes and crossing of two lines imply about the interaction between the factors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires interpreting how one factor's effect changes across levels of the other factor in a standard factorial display."
+    },
+    {
+      "id": "A-16-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the calculation and interpretation of classification metrics from a confusion matrix.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The solver can identify the valid interpretation using a metric definition and a simple ratio from the table."
+    },
+    {
+      "id": "A-16-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression sorts strings by length and then alphabetically within ties.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It combines standard string-length calculation, multiple-key ordering, and vector indexing."
+    },
+    {
+      "id": "A-16-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to interpret the mean that `tapply` computes for a specified group.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The group labels directly identify three friendly values whose mean is easy to compute."
+    },
+    {
+      "id": "A-16-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the minimum sample size for a one-sided proportion test at specified significance and power levels.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied formula reduces the work to finding normal quantiles, substituting values, and rounding up."
+    },
+    {
+      "id": "A-16-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the standard deviation of the sampling distribution of a sample mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It takes one application of the standard-error formula using the two supplied inputs."
+    },
+    {
+      "id": "A-16-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task tests how intention-to-treat handles nonadherence and why preserving randomized assignment matters.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver applies a single analysis principle to a simple two-group experiment."
+    },
+    {
+      "id": "A-16-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly requests an R expression for differences between adjacent vector elements.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single basic vector operation handles the four supplied values."
+    },
+    {
+      "id": "A-16-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested endpoint is for a logistic regression confidence interval on the odds-ratio scale.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires forming a coefficient-scale confidence bound and transforming it to the odds-ratio scale."
+    },
+    {
+      "id": "A-16-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly tests the limiting distribution, scaling, and information term in the asymptotic normality theorem for maximum likelihood estimators.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Distinguishing the choices requires knowledge of estimator convergence and the role of Fisher information in its limiting variance."
+    },
+    {
+      "id": "A-16-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks the solver to fix missing closing parentheses in an R expression.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The correction requires matching the delimiters in two short nested calls."
+    },
+    {
+      "id": "A-16-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a predicted count from Poisson regression coefficients, including the applicable interaction and exposure offset.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It is a standard regression prediction that involves selecting the applicable terms, assembling the linear predictor, and applying the inverse link."
+    },
+    {
+      "id": "A-16-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the matrix inversion skill named in the subtopic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression must construct the matrix with the specified row layout and then invert it."
+    },
+    {
+      "id": "A-16-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how to read counts and interpret denominators in a two-way frequency table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The choices call for distinguishing conditional proportions, marginal proportions, and totals in a realistic table."
+    },
+    {
+      "id": "A-16-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item tests how adding a predictor affects adjusted R-squared and how that behavior relates to ordinary R-squared.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Identifying the exact criterion requires relating the adjustment for residual degrees of freedom to the partial significance statistic."
+    },
+    {
+      "id": "A-16-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a maximum likelihood estimate of a Poisson parameter from observed data.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The arithmetic is simple, but the solver must identify the Poisson maximum likelihood estimator without being given its form."
+    },
+    {
+      "id": "A-16-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The solver must interpret decreasing order indices and use the selected index to retrieve an original value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires following the ordering step and then resolving the nested indexing."
+    },
+    {
+      "id": "A-16-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for duplicate rows to be removed from a data frame while preserving first occurrences.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single standard base R function performs the requested full-row deduplication."
+    },
+    {
+      "id": "A-16-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly requests the upper endpoint of a Wald interval for an estimated regression slope.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It applies a standard regression interval procedure by constructing the margin of error and combining it with the slope estimate."
+    },
+    {
+      "id": "A-16-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the mechanism that can reverse an association when groups are combined.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about how within-group and between-group variation contribute to the pooled relationship."
+    },
+    {
+      "id": "A-16-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The final quantity is the proportion of non-missing values that satisfy a specified comparison.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The expression combines standard missing-value handling, a trimmed mean, and a logical comparison summarized as a proportion."
+    },
+    {
+      "id": "A-16-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which value is retrieved using the position returned by `which`.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single threshold match in a four-element vector makes the index and lookup easy to trace."
+    },
+    {
+      "id": "A-16-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested probability concerns the ordering of two exponential variables and a bound on one of them.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about a joint event for independent exponential waiting times, such as by conditioning or using competing rates."
+    },
+    {
+      "id": "A-16-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the lower confidence bound for an odds ratio from a logistic regression coefficient.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Even with the critical value supplied, it requires constructing a log-odds bound and exponentiating it."
+    },
+    {
+      "id": "A-16-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks the solver to use a confidence interval to decide the corresponding two-sided hypothesis test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "With matching confidence and significance levels supplied, the decision comes from one interval-inclusion check."
+    },
+    {
+      "id": "A-16-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for the frequency of a named factor category.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A basic count of matches suffices for the four-element factor."
+    },
+    {
+      "id": "A-16-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the critical quantile of a t distribution for a specified confidence interval.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must obtain the degrees of freedom and the appropriate tail probability before finding the quantile."
+    },
+    {
+      "id": "A-16-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests interpretation of an exponentiated Poisson regression coefficient under a log link.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires translating a change on the linear-predictor scale into an effect on the expected count in a standard regression model."
+    },
+    {
+      "id": "A-16-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly combines reversing a vector with indexing the result.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The short vector makes the positional lookup after reversal straightforward."
+    },
+    {
+      "id": "A-16-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how sample size and information affect the width of an asymptotic confidence interval.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting the asymptotic variance of a maximum likelihood estimator to confidence interval width."
+    },
+    {
+      "id": "A-16-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the chi-square goodness-of-fit statistic from observed and expected counts.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expected counts are supplied, and evaluating the statistic is a direct calculation with three simple count pairs."
+    },
+    {
+      "id": "A-16-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks the solver to interpret the accumulated count produced by repeated calls to a stateful closure.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Tracing the code requires understanding how R's superassignment updates a captured variable across invocations before interpreting the final proportion."
+    },
+    {
+      "id": "A-16-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task culminates in obtaining the p-value from a one-sample t statistic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires calculating the test statistic, identifying its degrees of freedom, and evaluating the correct tail of a standard t test."
+    },
+    {
+      "id": "A-16-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly examines selection bias caused by restricting observations on a common effect of two variables.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for one causal inference from an explicitly described structure with three variables."
+    },
+    {
+      "id": "A-16-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to compare two nested Poisson models using their residual deviances and degrees of freedom.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires recognizing a likelihood-ratio comparison in the output and relating the deviance reduction to its reference distribution."
+    },
+    {
+      "id": "A-16-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for the result of applying `rev` to a character vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one basic vector operation on three elements."
+    },
+    {
+      "id": "A-16-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested result is an upper Wald confidence bound for a regression slope using its estimated variance.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With asymptotic normality and the critical value supplied, the solver converts a variance to a standard error and applies the standard Wald formula."
+    },
+    {
+      "id": "A-16-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for an upper-tail F critical value with specified numerator and denominator degrees of freedom.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The tail probability and both degrees of freedom are supplied, so the task is a single quantile lookup."
+    },
+    {
+      "id": "A-16-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to infer a time-series model structure from the joint ACF and PACF pattern.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Choosing the model family and order requires applying standard time-series identification rules to two complementary diagnostics."
+    },
+    {
+      "id": "A-16-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression directly computes Pearson correlation between two numeric vectors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single standard R function call suffices for the two supplied vectors."
+    },
+    {
+      "id": "A-16-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to interpret the bias entry in a bootstrap summary.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The interpretation requires one direct comparison between two nearby means displayed in the output."
+    },
+    {
+      "id": "A-16-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for a least-squares slope using the predictor and response summary statistics.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires selecting the relevant summaries, placing the standard deviations in the correct order, and applying a standard regression formula."
+    },
+    {
+      "id": "A-16-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item tests the meanings of Type I and Type II errors and their relationship to power.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The valid statement can be identified by applying the basic definition of a Type II error to one scenario."
+    },
+    {
+      "id": "A-16-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the solver to trace a sequence generated with a decimal increment.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The indexed result follows directly from a short sequence with a constant decimal step."
+    }
+  ]
+}

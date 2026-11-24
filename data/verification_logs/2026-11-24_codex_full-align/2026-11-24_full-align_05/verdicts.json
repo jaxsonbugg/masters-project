@@ -1,0 +1,354 @@
+{
+  "verdicts": [
+    {
+      "id": "A-05-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how selecting lakes by road access can bias an estimate for all lakes in the province.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires recognizing a single, explicit restriction on who or what can enter the sample."
+    },
+    {
+      "id": "A-05-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests which.max by asking for the position of the first maximum in a vector with a tie.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a single vector operation on six small integers."
+    },
+    {
+      "id": "A-05-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the reported Shapiro-Wilk result implies about normality.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires interpreting one supplied p-value with the test purpose already stated."
+    },
+    {
+      "id": "A-05-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks how first differencing affects the stochastic trend and the properties of the resulting series.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines a short algebraic substitution with recognizing the resulting series' stationarity."
+    },
+    {
+      "id": "A-05-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested output depends directly on how cumprod accumulates products along a vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires evaluating one cumulative operation on three small integers."
+    },
+    {
+      "id": "A-05-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a posterior mean under a normal likelihood with known variance and a normal prior.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires applying normal conjugacy and determining the relative precision of the prior and the data."
+    },
+    {
+      "id": "A-05-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the meaning of the entries in the residual summary printed by summary(lm).",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Reading the labeled summary and recalling what a residual represents are sufficient."
+    },
+    {
+      "id": "A-05-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the likelihood ratio statistic for two models with supplied log-likelihoods.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one direct application of the statistic's formula to two supplied decimal values."
+    },
+    {
+      "id": "A-05-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the numerical result of averaging the simulation statistics collected by replicate.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires tracing the inner simulation mean, the repeated runs, and the final average to the requested precision."
+    },
+    {
+      "id": "A-05-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for a left join using merge on data frames that share a key.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It calls for one standard function invocation with the join direction specified."
+    },
+    {
+      "id": "A-05-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Both the exact-count event and the conditioning event require probabilities from the same binomial distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires computing a binomial point probability and a tail probability, then forming a conditional probability."
+    },
+    {
+      "id": "A-05-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the distinction between repeated-sampling coverage and a probability assigned to a parameter after observing an interval.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It asks for direct recognition of a standard introductory definition without a calculation or additional inference."
+    },
+    {
+      "id": "A-05-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks how to use do.call to combine a list of named vectors into the rows of a data frame.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It combines routine row binding and data frame conversion on a uniformly structured list."
+    },
+    {
+      "id": "A-05-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested output directly tests the ordering of factor levels after relevel changes the reference.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires tracking one reference-level change in a factor with three levels."
+    },
+    {
+      "id": "A-05-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the sample coefficient of variation from raw measurements.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The raw data require separate calculations of the sample mean and sample standard deviation before applying the supplied percentage formula."
+    },
+    {
+      "id": "A-05-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a do.call expression that turns named list elements into data frame columns.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The equal-length elements already have column names, so the task is one direct conversion."
+    },
+    {
+      "id": "A-05-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the meaning of the repeated off-diagonal entry in a covariance matrix.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reading a single entry of a small labeled matrix."
+    },
+    {
+      "id": "A-05-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the probability of failing to reject at a specified alternative mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires finding the rejection cutoff and evaluating the corresponding probability under the alternative."
+    },
+    {
+      "id": "A-05-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly contrasts the most probable outcome with the expected value in a right-skewed distribution.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The dominant outcome and the direction of the tail are stated, allowing a direct qualitative comparison."
+    },
+    {
+      "id": "A-05-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested indexed value depends on applying cumsum followed by diff with a specified lag.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires tracing two successive vector transformations and accounting for a nondefault lag before indexing."
+    },
+    {
+      "id": "A-05-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for Welch's test degrees of freedom using the Satterthwaite approximation.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is a routine calculation from supplied sample sizes and variances using the named approximation."
+    },
+    {
+      "id": "A-05-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested merge must preserve all rows of the left data frame and match the right data frame by id.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It asks for one standard merge call with the key and row-retention rule explicitly supplied."
+    },
+    {
+      "id": "A-05-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the bias and risk properties of the James-Stein shrinkage estimator.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Evaluating the options requires graduate-level knowledge of multivariate estimator risk and shrinkage."
+    },
+    {
+      "id": "A-05-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a permutation p-value computed from the listed outcomes and the observed statistic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The supplied rule reduces the task to counting qualifying entries and reporting their proportion."
+    },
+    {
+      "id": "A-05-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question specifically asks how to correct the quoting of a variable in an R model formula.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt identifies the exact error, so the task requires one local syntax correction."
+    },
+    {
+      "id": "A-05-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested function returns two summary statistics in a named list.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a single simple function definition built from standard summary functions and a list."
+    },
+    {
+      "id": "A-05-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested probability directly depends on sampling two distinct days without replacement.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires combining the probabilities of two draws while updating the available counts after the first."
+    },
+    {
+      "id": "A-05-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which regression assumption a residual plot calls into question and how that affects inference.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires linking a standard diagnostic pattern to an assumption and then to an inferential consequence."
+    },
+    {
+      "id": "A-05-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the correlation operation by asking for the rounded output of cor on two vectors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The code applies one standard statistic to two short vectors and rounds the result."
+    },
+    {
+      "id": "A-05-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a bound of a Wilson confidence interval for a population proportion.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With the Wilson formula supplied, the work is finding the sample proportion and normal quantile and substituting them."
+    },
+    {
+      "id": "A-05-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a conditional probability using counts from a joint frequency table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires forming a single proportion within the specified income group."
+    },
+    {
+      "id": "A-05-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests the frequentist interpretation of interval coverage in the context of how frequentists and Bayesians treat parameters.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The distinction is supplied in the stem, leaving one conceptual inference about confidence intervals."
+    },
+    {
+      "id": "A-05-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for an R expression that computes a summary statistic of a vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one basic summary function on a short vector."
+    },
+    {
+      "id": "A-05-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how a linear transformation changes dispersion by asking for the transformed standard deviation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires converting variance to standard deviation and applying the given scale factor."
+    },
+    {
+      "id": "A-05-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the construction and shape of a percentile bootstrap confidence interval.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting bootstrap quantile endpoints to the possible asymmetry of the interval."
+    },
+    {
+      "id": "A-05-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks how R represents an aliased coefficient in the output of coef.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires recognizing exact collinearity and knowing how lm represents the corresponding unestimable coefficient."
+    },
+    {
+      "id": "A-05-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a prediction from a multiple regression equation with a log-transformed response.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires using the residual distribution to obtain the expected prediction on the original response scale."
+    },
+    {
+      "id": "A-05-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression directly computes a mean while omitting missing values.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It requires a single standard option to a basic summary function."
+    },
+    {
+      "id": "A-05-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to use cumulative counts to locate observations in an ordered distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires identifying the central ranks, locating them across a cumulative count boundary, and combining their values."
+    },
+    {
+      "id": "A-05-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks when a rank-based nonparametric test is preferable to a two-sample t-test.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It asks for a standard test-selection judgment from explicit clues about sample size, skewness, and outliers."
+    },
+    {
+      "id": "A-05-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the standard deviation of a linear transformation of a uniform random variable.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires combining a distribution-specific spread formula with the effect of an affine transformation."
+    },
+    {
+      "id": "A-05-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested average depends directly on the character counts of strings assembled by paste.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires tracking formatted field widths and separators before averaging the lengths."
+    },
+    {
+      "id": "A-05-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for normal simulation followed by computation of the simulated sample mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a simple nested expression with all simulation parameters supplied."
+    },
+    {
+      "id": "A-05-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for adjusted R-squared from R-squared, sample size, and the number of predictors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires applying a standard regression adjustment using the supplied model dimensions."
+    },
+    {
+      "id": "A-05-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested mean depends on extracting fixed-position substrings and converting them to numbers.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The stem identifies the suffixes as the desired numbers, leaving a short calculation on three values."
+    },
+    {
+      "id": "A-05-046",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The binomial model supplies the conditional probability, while the main task is Bayesian posterior prediction over an unknown return rate.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a conjugate posterior update and integration over parameter uncertainty."
+    },
+    {
+      "id": "A-05-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests how dependence affects the variance of a sum.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a single qualitative application of the variance-of-a-sum rule."
+    },
+    {
+      "id": "A-05-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for digit extraction with regexpr and regmatches.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires writing a regular expression and passing the match information between two specialized R functions."
+    },
+    {
+      "id": "A-05-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests how to interpret a Wald test of a joint restriction on multiple coefficients.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires interpreting the p-value and then distinguishing a joint inference from conclusions about individual coefficients."
+    },
+    {
+      "id": "A-05-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the number needed to treat by asking the reader to derive it from two observed event rates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires computing the event rates, taking their difference, and applying the supplied reciprocal rule."
+    }
+  ]
+}

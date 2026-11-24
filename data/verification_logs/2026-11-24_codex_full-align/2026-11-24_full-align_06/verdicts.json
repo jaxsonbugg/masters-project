@@ -1,0 +1,356 @@
+{
+  "verdicts": [
+    {
+      "id": "A-06-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to choose between a one-sample t-test and a z-test using the information about the population standard deviation and sampling distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Choosing a standard test requires applying its conditions to a realistic sample."
+    },
+    {
+      "id": "A-06-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task is to read the count for a named value from a frequency table built from a single vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The result can be determined by counting the occurrences of one value in a short vector."
+    },
+    {
+      "id": "A-06-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Independence is central to combining the six measurement probabilities into a probability for their maximum.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A normal probability calculation, the product rule, and a complement suffice."
+    },
+    {
+      "id": "A-06-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression must use lapply to center each list element by its own median.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines list iteration with writing a function that calculates and subtracts a separate median for each vector."
+    },
+    {
+      "id": "A-06-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to recognize pseudoreplication from measurements within the same horse and identify its inferential consequence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task connects the experimental unit and within-horse dependence to degrees of freedom and Type I error."
+    },
+    {
+      "id": "A-06-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested prediction requires evaluating a fitted equation that includes a product of the predictors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The equation and predictor values are supplied, leaving a direct substitution with manageable arithmetic."
+    },
+    {
+      "id": "A-06-007",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "Understanding seq_along identifies the weights, while obtaining the printed value also relies on the seeded normal draws and their weighted arithmetic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The code combines seeded simulation, index-based multiplication, and aggregation in a short sequence."
+    },
+    {
+      "id": "A-06-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for a matrix with a consecutive integer pattern and a specified fill order.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single matrix constructor with a short integer sequence and a fill-order argument suffices."
+    },
+    {
+      "id": "A-06-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an endpoint of a confidence interval for the difference between two independent population means.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a standard two-sample interval calculation from sample summaries under a stated equal-variance assumption."
+    },
+    {
+      "id": "A-06-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression must obtain the trace of a matrix product by summing its diagonal.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The prompt supplies the trace identity and the operations to use, leaving a short composition of basic matrix operations."
+    },
+    {
+      "id": "A-06-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly tests how to remove an interaction from an R model formula while keeping both main effects.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The correction is a single change to a short formula."
+    },
+    {
+      "id": "A-06-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a bootstrap standard error from a supplied set of replicate estimates.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The bootstrap estimates and the method are supplied, so the work is a routine standard deviation calculation."
+    },
+    {
+      "id": "A-06-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested quantity is the pooled two-proportion z statistic calculated from the two groups' counts.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "This standard test calculation requires group proportions, a pooled proportion and standard error, and standardization."
+    },
+    {
+      "id": "A-06-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to classify two models by their bias and variance using their described prediction patterns.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The scenario gives direct cues about systematic error and prediction variability that can be recognized in one step."
+    },
+    {
+      "id": "A-06-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Extracting fitted predictions from a model object directly exercises one of the named extraction operations.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The model object is given and the task requires a single extraction expression."
+    },
+    {
+      "id": "A-06-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly requires replacing a binomial count model with its Poisson approximation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires finding the Poisson rate from the binomial inputs and then evaluating a probability at the specified count."
+    },
+    {
+      "id": "A-06-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the definition of sufficiency in terms of the conditional distribution of the data.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Recognizing a formal conditional-distribution definition in a standard sampling model fits a second statistics course."
+    },
+    {
+      "id": "A-06-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The result depends on interpreting what crossprod computes for the two supplied vectors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The code reduces to a single dot product of short vectors with simple entries."
+    },
+    {
+      "id": "A-06-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to calculate a weighted mean with explicitly defined weights.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The weight function and ratio are supplied, so vectorized evaluation and summation suffice."
+    },
+    {
+      "id": "A-06-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests a condition for false discovery rate control by a multiple-testing procedure.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Selecting the guarantee requires distinguishing among dependence structures and understanding their role in false discovery rate control."
+    },
+    {
+      "id": "A-06-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested mean is calculated by using the frequencies as counts for the corresponding usage values.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It is a direct application of the mean to a small table with whole-number entries."
+    },
+    {
+      "id": "A-06-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Fixing the code requires distinguishing a one-element sublist from the numeric vector stored in that element.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must diagnose how a list indexing operation affects the type passed to a second function."
+    },
+    {
+      "id": "A-06-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt directly asks for sapply to apply a sum function to each data frame column.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The operation is a single call with a supplied data frame and a simple aggregation function."
+    },
+    {
+      "id": "A-06-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task is to reconstruct the one-way ANOVA F statistic from group sizes, means, and standard deviations.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It is a standard ANOVA calculation involving between-group and within-group variation from realistic summaries."
+    },
+    {
+      "id": "A-06-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks what the central limit theorem implies for the sampling distribution of a mean.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is direct recognition of the introductory theorem using a simple symmetric population."
+    },
+    {
+      "id": "A-06-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to trace the branch that returns early from the function.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single length check determines which return value is reached."
+    },
+    {
+      "id": "A-06-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly computes a correlation test statistic using Fisher transformations of the observed and hypothesized correlations.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The transformations, standard error, and test statistic are supplied, leaving a standard calculation by substitution."
+    },
+    {
+      "id": "A-06-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The two groups' event and non-event counts provide the two risks needed for a relative risk calculation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a direct comparison of event proportions using friendly counts and equal group sizes."
+    },
+    {
+      "id": "A-06-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to recognize how a third variable can create a spurious association between a regression predictor and outcome.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires recognizing a basic confounding pattern from a single example."
+    },
+    {
+      "id": "A-06-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression directly computes the cumulative sums of a vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single built-in function on a short vector suffices."
+    },
+    {
+      "id": "A-06-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks the reader to translate a log-link coefficient from the linear predictor scale to the response scale.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The interpretation requires reading a regression coefficient and applying the inverse link to infer how the expected response changes."
+    },
+    {
+      "id": "A-06-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question requires calculating covariance from the joint probabilities of two discrete variables.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It involves calculating marginal and joint expectations from a small table and combining them."
+    },
+    {
+      "id": "A-06-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly compares the response-scale interpretation of the same coefficient under two different link functions."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires applying two standard link interpretations to the same change in a predictor."
+    },
+    {
+      "id": "A-06-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks what unique prints for a vector containing repeated values.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The output can be traced in one pass through a five-element vector."
+    },
+    {
+      "id": "A-06-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested endpoint comes directly from the Agresti-Coull interval procedure.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The full procedure is supplied, so the work consists of calculating adjusted quantities and substituting them into an interval formula."
+    },
+    {
+      "id": "A-06-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression must transpose one vector and use matrix multiplication to form a dot product.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task combines two R operations and requires understanding how transpose makes the operands conformable."
+    },
+    {
+      "id": "A-06-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to identify the threshold that optimizes a specified metric derived from the displayed table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must recall how the metric combines sensitivity and specificity, calculate it across rows, and compare the results."
+    },
+    {
+      "id": "A-06-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly examines the consequences of violating the equal-variance assumption in one-way ANOVA.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must connect the pattern of unequal variances and sample sizes to the direction of Type I error distortion."
+    },
+    {
+      "id": "A-06-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The problem requires using independence to combine one event with the complement of the other."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A simple complement and multiplication give the joint probability from the supplied probabilities."
+    },
+    {
+      "id": "A-06-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code applies a logical filter to a vector of values and takes the mean of the retained observations.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must trace the logical condition, select the corresponding decimal values, and average them."
+    },
+    {
+      "id": "A-06-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression must subset a vector using two simultaneous conditions.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It is a single indexing operation using two simple comparisons joined by a logical operator."
+    },
+    {
+      "id": "A-06-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested sample standard deviation is one of the named summaries and uses the sample mean in its calculation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation uses the mean, squared deviations, and the sample denominator with a short set of realistic measurements."
+    },
+    {
+      "id": "A-06-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests what the spread of bootstrap replicate means estimates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting variation across resampled statistics to the sampling uncertainty of an estimator."
+    },
+    {
+      "id": "A-06-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested code computes an empirical cumulative proportion at every observed value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The restrictions require devising a vectorized calculation that handles ties and preserves the original observation order."
+    },
+    {
+      "id": "A-06-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks the reader to interpret the numeric code assigned under an explicit ordered factor level sequence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The result follows from matching one element to its position in a short level sequence."
+    },
+    {
+      "id": "A-06-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task computes a correlation coefficient from supplied pairwise correlation summaries, with adjustment for a third variable.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A standard partial correlation formula applied to three supplied values suffices."
+    },
+    {
+      "id": "A-06-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the probability component of the named uniform distribution subtopic.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The probability follows from one interval-length ratio with simple endpoints."
+    },
+    {
+      "id": "A-06-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the meaning of Monte Carlo standard error and its relationship to the number of draws.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for direct recognition of a definition and its qualitative behavior from the choices."
+    },
+    {
+      "id": "A-06-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression extracts the vector stored as a single element of a named list.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires a single extraction from a short list."
+    },
+    {
+      "id": "A-06-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a prediction from a multiple regression equation with continuous predictors and an indicator.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The standard prediction calculation requires coding the indicator and combining several predictor contributions for a realistic case."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "verdicts": [
+    {
+      "id": "A-17-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression extracts Pearson residuals from a fitted GLM.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With the model fit supplied, the task requires one function call with the appropriate residual type."
+    },
+    {
+      "id": "A-17-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks about the theoretical basis for nonparametric bootstrap consistency.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Evaluating the claims requires familiarity with asymptotic sampling distributions and the regularity conditions behind bootstrap consistency."
+    },
+    {
+      "id": "A-17-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the minimum sample size needed to estimate a proportion at a specified confidence level and margin of error.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The task combines selecting a confidence critical value, applying the sample size formula, and rounding up to meet the precision requirement."
+    },
+    {
+      "id": "A-17-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested edit reverses the sort direction of an existing R expression.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied code already performs the sort, so the task requires only one change to its direction."
+    },
+    {
+      "id": "A-17-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression generates repeated bootstrap estimates of the sample mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Even in one line, the expression must combine sampling with replacement, computing a mean, and repeating the procedure."
+    },
+    {
+      "id": "A-17-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Estimating the Gamma shape parameter from the sample mean and variance directly tests the method of moments.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires relating two sample moments to the Gamma parameters, eliminating the scale parameter, and evaluating the resulting estimate."
+    },
+    {
+      "id": "A-17-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the conditions that define weak stationarity in a time series.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task fits a second course because it requires distinguishing lag-based covariance from independence and from the absence of a trend."
+    },
+    {
+      "id": "A-17-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task centers on using sapply to simplify per-batch results into a matrix with the requested dimensions and names.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Producing the requested matrix in one expression relies on the non-obvious interaction between sapply's simplification rules and its handling of names."
+    }
+  ]
+}

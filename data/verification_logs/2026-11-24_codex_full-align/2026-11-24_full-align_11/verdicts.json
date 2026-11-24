@@ -1,0 +1,359 @@
+{
+  "verdicts": [
+    {
+      "id": "A-11-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the F-test p-value that would appear in an ANOVA table.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The supplied statistic and degrees of freedom allow a single R distribution call."
+    },
+    {
+      "id": "A-11-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to interpret the dimensions and column types reported by str.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader can identify the correct description directly from the printed structure."
+    },
+    {
+      "id": "A-11-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested portfolio value is the probability-weighted payoff across the game's possible outcomes.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation combines a fee adjustment, scenario returns, and probability weighting."
+    },
+    {
+      "id": "A-11-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the risk of using a fitted relationship beyond the observed predictor range.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Spotting the out-of-range predictor value and recognizing the standard extrapolation warning is a single introductory inference."
+    },
+    {
+      "id": "A-11-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The mean depends on correctly tracing the sequence and the element-specific repetitions.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must generate a sequence, apply unequal repetition counts, and compute a mean."
+    },
+    {
+      "id": "A-11-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested endpoint comes from the Wilson score confidence interval for a binomial proportion.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task applies a named interval formula to one sample count and size."
+    },
+    {
+      "id": "A-11-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly requires substring extraction with substr before numeric conversion.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression combines vectorized string lengths, substring extraction, and type conversion."
+    },
+    {
+      "id": "A-11-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what the likelihood ratio test says about the fit of two nested models.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must identify the relevant p-value among several fit statistics and interpret it for a standard nested-model comparison."
+    },
+    {
+      "id": "A-11-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question examines how deliberately changing class frequencies affects logistic regression estimates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Answering requires reasoning about how outcome-dependent sampling changes conditional odds and the large-sample behavior of fitted coefficients."
+    },
+    {
+      "id": "A-11-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the waiting-time probability of a first success on a specified independent trial.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A short sequence of failures followed by a success gives a direct calculation with friendly numbers."
+    },
+    {
+      "id": "A-11-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prompt explicitly asks for mapply to combine corresponding entries from two vectors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is one function call that applies a familiar arithmetic operation to three pairs."
+    },
+    {
+      "id": "A-11-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested statistic is the coefficient of variation computed from sample summaries.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation combines a sample mean, a sample standard deviation, and conversion of their ratio to a percentage."
+    },
+    {
+      "id": "A-11-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how a stratified bootstrap replicate is drawn within groups of unequal sizes.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must apply bootstrap sampling with replacement within separate strata while preserving their sample sizes."
+    },
+    {
+      "id": "A-11-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for decreasing vector order through an ordering index and subsetting.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "This is a short composition of ordinary ordering and indexing operations."
+    },
+    {
+      "id": "A-11-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the numeric quantile returned by R for a supplied vector and probability.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must know R's default quantile convention and interpolate between observations."
+    },
+    {
+      "id": "A-11-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested statistic is the standard error of the fitted simple-regression slope.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The supplied summaries allow routine computation of predictor variation and residual variance for the standard slope formula."
+    },
+    {
+      "id": "A-11-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for a binomial point probability approximated with a Poisson distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The numbers give a simple Poisson rate and a direct point-probability calculation."
+    },
+    {
+      "id": "A-11-018",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The interval provides the context, while the question tests the generic bootstrap resampling step shared with other bootstrap methods."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Identifying the defining resampling step is a single conceptual choice."
+    },
+    {
+      "id": "A-11-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a vector of squared integers.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Vectorized exponentiation of a short integer sequence is basic R syntax."
+    },
+    {
+      "id": "A-11-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the slope standard error from a fitted simple linear regression.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Fitting an ordinary least-squares regression and obtaining its slope standard error are standard intermediate tasks."
+    },
+    {
+      "id": "A-11-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what an untreated control group contributes to the estimate of a treatment effect.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must compare two study designs and connect a contemporaneous control with variation in weather across years."
+    },
+    {
+      "id": "A-11-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests the result of requesting a missing named element from an R list.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single list lookup tests one basic R behavior."
+    },
+    {
+      "id": "A-11-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a normal tail probability conditional on the observed value of a correlated variable.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation requires finding the bivariate normal conditional mean and variance before evaluating the tail."
+    },
+    {
+      "id": "A-11-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Generating independent Poisson observations is the first operation required to produce the requested count."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression combines random generation, an equality comparison, and aggregation."
+    },
+    {
+      "id": "A-11-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests interpretation of group means and factor-level order in tapply output.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The printed group labels and explicit mean argument make this a direct reading of the output."
+    },
+    {
+      "id": "A-11-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Interpreting a Bayes factor tests the role of relative evidence when Bayes' rule updates model odds.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task asks for the standard interpretation of a supplied Bayes factor in a single conceptual step."
+    },
+    {
+      "id": "A-11-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a confidence interval endpoint for an odds ratio from a two-by-two table.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must first compute the odds ratio and then apply a confidence-limit formula involving a log, a standard error, and exponentiation."
+    },
+    {
+      "id": "A-11-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the length of the result after splitting and flattening a character vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must follow splitting across several strings, flattening the results, and taking their length."
+    },
+    {
+      "id": "A-11-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly asks for multiple summaries within each group using aggregate."
+      ,
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Producing both summaries in one grouped call requires combining aggregate with a function that returns multiple statistics."
+    },
+    {
+      "id": "A-11-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a centered moving average at one point in a time series.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The window is explicitly defined, leaving one ordinary average of three listed values."
+    },
+    {
+      "id": "A-11-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks which sampling and distributional assumptions support a two-sample t-test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must distinguish the assumptions of a standard test in a realistic small-sample setting."
+    },
+    {
+      "id": "A-11-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question requires retrieving two related quantities from a fitted model through its accessors.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires knowing the model's coefficient and covariance interfaces and how the covariance output relates to a coefficient standard error."
+    },
+    {
+      "id": "A-11-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the character count of strings assembled by paste.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A short literal string and a visible separator make the character count a basic R interpretation task."
+    },
+    {
+      "id": "A-11-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The conditional probability requires aggregating joint table cells for the conditioning event and its intersection with the target event.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Selecting cells for a union and forming a conditional probability ratio are routine intermediate probability steps."
+    },
+    {
+      "id": "A-11-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for BIC from the maximized log-likelihood, parameter count, and sample size.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The formula and every input are given for a single substitution."
+    },
+    {
+      "id": "A-11-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the statistical benefit of forming homogeneous blocks or strata.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The design is explained in the prompt and the reader only needs to recognize its main benefit."
+    },
+    {
+      "id": "A-11-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Finding IDs shared by the two vectors directly tests a set intersection.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The requested result takes one standard set operation on two short vectors."
+    },
+    {
+      "id": "A-11-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a significance decision from the reported Fisher exact test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The decision takes one comparison between the printed p-value and the supplied significance level."
+    },
+    {
+      "id": "A-11-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the distinction between predictive information from past values and a causal effect of an intervention.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must interpret a time-series regression finding and distinguish its predictive and causal implications."
+    },
+    {
+      "id": "A-11-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the number of rows left after applying a filter in R.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader can count the entries that pass one simple threshold in a five-row data frame."
+    },
+    {
+      "id": "A-11-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The problem uses the AR(1) coefficient and innovation scale to characterize uncertainty in a forecast.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Computing two-step forecast uncertainty requires tracing how innovations propagate through the model and combining their variances."
+    },
+    {
+      "id": "A-11-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly requires ordering rows by two columns with different sort directions.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression must combine a primary sort, descending tie-breaking, and row subsetting."
+    },
+    {
+      "id": "A-11-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks why an observational correlation cannot by itself establish a causal effect.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Recognizing that confounding can explain an observational association is a standard conceptual inference."
+    },
+    {
+      "id": "A-11-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the Wilcoxon rank-sum statistic from two small samples.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The supplied definition reduces the task to ranking a few distinct integers and adding the relevant ranks."
+    },
+    {
+      "id": "A-11-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how many values seq generates when a step size is supplied through by.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must account for the endpoint falling between steps and include the starting value in the count."
+    },
+    {
+      "id": "A-11-046",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The expression overrides a default argument, while the main skill tested is handling missing values in a mean."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "One familiar function call with a named option handles the short vector."
+    },
+    {
+      "id": "A-11-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a cumulative upper-tail probability for a binomial count.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must identify the binomial model and translate the threshold into the appropriate cumulative probability."
+    },
+    {
+      "id": "A-11-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how sample size changes the standard deviation of the sample mean's sampling distribution.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The sample-size change calls for a direct substitution into the familiar standard error relationship."
+    },
+    {
+      "id": "A-11-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a confidence interval endpoint for a named fitted coefficient using confint behavior."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression relies on knowing that confidence interval computation is model-specific for a GLM and how to select the requested endpoint."
+    },
+    {
+      "id": "A-11-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested correction is the proper spelling of the R function name.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a one-step correction of a basic function call."
+    }
+  ]
+}
