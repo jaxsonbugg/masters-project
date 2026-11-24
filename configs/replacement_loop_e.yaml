@@ -1,0 +1,47 @@
+# Follow-up replacement loop E (2026-11-24): positions 190, 224, 617, 817, 997, flagged in the rescreen of the assembled benchmark.
+# Owner's decision, 2026-11-24 (same pattern as loop D): 6 same-subtopic candidates per position, one round, its own ledger
+# and a 1.0 GPU-hour cap (estimate about 0.15-0.3: 30 slots plus the server start). Same checks: R keys and verify, Codex screen
+# (screen_v1) and alignment (align_v1); only allow-listed Talon actions.
+loop_id: 2026-11-24_replacement_loop_e
+rounds: 1
+candidates_per_position: 6
+max_total_gpu_hours: 1.0
+max_gpu_hours_per_job: 1.0
+slots_per_job_max: 200
+max_codex_batches: 6
+max_retries_per_step: 1
+max_resumes_per_shard: 2
+gpu_hours_per_1000_slots: 3.5
+load_hours_per_job: 0.05
+collect_r_keys: true
+
+inputs:
+  positions: "{benchmark_work}/2026-11-22_assembly/positions.jsonl"
+  only_extra_open: true
+  extra_open: ["{benchmark_work}/2026-11-24_replacement_loop_e/open_positions.txt"]
+  screen_results: data/verification_logs/2026-11-21_codex_screen          # not used (only_extra_open)
+  fix_classification: data/verification_logs/2026-11-21_rounding_fixes/fix_classification.json   # not used
+
+local:
+  state_root: "{benchmark_work}"
+  slots_dir: data/slots
+  teacher_outputs: "{teacher_outputs}"
+
+talon:
+  host: talon
+  ssh: [ssh, -o, BatchMode=yes]
+  scp: [scp, -o, BatchMode=yes]
+  env:
+    GPU_COUNT: 1
+    TENSOR_PARALLEL: 1
+    REPLICAS: 1
+    MAX_NUM_SEQS: 16
+    CLIENT_CONCURRENCY: 16
+    TIME_GENERATE: "01:00:00"
+    GEN_MARGIN_SECONDS: 600
+
+codex:
+  model: gpt-6.2-sol
+  effort: medium
+  batch_size: 50
+  timeout_seconds: 1800
