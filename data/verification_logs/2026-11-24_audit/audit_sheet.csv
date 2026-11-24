@@ -1,0 +1,1135 @@
+﻿section,position,item_id,category,subtopic,intended_difficulty,achieved_difficulty_codex,subtopic_verdict_codex,answer_type,question,choices,key,r_check_or_solution,codex_screen,why_targeted,key_correct (yes/no/unsure),question_sound (yes/no/unsure),owner_note
+random,1,BM0001,numerical,probability of at least one event,intro,intro,aligned,number,"A boutique hotel receives independent walk-in inquiries each afternoon. On a given Tuesday, there are exactly 6 inquiries. Each inquiry independently results in a booking with probability 0.15. What is the probability that at least one booking is made? Give your answer to 3 decimal places.",,0.623,cat(1 - 0.85^6),pass,,,,
+random,14,BM0014,r_generation,matrix operations,intro,intro,aligned,r_expression,"A veterinarian tracks recovery times (in days) for three dog breeds across two clinics. The data is stored in a matrix defined as rec_times <- matrix(c(5, 7, 6, 4, 8, 5), nrow = 2, byrow = TRUE), where rows represent clinics and columns represent breeds. Provide a single R expression that calculates the total recovery time for the first clinic.",,"sum(rec_times[1, ])","rec_times <- matrix(c(5, 7, 6, 4, 8, 5), nrow = 2, byrow = TRUE); isTRUE(all.equal(eval(parse(text = candidate)), sum(rec_times[1, ])))",pass,,,,
+random,35,BM0035,numerical,maximum likelihood estimate from data,intermediate,intermediate,aligned,number,"Delivery delays for a fleet of electric trucks are approximately normally distributed. A quality control analyst records the following delays (in hours) for 5 shipments: 2.1, 2.4, 1.9, 2.3, 2.3. Assuming a normal distribution with unknown mean and unknown standard deviation sigma, compute the maximum likelihood estimate of sigma. Give your answer to 3 decimal places.",,0.179,"x <- c(2.1, 2.4, 1.9, 2.3, 2.3)
+cat(sqrt(sum((x - mean(x))^2) / length(x)))",pass,,,,
+random,36,BM0036,conceptual,the idea of clustering,intermediate,intermediate,aligned,multiple_choice,"When using the average silhouette width to select the optimal number of clusters K in a clustering procedure, the preferred value of K is the one that","A. Maximizes the average silhouette width across all observations
+B. Minimizes the total within-cluster sum of squares
+C. Minimizes the average silhouette width
+D. Produces a silhouette width of exactly zero for every observation",A,,pass,,,,
+random,45,BM0045,numerical,normal quantile (find the cutoff),intermediate,intermediate,aligned,number,An insurance company models the size of property damage claims. The claim sizes are normally distributed with a mean of 5000 and a standard deviation of 1500. The company wants to set a coverage limit such that exactly 10% of claims will exceed this limit. What is the limit value? Give your answer to 2 decimal places.,,6922.33,cat(5000 + qnorm(0.90) * 1500),pass,,,,
+random,47,BM1652,r_interpretation,fix incorrect newdata column names,intro,intro,aligned,short_text,"A genetics lab models gene expression as a linear function of allele frequency:
+df <- data.frame(allele_freq = c(0.1, 0.3, 0.5, 0.7), expr = c(10, 15, 20, 25))
+fit <- lm(expr ~ allele_freq, data = df)
+A student attempts to predict expression for new alleles with:
+newdata <- data.frame(frequency = c(0.2, 0.4))
+predict(fit, newdata = newdata)
+This fails because the column name in newdata does not match the model. Write the single corrected line of R code to create newdata with the proper column name.",,"newdata <- data.frame(allele_freq = c(0.2, 0.4))","candidate == ""newdata <- data.frame(allele_freq = c(0.2, 0.4))""",pass,,,,
+random,48,BM0048,numerical,mean and standard deviation of a small data set,graduate,one level lower,partly,number,"A surveillance team records the viral load (in log10 copies/mL) for n = 6 patients after a single booster dose: 12.4, 15.1, 11.8, 14.6, 13.2, 14.9. Assume the population distribution is normal. The sample standard deviation computed with n - 1 in the denominator is a biased estimator of the population standard deviation. Using the standard bias correction factor c4 = sqrt(2/(n-1)) * gamma(n/2) / gamma((n-1)/2), compute the unbiased estimator of the population standard deviation for this data set. Give your answer to 3 decimal places.",,1.468,"x <- c(12.4, 15.1, 11.8, 14.6, 13.2, 14.9)
+n <- length(x)
+s <- sd(x)
+c4 <- sqrt(2/(n-1)) * gamma(n/2) / gamma((n-1)/2)
+cat(s / c4)",pass,,,,
+random,53,BM0053,r_interpretation,NA in comparisons,intermediate,intermediate,aligned,number,"Consider the R vector v <- c(1.2, NA, 3.4, 5.1, NA, 2.8, 4.9, 6.2, NA). What does mean(v > 3.5, na.rm = TRUE) print? Give your answer to 3 decimal places.",,0.500,"cat(mean(c(1.2, NA, 3.4, 5.1, NA, 2.8, 4.9, 6.2, NA) > 3.5, na.rm = TRUE))",pass,,,,
+random,54,BM0054,r_generation,removing rows with missing values,intro,intro,aligned,r_expression,"A data frame named df is created by df <- data.frame(x = c(1, NA, 3, 4, 5), y = c(10, 20, NA, 40, 50), z = c(100, 200, 300, NA, 500)). Write a one-line R expression that returns a data frame containing only the rows where every column has a non-missing value.",,na.omit(df),"df <- data.frame(x = c(1, NA, 3, 4, 5), y = c(10, 20, NA, 40, 50), z = c(100, 200, 300, NA, 500)); isTRUE(all.equal(eval(parse(text = candidate)), na.omit(df), check.attributes = FALSE))",pass,,,,
+random,55,BM0055,numerical,Wilcoxon rank-sum statistic from small samples,intermediate,intermediate,aligned,number,"Astronomers recorded the apparent magnitudes (lower values indicate brighter stars) for two small samples of red dwarfs. Sample A contains 8.2, 8.5, 8.9, 9.1, 9.4. Sample B contains 8.0, 8.5, 9.5, 9.8. Pool all nine observations and assign ranks from 1 to 9 from smallest to largest, using average ranks for ties. Let W be the sum of the ranks assigned to Sample A. Compute W. Give your answer to 1 decimal place.",,23.5,"x <- c(8.2, 8.5, 8.9, 9.1, 9.4, 8.0, 8.5, 9.5, 9.8)
+group <- c(rep(TRUE, 5), rep(FALSE, 4))
+cat(sum(rank(x, ties.method = ""average"")[group]))",pass,,,,
+random,59,BM0059,r_interpretation,replacing elements and then summing,intro,intro,aligned,number,"A production line supervisor records the weight in grams of five manufactured bolts as bolts <- c(12.4, 12.9, 13.1, 12.6, 13.0). The third measurement was taken with a dirty scale and should be replaced with 13.2. The supervisor runs the following R code to update the data and find the new total weight:
+bolts[3] <- 13.2; sum(bolts)
+What value is printed? Give your answer to 1 decimal place.",,64.1,"bolts <- c(12.4, 12.9, 13.1, 12.6, 13.0)
+bolts[3] <- 13.2
+cat(sum(bolts))",pass,,,,
+random,60,BM0060,numerical,Wald test statistic from a coefficient and standard error,graduate,one level lower,aligned,number,"In a Poisson regression model predicting monthly incident counts, the estimated coefficient for the binary variable 'HighVisibility' is -0.400. The diagonal element of the estimated variance-covariance matrix corresponding to 'HighVisibility' is 0.016. The Wald test statistic for the coefficient is the ratio of the estimate to its standard error. Calculate the Wald test statistic. Give your answer to 3 decimal places.",,-3.162,cat(-0.400 / sqrt(0.016)),pass,,,,
+random,64,BM1660,output_interpretation,confidence interval in test output,intro,intro,aligned,multiple_choice,"Environmental scientists measured pollutant levels in water samples from 25 river sites and ran a one-sample t-test in R. The console output is:
+
+One Sample t-test
+
+data:  pollutant_levels
+t = 2.50, df = 24, p-value = 0.0196
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ 0.35 3.65
+sample estimates:
+mean of x 
+     2.00
+
+Which two values from this output represent the lower and upper bounds of the 95% confidence interval for the true mean pollutant level?","A. 0.35 and 2.50
+B. 2.00 and 3.65
+C. 0.35 and 3.65
+D. 2.50 and 0.0196",C,,pass,,,,
+random,68,BM0068,numerical,asymptotic variance of a maximum likelihood estimator,graduate,graduate,aligned,number,Employee quarterly bonus amounts (in thousands of dollars) are modeled as independent draws from a Gamma distribution with known shape parameter alpha = 2 and unknown scale parameter beta. The log-likelihood for a single observation is l(beta) = -alpha * log(beta) - x / beta + constant. A random sample of n = 200 employees yields a mean bonus of x_bar = 10. Compute the estimated asymptotic variance of the maximum likelihood estimator for beta. Give your answer to 4 decimal places.,,0.0625,"beta_hat <- 10/2
+n <- 200
+alpha <- 2
+cat(beta_hat^2 / (n * alpha))",pass,,,,
+random,72,BM0072,numerical,total probability across several groups,intro,intro,aligned,number,"Three groups have prior probabilities 0.2, 0.5, and 0.3. The conditional probability of event x given each group is 0.35, 0.62, and 0.18 respectively. Calculate the total probability of event x. Give your answer to 3 decimal places.",,0.434,"cat(sum(c(0.2, 0.5, 0.3) * c(0.35, 0.62, 0.18)))",pass,,,,
+random,77,BM0077,output_interpretation,interpreting an offset in Poisson regression,graduate,one level lower,aligned,multiple_choice,"An insurance analyst models the number of claims filed by policyholders using a Poisson generalized linear model with a log link. The model includes an offset for the logarithm of the policy exposure time in years to account for varying observation periods. The R output for the fitted model is shown below:
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)    0.1500     0.0800   1.875   0.0608 .  
+age_groupSenior 0.3219     0.0950   3.388   0.0007 ***
+years_driving  -0.0200     0.0040  -5.000   0.0000 ***
+---
+Signif. codes: 0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Dispersion parameter for poisson family taken to be 1
+
+    Null deviance: 450.000  on 400  degrees of freedom
+Residual deviance: 380.500  on 398  degrees of freedom
+AIC: 1200
+
+Number of Fisher Scoring iterations: 5
+
+Based on this output, what does the estimated coefficient of 0.3219 for age_groupSenior represent?","A. The expected number of additional claims per year for senior policyholders compared to the reference group
+B. The multiplicative factor by which the raw claim count changes for senior policyholders relative to the reference group
+C. The absolute difference in the annual claim rate between senior and reference group policyholders
+D. The natural logarithm of the ratio of the annual claim rate for senior policyholders to the annual claim rate for the reference group",D,,pass,,,,
+random,83,BM0083,r_generation,mean ignoring NA,intro,intro,aligned,r_expression,"You have a numeric vector x with some missing values: x <- c(10, 20, NA, 30, NA, 40). Write a one-line R expression to calculate the mean of x while ignoring the NA values.",,"mean(x, na.rm = TRUE)","x <- c(10, 20, NA, 30, NA, 40); isTRUE(all.equal(eval(parse(text = candidate)), 25))",pass,,,,
+random,87,BM0087,r_interpretation,rev of a sequence,intro,intro,aligned,number,"What does the following R code print? Give your answer to 1 decimal place.
+x <- seq(2, 8, by = 1.5)
+y <- rev(x)
+y[2] * 2",,13.0,"x <- seq(2, 8, by = 1.5)
+y <- rev(x)
+cat(y[2] * 2)",pass,,,,
+random,92,BM0092,numerical,bias of an estimator,intro,intro,aligned,number,"An appraiser estimates the true floor area A of a house using the estimator A_hat = 0.95 * M + 15, where M is the measured floor area from a laser scanner. The scanner measurement M is an unbiased estimator of A, so E[M] = A. If the true floor area of a specific house is 1200 square feet, what is the bias of the estimator A_hat for this house? Give your answer as a whole number.",,-45,cat(0.95 * 1200 + 15 - 1200),pass,,,,
+random,102,BM0102,conceptual,main effects versus interaction effects,intro,intro,aligned,multiple_choice,"In a two-way analysis of variance with categorical predictors x and y, a statistically significant interaction between x and y means that:","A. the main effect of x must also be statistically significant
+B. the effect of x is identical at every level of y
+C. the effect of y is zero regardless of the level of x
+D. the effect of x changes depending on the level of y",D,,pass,,,,
+random,106,BM0106,conceptual,assumptions of the chi-square test,intermediate,intermediate,aligned,multiple_choice,Consider a Pearson chi-square test of independence applied to a contingency table of counts from 200 independent observations. Which of the following statements about the assumptions of this test is correct?,"A. The test requires that the observed counts in every cell of the contingency table be at least 5.
+B. The test assumes that the expected frequencies under the null hypothesis are sufficiently large, typically with at least 80 percent of cells having an expected count of 5 or more and no cell having an expected count less than 1.
+C. The test assumes that the underlying population distributions for the two categorical variables are normally distributed.
+D. The test is invalid if the sample size is less than 30, regardless of the distribution of counts across categories.",B,,pass,,,,
+random,109,BM0109,r_generation,sapply over columns,intermediate,intermediate,aligned,r_expression,"Consider the numeric data frame df created by data.frame(x = c(1, 2, 3, 4, 5), y = c(10, 20, 30, 40, 50), z = c(5, 4, 3, 2, 1)). Write a one-line R expression using sapply over the columns of df that returns a named numeric vector of the column standard deviations divided by the column means.",,"sapply(df, function(x) sd(x) / mean(x))","df <- data.frame(x = c(1, 2, 3, 4, 5), y = c(10, 20, 30, 40, 50), z = c(5, 4, 3, 2, 1)); res <- eval(parse(text = candidate)); ref <- sapply(df, function(x) sd(x) / mean(x)); isTRUE(all.equal(res, ref))",pass,,,,
+random,110,BM0110,output_interpretation,interpreting a bootstrap distribution summary,intermediate,intermediate,aligned,multiple_choice,"A marketing analyst compares two advertising campaigns, A and B, to determine which has a higher mean click-through rate. They calculate the difference in sample means (A minus B) and apply the bootstrap method. The printed output is:
+
+Bootstrap distribution for difference in mean CTR (A - B):
+  Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+-0.005  0.008  0.011  0.011  0.014  0.019
+95% percentile interval: [0.004, 0.018]
+
+Which conclusion is best supported by this output?","A. Campaign A and Campaign B have the same mean click-through rate because the interval contains positive numbers.
+B. Campaign B has a significantly higher mean click-through rate than Campaign A.
+C. Campaign A has a significantly higher mean click-through rate than Campaign B, because the 95% interval lies entirely above zero.
+D. The results are inconclusive because the minimum value of the bootstrap distribution is negative.",C,,pass,,,,
+random,134,BM0134,r_generation,sapply returning a matrix,intro,one level higher,aligned,r_expression,"A website monitoring tool records page load times in milliseconds for four routes: load_ms <- c(120, 85, 150, 95). Write a one-line R expression using sapply that applies a function to each element of load_ms returning a two-element vector containing the value minus 5 and the value plus 5. Type only the R expression that produces the resulting 2-by-4 matrix.",,"sapply(load_ms, function(x) c(x - 5, x + 5))","load_ms <- c(120, 85, 150, 95); isTRUE(all.equal(eval(parse(text = candidate)), sapply(load_ms, function(x) c(x - 5, x + 5))))",pass,,,,
+random,135,BM0135,numerical,counting probability for matching or birthday-type problems,intermediate,intermediate,aligned,number,"A boutique hotel has 30 rooms. On a given evening, 8 guests check in independently. Each guest is randomly assigned one of the 30 rooms with equal probability. What is the probability that at least two guests are assigned the same room? Give your answer to 3 decimal places.",,0.640,cat(1 - prod((30-0:7)/30)),pass,,,,
+random,137,BM1667,output_interpretation,reading coefficient p-values,graduate,graduate,aligned,multiple_choice,"Consider the following R output from summary(glm(y ~ x, family = binomial)):
+
+      Estimate Std. Error z value Pr(>|z|)
+(Intercept)  0.50000    0.20000  2.5000  0.01242
+x           -0.80000    0.30000 -2.6667  0.007660
+
+The Pr(>|z|) value for the coefficient x is derived from which of the following?","A. A Wald test relying on the asymptotic normality of the maximum likelihood estimator
+B. A likelihood ratio test comparing the full model to a model with only the intercept
+C. A score test evaluated at the null hypothesis that the coefficient equals zero
+D. An exact finite-sample test conditional on the sufficient statistics",A,,pass,owner edited; owner chose this candidate,,,
+random,158,BM0158,r_generation,counting with table,graduate,graduate,aligned,r_expression,"Let a and b be two integer vectors of equal length. Write a one-line R expression that returns the number of indices i for which a[i] equals b[i], using the table() function.",,"sum(diag(table(a, b)))","a <- c(1L, 2L, 3L, 1L, 2L); b <- c(1L, 1L, 3L, 4L, 2L); expected <- sum(a == b); res <- eval(parse(text = candidate)); isTRUE(all.equal(res, expected))",pass,,,,
+random,191,BM0191,conceptual,relationship between sample size and statistical significance,graduate,graduate,aligned,multiple_choice,"An ecologist compares the mean body mass of two closely related bird species across multiple field sites. Suppose the true difference in population mean body mass is small but strictly positive. If the researcher increases the sample size from thirty birds per species to three hundred birds per species, which statement correctly describes the statistical and inferential consequences?","A. The standard error of the difference increases, making it harder to detect the existing effect.
+B. The p-value converges to the nominal significance level regardless of whether the true difference is zero or positive.
+C. The expected value of the estimated mean difference becomes larger, which is the primary driver of the increased statistical significance.
+D. The probability of rejecting the null hypothesis approaches one, but the expected value of the estimated mean difference remains unchanged.",D,,pass,,,,
+random,194,BM0194,r_generation,Monte Carlo probability estimate,intro,one level higher,aligned,r_expression,A geneticist models the inheritance of a dominant allele where each offspring independently has a 0.4 chance of inheriting it. She wants to estimate the probability that at least 3 out of 5 offspring inherit the allele by simulating 10000 independent families. Assume set.seed(42) has just been executed. Write a one-line R expression that generates the simulated counts and computes the estimated probability.,,"mean(rbinom(10000, size = 5, prob = 0.4) >= 3)","set.seed(42); v1 <- eval(parse(text = candidate)); set.seed(42); v2 <- eval(parse(text = 'mean(rbinom(10000, size = 5, prob = 0.4) >= 3)')); isTRUE(all.equal(v1, v2))",pass,,,,
+random,196,BM0196,conceptual,covariance matrices and positive semidefiniteness,intermediate,intermediate,aligned,multiple_choice,"An analyst tracks points, assists, and turnovers for a basketball team. The covariance matrix of these three statistics is positive semidefinite. Which of the following statements must be true?","A. The variance of any linear combination of the three statistics is non-negative.
+B. The covariance between points and assists must be positive.
+C. The determinant of the covariance matrix must equal zero.
+D. All pairwise correlations between the statistics must be positive.",A,,pass,,,,
+random,214,BM0214,r_generation,extracting the upper triangle,intro,intro,aligned,r_expression,"A production manager stores interaction effects between three machine parameters in a matrix M defined by M <- matrix(c(10, 20, 30, 40, 50, 60, 70, 80, 90), nrow = 3). Write a one-line R expression that extracts the three elements strictly above the main diagonal into a numeric vector.",,M[upper.tri(M)],"M <- matrix(c(10, 20, 30, 40, 50, 60, 70, 80, 90), nrow = 3); isTRUE(all.equal(eval(parse(text = candidate)), M[upper.tri(M)]))",pass,,,,
+random,217,BM1238,output_interpretation,identifying an optimal classification threshold from a metric table,graduate,graduate,aligned,multiple_choice,"The table below shows sensitivity and specificity at different classification thresholds:
+
+Threshold Sensitivity Specificity
+0.10 0.96 0.18
+0.20 0.89 0.41
+0.30 0.82 0.57
+0.40 0.74 0.72
+0.50 0.62 0.81
+0.60 0.52 0.88
+0.70 0.41 0.93
+
+Which threshold yields the point on the ROC curve farthest from the diagonal line of no discrimination, measured as perpendicular Euclidean distance?
+
+A 0.40
+B 0.50
+C 0.30
+D 0.60","A. 0.40
+B. 0.50
+C. 0.30
+D. 0.60",A,,pass,,,,
+random,218,BM2015,r_generation,reshaping a data frame from wide to long with reshape,graduate,one level lower,aligned,r_expression,"Consider the data frame w defined by w <- data.frame(id = 1:2, y1 = c(10, 20), y2 = c(15, 25), y3 = c(12, 22)). Write a single reshape() call that converts w to long format with columns id, time, and y, where time takes values 1, 2, 3. Specify the arguments direction, idvar, timevar, varying, and sep explicitly. Use quoted strings for character arguments, use the numeric vector of column indices for varying, and use an empty string for sep to split column names at the letter-digit boundary.",,"reshape(w, direction = ""long"", idvar = ""id"", timevar = ""time"", varying = 2:4, sep = """")","w <- data.frame(id = 1:2, y1 = c(10, 20), y2 = c(15, 25), y3 = c(12, 22)); target <- reshape(w, direction = ""long"", idvar = ""id"", timevar = ""time"", varying = 2:4, sep = """"); isTRUE(all.equal(eval(parse(text = candidate)), target))",pass,,,,
+random,226,BM0226,conceptual,blocking and stratification,intermediate,intermediate,aligned,multiple_choice,"A researcher is testing three fertilizer formulations on wheat yield across a field with a known north-to-south soil fertility gradient. The field is divided into five parallel strips perpendicular to the gradient, and within each strip the researcher randomly assigns the three fertilizers to plots. Which statement correctly identifies the primary statistical purpose of dividing the field into strips before assigning treatments?","A. To guarantee that each fertilizer is applied exactly once in the study, ensuring complete balance across all soil conditions.
+B. To allow post-hoc stratification of the harvest data so that the initial random assignment can be disregarded during analysis.
+C. To increase the within-treatment variability so that differences between fertilizers become more statistically significant.
+D. To partition out the variability caused by the soil gradient before randomization, thereby increasing the precision of the fertilizer effect estimates.",D,,pass,,,,
+random,232,BM0232,numerical,confidence interval for a difference in means,intro,one level higher,aligned,number,"A telecom company compares monthly data usage between two customer plans. For Plan A, a sample of 16 customers has a mean usage of 12.5 GB. For Plan B, a sample of 25 customers has a mean usage of 10.0 GB. Assume the population standard deviations are known to be 2.0 GB for Plan A and 3.0 GB for Plan B. Construct a 95% confidence interval for the difference in true mean monthly usage (Plan A minus Plan B). Using the critical value 1.96, what is the lower bound of this confidence interval? Give your answer to 3 decimal places.",,0.969,cat(12.5 - 10.0 - 1.96 * sqrt(2^2/16 + 3^2/25)),pass,,,,
+random,236,BM0236,conceptual,one-sided versus two-sided tests,intermediate,intermediate,aligned,multiple_choice,"A hotel manager claims a new booking algorithm reduces the average number of last-minute cancellations per week. She conducts a one-sided t-test with the alternative hypothesis that the mean change in cancellations is less than zero. The sample data actually shows a slight increase in cancellations. Which statement correctly explains why the test fails to reject the null hypothesis, regardless of the calculated test statistic?","A. The p-value is automatically greater than one, making statistical significance impossible.
+B. A one-sided test requires the sample variance to be smaller than the historical variance before any conclusion can be drawn.
+C. The sample statistic falls in the opposite direction of the alternative hypothesis, so it cannot lie in the rejection region regardless of its magnitude.
+D. The degrees of freedom must be recalculated using a paired design whenever the sample mean opposes the alternative hypothesis.",C,,pass,,,,
+random,237,BM0237,output_interpretation,interpreting a score test statistic,graduate,graduate,aligned,multiple_choice,"The following R output comes from a Poisson regression model fitted to monthly severe storm counts in a mid-latitude region, testing whether the coefficient for a normalized drought index equals zero.
+
+Score test for drought_index = 0
+Score statistic: 14.732
+Degrees of freedom: 1
+Asymptotic p-value: 0.000124
+
+Which of the following statements correctly describes the score test statistic shown?","A. It equals twice the difference in log-likelihoods between the full and reduced models.
+B. It is computed from the unrestricted parameter estimates and their variance-covariance matrix.
+C. It requires fitting the unrestricted model to obtain the standard errors of the parameters under the null hypothesis.
+D. It is based on the gradient of the log-likelihood at the restricted estimate and follows an asymptotic chi-squared distribution under the null.",D,,pass,owner edited,,,
+random,242,BM0242,conceptual,selection bias,intro,intro,aligned,multiple_choice,"A research team wants to estimate the average concentration of dissolved oxygen in lakes across a province. They decide to collect water samples only from lakes that have a paved road leading directly to the shore, because this allows them to use a larger boat. Which statement correctly identifies the statistical problem with this approach?","A. The estimate is likely biased because lakes with paved roads may have systematically different dissolved oxygen levels compared to lakes without paved roads.
+B. The estimate is unbiased because the concentration of dissolved oxygen is random and independent of road access.
+C. The standard error of the mean becomes undefined because the sample is not a simple random sample.
+D. The bias disappears if the researchers calculate the arithmetic mean of the observed samples correctly.",A,,pass,,,,
+random,243,BM0243,r_generation,which and which.max,intro,intro,aligned,r_expression,"Given the numeric vector x <- c(12, 7, 19, 4, 19, 2), write a one-line R expression that returns the index of the first occurrence of the maximum value in x.",,which.max(x),"x <- c(12, 7, 19, 4, 19, 2); isTRUE(all.equal(eval(parse(text = candidate)), 3))",pass,,,,
+random,249,BM1259,r_generation,random permutation,intermediate,intermediate,aligned,r_expression,"Write a one-line R expression that sets the random seed to 99 and returns the shuffled vector c(50, 20, 60, 10).",,"set.seed(99); sample(c(50, 20, 60, 10))","isTRUE(all.equal(eval(parse(text=candidate)), {set.seed(99); sample(c(50, 20, 60, 10))}))",pass,,,,
+random,251,BM1263,conceptual,odds in logistic regression,graduate,graduate,aligned,multiple_choice,"In a logistic regression model predicting a binary outcome Y from a continuous predictor X, suppose a second continuous variable Z is added to the model. Z is correlated with X but its true regression coefficient is exactly zero. Which statement correctly describes the relationship between the adjusted odds ratio for X and the crude odds ratio for X?","A. The adjusted odds ratio may differ from the crude odds ratio because the odds ratio metric is non-collapsible across strata of Z.
+B. The adjusted odds ratio must equal the crude odds ratio because Z has no direct association with the outcome Y.
+C. The adjusted odds ratio will always be closer to one than the crude odds ratio due to regression to the mean.
+D. The adjusted odds ratio is undefined unless Z is orthogonal to X in the sample.",A,,pass,,,,
+random,267,BM0267,r_interpretation,cumsum and diff,intro,one level higher,aligned,number,"Consider this R code:
+x <- c(1, 2, 3, 4, 5)
+y <- cumsum(x)
+z <- diff(y, lag = 2)
+What is the value of z[2]? Give your answer as a whole number.",,7,"x <- c(1, 2, 3, 4, 5)
+y <- cumsum(x)
+z <- diff(y, lag = 2)
+cat(z[2])",pass,,,,
+random,271,BM0271,conceptual,shrinkage estimators,graduate,graduate,aligned,multiple_choice,"Consider the James-Stein estimator for a p-dimensional multivariate normal mean vector with p >= 3, which shrinks the maximum likelihood estimates toward zero. Which of the following statements about this estimator is true?","A. It is unbiased for every individual component of the mean vector.
+B. It always yields a larger total mean squared error than the maximum likelihood estimator.
+C. It applies a fixed shrinkage factor that remains constant regardless of the observed data values.
+D. It introduces bias into the estimates but achieves a lower total mean squared error than the maximum likelihood estimator.",D,,pass,,,,
+random,280,BM0280,numerical,confidence interval for a proportion,graduate,one level lower,aligned,number,"In a field trial evaluating a new nitrogen fertilizer on winter wheat, researchers record that 47 out of 210 plot-level subsamples exhibit root nodulation exceeding the target threshold. To account for the skew of the binomial distribution when the proportion is far from 0.5, they compute the lower bound of the 95 percent Wilson score confidence interval for the true population proportion. The Wilson lower bound is given by (2*n*p_hat + z^2 - z*sqrt(z^2 + 4*n*p_hat*(1-p_hat))) / (2*(n + z^2)), where n is the sample size, p_hat is the observed proportion, and z is the standard normal quantile for a two-sided 95 percent interval. Calculate this lower bound. Give your answer to 3 decimal places.",,0.173,"z <- qnorm(0.975)
+n <- 210
+x <- 47
+p_hat <- x / n
+lower <- (2 * n * p_hat + z^2 - z * sqrt(z^2 + 4 * n * p_hat * (1 - p_hat))) / (2 * (n + z^2))
+cat(lower)",pass,,,,
+random,281,BM0281,numerical,marginal and conditional probability from a joint table,intro,intro,aligned,number,"A survey of 210 adults recorded household income bracket and voting intention. The cross-tabulated counts are:
+Low income: 40 voted Yes, 20 voted No.
+Medium income: 50 voted Yes, 30 voted No.
+High income: 30 voted Yes, 40 voted No.
+What is the conditional probability that a randomly selected respondent votes Yes given that they have a High income bracket? Give your answer to 3 decimal places.",,0.429,cat(30/70),pass,,,,
+random,285,BM0285,numerical,mean and variance after a linear transformation,intermediate,intermediate,aligned,number,"An insurance company analyzes claim amounts X (in thousands of dollars). The mean claim amount is 12.5 and the variance is 15.6. Due to inflation, all future claims will increase by 12 percent, so the new claim amount is Y = 1.12 X. What is the standard deviation of Y, rounded to 3 decimal places?",,4.424,cat(sqrt((1.12)^2 * 15.6)),pass,,,,
+random,289,BM0289,r_generation,mean ignoring NA,intermediate,one level lower,aligned,r_expression,"A vector named exam_scores contains the test marks for a group of students. Some entries are numeric values, and others are NA because those students missed the exam. Write a one-line R expression that computes the mean of the exam marks, ignoring the NA entries.",,"mean(exam_scores, na.rm = TRUE)","exam_scores <- c(85, 90, NA, 76, 88, NA, 92); all.equal(eval(parse(text = candidate)), mean(exam_scores, na.rm = TRUE))",pass,,,,
+random,291,BM0291,conceptual,when to use a nonparametric test,graduate,one level lower,aligned,multiple_choice,"A psychology experiment measures reaction times in milliseconds for a memory task in two independent groups of 15 participants each. The distribution of reaction times in both groups is heavily right-skewed with several extreme outliers, and a log transformation fails to restore symmetry. The researcher wishes to compare the central tendency of the two groups. Which statement provides the most statistically sound justification for choosing a Mann-Whitney U test over an independent samples t-test in this scenario?","A. The t-test requires the raw data to be normally distributed in each group, whereas the Mann-Whitney U test makes no distributional assumptions and is always more powerful.
+B. The t-test is invalid whenever sample sizes are below 30, while the Mann-Whitney U test relies on the central limit theorem to ensure accurate p-values for any sample size.
+C. The Mann-Whitney U test is robust to violations of normality and outliers because it operates on ranks, whereas the t-test's Type I error rate and power can be severely compromised by heavy skewness and extreme values in small samples.
+D. The Mann-Whitney U test directly compares group medians without any assumptions, while the t-test compares means and requires equal variances across all sample sizes.",C,,pass,,,,
+random,300,BM0300,numerical,binomial probability,graduate,graduate,partly,number,"A retailer models the unknown return rate p for a seasonal product using a Beta(2, 8) prior distribution. After selling 20 units, 5 are returned. The store manager wants to predict the returns on the next 10 units sold. Assuming future returns follow a binomial distribution conditional on p, and integrating over the posterior distribution of p, what is the predictive probability that exactly 2 of the next 10 units will be returned? Give your answer to 3 decimal places.",,0.439,"cat(choose(10, 2) * exp(lbeta(9, 29) - lbeta(7, 23)))",pass,,,,
+random,301,BM1292,numerical,confidence interval for a difference in proportions,intro,one level higher,aligned,number,"A veterinary study compares two diets for weight loss in overweight cats. In the first diet group, 30 out of 50 cats lost at least 2 kilograms. In the second diet group, 20 out of 50 cats lost at least 2 kilograms. Using the standard normal critical value of 1.96, calculate the lower bound of the 95 percent confidence interval for the difference in true proportions (first group minus second group). Give your answer to 3 decimal places.",,0.008,p1 <- 30/50; p2 <- 20/50; cat(p1 - p2 - 1.96 * sqrt(p1 * (1 - p1) / 50 + p2 * (1 - p2) / 50)),pass,,,,
+random,305,BM0305,numerical,relative risk reduction and number needed to treat,intermediate,intermediate,aligned,number,"A field experiment tests a new fungal biocontrol agent to reduce infestation by aphids in a population of wild lavender plants. In the untreated control group of 200 plants, 64 plants were found to be infested. In the treated group of 160 plants, 32 plants were found to be infested. Calculate the number needed to treat (NNT), defined as the reciprocal of the absolute risk reduction (ARR = control event rate minus experimental event rate). Give your answer rounded to 2 decimal places.",,8.33,cat(1 / ((64/200) - (32/160))),pass,,,,
+random,306,BM0306,conceptual,choosing between a t-test and a z-test,intermediate,intermediate,aligned,multiple_choice,A city police department wants to test whether the average emergency response time differs from the historical benchmark of 9.0 minutes. They record a simple random sample of 45 recent emergency calls and find a sample mean of 9.4 minutes. A national federal report provides the population standard deviation for urban emergency response times as 2.1 minutes. Which statistical test is most appropriate for this hypothesis test and why?,"A. A one-sample z-test because the sample size exceeds 30.
+B. A one-sample t-test because the population standard deviation is known.
+C. A one-sample t-test because emergency response times are often right-skewed.
+D. A one-sample z-test because the population standard deviation is known and the sampling distribution of the mean is approximately normal.",D,,pass,,,,
+random,318,BM0318,r_generation,diagonal and trace,graduate,one level lower,aligned,r_expression,"Let V be the 3x3 matrix defined as matrix(c(2,1,0,1,3,1,0,1,2), nrow = 3, byrow = TRUE). Write a one-line R expression that computes the sum of the squared elements of V by taking the trace of the product of V and its transpose, using only sum, diag, and the matrix multiplication operator.",,sum(diag(V %*% t(V))),"V <- matrix(c(2,1,0,1,3,1,0,1,2), 3, 3, byrow = TRUE); isTRUE(all.equal(eval(parse(text = candidate)), sum(diag(V %*% t(V)))))",pass,,,,
+random,321,BM0321,numerical,two-proportion z statistic,intro,one level higher,aligned,number,"A materials engineer tests two batches of steel components for crack resistance. Batch A has 50 components, 10 of which develop cracks under stress. Batch B has 60 components, 15 of which develop cracks. Calculate the two-proportion z-statistic for testing whether the crack rates differ, using the pooled standard error. Give your answer to 3 decimal places.",,-0.623,x1 <- 10; n1 <- 50; x2 <- 15; n2 <- 60; p1 <- x1/n1; p2 <- x2/n2; p_pool <- (x1+x2)/(n1+n2); se <- sqrt(p_pool*(1-p_pool)*(1/n1 + 1/n2)); z <- (p1 - p2)/se; cat(z),pass,,,,
+random,334,BM0334,r_generation,sapply over columns,intro,intro,aligned,r_expression,"Given the data frame df <- data.frame(a = 1:4, b = 10:13), write a one-line R expression using sapply that returns the sum of each column.",,"sapply(df, sum)","df <- data.frame(a = 1:4, b = 10:13); isTRUE(all.equal(eval(parse(text = candidate)), c(a = 10, b = 46)))",pass,,,,
+random,352,BM0352,numerical,probability of independent events,intro,intro,aligned,number,"In a genetic study, the probability that a randomly selected individual has the dominant allele for the lactase persistence gene is 0.65. The probability that the same individual carries a specific marker on chromosome 11 is 0.35. Assume these two genetic events are independent. What is the probability that an individual has the dominant lactase allele but does not carry the chromosome 11 marker? Give your answer to 3 decimal places.",,0.423,cat(0.65 * (1 - 0.35)),pass,,,,
+random,353,BM0353,r_interpretation,mean of a filtered column,intermediate,intermediate,aligned,number,"Consider the following R code. What does it print? Give your answer to 2 decimal places.
+x <- c(12.5, 14.2, 15.8, 11.3, 16.9, 13.4, 17.1, 12.8, 15.5, 14.3)
+mask <- x > 14
+mean(x[mask])",,15.63,"x <- c(12.5, 14.2, 15.8, 11.3, 16.9, 13.4, 17.1, 12.8, 15.5, 14.3)
+mask <- x > 14
+cat(mean(x[mask]))",pass,,,,
+random,356,BM0356,conceptual,the bootstrap,intermediate,intermediate,aligned,multiple_choice,"A teacher collects the final exam scores of 40 students in her class to estimate the average performance of all students in the course. Because the scores are skewed, she uses the bootstrap method. She generates 5,000 resamples with replacement, each of size 40, and calculates the mean score for each resample. The standard deviation of these 5,000 resample means is 2.1. What quantity does the value 2.1 estimate?","A. The standard error of the sample mean
+B. The population standard deviation of exam scores
+C. The width of a 95% confidence interval for the mean
+D. The difference between the sample mean and the population mean",A,,pass,,,,
+random,358,BM0358,r_generation,cumulative proportions,graduate,graduate,aligned,r_expression,"Let x be a numeric vector. The empirical cumulative proportions at the observed data points are defined as the fraction of observations less than or equal to each value. Write a one-line R expression that computes this vector without using ecdf, rank, or apply-family functions. For x = c(1, 3, 2, 3, 1), the expression must return c(0.4, 1, 0.6, 1, 0.4).",,"colMeans(outer(x, x, ""<=""))","x <- c(1, 3, 2, 3, 1); isTRUE(all.equal(eval(parse(text = candidate)), c(0.4, 1, 0.6, 1, 0.4)))",pass,,,,
+random,360,BM0360,numerical,correlation coefficient from summary values,graduate,one level lower,aligned,number,"The pairwise Pearson correlation coefficients among three random variables x, y and z are rho_xy = 0.600, rho_xz = 0.800 and rho_yz = 0.700. Compute the partial correlation coefficient rho_xy.z controlling for z. Give your answer to 3 decimal places.",,0.093,cat((0.6 - 0.8 * 0.7) / sqrt((1 - 0.8^2) * (1 - 0.7^2))),pass,,,,
+random,367,BM0367,r_interpretation,sort decreasing and index,intro,intro,aligned,number,"x <- c(5, 12, 3, 18, 9, 21, 14)
+cat(sort(x, decreasing = TRUE)[3])
+What does this print? Give your answer as a whole number.",,14,"x <- c(5, 12, 3, 18, 9, 21, 14); cat(sort(x, decreasing = TRUE)[3])",pass,,,,
+random,372,BM0372,numerical,mean squared error of an estimator,intro,intro,aligned,number,The parameter theta equals 6. An estimator T satisfies E[T] = 6.4 and Var(T) = 2.1. Calculate the mean squared error of T. Give your answer to 2 decimal places.,,2.26,cat(2.1 + (6.4 - 6)^2),pass,,,,
+random,378,BM0378,r_generation,defining a function that returns multiple statistics,graduate,one level lower,aligned,r_expression,"Write a one-line R function `get_fit_stats` that takes a linear model object `mod` (as returned by `lm`) and returns a named numeric vector with names 'r2' and 'sigma' containing the multiple R-squared value and the residual standard error, respectively.",,"function(mod) c(r2 = summary(mod)$r.squared, sigma = mod$sigma)","isTRUE(all.equal(eval(parse(text = candidate))(lm(mpg ~ wt, mtcars)), c(r2 = summary(lm(mpg ~ wt, mtcars))$r.squared, sigma = lm(mpg ~ wt, mtcars)$sigma)))",pass,,,,
+random,402,BM0402,conceptual,equivalence testing versus traditional hypothesis testing,intro,intro,aligned,multiple_choice,"In traditional hypothesis testing, failing to reject the null hypothesis of no difference between two population means does not establish equivalence. How does an equivalence test formally address this limitation?","A. It places the hypothesis of a meaningful difference in the null hypothesis and requires rejecting the null to conclude equivalence
+B. It increases the sample size until the p-value falls below 0.05, which confirms the means are identical
+C. It changes the significance level to 0.10, allowing researchers to formally accept the null hypothesis of no difference
+D. It replaces the p-value with an effect size estimate, so a value near zero proves the means are equivalent",A,,pass,,,,
+random,403,BM0403,r_generation,paste and paste0,intro,intro,aligned,r_expression,"Given the vectors x <- c(""ID"", ""ID"", ""ID"") and y <- 1:3, write a one-line R expression using paste or paste0 that returns the character vector c(""ID1"", ""ID2"", ""ID3"").",,"paste0(x, y)","x <- c(""ID"", ""ID"", ""ID""); y <- 1:3; isTRUE(all.equal(eval(parse(text = candidate)), c(""ID1"", ""ID2"", ""ID3"")))",pass,,,,
+random,407,BM1352,r_interpretation,fix a wrong argument such as na.rm,intro,intro,aligned,short_text,"A marketing team tracks the spend amount of five customers in a vector named amount: c(12, NA, 8, 15, 20). They try to compute the average spend using the line: mean(amount). This line prints NA. Fix the line so it prints the average of the four non-missing numbers.",,"mean(amount, na.rm = TRUE)","amount <- c(12, NA, 8, 15, 20); res <- tryCatch(eval(parse(text = candidate)), error = function(e) NULL); if (is.null(res)) FALSE else isTRUE(all.equal(res, mean(amount, na.rm = TRUE)))",pass,,,,
+random,408,BM0408,numerical,Benjamini-Hochberg adjusted p-values,graduate,one level lower,aligned,number,"A public health team evaluates the association between a new vaccination campaign and disease incidence across 6 geographic zones. The raw p-values from the independent zone-level tests are 0.001, 0.005, 0.010, 0.020, 0.100, and 0.101. Using the Benjamini-Hochberg procedure to adjust for multiple testing, what is the adjusted p-value corresponding to the hypothesis with the 5th smallest raw p-value? Give your answer to 3 decimal places.",,0.101,"p <- c(0.001, 0.005, 0.010, 0.020, 0.100, 0.101)
+cat(p.adjust(p, method = ""BH"")[5])",pass,,,,
+random,409,BM0409,r_generation,combining a list into a data frame with do.call,intermediate,intermediate,aligned,r_expression,"Let parts be a list containing three data frames that all have the same column names and structures. Using do.call, write a one-line base R expression that combines the elements of parts into a single data frame by stacking them row-wise.",,"do.call(rbind, parts)","parts <- list(data.frame(x = 1:2, y = 3:4), data.frame(x = 5:6, y = 7:8)); tryCatch(isTRUE(all.equal(eval(parse(text = candidate)), do.call(rbind, parts))), error = function(e) FALSE)",pass,,,,
+random,416,BM1357,conceptual,canonical versus noncanonical link functions,intermediate,intermediate,aligned,multiple_choice,Researchers are modeling the probability of patient recovery after a new surgical procedure using a Generalized Linear Model (GLM) with a Bernoulli response family. They choose a probit link function instead of the canonical logit link. Which of the following statements correctly describes a consequence of using this non-canonical link?,"A. The model assumes the underlying latent error terms follow a logistic distribution rather than a normal distribution.
+B. The linear predictor no longer equals the natural parameter of the exponential family for the response distribution.
+C. The maximum likelihood estimates of the regression coefficients will be exactly twice as large as those obtained with the canonical logit link.
+D. The deviance residuals will automatically become normally distributed without any transformation.",B,,pass,,,,
+random,421,BM0421,numerical,expected value and variance of a discrete variable,intro,intro,aligned,number,"In a reliability test, the lifetime X (in thousands of hours) of a specific electronic component can only take the values 1, 2, or 3, with probabilities P(X=1) = 0.1, P(X=2) = 0.4, and P(X=3) = 0.5. Calculate the variance of X. Give your answer to 3 decimal places.",,0.440,"x <- c(1, 2, 3); p <- c(0.1, 0.4, 0.5); cat(sum(x^2 * p) - (sum(x * p))^2)",pass,,,,
+random,424,BM0424,output_interpretation,interpreting a test of equal variances,intro,intro,aligned,multiple_choice,"The R function var.test(group_a, group_b) produces the following output:
+F test to compare two variances
+data: group_a and group_b
+F = 1.45, num df = 9, denom df = 9, p-value = 0.59
+alternative hypothesis: true ratio of variances is not equal to 1
+95 percent confidence interval:
+0.3602 5.8377
+sample estimates:
+ratio of variances
+1.45
+At the 5% significance level, what is the correct conclusion from this test?","A. There is insufficient evidence to reject the null hypothesis of equal variances.
+B. The variances are significantly different because the F statistic is greater than 1.
+C. The null hypothesis is rejected because the p-value exceeds the significance level.
+D. The confidence interval indicates the variances are equal because it contains the value 0.",A,,pass,owner edited,,,
+random,425,BM1361,numerical,z-score of an observation,intermediate,intermediate,aligned,number,"The 100-meter sprint times for ten track athletes are 9.8, 10.1, 10.3, 10.5, 10.6, 10.8, 11.0, 11.2, 11.5, and 11.8 seconds. Calculate the z-score for the athlete who ran 11.2 seconds. Use the sample standard deviation formula. Give your answer to 2 decimal places.",,0.70,"x <- c(9.8, 10.1, 10.3, 10.5, 10.6, 10.8, 11.0, 11.2, 11.5, 11.8)
+cat((11.2 - mean(x)) / sd(x))",pass,,,,
+random,432,BM0432,numerical,mean and variance of a binomial variable,intro,intro,aligned,number,"A quality control inspector examines a batch of 150 electronic components. Each component has a probability of 0.04 of failing a standard test, and the results are independent. Let X be the number of components that fail the test. Calculate the variance of X. Give your answer to 2 decimal places.",,5.76,cat(150 * 0.04 * (1 - 0.04)),pass,,,,
+random,437,BM1368,output_interpretation,identifying multicollinearity using variance inflation factors,graduate,one level lower,aligned,multiple_choice,"The following table displays the Variance Inflation Factors (VIF) for four predictors in a multiple linear regression model:
+Predictor | VIF
+x1        | 1.42
+x2        | 9.87
+x3        | 2.11
+x4        | 1.05
+Which of the following statements is correct regarding the multicollinearity structure and its impact on the model coefficients?","A. The standard error of the coefficient for x2 is inflated by a factor of approximately 9.87 compared to a model where predictors are uncorrelated.
+B. The coefficient estimate for x2 has the highest variance inflation among the four predictors due to its linear dependence on the other variables in the model.
+C. Removing x4 would most effectively reduce the multicollinearity problem because it has the second smallest VIF.
+D. The VIF for x2 implies that its corresponding partial regression sum of squares is negligible, making the coefficient insignificant regardless of the true effect size.",B,,pass,,,,
+random,443,BM0443,r_generation,running maximum with cummax,intro,intro,aligned,r_expression,"A numeric vector x is defined as x <- c(3, 1, 4, 1, 5). Write a one-line R expression that returns the running maximum of x, producing the vector 3 3 4 4 5.",,cummax(x),"x <- c(3, 1, 4, 1, 5); isTRUE(all.equal(eval(parse(text = candidate)), c(3, 3, 4, 4, 5)))",pass,,,,
+random,452,BM0452,numerical,Poisson regression rate ratio from coefficients,intro,intro,aligned,number,"A logistics firm fits a Poisson regression model to estimate the hourly delivery rate of drivers. The model includes a predictor variable called express, which is coded as 1 for express routes and 0 for standard routes. The estimated coefficient for the express variable is 0.75. What is the estimated rate ratio for express routes compared to standard routes? Give your answer to 3 decimal places.",,2.117,cat(exp(0.75)),pass,,,,
+random,453,BM0453,r_interpretation,fix a misspelled function name,intermediate,one level lower,aligned,short_text,"set.seed(123)
+returns <- rnorm(50, mean = 0.04, sd = 0.15)
+vol <- sdd(returns)
+The last line contains a misspelled function name. Write the corrected line exactly as it should appear.",,vol <- sd(returns),"tryCatch({returns <- rnorm(50, mean = 0.04, sd = 0.15); eval(parse(text = candidate)); identical(vol, sd(returns))}, error = function(e) FALSE)",pass,,,,
+random,467,BM0467,r_interpretation,what sapply returns for results of unequal length,intro,one level higher,aligned,short_text,"What does the following R code return?
+x <- list(1:2, 1:3, 1:2)
+sapply(x, function(z) z)",,a list,"tolower(trimws(candidate)) %in% c('a list', 'list')",pass,,,,
+random,477,BM0477,output_interpretation,chi-square test output,graduate,one level lower,aligned,multiple_choice,"A clinical psychologist evaluates the association between two categorical variables from a cognitive therapy trial: Intervention Type (Control, Mindfulness, CBT) and Symptom Reduction (Minimal, Moderate, Severe). The resulting 3 by 3 contingency table was analyzed with chisq.test() in R. The printed output is:
+
+Pearson's Chi-squared test
+data:  therapy_table
+X-squared = 12.45, df = 4, p-value = 0.0143
+
+Warning message:
+In chisq.test(therapy_table) : Chi-squared approximation may be incorrect
+
+What specific condition in the contingency table triggers this warning, and why does it compromise the reported p-value?","A. The observed frequencies are highly skewed, violating the assumption that count data must follow a normal distribution before testing.
+B. The sample size exceeds the maximum threshold for asymptotic tests, causing the chi-square statistic to converge to a standard normal distribution instead.
+C. The degrees of freedom equal 4, which R flags as too high for the chi-square approximation to remain valid in 3x3 tables.
+D. At least one expected cell count falls below 5, which prevents the test statistic from adequately converging to the reference chi-square distribution.",D,,pass,,,,
+random,482,BM0482,conceptual,dummy variable coefficients,intro,intro,aligned,multiple_choice,"Consider a simple linear regression model predicting a continuous outcome y from a single binary predictor group, where group equals 0 for the reference category and group equals 1 for the comparison category. The fitted model is y_hat = 5 + 2 * group. What does the coefficient 2 represent?","A. The difference between the expected value of y when group equals 1 and the expected value of y when group equals 0.
+B. The expected value of y when group equals 1.
+C. The ratio of the expected value of y for group 1 to the expected value of y for group 0.
+D. The expected value of y when group equals 0.",A,,pass,,,,
+random,492,BM0492,numerical,probability from a table of two categories,intro,intro,aligned,number,"Astronomers classified 100 stars by brightness (Bright or Dim) and color (Blue or Red). The counts are: Bright Blue 30, Bright Red 20, Dim Blue 10, Dim Red 40. If a star is chosen at random, what is the probability that it is Bright, given that it is Red? Give your answer to 3 decimal places.",,0.333,cat(20 / (20 + 40)),pass,,,,
+random,506,BM0506,conceptual,randomization in experiments,intermediate,intermediate,aligned,multiple_choice,"In a completely randomized experiment with 200 units assigned to a treatment group or a control group with equal probability, let x be a binary pre-treatment covariate. Which statement about the properties of this design is true?","A. The sample mean of x will be exactly the same in both groups.
+B. The expected difference in the sample mean of x between the treatment and control groups is zero.
+C. The realized sample data will show no correlation between group assignment and x.
+D. A hypothesis test for the difference in means of x between groups will never reject the null hypothesis at the 5 percent level.",B,,pass,,,,
+random,510,BM0510,output_interpretation,paired t-test output,intermediate,one level lower,aligned,multiple_choice,"The R output below shows the result of a paired t-test comparing two variables, x and y. Which of the following statements correctly interprets this output?
+
+	Paired t-test
+
+data:  x and y
+t = 2.5981, df = 11, p-value = 0.02478
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.2293 2.7707
+sample estimates:
+mean of the differences 
+               1.5 
+
+A: The p-value of 0.02432 means there is a 2.4 percent chance that the null hypothesis is true.
+B: The t-statistic of 2.5981 indicates that the observed mean difference is 2.5981 times the sample standard deviation.
+C: The 95 percent confidence interval does not contain zero, which is consistent with rejecting the null hypothesis at the 0.05 significance level.
+D: Because the confidence interval is positive, the alternative hypothesis must have been one-sided, testing whether the mean difference is greater than zero.","A. The p-value of 0.02432 means there is a 2.4 percent chance that the null hypothesis is true.
+B. The t-statistic of 2.5981 indicates that the observed mean difference is 2.5981 times the sample standard deviation.
+C. The 95 percent confidence interval does not contain zero, which is consistent with rejecting the null hypothesis at the 0.05 significance level.
+D. Because the confidence interval is positive, the alternative hypothesis must have been one-sided, testing whether the mean difference is greater than zero.",C,,pass,owner edited,,,
+random,511,BM0511,conceptual,variance of a sum of dependent variables,graduate,one level lower,aligned,multiple_choice,A quality control engineer aggregates three correlated sensor readings per production batch to form a composite quality index. The readings share a positive correlation due to a common thermal drift in the inspection chamber. Which statement correctly describes the variance of the composite index?,"A. The variance of the sum equals the sum of the marginal variances, because shared latent factors cancel out when variables are added.
+B. The variance of the sum equals the sum of the marginal variances plus the sum of all pairwise covariances, and positive correlation guarantees the total variance is smaller than under independence.
+C. The variance of the sum equals the sum of the marginal variances plus the average of the pairwise covariances, implying that dependence has a negligible effect on the aggregate variance when the batch size is large.
+D. The variance of the sum equals the sum of the marginal variances plus twice the sum of all distinct pairwise covariances, so positive dependence strictly increases the total variance relative to the independent case and requires adjusted control limits.",D,,pass,,,,
+random,518,BM0518,r_generation,row and column sums,graduate,one level lower,aligned,r_expression,"A public health surveillance system records weekly case counts for a respiratory illness across three regions (rows) and three age groups (columns) in a matrix named m:
+12 18 24
+15 25 35
+20 30 40
+Under a Poisson log-linear model that assumes independence between region and age group, the maximum likelihood estimator for the expected count matrix is the outer product of the row margins and column margins divided by the grand total. Write a single-line R expression that computes this 3x3 matrix of expected counts from m, ensuring the result retains the original matrix dimensions.",,"outer(rowSums(m), colSums(m), ""*"") / sum(m)","m <- matrix(c(12,18,24,15,25,35,20,30,40), nrow=3, byrow=TRUE); isTRUE(all.equal(eval(parse(text=candidate)), outer(rowSums(m), colSums(m), ""*"") / sum(m)))",pass,,,,
+random,519,BM0519,r_interpretation,a recursive function value,intro,one level higher,aligned,number,"A telescope calibration script defines the following recursive function to estimate background noise from successive frames:
+adjust_noise <- function(k) {
+  if (k == 0) {
+    return(1.2)
+  } else {
+    return(adjust_noise(k - 1) * 0.5 + 0.1)
+  }
+}
+What does the following call print?
+adjust_noise(3)
+Give your answer to 3 decimal places.",,0.325,adjust_noise <- function(k) { if (k == 0) return(1.2) else return(adjust_noise(k - 1) * 0.5 + 0.1) }; cat(adjust_noise(3)),pass,,,,
+random,535,BM0535,numerical,sampling distribution of the sample mean,intermediate,intermediate,aligned,number,The tensile strength of a batch of aluminum alloy rods follows a normal distribution with a mean of 250 MPa and a standard deviation of 18 MPa. A quality engineer randomly selects a sample of 36 rods from this batch. What is the probability that the sample mean strength exceeds 254 MPa? Give your answer to 3 decimal places.,,0.091,"cat(pnorm(254, mean = 250, sd = 18/sqrt(36), lower.tail = FALSE))",pass,,,,
+random,537,BM0537,output_interpretation,interpreting a test of equal variances,graduate,graduate,aligned,multiple_choice,"The console output below comes from running var.test() on two independent samples named x and y. Based on this output, which statement is correct?
+F test to compare two variances
+
+data:  x and y
+F = 1.82, num df = 19, Den df = 19, p-value = 0.201
+alternative hypothesis: true ratio of variances is not equal to 1
+95 percent confidence interval:
+ 0.72 4.60
+sample estimates:
+ratio of variances 
+ 1.82","A. The reported p-value is exact only if both independent samples are drawn from normally distributed populations.
+B. The confidence interval is constructed using critical values from a chi-squared distribution because it involves variance estimators.
+C. The test is uniformly most powerful for all continuous distributions, not just the normal family.
+D. The p-value remains approximately valid under heavy-tailed distributions due to the central limit theorem.",A,,pass,owner edited,,,
+random,556,BM0556,conceptual,multicollinearity,intermediate,intermediate,aligned,multiple_choice,"In a multiple linear regression model, two predictor variables are found to be highly correlated. Which of the following statements correctly describes a direct consequence of this multicollinearity?","A. The overall F-test for the regression model becomes statistically invalid.
+B. The standard errors of the affected regression coefficients decrease.
+C. The variance inflation factor for the correlated predictors increases.
+D. The multiple R-squared value is artificially reduced.",C,,pass,,,,
+random,567,BM0567,r_interpretation,NA handling in mean and sum,intro,intro,aligned,number,"Consider this R code:
+x = c(1, 2, NA, 4)
+mean(x, na.rm = TRUE)
+What is the printed value, rounded to 3 decimal places?",,2.333,"cat(round(mean(c(1, 2, NA, 4), na.rm = TRUE), 3))",pass,,,,
+random,568,BM1436,numerical,logistic regression odds ratio confidence interval,graduate,one level lower,aligned,number,"A political scientist studies voting behavior using a logistic regression model. The outcome variable is whether a respondent voted in the last election (1 = yes, 0 = no). One of the predictors is the natural logarithm of household income. From the model output, the estimated coefficient for log household income is 0.250 with a standard error of 0.060. Assuming a large sample size so the Wald approximation applies, calculate the upper limit of the 95% confidence interval for the odds ratio associated with log household income. Give your answer to 3 decimal places.",,1.444,coef <- 0.250; se <- 0.060; z <- qnorm(0.975); upper_log <- coef + z * se; cat(exp(upper_log)),pass,,,,
+random,569,BM0569,r_generation,a recursive function,intermediate,intermediate,aligned,r_expression,"Write a one-line R expression that defines an anonymous recursive function taking a numeric argument n and returning the sum of integers from 1 to n. The function must return 0 when n is less than or equal to 0, and use Recall() for the recursive step.",,function(n) if(n <= 0) 0 else n + Recall(n-1),"{ f <- eval(parse(text = candidate)); isTRUE(all.equal(f(0), 0)) && isTRUE(all.equal(f(1), 1)) && isTRUE(all.equal(f(5), 15)) }",pass,,,,
+random,573,BM0573,r_interpretation,paste and substr output,intermediate,intermediate,aligned,short_text,"What does the following R code print?
+t_vals <- c(-2.341, 1.562, 0.128)
+cat(paste(substr(LETTERS[1:3], 1, 1), round(t_vals, 2), sep = ""="", collapse = ""-""))",,A=-2.34-B=1.56-C=0.13,"trimws(candidate) == ""A=-2.34-B=1.56-C=0.13""",pass,,,,
+random,583,BM0583,r_generation,counting with table,intro,intro,aligned,r_expression,"x <- c(1, 2, 2, 3, 2, 4, 1). Write a single R expression that returns a frequency table of the values in x.",,table(x),"x <- c(1, 2, 2, 3, 2, 4, 1); r <- eval(parse(text = candidate)); inherits(r, ""table"") && length(dim(r)) == 1 && identical(as.vector(r), c(2L, 3L, 1L, 1L)) && identical(dimnames(r)[[1]], c(""1"", ""2"", ""3"", ""4""))",pass,,,,
+random,584,BM0584,output_interpretation,logistic regression coefficient as an odds ratio,intro,intro,aligned,multiple_choice,"A telecommunications company fits a logistic regression model to predict whether a customer experienced a network outage last month (Outage = 1 for yes, 0 for no). The predictors are DataUsage (gigabytes consumed per month) and CallDuration (total minutes of voice calls). The R output for the fitted model is shown below:
+
+Coefficients:
+                     Estimate Std. Error z value Pr(>|z|)
+(Intercept)      -1.800000   0.200000 -9.0000  < 2e-16 ***
+DataUsage         0.405465   0.050000  8.1093 5.09e-16 ***
+CallDuration      0.002000   0.001000  2.0000  0.04550 *
+
+Holding other variables constant, each additional gigabyte of monthly data usage is associated with which of the following changes in the odds of a network outage?","A. The odds are multiplied by approximately 1.5
+B. The odds are multiplied by approximately 0.4
+C. The odds increase by 40.5 percentage points
+D. The probability increases by a factor of 1.5",A,,pass,owner edited,,,
+random,588,BM0588,numerical,covariance of two discrete variables from a joint table,graduate,one level lower,aligned,number,"A boutique hotel analyzes guest data to understand the relationship between length of stay and on-site spending behavior. Let X be the number of nights stayed and Y be the number of restaurant visits during the stay. The joint probability mass function for a random guest is given below.
+P(X=1, Y=0) = 0.08, P(X=1, Y=1) = 0.12, P(X=1, Y=2) = 0.04
+P(X=2, Y=0) = 0.15, P(X=2, Y=1) = 0.22, P(X=2, Y=2) = 0.11
+P(X=3, Y=0) = 0.05, P(X=3, Y=1) = 0.18, P(X=3, Y=2) = 0.05
+Calculate the covariance of X and Y using the formula Cov(X, Y) = E[XY] - E[X]E[Y]. Give your answer to 3 decimal places.",,0.043,"p <- c(0.08, 0.12, 0.04, 0.15, 0.22, 0.11, 0.05, 0.18, 0.05)
+x <- c(1,1,1,2,2,2,3,3,3)
+y <- c(0,1,2,0,1,2,0,1,2)
+cat(sum(x*y*p) - sum(x*p)*sum(y*p))",pass,,,,
+random,599,BM1448,r_interpretation,head and tail,intro,intro,aligned,number,"What does the following R code print? Give your answer to 3 decimal places.
+x <- c(2, 5, 9, 14, 20)
+mean(tail(x, 3))",,14.333,"x <- c(2, 5, 9, 14, 20); cat(mean(tail(x, 3)))",pass,,,,
+random,604,BM0604,output_interpretation,one-sample proportion test output,intro,intro,aligned,multiple_choice,"A human resources department wants to test whether the proportion of employees who prefer morning shifts differs from 40 percent. They survey 100 employees and find that 35 prefer morning shifts. They run a one-sample proportion test in R with the null probability set to 0.4 and continuity correction turned off. The output is:
+
+1-sample proportions test without continuity correction
+
+data:  35 out of 100, null probability 0.4
+X-squared = 1.0417, df = 1, p-value = 0.3074
+alternative hypothesis: true p is not equal to 0.4
+sample estimates:
+        p 
+     0.35 
+
+What is the correct interpretation of the p-value of 0.3073 in this context?","A. There is strong evidence that the true proportion differs from 0.4 because the p-value is below 0.05.
+B. The probability that the null hypothesis is true is 30.73 percent.
+C. If the true proportion is 0.4, the probability of observing exactly 35 employees preferring morning shifts is 30.73 percent.
+D. There is insufficient evidence to reject the null hypothesis at the 5 percent significance level because the p-value is greater than 0.05.",D,,pass,owner edited,,,
+random,608,BM0608,numerical,mean from a frequency table,graduate,one level lower,aligned,number,"In a post-vaccination serology survey, antibody titers are measured and recorded as log10 values. The results are summarized in the following frequency table of grouped log10 titers:
+Interval [1.0, 1.5): 12 participants
+Interval [1.5, 2.0): 45 participants
+Interval [2.0, 2.5): 78 participants
+Interval [2.5, 3.0): 64 participants
+Interval [3.0, 3.5]: 21 participants
+Assuming the antibody titer for each participant equals the back-transformed midpoint of their interval (i.e., 10 raised to the power of the interval midpoint), calculate the arithmetic mean antibody titer for the entire sample. Give your answer to 3 decimal places.",,408.856,"f <- c(12, 45, 78, 64, 21)
+mids <- c(1.25, 1.75, 2.25, 2.75, 3.25)
+cat(sum(f * 10^mids) / sum(f))",pass,,,,
+random,610,BM1775,output_interpretation,logistic regression deviance,intermediate,intermediate,aligned,multiple_choice,"The following R code fits a logistic regression model and prints part of the summary:
+m <- glm(y ~ x, family = binomial)
+summary(m)
+...
+Null deviance: 245.310  on 149  degrees of freedom
+Residual deviance:  230.120  on 148  degrees of freedom
+...
+What is the value of the likelihood ratio test statistic for testing whether the coefficient of x equals zero?","A. 245.310
+B. 15.190
+C. 230.120
+D. 148",B,,pass,,,,
+random,624,BM0624,output_interpretation,structure output from str,intro,intro,aligned,multiple_choice,"A production engineer records quality metrics from an assembly line and runs str(prod_data) in R. The console prints:
+'data.frame':    50 obs. of  3 variables:
+ $ machine_type: Factor w/ 2 levels ""Lathe"",""Milling"": 1 1 2 1 2 ...
+ $ shaft_diam  : num  12.05 12.11 11.98 12.03 12.07 ...
+ $ is_defect   : logi  FALSE TRUE FALSE FALSE TRUE ...
+Which statement accurately describes the data set?","A. The data set contains 3 observations and 50 variables.
+B. The variable shaft_diam is stored as a character vector.
+C. The variable machine_type is a categorical variable with two possible categories.
+D. The variable is_defect contains numeric codes 0 and 1 to represent outcomes.",C,,pass,,,,
+random,629,BM0629,r_generation,substr and substring,intermediate,intermediate,aligned,r_expression,"Let s <- c('A-001', 'A-002', 'A-003'). Write an R expression using substr and nchar that extracts the three-digit number from each element of s and converts it to a numeric vector.",,"as.numeric(substr(s, 4, nchar(s)))","s <- c('A-001', 'A-002', 'A-003'); isTRUE(all.equal(eval(parse(text = candidate)), c(1, 2, 3)))",pass,,,,
+random,635,BM0635,numerical,coefficient of variation,intermediate,intermediate,aligned,number,"A physics student measures the period of a simple pendulum eight times, obtaining the following values in seconds: 10.2, 10.5, 10.1, 10.4, 10.3, 10.6, 10.0, 10.7. Calculate the coefficient of variation (CV) for these measurements, defined as the sample standard deviation divided by the sample mean, and express it as a percentage rounded to one decimal place.",,2.4,"x <- c(10.2, 10.5, 10.1, 10.4, 10.3, 10.6, 10.0, 10.7)
+cat((sd(x) / mean(x)) * 100)",pass,,,,
+random,644,BM1957,output_interpretation,Tukey comparison output,intro,intro,aligned,multiple_choice,"A real estate analyst compares the average monthly rent across three districts using a one-way ANOVA followed by Tukey's honest significant difference test. The software prints the following comparison results:
+
+Tukey multiple comparisons of means
+  95% family-wise confidence level
+
+Fit: aov(formula = Rent ~ District, data = housing)
+
+$District
+               diff       lwr      upr     p adj
+South-North  1.200   0.552    1.848   0.003
+West-North   2.800   2.152    3.448  <0.001
+West-South   1.600   0.952    2.248   0.001
+
+What does this output indicate about the average rents?
+
+A. There are no statistically significant differences between any districts.
+B. The West district has a significantly higher average rent than both North and South.
+C. The South district has a significantly lower average rent than North.
+D. The 95% confidence intervals for all pairwise differences include zero.","A. There are no statistically significant differences between any districts.
+B. The West district has a significantly higher average rent than both North and South.
+C. The South district has a significantly lower average rent than North.
+D. The 95% confidence intervals for all pairwise differences include zero.",B,,pass,,,,
+random,655,BM0655,numerical,moving average of a time series,intermediate,one level lower,aligned,number,"A water quality monitoring station records monthly nitrate concentrations (mg/L) for the first six months of the year: January 12.4, February 15.1, March 13.8, April 16.2, May 14.5, June 17.3. The 3-month centered moving average for a given month is defined as the average of the values for that month and the immediately preceding and following months. Calculate this value for April. Give your answer to 2 decimal places.",,14.83,cat((13.8 + 16.2 + 14.5) / 3),pass,,,,
+random,659,BM0659,r_interpretation,nchar of pasted strings,intro,intro,aligned,number,"What does the following R code return? Give your answer as a whole number.
+nchar(paste(""mean"", ""sd"", ""n"", sep = ""/""))",,9,"cat(nchar(paste(""mean"", ""sd"", ""n"", sep = ""/"")))",pass,,,,
+random,679,BM0679,r_interpretation,fix a misspelled function name,intro,intro,aligned,short_text,"x <- c(3, 7, 11)
+mnean(x)
+The code has an error. Provide the corrected line of code.",,mean(x),"trimws(candidate) == ""mean(x)""",pass,,,,
+random,683,BM0683,r_generation,cumulative proportions,intro,intro,aligned,r_expression,"Given the numeric vector x <- c(2, 3, 5), write a single R expression that returns the cumulative proportions of x.",,cumsum(x) / sum(x),"x <- c(2, 3, 5); isTRUE(all.equal(eval(parse(text = candidate)), c(0.2, 0.5, 1)))",pass,,,,
+random,684,BM0684,output_interpretation,aggregate output,intro,intro,not_aligned,multiple_choice,"A researcher compares crop yields across three fertilizer types using a one-way ANOVA in R. The software prints the following output:
+
+Analysis of Variance Table
+
+Response: yield
+            Df Sum Sq Mean Sq F value Pr(>F)
+fertilizer  2   120.0    60.0    4.50  0.021
+Residuals  27   360.0    13.33
+
+Based on this output, which statement is correct?","A. There is no statistically significant difference in mean yields among the fertilizer types at the 5 percent level.
+B. The total sum of squares is 480.0, indicating that the fertilizer type explains all variation in the yield data.
+C. The F statistic of 4.50 indicates that the variability between fertilizer groups is smaller than the variability within groups.
+D. The p-value of 0.021 provides evidence to reject the null hypothesis that all fertilizer types produce the same mean yield at the 5 percent significance level.",D,,pass,kept with a subtopic verdict recorded,,,
+random,685,BM0685,numerical,Wald test statistic from a coefficient and standard error,intermediate,intermediate,aligned,number,"A logistic regression model is fit to predict full recovery in cats treated for chronic kidney disease. The predictor is a binary indicator for receiving a new phosphorus binder. The model output reports an odds ratio of 2.15 for the treatment effect, and the standard error of the corresponding log-odds coefficient is 0.12. To test the null hypothesis that the true coefficient equals zero, compute the Wald test statistic, defined here as the estimated coefficient divided by its standard error. Give your answer to 3 decimal places.",,6.379,cat(log(2.15) / 0.12),pass,,,,
+random,695,BM0695,numerical,probability of independent events,intermediate,intermediate,aligned,number,"An air quality monitoring station records daily particulate matter concentrations. On any given day in July, the probability that the reading exceeds the safe threshold is 0.18. Assuming daily readings are independent, what is the probability that exactly 3 out of the next 10 days will exceed the threshold? Give your answer to 3 decimal places.",,0.174,"cat(dbinom(3, 10, 0.18))",pass,,,,
+random,711,BM0711,conceptual,Monte Carlo standard error,graduate,one level lower,aligned,multiple_choice,"A traffic engineer uses MCMC to estimate the posterior mean of daily commuters crossing a bridge. The algorithm produces a chain of 200,000 iterations. Due to high autocorrelation, the effective sample size (ESS) for the mean is 2,500, resulting in a Monte Carlo standard error (MCSE) of 0.4 commuters. The engineer adjusts the sampler to improve mixing, which raises the ESS to 10,000 while the total chain length remains 200,000. Which statement correctly predicts the new MCSE and explains why?","A. It will drop to 0.08 commuters because MCSE decreases linearly with the effective sample size.
+B. It will drop to 0.2 commuters because MCSE scales with the inverse square root of the effective sample size.
+C. It will remain 0.4 commuters because the Monte Carlo standard error is determined by the posterior variance and does not change with better mixing.
+D. It will drop to 0.02 commuters because increasing the ESS eliminates all numerical simulation error.",B,,pass,,,,
+random,719,BM0719,r_interpretation,factor levels and as.numeric,intro,one level higher,aligned,number,"A finance student analyzes quarterly portfolio values and runs the following R code:
+values <- c(100, 200, 100, 300)
+f_values <- factor(values)
+result <- mean(as.numeric(f_values))
+print(result)
+What value does this code print? Give your answer to 2 decimal places.",,1.75,"cat(mean(as.numeric(factor(c(100, 200, 100, 300)))))",pass,,,,
+random,727,BM0727,r_interpretation,order with ties,intro,intro,partly,number,"Let x <- c(9, 2, 9, 2, 5). When the command order(x) is run in R, it prints a vector of five integers. What is the third integer in this printed vector? Give your answer as a whole number.",,5,"x <- c(9, 2, 9, 2, 5)
+cat(order(x)[3])",pass,,,,
+random,729,BM0729,r_generation,every k-th element of a vector,intermediate,intermediate,aligned,r_expression,Let x be the mpg column of the built-in mtcars data set. Write a single R expression that computes the sample variance of every fourth element of x.,,"var(mtcars$mpg[seq(4, length(mtcars$mpg), by = 4)])","isTRUE(all.equal(eval(parse(text = candidate)), var(mtcars$mpg[seq(4, length(mtcars$mpg), by = 4)])))",pass,,,,
+random,739,BM0739,r_interpretation,what happens when a factor has only one observed level,intro,intro,aligned,short_text,"What does this R code return?
+x <- factor(c(""A"", ""A"", ""A""), levels = c(""A"", ""B"", ""C""))
+nlevels(x)",,3,"trimws(candidate) == ""3""",pass,,,,
+random,747,BM0747,r_interpretation,effect of na.rm,intro,intro,aligned,number,"A veterinary clinic records the recovery times in days for five cats after a new therapy: times <- c(3.2, 4.5, NA, 5.0, 4.3). What does the following R code print? mean(times, na.rm = TRUE) Give your answer to 2 decimal places.",,4.25,"cat(mean(c(3.2, 4.5, NA, 5.0, 4.3), na.rm = TRUE))",pass,,,,
+random,748,BM0748,numerical,Bonferroni-adjusted significance threshold,graduate,one level lower,aligned,number,"We fit a linear regression model including main effects for 6 predictors labeled 1 through 6, and interaction terms for specific pairs. We perform a t-test for the significance of each main effect coefficient (6 tests). We also perform a t-test for the significance of each interaction coefficient corresponding to a pair of predictors (i, j) with i < j such that the sum i + j is a multiple of 5. We apply the Bonferroni correction to control the family-wise error rate at alpha = 0.05. What is the Bonferroni-adjusted significance threshold for each test? Give your answer to 3 decimal places.",,0.006,"alpha <- 0.05
+m_main <- 6
+m_int <- 0
+for(i in 1:6) {
+  for(j in (i+1):6) {
+    if ((i + j) %% 5 == 0) {
+      m_int <- m_int + 1
+    }
+  }
+}
+cat(alpha / (m_main + m_int))",pass,,,,
+random,750,BM1525,output_interpretation,Shapiro-Wilk test output,intermediate,intermediate,aligned,multiple_choice,"A researcher collects daily rainfall measurements in millimeters for a coastal city during the rainy season and tests whether the distribution follows a normal model. The R console shows:
+> shapiro.test(rainfall_mm)
+
+        Shapiro-Wilk normality test
+
+data:  rainfall_mm
+W = 0.8921, p-value = 0.0034
+
+Based on this output at a 5 percent significance level, which statement is correct?
+A. The rainfall data are normally distributed because the W statistic is close to 1.
+B. The rainfall data are not normally distributed because the p-value is greater than 0.05.
+C. We reject the null hypothesis of normality because the p-value is less than 0.05.
+D. We fail to reject the null hypothesis because the test statistic W is positive.","A. The rainfall data are normally distributed because the W statistic is close to 1.
+B. The rainfall data are not normally distributed because the p-value is greater than 0.05.
+C. We reject the null hypothesis of normality because the p-value is less than 0.05.
+D. We fail to reject the null hypothesis because the test statistic W is positive.",C,,pass,,,,
+random,751,BM0751,conceptual,paired versus independent samples,graduate,graduate,aligned,multiple_choice,"Let (x_i, y_i) for i = 1, ..., n be n pairs of random variables. A paired t-test is used to test whether the population mean difference is zero. Which of the following is the exact distributional requirement for the test statistic to follow a Student t distribution with n - 1 degrees of freedom under the null hypothesis?","A. the marginal distributions of x_i and y_i are both normal
+B. the joint distribution of x_i and y_i is bivariate normal
+C. the population correlation between x_i and y_i is zero
+D. the differences x_i - y_i are independently and identically distributed as normal",D,,pass,,,,
+random,752,BM0752,numerical,exponential smoothing forecast,intro,intro,aligned,number,"A portfolio manager uses simple exponential smoothing to forecast weekly portfolio values in millions of dollars. The forecast for week 1 was 20. The actual portfolio value at the end of week 1 was 22.1. Using a smoothing constant of 0.35, what is the forecast for week 2? Give your answer to 3 decimal places.",,20.735,cat(0.35 * 22.1 + (1 - 0.35) * 20),pass,,,,
+random,756,BM0756,conceptual,law of total variance,intermediate,intermediate,aligned,multiple_choice,"Let Y be a response variable and G be a discrete grouping variable. The law of total variance decomposes the marginal variance of Y as Var(Y) = E[Var(Y|G)] + Var(E[Y|G]). Which of the following correctly describes the second term, Var(E[Y|G])?","A. It equals the variance of the conditional expectations and measures the variability between group means.
+B. It equals the expected conditional variance and measures the average variability within groups.
+C. It represents the covariance between Y and G and can assume negative values.
+D. It is the residual variance after conditioning on G and is largest when group means are identical.",A,,pass,,,,
+random,758,BM0758,r_generation,quantiles and percentiles,graduate,graduate,aligned,r_expression,"In the construction of theoretical quantile-quantile plots, the plotting positions for the i-th order statistic are frequently defined as p_i = i/(n+1). R's quantile() function provides nine algorithms for sample quantiles; one of them exactly matches this plotting position convention. Write a one-line R expression that computes the sample 0.75 quantile of a numeric vector x using the algorithm that corresponds to the i/(n+1) plotting positions.",,"quantile(x, 0.75, type=6)","isTRUE(all.equal(eval(parse(text = candidate), envir = list(x = 1:20)), quantile(1:20, 0.75, type=6)))",pass,,,,
+random,761,BM0761,numerical,conditional probability and Bayes' rule,intro,intro,aligned,number,"Let P(X) = 0.7, P(Y) = 0.4, and P(X | Y) = 0.9. Calculate P(Y | X) using Bayes' rule. Give your answer to 3 decimal places.",,0.514,cat(0.9 * 0.4 / 0.7),pass,,,,
+random,764,BM1533,output_interpretation,R-squared and residual standard error,intro,intro,aligned,multiple_choice,"An ecologist fits a linear model to predict plant height from soil moisture. The R output shows:
+Residual standard error: 3.2 on 18 degrees of freedom
+Multiple R-squared:  0.72,  Adjusted R-squared:  0.70 
+What does the Multiple R-squared value of 0.72 mean?","A. The correlation between plant height and soil moisture is 0.72.
+B. The typical prediction error for plant height is 0.72 centimeters.
+C. 72% of the measured plant heights fall exactly on the fitted regression line.
+D. 72% of the variance in plant height is explained by soil moisture.",D,,pass,,,,
+random,781,BM0781,numerical,method of moments estimate,intro,intro,aligned,number,"A random sample of five observations from an exponential distribution with rate parameter lambda is 1.2, 3.4, 2.1, 4.3, and 1.0. The method of moments estimator for lambda is the reciprocal of the sample mean. Calculate this estimate and give your answer to 3 decimal places.",,0.417,"x <- c(1.2, 3.4, 2.1, 4.3, 1.0)
+cat(1 / mean(x))",pass,,,,
+random,802,BM0802,conceptual,observational versus experimental studies,intro,intro,aligned,multiple_choice,"A researcher collects data on two variables, x and y, by recording their values for individuals who naturally fall into group 1 or group 2 without any intervention or assignment by the researcher. This study design is classified as observational because:","A. the researcher does not randomly assign subjects to the groups
+B. the sample size is fixed before data collection
+C. the variables x and y are measured on a continuous scale
+D. the data are collected at a single point in time",A,,pass,,,,
+random,811,BM1553,conceptual,assumptions of linear regression,graduate,graduate,aligned,multiple_choice,"In the linear regression model y_i = x_i' b + e_i, suppose E[e_i | x_i] = 0 but Var(e_i | x_i) varies with x_i. Which statement about the OLS estimator b_hat is correct?","A. It remains unbiased and consistent, but the usual OLS covariance matrix estimator is inconsistent, rendering standard t-tests invalid without robust standard errors.
+B. It becomes biased and inconsistent because the Gauss-Markov theorem requires homoskedasticity to ensure unbiasedness.
+C. It remains the best linear unbiased estimator and its conventional standard errors are asymptotically valid.
+D. It loses asymptotic normality, preventing large-sample inference based on the normal distribution.",A,,pass,,,,
+random,836,BM1562,conceptual,adjusted R-squared versus R-squared,intermediate,intermediate,aligned,multiple_choice,"A multiple linear regression model is fit to a dataset with 100 observations. Initially, with 2 predictors, the R-squared is 0.45. A third predictor is added to the model. Which of the following statements must be true regarding the new R-squared and adjusted R-squared values?","A. The new R-squared will be at least 0.45, but the new adjusted R-squared could be less than its previous value.
+B. Both the new R-squared and the new adjusted R-squared must increase.
+C. The new R-squared could decrease, but the new adjusted R-squared must increase.
+D. Both the new R-squared and the new adjusted R-squared must remain exactly the same.",A,,pass,,,,
+random,838,BM0838,r_generation,cumulative sums,graduate,one level lower,aligned,r_expression,"The vector x <- c(0.8, 1.5, -0.3, 2.1, 0.6, 1.2) represents standardized quarterly deviations in dissolved oxygen concentration at a lake monitoring station. In a cumulative sum control chart, the statistic C_i equals the cumulative sum of these deviations. An out-of-control signal occurs when C_i first exceeds 2.5. Write a one-line R expression that returns the quarter index at which the signal occurs.",,which(cumsum(x) > 2.5)[1],"x <- c(0.8, 1.5, -0.3, 2.1, 0.6, 1.2); isTRUE(all.equal(eval(parse(text = candidate)), 4))",pass,,,,
+random,861,BM0861,numerical,Bonferroni-adjusted significance threshold,intro,intro,aligned,number,"A department head plans to run 5 independent t-tests to compare student quiz scores across different study groups. To keep the overall chance of a Type I error at 0.05, the Bonferroni method is applied. What is the new significance threshold for each individual test? Give your answer to 3 decimal places.",,0.010,cat(0.05 / 5),pass,,,,
+random,866,BM1577,conceptual,confidence interval and hypothesis test duality,intermediate,intermediate,aligned,multiple_choice,Consider a population mean mu and a two-sided hypothesis test of H0: mu = mu_0 versus H1: mu != mu_0 performed at significance level alpha. Let C be a (1-alpha)100% confidence interval for mu constructed from the same sample using the same pivot. Which statement correctly describes the relationship between the interval and the test?,"A. The test rejects H0 if mu_0 is inside C, because the interval covers the most likely values under the alternative hypothesis.
+B. The test fails to reject H0 if mu_0 is outside C, because values outside the interval are statistically impossible.
+C. The p-value for the test equals 1 minus the confidence level whenever mu_0 lies within C.
+D. The test rejects H0 if and only if mu_0 is not in C, because both methods invert the same test statistic to define the acceptance region.",D,,pass,,,,
+random,883,BM0883,r_generation,weighted mean,intro,intro,aligned,r_expression,"A human resources manager recorded average job satisfaction scores out of 10 for four departments: 4, 5, 3, and 6. The number of employees in each department is 10, 20, 15, and 5, respectively. Write a one-line R expression to compute the company-wide weighted mean satisfaction score.",,"weighted.mean(c(4, 5, 3, 6), c(10, 20, 15, 5))","isTRUE(all.equal(eval(parse(text = candidate)), weighted.mean(c(4, 5, 3, 6), c(10, 20, 15, 5))))",pass,,,,
+random,907,BM0907,r_interpretation,sorting with order,intro,intro,aligned,number,"The following R code analyzes house prices in thousands of dollars. What number does it print? Give your answer as a whole number.
+prices <- c(250, 180, 310, 220)
+idx <- order(prices)
+idx[2]",,4,"cat(order(c(250, 180, 310, 220))[2])",pass,,,,
+random,922,BM0922,conceptual,rank-based methods,intro,intro,aligned,multiple_choice,"An engineer measures the tensile strength of 15 composite panels. The measurements contain several unusually high values that do not represent typical material performance. Instead of using a standard t-test, the engineer plans to use a rank-based test to compare two batches of panels. What is the main reason for choosing a rank-based test here?","A. Rank-based tests require larger sample sizes to be valid.
+B. Rank-based tests assume the data are normally distributed.
+C. Rank-based tests are robust to outliers and do not require normality.
+D. Rank-based tests calculate the difference between the sample means.",C,,pass,,,,
+random,926,BM0926,conceptual,what failing to reject the null does and does not mean,intermediate,one level lower,aligned,multiple_choice,"A food scientist tests whether a new natural preservative extends the shelf life of a wheat bread product. The null hypothesis states that the mean shelf life with the preservative equals the mean shelf life without it. A one-sided t-test is performed at the 0.05 significance level, yielding a p-value of 0.14. The researcher fails to reject the null hypothesis. Which of the following statements correctly interprets this result?","A. There is insufficient evidence at the 0.05 level to conclude that the preservative extends shelf life, though the preservative may still be effective.
+B. The preservative has been proven to have no effect on the shelf life of the bread.
+C. The probability that the null hypothesis is true is 0.14.
+D. The experiment failed because a valid food science study must always produce a statistically significant result.",A,,pass,,,,
+random,927,BM0927,r_interpretation,ifelse with NA,intro,one level higher,partly,number,"Consider the R code below. What value is printed? Give your answer to 3 decimal places.
+x <- c(10, 20, NA, 30, 40)
+y <- ifelse(is.na(x), 25, x)
+sd(y)",,11.180,"x <- c(10, 20, NA, 30, 40)
+y <- ifelse(is.na(x), 25, x)
+cat(sd(y))",pass,,,,
+random,932,BM0932,numerical,expected count in a contingency table,intro,one level higher,aligned,number,"A coach records the training attendance of 70 soccer players over a month, classified by position and whether they completed all sessions. The observed counts are: Midfielders, 18 completed and 12 missed; Defenders, 14 completed and 26 missed. Assuming position and training attendance are independent, what is the expected count for midfielders who completed all sessions? Give your answer to 2 decimal places.",,13.71,cat((30 * 32) / 70),pass,,,,
+random,937,BM0937,output_interpretation,accuracy or sensitivity from a confusion matrix,graduate,one level lower,aligned,multiple_choice,"A binary classifier is evaluated on a dataset. The resulting confusion matrix is:
+Predicted Negative  Predicted Positive
+Actual Negative      85                  15
+Actual Positive      25                  75
+Which statement correctly interprets a performance metric from this output?","A. The sensitivity is 0.75, indicating that 75% of individuals who truly have the condition test positive.
+B. The accuracy is 0.80, which guarantees that the positive predictive value will remain 0.80 regardless of disease prevalence in a new population.
+C. The specificity is 0.85, meaning that 85% of all positive test results are true positives.
+D. The false discovery rate is 0.25, calculated as 1 minus the sensitivity.",A,,pass,,,,
+random,944,BM1845,output_interpretation,Poisson regression coefficient as a rate ratio,intro,intro,aligned,multiple_choice,"A telecommunications company fits a Poisson regression model to predict the monthly number of support calls from the number of connected devices per account. The model output is:
+Coefficients:
+                Estimate Std. Error z value Pr(>|z|)
+(Intercept)  0.69314      0.0500    13.86  < 2e-16
+devices      0.22314      0.0400     5.58   2.3e-08
+What is the estimated rate ratio for the number of support calls associated with each additional connected device?","A. 0.2231
+B. 0.798
+C. 1.25
+D. 1.223",C,,pass,,,,
+random,945,BM0945,numerical,logistic regression odds ratio confidence interval,intermediate,intermediate,aligned,number,"A logistic regression model predicting a binary outcome y from a continuous predictor x yields a coefficient of 0.45 with a standard error of 0.12. Give the upper bound of the 95 percent confidence interval for the odds ratio associated with x, rounded to 3 decimal places.",,1.984,cat(exp(0.45 + qnorm(0.975) * 0.12)),pass,,,,
+random,948,BM0948,numerical,Poisson regression predicted count from coefficients,graduate,one level lower,aligned,number,"An insurance company fits a Poisson regression model with a log link to predict the number of claims for commercial auto policies. The linear predictor includes an offset term for the log of exposure in years, a continuous predictor vehicle_age (in years), and a categorical predictor zone with levels Suburban (reference), Urban, and Rural. The model also includes interaction terms between zone and vehicle_age. The estimated coefficients from the fitted model are: (Intercept) = -4.10, vehicle_age = 0.08, zoneUrban = 0.60, zoneRural = -0.30, zoneUrban:vehicle_age = -0.02, zoneRural:vehicle_age = -0.01. Calculate the expected number of claims for a 5-year-old vehicle located in the Rural zone with an exposure of 3 years. Give your answer to 3 decimal places.",,0.052,cat(exp(-4.10 + 0.08*5 - 0.30 - 0.01*5) * 3),pass,,,,
+random,957,BM0957,output_interpretation,paired t-test output,graduate,one level lower,aligned,multiple_choice,"The following output is produced by running t.test(x, y, paired = TRUE) in R:
+
+Paired t-test
+
+data:  x and y
+
+t = 2.132, df = 6, p-value = 0.07700
+
+alternative hypothesis: true mean difference is not equal to 0
+
+95 percent confidence interval:
+-0.1477  2.1477
+
+sample estimates:
+mean difference 
+          1.0 
+
+Which statement correctly describes a property of this test statistic and confidence interval?","A. The standard deviation of the differences is exactly sqrt(6).
+B. The 95 percent confidence interval is calculated as mean difference +/- 1.96 times the standard error.
+C. The validity of the test relies on the assumption that the covariance between x and y is zero.
+D. The p-value is computed as twice the upper-tail probability of a t distribution with 6 degrees of freedom evaluated at the absolute value of the observed test statistic.",D,,pass,owner edited,,,
+random,963,BM0963,r_generation,factor levels and counts,intro,intro,aligned,r_expression,"A professor records the preferred study method for four students in the vector m <- factor(c('flashcards', 'reading', 'flashcards', 'group')). Write one line of R code that computes the number of students who prefer 'flashcards'.",,sum(m == 'flashcards'),"m <- factor(c('flashcards', 'reading', 'flashcards', 'group')); isTRUE(all.equal(eval(parse(text = candidate)), 2))",pass,,,,
+random,970,BM2003,output_interpretation,two-way ANOVA table,intermediate,intermediate,aligned,multiple_choice,"The two-way ANOVA table below comes from a model fitted with the R formula y ~ A * B.
+Df Sum Sq Mean Sq F value   Pr(>F)    
+A    1  150.40   150.40   18.800 0.000208 ***
+B    2   85.20    42.60    5.325 0.011844 *  
+A:B  2   12.50     6.25    0.781 0.468803    
+Res 25  200.00     8.00                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Which of the following statements is correct?","A. The interaction between A and B is statistically significant at the 0.05 level because its F value is less than 1.
+B. Factor B has a stronger effect on the response than Factor A because its F value is smaller.
+C. The residual degrees of freedom indicate that the experiment used 25 independent observations.
+D. There is no significant interaction effect between A and B, so the main effects can be interpreted directly.",D,,pass,owner edited; owner chose this candidate,,,
+random,971,BM0971,conceptual,what changes the width of a confidence interval,graduate,graduate,aligned,multiple_choice,"Which of the following correctly describes the asymptotic width of a two-sided confidence interval for a scalar parameter, constructed using the maximum likelihood estimator?","A. It is inversely proportional to the square root of the sample size and the Fisher information.
+B. It is directly proportional to the variance of the estimator.
+C. It is a fixed constant that depends only on the chosen confidence level.
+D. It increases when the confidence level decreases.",A,,pass,,,,
+random,972,BM0972,numerical,chi-square goodness of fit statistic,intro,intro,aligned,number,"A clinic expects 30, 40, and 30 patients to be discharged in three time categories: less than 4 hours, 4 to 8 hours, and more than 8 hours. In a recent sample, the observed counts were 35, 40, and 25. Calculate the chi-square goodness-of-fit statistic. Give your answer to 3 decimal places.",,1.667,"o <- c(35, 40, 25)
+e <- c(30, 40, 30)
+cat(sum((o - e)^2 / e))",pass,,,,
+random,974,BM1627,r_generation,a while loop that counts,intro,intro,aligned,r_expression,Write a single-line R expression using a while loop that starts an integer n at 1 and multiplies n by 2 as long as n is less than or equal to 20. The expression must return the final value of n. Use assignment inside the loop condition or body as needed to ensure n is defined.,,{n <- 1; while (n <= 20) n <- n * 2; n},"isTRUE(all.equal(eval(parse(text = candidate)), 32))",pass,,,,
+random,988,BM1631,numerical,BIC from log-likelihood and parameter count,graduate,one level lower,aligned,number,"A hospitality analyst studies nightly occupancy counts at a coastal resort over n = 250 nights. They fit a generalized linear model and use an optimization routine that minimizes the negative log-likelihood. The routine reports a minimized negative log-likelihood value of 715.42. The fitted model estimates 5 parameters in total, including the intercept. Calculate the Bayesian Information Criterion (BIC) for this model. Give your answer to 3 decimal places.",,1458.447,cat(-2 * (-715.42) + 5 * log(250)),pass,,,,
+random,996,BM0996,conceptual,stationarity of a time series,intermediate,intermediate,aligned,multiple_choice,"A regional health department tracks the weekly number of confirmed influenza cases over a five-year period. Before fitting an autoregressive integrated moving average model to forecast future case counts, the analyst verifies that the series satisfies the conditions for weak stationarity. Which of the following statements correctly defines a time series that meets this condition?","A. The mean and variance remain constant across all time points, and the covariance between any two observations depends solely on the lag between them.
+B. The probability distribution of the case counts is identical at every week, and the count in any given week is statistically independent of all previous weeks.
+C. The series exhibits no upward or downward trend and no seasonal pattern, but its autocorrelation coefficients are allowed to vary with calendar time.
+D. The weekly case counts are drawn from a normal distribution with a mean of zero, and the variance of the errors from a fitted regression line is constant.",A,,pass,,,,
+targeted,4,BM0004,output_interpretation,interpreting a likelihood ratio test result,intro,intro,aligned,multiple_choice,"In a psychology experiment measuring reaction times, researchers compare a full model (including study method and age) to a reduced model (including only age) using a likelihood ratio test. The software output is shown below.
+
+Likelihood ratio test
+data:  full_model and reduced_model
+LRT = 7.823, df = 1, p-value = 0.005159
+
+What conclusion does this test support?","A. The full model does not fit significantly better than the reduced model because the p-value is greater than 0.05.
+B. The full model fits significantly better than the reduced model because the p-value is less than 0.01.
+C. The reduced model is preferred because the likelihood ratio statistic is less than 10.
+D. The additional predictors have no effect on reaction time because the degrees of freedom equals 1.",B,,pass,owner edited,,,
+targeted,17,BM0017,output_interpretation,interpreting a likelihood ratio test between nested GLMs,graduate,one level lower,aligned,multiple_choice,"The following output comes from comparing two nested Poisson regression models for monthly mobile data usage (in gigabytes) among subscribers. Model 1 uses only account tenure as a predictor. Model 2 adds a binary indicator for owning a premium router.
+
+Analysis of Deviance Table
+Model 1: usage ~ tenure
+Model 2: usage ~ tenure + premium_router
+Resid. Df Resid. Dev Df Deviance Pr(>Chi)
+    1  499     612.40
+    2  498     607.59  1   4.8120  0.02826 *
+
+Which statement correctly interprets this likelihood ratio test?","A. The test compares the two models using a t-distribution, and the p-value of 0.028 indicates that tenure alone is a poor predictor of data usage.
+B. Because the residual deviance increased in Model 2, the additional router variable degrades the model fit and should be removed.
+C. Under the null hypothesis that the router variable has no effect, the deviance difference follows a chi-squared distribution with one degree of freedom, and the significant p-value suggests the full model fits the data better.
+D. The test statistic of 4.812 is the estimated coefficient for the router variable, and its significance proves a linear relationship between router quality and data usage.",C,,pass,owner edited,,,
+targeted,30,BM1160,output_interpretation,two-sample Welch t-test output,intermediate,one level lower,aligned,multiple_choice,"In a human resources audit, analysts compare mean productivity scores (0-100) between Engineering and Sales departments using R. The following output is produced:
+
+ Welch Two Sample t-test
+
+ data:  productivity_eng and productivity_sales
+ t = 1.684, df = 52.31, p-value = 0.0981
+ alternative hypothesis: true difference in means is not equal to 0
+ 95 percent confidence interval:
+  -1.09 12.41
+ sample estimates:
+ mean in group Eng mean in group Sales 
+            78.50             72.84 
+
+Based on this output, which statement correctly interprets the results at the 5% significance level?","A. There is statistically significant evidence that Engineering has a higher mean productivity score because the p-value exceeds 0.05 and the confidence interval does not include zero.
+B. There is sufficient evidence to reject the null hypothesis of equal means because the 95% confidence interval for the difference is entirely above zero.
+C. We cannot conclude a difference in mean productivity at the 5% significance level since the p-value is 0.0978 and the 95% confidence interval for the difference ranges from -1.09 to 12.41, which contains zero.
+D. The Welch adjustment increases the effective degrees of freedom relative to a pooled t-test, which causes the p-value to be smaller than it would otherwise be.",C,,pass,owner edited; owner chose this candidate,,,
+targeted,44,BM0044,output_interpretation,identifying a significant interaction in two-way ANOVA,intro,intro,aligned,multiple_choice,"A veterinary study examines recovery time in days for dogs treated with two diets (Standard or Enhanced) across two size categories (Small or Large). The two-way analysis of variance was performed in R, producing the following output:
+
+Df Sum Sq Mean Sq F value Pr(>F)
+Diet 1 125.0 125.0 2.500 0.115
+Size 1 75.0 75.0 1.500 0.222
+Diet:Size 1 650.0 650.0 13.000 0.000
+Residuals 196 9800.0 50.000
+
+Based on this output, which statement is correct?","A. The type of diet has a statistically significant effect on recovery time.
+B. The size category has a statistically significant effect on recovery time.
+C. Neither diet nor size has any effect on recovery time, and there is no interaction.
+D. The effect of diet on recovery time differs depending on the size category.",D,,pass,owner edited,,,
+targeted,124,BM0124,output_interpretation,two-sample Welch t-test output,intro,intro,aligned,multiple_choice,"The following is the output from a Welch two-sample t-test comparing the means of two groups, x and y:
+
+Welch Two Sample t-test
+
+data:  x and y
+t = 1.80, df = 14.23, p-value = 0.093
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -0.2  2.2
+sample estimates:
+mean in group x mean in group y
+          5.0           4.0
+
+Based on this output, which statement is correct at the 5 percent significance level?","A. The difference between the means is statistically significant because the p-value is less than 0.05.
+B. The difference between the means is statistically significant because the confidence interval does not contain zero.
+C. The null hypothesis should be rejected because the t statistic exceeds 2.
+D. The difference between the means is not statistically significant because the p-value is greater than 0.05 and the confidence interval contains zero.",D,,pass,owner edited,,,
+targeted,177,BM0177,output_interpretation,interpreting a Wald test for multiple coefficients,graduate,one level lower,aligned,multiple_choice,"A graduate student fits a multiple regression model to predict apparent magnitude of stars. The software prints the following joint Wald test for two predictors:
+Joint Wald test for log_exposure and airmass:
+Wald chi2(2) = 15.88, p-value = 0.00036
+Based on this output, what conclusion is supported regarding the population regression coefficients for log_exposure and airmass?","A. Both coefficients are significantly different from zero in their respective simple linear regressions.
+B. The null hypothesis that both coefficients equal zero simultaneously is retained.
+C. The null hypothesis that both coefficients equal zero simultaneously is rejected.
+D. The Wald statistic of 15.88 represents the ratio of mean squared errors for the two predictors.",C,,pass,owner edited,,,
+targeted,190,BM1223,output_interpretation,interpreting rank-deficient regression output,intermediate,intermediate,aligned,multiple_choice,"A quality control engineer analyzes data from a production run of 30 batches to predict BatchYield based on Supplier (Alpha, Beta, Gamma) and Catalyst (TypeX, TypeY). The factory policy dictates that Supplier Beta only ever works with Catalyst TypeY, while Alpha and Gamma only ever work with TypeX. The engineer fits a linear model and obtains the following output:
+
+Call: lm(formula = BatchYield ~ Supplier + Catalyst)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-12.450  -3.120  -0.540   2.980  11.200 
+
+Coefficients: (1 not defined because of rank deficiency)
+                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       85.200      1.500  56.800  < 2e-16 ***
+SupplierBeta       5.000      2.121   2.357   0.0259 *  
+SupplierGamma      2.500      2.121   1.179   0.249    
+CatalystTypeY        NA         NA      NA       NA    
+
+What is the primary reason the coefficient for CatalystTypeY is NA?","A. The sample size for Supplier Beta is zero.
+B. The variable Catalyst is encoded as a numeric vector rather than a factor.
+C. There is perfect collinearity between Supplier and Catalyst in the dataset.
+D. The model is overfitting the data due to too many predictors.",C,,pass,owner edited; owner chose this candidate,,,
+targeted,210,BM1232,output_interpretation,exact binomial test output,intermediate,one level lower,aligned,multiple_choice,"A public health survey measures measles vaccination coverage in a district where the target is 80 percent. Researchers randomly select 100 children and record how many are fully vaccinated. They run an exact binomial test in R to check whether the true coverage proportion differs from the target. The software output is shown below.
+
+Exact binomial test
+
+data:  92 and 100
+number of successes = 92, number of trials = 100, p-value = 0.001592
+alternative hypothesis: true probability of success is not equal to 0.8
+95 percent confidence interval:
+ 0.8484424 0.9648284
+sample estimates:
+probability of success
+                 0.92
+
+Which statement correctly interprets this output at the 5 percent significance level?","A. We reject the null hypothesis because the p-value is greater than 0.05, indicating coverage differs from 80 percent.
+B. We reject the null hypothesis because the p-value is less than 0.05, indicating that the true vaccination coverage is significantly different from 80 percent.
+C. We fail to reject the null hypothesis because the 95 percent confidence interval contains 0.80, which means there is insufficient evidence that coverage differs from the target.
+D. We fail to reject the null hypothesis because the sample estimate of 0.92 is above 0.80, which proves coverage is higher than expected.",B,,pass,owner edited; owner chose this candidate,,,
+targeted,224,BM1688,output_interpretation,interpreting a significant lack-of-fit test,intro,intro,partly,multiple_choice,"The following output comes from running anova(model_linear, model_quadratic) in R:
+
+Analysis of Variance Table
+
+Model 1: y ~ x
+Model 2: y ~ x + I(x^2)
+  Res.Df    RSS Df Sum of Sq      F   Pr(>F)
+1     18 0.5400
+2     17 0.1700  1    0.3700 37.000 1.22e-05
+
+What does the highly significant Pr(>F) value indicate about the linear model y ~ x?","A. The linear model captures all the systematic variation in the data.
+B. The residual error is purely due to random measurement noise.
+C. The linear model fails to capture some systematic pattern in the data.
+D. The independent variable x has no relationship with y.",C,,pass,owner edited; owner chose this candidate; kept with a subtopic verdict recorded,,,
+targeted,257,BM1265,output_interpretation,p-value in an ANOVA table,graduate,one level lower,aligned,multiple_choice,"In a physics laboratory, researchers measure the resonance decay time (in milliseconds) of a specific atomic state under three magnetic field strengths: Low, Medium, and High. They collect ten repeated measurements per condition and run a one-way analysis of variance in R. The printed output is:
+Df Sum Sq Mean Sq F value Pr(>F)
+field      2  700.00  350.00   3.50  0.0445
+Residuals 27 2700.00  100.00
+Which statement correctly interprets the Pr(>F) value of 0.0445?","A. The probability that the true decay times are identical across all three magnetic field strengths is 4.45 percent.
+B. Given that the null hypothesis is true, there is a 4.45 percent chance that at least one magnetic field setting will produce a mean decay time that differs from the others by exactly the observed amount.
+C. Assuming the null hypothesis of equal population means and the model assumptions hold, there is a 4.45 percent chance of observing an F statistic as extreme as 3.50 or more extreme purely due to sampling variability.
+D. There is a 95.55 percent probability that the observed difference in sample means is caused by systematic measurement error rather than the magnetic field effect.",C,,pass,owner edited; owner chose this candidate,,,
+targeted,270,BM0270,output_interpretation,variance test output,intermediate,one level lower,aligned,multiple_choice,"A social scientist runs a two-sample F test to compare the variability of annual household incomes between urban and rural respondents. The output from var.test() is shown below:
+
+F test to compare two variances
+
+data:  urban_income and rural_income
+F = 1.4321, num df = 24, denom df = 24, p-value = 0.3852
+alternative hypothesis: true ratio of variances is not equal to 1
+95 percent confidence interval:
+ 0.6311 3.2498
+sample estimates:
+ratio of variances
+           1.4321
+
+Based on this output at the 5% significance level, which statement is correct?","A. There is a significant difference in variances because the p-value exceeds 0.05.
+B. We reject the null hypothesis of equal variances because the confidence interval contains 1.
+C. There is insufficient evidence to reject the null hypothesis of equal variances because the p-value is greater than 0.05.
+D. The variances are significantly different because the F statistic is greater than 1.",C,,pass,owner edited,,,
+targeted,357,BM1319,output_interpretation,conclusion from t-test output,graduate,one level lower,aligned,multiple_choice,"A researcher compares the mean expression level of the TP53 gene between cells with the homozygous reference genotype (group AA) and cells with the homozygous variant genotype (group aa). The following output comes from a Welch two-sample t-test in R:
+
+	Welch Two Sample t-test
+
+data:  expression ~ genotype
+t = 2.847, df = 14.32, p-value = 0.0127
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.623 4.397
+sample estimates:
+mean in group AA mean in group aa 
+           4.82           2.31 
+
+What is the most appropriate statistical conclusion based on this output at a significance level of 0.05?","A. We fail to reject the null hypothesis because the confidence interval contains zero, indicating no significant difference in expression between genotypes.
+B. We reject the null hypothesis because the p-value is less than 0.05 and the 95 percent confidence interval excludes zero, indicating a statistically significant difference in mean expression.
+C. We reject the null hypothesis because the t-statistic exceeds the critical value, but the conclusion is invalid because the degrees of freedom are not an integer.
+D. We fail to reject the null hypothesis because the sample means differ by less than 1 standard error, implying the observed difference is due to random sampling variation.",B,,pass,owner edited; owner chose this candidate,,,
+targeted,364,BM0364,output_interpretation,two-proportion test output,intro,intro,aligned,multiple_choice,"A clinical trial compares two treatments for a common infection. Researchers record the number of patients who fully recover within one week. They run a two-sample test for equality of proportions in R and obtain the following output:
+
+Two-sample test for equality of proportions without continuity correction
+
+data:  c(20, 10) out of c(50, 50)
+X-squared = 4.7619, df = 1, p-value = 0.0291
+alternative hypothesis: two-sided
+95 percent confidence interval:
+ 0.0246955 0.3753045
+sample estimates:
+ prop 1 prop 2
+  0.4    0.2
+
+Based on this output, what is the correct conclusion regarding the recovery rates of the two treatment groups?","A. There is no significant difference between the two treatment groups at the 0.05 level.
+B. The first treatment group has a lower recovery rate than the second group.
+C. The 95 percent confidence interval includes zero, which means the result is not statistically significant.
+D. The recovery rate is significantly higher in the first group than in the second group at the 0.05 significance level.",D,,pass,owner edited,,,
+targeted,370,BM0370,output_interpretation,identifying overdispersion from residual deviance and degrees of freedom,intermediate,intermediate,aligned,multiple_choice,"The following output comes from a Poisson regression model fit using glm(y ~ x, family = poisson).
+
+Call:  glm(formula = y ~ x, family = poisson)
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept)   1.5000     0.1000    15.0   <2e-16 ***
+x             0.2000     0.0500     4.0   6.3e-05 ***
+
+(Dispersion parameter for poisson family taken to be 1)
+
+Null deviance: 350.0  on 120  degrees of freedom
+Residual deviance:  260.0  on 119  degrees of freedom
+AIC: 650.0
+
+Based on the residual deviance and degrees of freedom, which statement is correct?","A. The model is adequate because the coefficient for x is statistically significant.
+B. The model exhibits overdispersion because the residual deviance is much larger than the residual degrees of freedom.
+C. The model shows underdispersion because the residual deviance is smaller than the null deviance.
+D. The model fits perfectly because the dispersion parameter is 1.",B,,pass,owner edited,,,
+targeted,450,BM0450,output_interpretation,interpreting a score test statistic,intermediate,one level lower,aligned,multiple_choice,"The following output comes from a Poisson regression modeling monthly thunderstorm counts as a function of average monthly rainfall in millimeters.
+
+Call:
+glm(formula = storms ~ rain_mm, family = poisson, data = weather_data)
+
+Coefficients:
+          Estimate Std. Error z value Pr(>|z|)
+(Intercept)  0.8500     0.1200  7.0833  1.4e-12
+rain_mm      0.0320     0.0080  4.0000  6.3e-05
+
+Score test for rain_mm = 0:
+Chi-squared = 16.00, df = 1, p-value = 6.3e-05
+
+What does the score test statistic shown at the bottom indicate?","A. The residuals show significant overdispersion relative to the Poisson assumption.
+B. There is strong evidence that average monthly rainfall is associated with thunderstorm counts.
+C. The model intercept is not significantly different from zero.
+D. Adding a quadratic term for rainfall would significantly improve the model fit.",B,,pass,owner edited,,,
+targeted,484,BM0484,output_interpretation,correlation test output,intro,intro,aligned,multiple_choice,"A researcher investigates the relationship between daily electricity use and maximum temperature in a residential neighborhood. They perform a Pearson correlation test and obtain the following R output:
+
+	Pearson's product-moment correlation
+
+data:  electricity_use and max_temp
+t = 3.597, df = 23, p-value = 0.00152
+alternative hypothesis: true correlation is not equal to 0
+95 percent confidence interval:
+ 0.269 0.804
+sample estimates:
+      cor 
+     0.600 
+
+Which of the following statements best interprets these results?","A. There is no significant linear relationship between electricity use and temperature because the p-value is less than 0.05.
+B. There is a statistically significant positive linear relationship between electricity use and temperature at the 0.05 level.
+C. The correlation coefficient of 0.600 indicates that a one-degree increase in temperature causes a 0.600 increase in electricity use.
+D. We are 95% confident that the true correlation in the population is exactly 0.600.",B,,pass,owner edited,,,
+targeted,490,BM1401,output_interpretation,interpreting a warning about fitted probabilities of zero or one,intermediate,intermediate,aligned,multiple_choice,"An insurance data scientist fits a logistic regression model to predict the binary outcome High_Claim_Yes (1 if claim cost exceeded 10,000, 0 otherwise) using the predictor Prior_Claims_Count. The R output is shown below.
+
+
+Output:
+...
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept)   -42.45      45.12  -0.941    0.347
+Prior           84.90      90.24   0.941    0.347
+...
+Warning message:
+In glm.fit(...) : fitted probabilities numerically 0 or 1 occurred
+
+What does this warning indicate about the relationship between the predictor and the outcome in this sample?","A. The relationship between the predictor and the log-odds is non-linear, violating model assumptions.
+B. The optimization algorithm failed because the model contains too many variables for the number of observations.
+C. There is a coding error in the response variable that should have been continuous rather than binary.
+D. The predictor perfectly separates the observations into the two outcome classes, causing the coefficients to approach infinity.",D,,flag,owner edited; owner chose this candidate; kept against a Codex flag (override),,,
+targeted,550,BM0550,output_interpretation,comparing models using residual deviance,intermediate,intermediate,aligned,multiple_choice,"A public health researcher is evaluating a Poisson regression model to predict weekly measles cases across 150 regions. The output below compares a null model (intercept only) to a full model that adds two predictors: vaccine_coverage and median_age. What does this output indicate about the two models?
+
+Analysis of Deviance Table
+
+Model 1: measles_cases ~ 1
+Model 2: measles_cases ~ vaccine_coverage + median_age
+Resid. Df Resid. Dev Df Deviance  Pr(>Chi)
+     149     520.40
+     147     498.20    2   22.20 1.51e-05 ***","A. The full model provides a statistically significant improvement in fit over the null model because the drop in residual deviance is large relative to the added degrees of freedom.
+B. The full model is significantly worse than the null model because its residual deviance is higher.
+C. There is no significant difference between the models because the residual deviance decreased by less than 10 percent.
+D. The null model should be preferred because it uses fewer parameters and has a lower p-value for its intercept.",A,,pass,owner edited,,,
+targeted,597,BM0597,output_interpretation,one-sample proportion test output,graduate,graduate,aligned,multiple_choice,"A retail analyst runs a one-sample proportion test in R to check whether the store's item return rate differs from a target of 10 percent. The code used is prop.test(65, 500, p = 0.10, correct = FALSE). The software prints the following output:
+1-sample proportions test without continuity correction
+data: 65 out of 500, null probability 0.1
+X-squared = 5, df = 1, p-value = 0.02535
+alternative hypothesis: true p is not equal to 0.1
+95 percent confidence interval:
+ 0.10332 0.16232
+sample estimates:
+       p 
+0.13
+Which of the following statements correctly describes the statistical methodology reflected in this output?","A. The test uses an exact binomial distribution to compute the p-value, so it does not rely on large-sample approximations.
+B. The reported X-squared statistic equals the square of the standard normal Z statistic, and the p-value is the probability that a chi-squared random variable with one degree of freedom exceeds this value.
+C. The confidence interval is calculated using the Wald method, which adds and subtracts 1.96 times the standard error based on the sample proportion.
+D. The p-value of 0.02535 means there is a 2.535 percent chance that the true return rate is exactly 10 percent given the observed data.",B,,pass,owner edited,,,
+targeted,617,BM2042,output_interpretation,interpreting a significant lack-of-fit test,graduate,graduate,aligned,multiple_choice,"An actuary fits a Poisson regression to model annual claim counts for a portfolio of auto insurance policies. The response variable is claim_counts, and the predictors are policyholder_age and vehicle_class. The R output for the model summary and a subsequent lack-of-fit test is shown below:
+
+Call:
+glm(formula = claim_counts ~ policyholder_age + vehicle_class, family = poisson, data = policies)
+
+Deviance Residuals:
+   Min      1Q  Median      3Q     Max
+-3.412  -0.920  -0.150   0.440   4.100
+
+Coefficients:
+                    Estimate Std. Error z value Pr(>|z|)
+(Intercept)         -1.8500     0.1900  -9.737  < 2e-16 ***
+policyholder_age     0.0280     0.0040   7.000  2.6e-12 ***
+vehicle_classSUV     0.1900     0.0850   2.235  0.02542 *
+
+(Dispersion parameter for poisson family taken to be 1)
+
+Null deviance: 890.50  on 399  degrees of freedom
+Residual deviance:  650.20  on 397  degrees of freedom
+AIC: 1680.4
+
+> pchisq(650.20, df = 397, lower.tail = FALSE)
+[1] 1.5e-14
+
+Based on this output, which statement correctly interprets the lack-of-fit test result?","A. The model exhibits significant overdispersion, meaning the variance of the claim counts exceeds the Poisson assumption, and a quasi-Poisson or negative binomial model should be considered.
+B. The null deviance is significantly larger than the residual deviance, proving that the chosen predictors perfectly explain all variation in the claim counts.
+C. The dispersion parameter is correctly estimated as 1, and the significant p-value indicates that the linear predictor is missing important interaction terms between age and vehicle class.
+D. The residual deviance on 397 degrees of freedom follows an F-distribution, so the small p-value implies that the model intercept is statistically indistinguishable from zero.",A,,flag,owner edited; owner chose this candidate; kept against a Codex flag (override),,,
+targeted,677,BM1483,output_interpretation,logistic regression coefficient as an odds ratio,graduate,one level lower,aligned,multiple_choice,"The following output was produced by fitting a logistic regression model in R:
+Call: glm(formula = Success ~ CognitiveLoad + PracticeTime, family = binomial, data = exp_data)
+Coefficients:
+                     Estimate Std. Error z value Pr(>|z|)
+(Intercept)          0.51083    0.28734   1.778   0.0754
+CognitiveLoad        0.69315    0.10396   6.667 2.61e-11
+PracticeTime         0.40547    0.14193   2.857   0.0043
+CognitiveLoad is a composite score from a memory retention task, ranging from 0 to 20, where higher scores indicate greater cognitive load. Success is coded 1 if the participant recalls a target stimulus above a fixed threshold, and 0 otherwise. Based on the maximum likelihood estimate for CognitiveLoad, which statement correctly characterizes the relationship between cognitive load and the outcome?","A. A one-unit increase in CognitiveLoad multiplies the probability of success by 2.0, independent of PracticeTime.
+B. A one-unit increase in CognitiveLoad multiplies the odds of success by approximately 2.0, holding PracticeTime constant.
+C. The odds of success increase by exactly 2.0 percentage points for each additional unit of CognitiveLoad.
+D. The positive coefficient indicates that the variance of the success probability increases exponentially with CognitiveLoad.",B,,pass,owner edited; owner chose this candidate,,,
+targeted,690,BM0690,output_interpretation,interpreting a test of equal variances,intermediate,intermediate,aligned,multiple_choice,"An energy analyst compares the daily power output variability (in MW) of two small wind farms using a two-sample F-test in R. The output is shown below:
+
+    Two sample F test
+
+data:  farm_alpha and farm_beta
+F = 4.50, df1 = 14, df2 = 16, p-value = 0.0052
+alternative hypothesis: true ratio of variances is not equal to 1
+95 percent confidence interval:
+ 1.60 13.16
+sample estimates:
+ratio of variances 
+            4.50 
+
+Which conclusion is best supported by this output at the 5% significance level?","A. The power output variability in Farm Alpha is significantly lower than in Farm Beta.
+B. The power output variability in Farm Alpha is significantly higher than in Farm Beta.
+C. There is insufficient evidence to conclude that the variabilities differ between the two farms.
+D. The average power output in Farm Alpha is significantly higher than in Farm Beta.",B,,pass,owner edited,,,
+targeted,717,BM1506,output_interpretation,variance test output,graduate,graduate,aligned,multiple_choice,"A clinical trial compares recovery times in days for post-stroke patients under two rehabilitation protocols. The following R output tests whether the variability in recovery times differs between protocols:
+
+F-test to compare two variances
+data:  recovery_time by protocol
+F = 0.7245, num df = 24, denom df = 24, p-value = 0.4356
+alternative hypothesis: true ratio of variances is not equal to 1
+95 percent confidence interval:
+ 0.3193 1.6441
+sample estimates:
+ratio of variances
+       0.7245
+
+Based on the output above, which statement correctly describes the statistical construction of the 95 percent confidence interval for the ratio of variances?","A. The interval is symmetric around the point estimate because the F distribution approaches normality with these degrees of freedom.
+B. The bounds are calculated by adding and subtracting 1.96 times the standard error of the variance ratio on the original scale.
+C. The interval guarantees that 95 percent of future sample variance ratios will fall within these limits if the null hypothesis is true.
+D. The interval is asymmetric and derived by inverting the F-test, using reciprocal quantiles of the F distribution to account for the skewed sampling distribution of the variance ratio.",D,,pass,owner edited; owner chose this candidate,,,
+targeted,724,BM0724,output_interpretation,variance test output,intro,intro,aligned,multiple_choice,"We measure the tensile strength of metal components from two production lines to check for consistency. Running var.test() in R yields the following output:
+	F test to compare two variances
+
+data:  lineA and lineB
+F = 0.892, num df = 14, denom df = 14, p-value = 0.8337
+alternative hypothesis: true ratio of variances is not equal to 1
+95 percent confidence interval:
+ 0.2995 2.6569
+sample estimates:
+ratio of variances 
+           0.892 
+Based on these results, which statement is correct?","A. The variances differ significantly because the p-value exceeds 0.05
+B. We fail to reject the null hypothesis of equal variances at the 5% significance level
+C. The population variances are exactly equal because the F statistic is close to 1
+D. The confidence interval proves that line A is less variable than line B",B,,pass,owner edited,,,
+targeted,790,BM0790,output_interpretation,comparing two nested models with anova,intermediate,intermediate,aligned,multiple_choice,"A food scientist fits two nested linear models to predict the flavor intensity of a soup based on salt and sugar concentrations. The following output is produced by anova(model_reduced, model_full):
+Analysis of Variance Table
+Model 1: flavor ~ salt
+Model 2: flavor ~ salt + sugar
+  Res.Df    RSS Df Sum of Sq      F    Pr(>F)
+1     48 120.50
+2     47 108.20  1     12.30 5.342 0.0253 *
+What does this output indicate?","A. The addition of sugar to the model significantly improves the fit compared to using salt alone, at the 0.05 significance level.
+B. The reduced model explains more variation than the full model, because the F-statistic is less than 10.
+C. The p-value of 0.0254 means there is a 2.54% chance that the full model is correct.
+D. The difference in residual degrees of freedom shows that the two models are not nested.",A,,pass,owner edited,,,
+targeted,810,BM0810,output_interpretation,one-sample proportion test output,intermediate,one level lower,aligned,multiple_choice,"A social science survey asks 500 registered voters whether they plan to vote in the upcoming municipal election. 280 respond affirmatively. Researchers conduct a one-sample proportion test to see if the true proportion differs from 0.50. The R output is shown below:
+
+  1-sample proportions test with continuity correction
+
+data:  280 out of 500, null probability 0.5
+X-squared = 6.962, df = 1, p-value = 0.008326
+alternative hypothesis: true p is not equal to 0.5
+95 percent confidence interval:
+ 0.515194 0.603870
+sample estimates:
+   p 
+0.56 
+
+Which statement correctly interprets this output at the 5 percent significance level?","A. There is sufficient evidence to conclude that the proportion of planned voters is significantly less than 50 percent.
+B. We fail to reject the null hypothesis, so the true proportion is plausibly 50 percent.
+C. The confidence interval includes 0.50, which means 50 percent remains a plausible population proportion.
+D. There is statistically significant evidence that the true proportion of planned voters differs from 50 percent.",D,,pass,owner edited,,,
+targeted,817,BM2049,output_interpretation,skewness suggested by summary output,graduate,one level lower,aligned,multiple_choice,"The following summary statistics were computed for fatigue life cycles (in thousands of revolutions) from a batch of prototype composite bearings: Min. 1st Qu.  Median    Mean 3rd Qu.    Max.   210      380      420      455      480      950   Based on this output, which statement correctly interprets the distributional shape and its implication for statistical inference?","A. The data are symmetric because the median lies within the interquartile range, so the standard error of the mean can be reliably computed using the sample standard deviation without transformation.
+B. The distribution is left-skewed because the maximum is an extreme outlier pulling the tail upward, which means the sample mean will have a smaller asymptotic variance than the sample median.
+C. The distribution is right-skewed, as shown by the mean exceeding the median and the upper tail extending disproportionately far, indicating that the sampling distribution of the mean will be positively skewed for small n and the sample median is a more robust estimator of the population center than the sample mean.
+D. The distribution follows a normal model because the gap between the first quartile and the median equals the gap between the median and the third quartile, making the t-interval exact regardless of sample size.",C,,flag,owner chose this candidate; kept against a Codex flag (override),,,
+targeted,824,BM1558,output_interpretation,F-statistic in a regression summary,intro,intro,aligned,multiple_choice,"Consider the tail of a linear regression summary in R predicting gene_expression from allele_freq:
+Residual standard error: 4.5 on 24 degrees of freedom
+Multiple R-squared:  0.2606, Adjusted R-squared:  0.2298 
+F-statistic: 8.46 on 1 and 24 DF,  p-value: 0.007703
+What is the purpose of the F-statistic reported here?","A. It tests whether the slope coefficient for allele_freq is significantly different from zero
+B. It tests whether the intercept is significantly different from zero
+C. It measures the proportion of variance in gene_expression explained by the model
+D. It tests whether the residuals are normally distributed",A,,pass,owner edited; owner chose this candidate,,,
+targeted,850,BM0850,output_interpretation,identifying a significant interaction in two-way ANOVA,intermediate,intermediate,aligned,multiple_choice,"The following two-way ANOVA table summarizes a linear model fitted to a response y with predictors x, group, and their interaction.
+
+Analysis of Variance Table
+
+Response: y
+          Df Sum Sq Mean Sq F value Pr(>F)
+x          1   25.0   25.00    2.50  0.1226
+group      1   18.0   18.00    1.80  0.1881
+x:group    1   85.0   85.00    8.50  0.0061
+Residuals 36  360.0   10.00
+
+Based on this output, which statement is true?","A. The main effect of x is statistically significant, so the interaction can be ignored.
+B. The interaction between x and group is statistically significant at the 0.05 level, while neither main effect is.
+C. Both main effects are statistically significant, but the interaction effect is not.
+D. The residual mean square exceeds the interaction mean square, indicating that the model fails to explain the data.",B,,pass,owner edited,,,
+targeted,897,BM0897,output_interpretation,correlation test output,graduate,graduate,aligned,multiple_choice,"In a memory experiment, researchers record reaction times in milliseconds and recall scores for 20 participants. They run a standard Pearson correlation test in R using cor.test(rt_ms, recall_n). The console prints:
+Pearson's product-moment correlation
+data:  rt_ms and recall_n
+t = 3.353, df = 18, p-value = 0.00354
+alternative hypothesis: true correlation is not equal to 0
+95 percent confidence interval:
+ 0.245 0.834
+sample estimates:
+           cor 
+         0.620
+Based on this output and the sampling properties of the Pearson correlation coefficient, which statement is correct?","A. The t-statistic can be directly reused to test H0: rho = 0.5 by comparing it to qt(0.975, 18).
+B. The 95 percent confidence interval is symmetric around the sample correlation because the sampling distribution of r is normal.
+C. The confidence interval is computed via Fisher's z-transformation because the sampling distribution of r is skewed when rho differs from zero.
+D. The p-value remains valid for testing H0: rho != 0.5 if the sample size exceeds 30 due to the central limit theorem.",C,,pass,owner edited,,,
+targeted,917,BM1605,output_interpretation,F-statistic in a regression summary,graduate,graduate,aligned,multiple_choice,"A researcher analyzes a dataset of 50 students to predict FinalExamScore using StudyHours, QuizAvg, and PriorGPA. The relevant portion of the R regression summary output is:
+
+Residual standard error: 15.2 on 46 degrees of freedom
+Multiple R-squared:  0.29, Adjusted R-squared:  0.24 
+F-statistic: 6.26 on 3 and 46 DF,  p-value: 0.0012
+
+Which of the following statements about the F-statistic in this output is correct?","A. It tests the null hypothesis that the intercept equals zero, and a small p-value indicates the model explains most of the variance.
+B. Under the null hypothesis and normal errors, the statistic follows an F-distribution because the numerator and denominator are independent mean squares, and the denominator provides an unbiased estimate of the error variance regardless of whether the null is true.
+C. Its significance at alpha = 0.05 guarantees that at least one of the individual t-tests for the predictors will also be significant at alpha = 0.05.
+D. The denominator degrees of freedom equal n - 3, where n is the sample size and 3 is the number of slope parameters.",B,,pass,owner edited; owner chose this candidate,,,
+targeted,964,BM0964,output_interpretation,paired t-test output,intro,intro,aligned,multiple_choice,"A city planner wants to know if a new highway bypass reduces commute times. Commute times in minutes are recorded for 10 regular drivers on the old route and on the new route. The output below shows the results of a paired t-test where the difference is computed as old_route minus new_route.
+
+Paired t-test
+
+data:  old_route and new_route
+t = 2.45, df = 9, p-value = 0.037
+alternative hypothesis: true mean difference is not equal to 0
+95 percent confidence interval:
+ 0.15 3.85
+sample estimates:
+mean of the differences 
+               2.0
+
+At the 5 percent significance level, which statement correctly interprets these results?","A. The new route significantly increases commute time because the p-value is less than 0.05.
+B. The new route significantly reduces commute time because the 95 percent confidence interval for the mean difference does not contain zero.
+C. The new route has no significant effect on commute time because the t-statistic is positive.
+D. The new route significantly reduces commute time because the mean difference is exactly 2.0 minutes.",B,,pass,owner edited,,,
+targeted,997,BM0997,output_interpretation,aggregate output,graduate,one level lower,not_aligned,multiple_choice,"A graduate student fits a Poisson regression model to predict days_on_market using real estate data. The model uses a log link function. The console output is shown below:
+
+Coefficients:
+                         Estimate Std. Error z value Pr(>|z|)
+(Intercept)              -3.2000     0.1500  -21.33  < 2e-16
+is_fixerTRUE               0.2620     0.0850    3.08  0.00207
+price_per_sqft             0.0004     0.0001    4.00  6.3e-05
+
+Based on this output, which statement correctly describes the effect of the is_fixer variable on the expected number of days on market?","A. It increases by 0.262 days, because the coefficient is a direct difference in counts.
+B. It increases by a factor of approximately 1.30, because the exponentiated coefficient represents the incidence rate ratio in a Poisson model.
+C. It decreases by 26.2%, because the model uses a log link function that inverts the direction of effects.
+D. It increases by 26.2%, because the coefficient must be multiplied by 100 to convert the log-odds to a probability.",B,,pass,owner edited; kept with a subtopic verdict recorded,,,
