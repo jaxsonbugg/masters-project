@@ -1,0 +1,354 @@
+{
+  "verdicts": [
+    {
+      "id": "A-04-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for a tryCatch error handler that returns a specified fallback value.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Writing the handler is a routine R syntax task, with the likelihood function and fallback already specified."
+    },
+    {
+      "id": "A-04-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Interpreting the mean requires knowing how R converts logical values to numbers.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The conversion and average involve four logical values and simple arithmetic."
+    },
+    {
+      "id": "A-04-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for a posterior probability obtained by updating a two-point prior with observed counts.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Evaluating two standard Poisson likelihoods, weighting them by their priors, and normalizing is a routine second-course Bayes calculation."
+    },
+    {
+      "id": "A-04-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the intuition behind the maximum likelihood criterion.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires recognizing a basic definition without deriving or computing an estimator."
+    },
+    {
+      "id": "A-04-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression calculates the fraction of vector elements that satisfy a stated condition.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A simple comparison and proportion calculation on five values fit introductory R."
+    },
+    {
+      "id": "A-04-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to interpret a two-sample Kolmogorov–Smirnov test in terms of the distributions being compared.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The test output is supplied, so the task requires a single p-value decision and its accompanying interpretation."
+    },
+    {
+      "id": "A-04-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The remaining draws are a sample without replacement from the population left after the first draw.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must update the population after the known draw and then calculate a standard hypergeometric probability."
+    },
+    {
+      "id": "A-04-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The selected result depends directly on how R assigns ranks under the specified tie method.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Applying one explicit tie rule and reading one element from a four-value example is a short R trace."
+    },
+    {
+      "id": "A-04-009",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The calculation uses a normal quantile at a specified percentile, while the requested quantity is the sampling standard error of that percentile estimator.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The asymptotic formula is supplied in full, leaving routine numerical substitution and function evaluation."
+    },
+    {
+      "id": "A-04-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested code must implement the sample variance calculation explicitly.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must express centering, summing squared deviations, and applying the sample denominator in R."
+    },
+    {
+      "id": "A-04-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how increasing sample size affects the chance of detecting a fixed true effect.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Choosing the correct statement requires distinguishing the limiting power of a test under a fixed alternative from the expected value of its effect estimator."
+    },
+    {
+      "id": "A-04-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a combined mean from two group means and their sample sizes.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one weighted-average calculation with two groups and simple numbers."
+    },
+    {
+      "id": "A-04-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The result depends on how as.numeric handles both numeric and nonnumeric strings.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires tracing coercion and missing-value removal before calculating a sample standard deviation."
+    },
+    {
+      "id": "A-04-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression estimates an event probability by measuring its frequency across simulated trials.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must choose an appropriate random generator, encode the event threshold, and aggregate the simulated outcomes."
+    },
+    {
+      "id": "A-04-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested statistic is the ratio of the two sample variances.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must recover both sample variances from the sums of squares and then form the ratio."
+    },
+    {
+      "id": "A-04-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly tests the connection between positive semidefiniteness and the variance of a linear combination.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires interpreting a covariance matrix through a standard quadratic-form property."
+    },
+    {
+      "id": "A-04-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression must use apply to pass each matrix row to a function.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Using the row margin and passing its two entries to a standard log-density function is routine intermediate R."
+    },
+    {
+      "id": "A-04-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the return value of seq_len at zero.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "This is a single call to a basic sequence function with one input."
+    },
+    {
+      "id": "A-04-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly converts a supplied t statistic and degrees of freedom into a two-sided p-value.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "With the statistic and degrees of freedom supplied, the remaining work is a standard two-tailed t calculation."
+    },
+    {
+      "id": "A-04-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The calculation directly applies a lag-one autocorrelation formula to the short series.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Even with the formula supplied, the solver must center the series, align adjacent observations, and evaluate two sums before dividing."
+    },
+    {
+      "id": "A-04-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests how overdispersion affects inference in a Poisson regression.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must connect a violated variance assumption to coefficient standard errors and the resulting Type I error rate."
+    },
+    {
+      "id": "A-04-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested logical vector is the direct result of applying substring matching with grepl.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression requires one vectorized pattern-matching call with a literal string."
+    },
+    {
+      "id": "A-04-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the probability that a specified success occurs on a specified trial.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must distinguish the final success from the required number of successes on earlier trials and combine their probabilities."
+    },
+    {
+      "id": "A-04-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks whether an observed correlation supports a causal conclusion.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Recognizing the limits of observational correlation is a single introductory inference."
+    },
+    {
+      "id": "A-04-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code uses complete.cases and sums its logical result to count complete rows.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The answer can be obtained by scanning five rows for missing entries and tallying the complete ones."
+    },
+    {
+      "id": "A-04-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for single-observation Fisher information for a Gamma scale parameter.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The computation requires working from the likelihood and taking an expectation under the specified distribution."
+    },
+    {
+      "id": "A-04-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The expression must count observations by factor level and then count levels with the specified frequency.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task combines tabulating a factor, comparing the resulting frequencies, and reducing the comparisons to a single count."
+    },
+    {
+      "id": "A-04-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks how first differencing removes the cumulative effects of shocks in a unit-root process.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must reason about how differencing changes a stochastic trend and what it implies for stationarity and serial dependence."
+    },
+    {
+      "id": "A-04-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a union count from two event counts and their overlap.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task requires one direct application of the two-event inclusion–exclusion rule."
+    },
+    {
+      "id": "A-04-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The output depends on how a fitted regression names coefficients for the observed levels of a factor predictor.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must trace standard regression coefficient naming through reference coding and the handling of an unused factor level."
+    },
+    {
+      "id": "A-04-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression extracts exactly the matrix entries above the main diagonal.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The extraction is a direct logical-indexing operation on a small matrix."
+    },
+    {
+      "id": "A-04-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a sample mean using the values and their frequencies.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must calculate a frequency-weighted total and the total number of observations before dividing."
+    },
+    {
+      "id": "A-04-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Tracing the result requires knowing which matrix margin apply uses and what it returns.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must reconstruct the matrix columns, compute three sample standard deviations, and average them."
+    },
+    {
+      "id": "A-04-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly calculates R-squared from the model and residual sums of squares.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Combining the supplied sums and applying the standard R-squared formula is a routine regression calculation."
+    },
+    {
+      "id": "A-04-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The event is a specified number of failures before the first success, which is the stated geometric model.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The distribution is named and the probability requires one direct calculation with a simple parameter."
+    },
+    {
+      "id": "A-04-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested command must use the fitted model to return a probability at a specified predictor value.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must supply new predictor data and distinguish a binomial model's response scale from its default link scale."
+    },
+    {
+      "id": "A-04-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for a variance inflation factor from the specified auxiliary regression R-squared.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a standard second-course regression diagnostic with the auxiliary fit already summarized."
+    },
+    {
+      "id": "A-04-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks why treatments are randomized within blocks created along a known source of variation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must connect the layout and within-block randomization to control of nuisance variation and improved precision."
+    },
+    {
+      "id": "A-04-039",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The Poisson approximation supplies the model for the counts, while the main task is to form a likelihood ratio between two specified hypotheses.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The solver applies the supplied rate conversion, evaluates two standard probabilities, and takes their ratio."
+    },
+    {
+      "id": "A-04-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The main task is to use paste0 to combine corresponding labels, values, and literal strings.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The expression combines percentage conversion with vectorized string assembly."
+    },
+    {
+      "id": "A-04-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item tests how standardizing predictors makes regression coefficients comparable across measurement scales.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must distinguish the two coefficient scales and interpret the relative magnitudes in the fitted model."
+    },
+    {
+      "id": "A-04-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly tests the relationship between independence and mutual exclusivity for events with positive probability.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Basic event probability and the covariance identity for two indicators are sufficient to resolve the options."
+    },
+    {
+      "id": "A-04-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested endpoint belongs to a confidence interval for the difference between two population means.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must find the mean difference, combine two sampling variances, and use the result to compute the interval endpoint."
+    },
+    {
+      "id": "A-04-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The result depends on assigning averaged ranks to tied observations before applying sd.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task combines tracing the default tie behavior with calculating the sample standard deviation of the resulting ranks."
+    },
+    {
+      "id": "A-04-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for lapply to run the same summary function on each list component.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one standard lapply call with a built-in summary function."
+    },
+    {
+      "id": "A-04-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested bootstrap standard error is computed directly from the supplied resampled estimates.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Calculating the sample standard deviation of eight estimates entails finding their mean, summing squared deviations, and applying the sample denominator."
+    },
+    {
+      "id": "A-04-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how the direction of a one-sided alternative determines the location of the rejection region.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must translate the alternative into a rejection tail and relate the sign of the observed effect to that tail."
+    },
+    {
+      "id": "A-04-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The expression must use seq to generate grid points and rep to repeat them according to supplied counts.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "All grid and repetition inputs are supplied, leaving a routine composition of two base R functions."
+    },
+    {
+      "id": "A-04-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Computing the result requires selecting vector elements by their names.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task uses direct indexing by two names followed by a simple average."
+    },
+    {
+      "id": "A-04-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks for a prediction from a supplied multiple regression equation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The prediction requires one direct substitution of two inputs into the given equation."
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+ "batch": "2026-11-24_full-align_04",
+ "kind": "align",
+ "label": "full-align",
+ "date": "2026-11-24",
+ "instructions_file": "data/prompts/align_v1.md",
+ "instructions_sha256": "deffdd902622bb2ca04df36e550873beb31c2779e5e4e5a0fd6740b8fd513433",
+ "batch_sha256": "a1300efd9f2b5a79701318ea4d3269fc913d04ee1adb41a18257fc5d0809dd07",
+ "items_file": "C:/masters_project_large/data/benchmark_work/2026-11-24_assembly2/positions.jsonl",
+ "manifest": "data/slots/benchmark_slots.manifest.json",
+ "ids": {
+  "A-04-001": {
+   "item_id": "BM0178",
+   "position": 178
+  },
+  "A-04-002": {
+   "item_id": "BM0179",
+   "position": 179
+  },
+  "A-04-003": {
+   "item_id": "BM0180",
+   "position": 180
+  },
+  "A-04-004": {
+   "item_id": "BM0182",
+   "position": 182
+  },
+  "A-04-005": {
+   "item_id": "BM0183",
+   "position": 183
+  },
+  "A-04-006": {
+   "item_id": "BM0184",
+   "position": 184
+  },
+  "A-04-007": {
+   "item_id": "BM0185",
+   "position": 185
+  },
+  "A-04-008": {
+   "item_id": "BM0187",
+   "position": 187
+  },
+  "A-04-009": {
+   "item_id": "BM0188",
+   "position": 188
+  },
+  "A-04-010": {
+   "item_id": "BM0189",
+   "position": 189
+  },
+  "A-04-011": {
+   "item_id": "BM0191",
+   "position": 191
+  },
+  "A-04-012": {
+   "item_id": "BM0192",
+   "position": 192
+  },
+  "A-04-013": {
+   "item_id": "BM0193",
+   "position": 193
+  },
+  "A-04-014": {
+   "item_id": "BM0194",
+   "position": 194
+  },
+  "A-04-015": {
+   "item_id": "BM0195",
+   "position": 195
+  },
+  "A-04-016": {
+   "item_id": "BM0196",
+   "position": 196
+  },
+  "A-04-017": {
+   "item_id": "BM0198",
+   "position": 198
+  },
+  "A-04-018": {
+   "item_id": "BM0199",
+   "position": 199
+  },
+  "A-04-019": {
+   "item_id": "BM0200",
+   "position": 200
+  },
+  "A-04-020": {
+   "item_id": "BM0201",
+   "position": 201
+  },
+  "A-04-021": {
+   "item_id": "BM0202",
+   "position": 202
+  },
+  "A-04-022": {
+   "item_id": "BM0203",
+   "position": 203
+  },
+  "A-04-023": {
+   "item_id": "BM0205",
+   "position": 205
+  },
+  "A-04-024": {
+   "item_id": "BM0206",
+   "position": 206
+  },
+  "A-04-025": {
+   "item_id": "BM0207",
+   "position": 207
+  },
+  "A-04-026": {
+   "item_id": "BM0208",
+   "position": 208
+  },
+  "A-04-027": {
+   "item_id": "BM0209",
+   "position": 209
+  },
+  "A-04-028": {
+   "item_id": "BM0211",
+   "position": 211
+  },
+  "A-04-029": {
+   "item_id": "BM0212",
+   "position": 212
+  },
+  "A-04-030": {
+   "item_id": "BM0213",
+   "position": 213
+  },
+  "A-04-031": {
+   "item_id": "BM0214",
+   "position": 214
+  },
+  "A-04-032": {
+   "item_id": "BM0215",
+   "position": 215
+  },
+  "A-04-033": {
+   "item_id": "BM0219",
+   "position": 219
+  },
+  "A-04-034": {
+   "item_id": "BM0220",
+   "position": 220
+  },
+  "A-04-035": {
+   "item_id": "BM0221",
+   "position": 221
+  },
+  "A-04-036": {
+   "item_id": "BM0223",
+   "position": 223
+  },
+  "A-04-037": {
+   "item_id": "BM0225",
+   "position": 225
+  },
+  "A-04-038": {
+   "item_id": "BM0226",
+   "position": 226
+  },
+  "A-04-039": {
+   "item_id": "BM0228",
+   "position": 228
+  },
+  "A-04-040": {
+   "item_id": "BM0229",
+   "position": 229
+  },
+  "A-04-041": {
+   "item_id": "BM0230",
+   "position": 230
+  },
+  "A-04-042": {
+   "item_id": "BM0231",
+   "position": 231
+  },
+  "A-04-043": {
+   "item_id": "BM0232",
+   "position": 232
+  },
+  "A-04-044": {
+   "item_id": "BM0233",
+   "position": 233
+  },
+  "A-04-045": {
+   "item_id": "BM0234",
+   "position": 234
+  },
+  "A-04-046": {
+   "item_id": "BM0235",
+   "position": 235
+  },
+  "A-04-047": {
+   "item_id": "BM0236",
+   "position": 236
+  },
+  "A-04-048": {
+   "item_id": "BM0238",
+   "position": 238
+  },
+  "A-04-049": {
+   "item_id": "BM0239",
+   "position": 239
+  },
+  "A-04-050": {
+   "item_id": "BM0241",
+   "position": 241
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-24T23:12:34+00:00"
+}

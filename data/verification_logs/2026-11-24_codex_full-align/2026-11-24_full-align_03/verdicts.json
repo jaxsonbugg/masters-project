@@ -1,0 +1,356 @@
+{
+  "verdicts": [
+    {
+      "id": "A-03-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to identify the construction and parameter scale of a confidence interval in R output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "Interpreting the output requires knowing the interval method used for a binomial GLM and the scale on which its coefficients are reported."
+    },
+    {
+      "id": "A-03-002",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code directly counts the characters in a single string.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It takes one basic string operation on a short input."
+    },
+    {
+      "id": "A-03-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The calculation uses quartiles and the interquartile range to construct a lower outlier fence.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Computing two quartiles under a specified convention and applying the supplied fence formula is a standard multistep calculation."
+    },
+    {
+      "id": "A-03-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to standardize an observation using its mean and standard deviation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "All inputs are supplied for a single application of the z-score formula."
+    },
+    {
+      "id": "A-03-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly tests the distinction between statistical significance and the practical magnitude of a difference.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The p-value and observed difference are already given, leaving one basic interpretation."
+    },
+    {
+      "id": "A-03-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R command extracts Pearson residuals from an already fitted GLM.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The model is supplied, so the task is a single function call with the appropriate residual type."
+    },
+    {
+      "id": "A-03-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to compute the Mann–Whitney statistic directly from pooled ranks.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must sum ranks, apply the supplied formula, and select the smaller statistic."
+    },
+    {
+      "id": "A-03-008",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "Heavy tails motivate the question, but the answer mainly concerns the moment and large-sample behavior of the sample variance."
+    ,
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The question requires connecting the population's moment properties to the behavior of a variance estimator."
+    },
+    {
+      "id": "A-03-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code reduces a numeric vector to a single summary value through a standard aggregate function.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task uses one familiar summary function on four small values."
+    },
+    {
+      "id": "A-03-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested vector is a cyclic repetition of a short pattern truncated to a specified length.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "A single basic repetition operation can set the output length directly."
+    },
+    {
+      "id": "A-03-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how likelihood behaves under rescaling and how it differs from a probability density for the parameter.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about what a change to the likelihood function does to both estimation and likelihood-ratio inference."
+    },
+    {
+      "id": "A-03-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The calculation determines the per-group sample size for estimating a difference between two means.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The formula and every input are provided for direct substitution."
+    },
+    {
+      "id": "A-03-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The code solves a linear system and extracts a specified component of the solution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must interpret the matrix construction, solve a small system, and apply indexing."
+    },
+    {
+      "id": "A-03-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for an `sapply` call whose two-element return values simplify into a matrix.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must write a function that returns a vector and understand how `sapply` assembles those results into a matrix."
+    },
+    {
+      "id": "A-03-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The room assignments pose a birthday-type problem about at least one match among independent draws.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation combines a complement argument with counting assignments that avoid a match."
+    },
+    {
+      "id": "A-03-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how an interaction changes the interpretation of a main-effect coefficient.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires interpreting a conditional slope in a standard regression model with two predictors."
+    },
+    {
+      "id": "A-03-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly requires `substr` with an endpoint that varies by string length.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It combines ordinary character counting with vectorized substring extraction."
+    },
+    {
+      "id": "A-03-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task directly asks the reader to distinguish assignment from equality testing in an R conditional.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The location and nature of the error are given, leaving one basic syntax change."
+    },
+    {
+      "id": "A-03-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The quantity requested is the difference between an estimator's expectation and its target parameter.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The exact expectation is supplied, so the task reduces to evaluating a formula and taking a difference."
+    },
+    {
+      "id": "A-03-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the expected payoff of a game after accounting for its fixed cost.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A short weighted average and one fixed-cost adjustment use small, friendly numbers."
+    },
+    {
+      "id": "A-03-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the defining interpretation of the first principal component.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader only needs to recognize the basic definition in a two-variable example."
+    },
+    {
+      "id": "A-03-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression removes repeated values while preserving their order of first appearance.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "One basic vector operation handles the short input directly."
+    },
+    {
+      "id": "A-03-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for a conditional proportion calculated from a cross-tabulation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader selects one column and forms a simple ratio with its total."
+    },
+    {
+      "id": "A-03-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests what Monte Carlo standard error measures and how it depends on the number of simulation runs.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must distinguish sources of uncertainty and recognize the usual scaling with simulation size."
+    },
+    {
+      "id": "A-03-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Finding the requested entry depends on the matrix dimensions and the row-wise filling order."
+    ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The task is a single matrix lookup once the layout of a short sequence is recognized."
+    },
+    {
+      "id": "A-03-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested endpoint belongs to a regression confidence interval for the mean response at a specified predictor value.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "Fitting a simple regression and computing a standard confidence interval for its mean response is a routine second-course procedure."
+    },
+    {
+      "id": "A-03-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for R code that solves the given system and returns its solution vector.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must translate the equations into matrix and vector inputs before calling a solver."
+    },
+    {
+      "id": "A-03-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to interpret the p-value and confidence interval in Pearson correlation test output.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines a significance decision with interpretation of an interval estimate from a standard test."
+    },
+    {
+      "id": "A-03-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for an upper-tail probability under an exponential distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The rate and threshold are given for one application of the survival function."
+    },
+    {
+      "id": "A-03-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the logical vector returned by R's membership operator.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It uses a single basic membership operation on two short vectors."
+    },
+    {
+      "id": "A-03-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The expression must sort rows by one column and break ties using a second column.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must encode opposite sort directions and use the resulting order to subset the full data frame."
+    },
+    {
+      "id": "A-03-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The prediction requires using both the group-specific term and its interaction with the numeric predictor.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must interpret the factor coding and substitute the predictor values into a standard regression equation."
+    },
+    {
+      "id": "A-03-033",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The two scenarios directly test the distinction between reproducing an existing analysis and replicating it with fresh data.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The scenarios identify which data were used, so the task is direct recognition of two definitions."
+    },
+    {
+      "id": "A-03-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task requires using `table()` to turn elementwise comparisons into a count of matching positions.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A general expression must account for how `table()` handles a comparison outcome that never occurs."
+    },
+    {
+      "id": "A-03-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The printed result depends on the value returned by the error handler in `tryCatch`.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must trace the transfer of control to the error handler and identify how its result becomes the value of the enclosing call."
+    },
+    {
+      "id": "A-03-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the smallest sample size that meets a target margin of error for a mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The reader must obtain the critical value, apply the sample-size relationship, and round in the direction that preserves the margin requirement."
+    },
+    {
+      "id": "A-03-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression creates a vector and associates a name with each element.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It takes one basic vector construction with three explicitly supplied names."
+    },
+    {
+      "id": "A-03-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks what a labeled quartile represents in the residual summary of a linear model.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader only needs to interpret one familiar summary statistic in a labeled output block."
+    },
+    {
+      "id": "A-03-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task asks for the next forecast from a simple exponential smoothing sequence.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires carrying a standard recursive update through a short series with a supplied initial value."
+    },
+    {
+      "id": "A-03-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to express a directional research claim as null and alternative hypotheses about a population mean.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must identify the population parameter and translate the research goal into the direction and structure of a one-sided test."
+    },
+    {
+      "id": "A-03-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The result depends on how R orders the levels of a factor by default.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires recalling a basic factor convention and reading one element."
+    },
+    {
+      "id": "A-03-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks for the probability that a qualifying household appears at least once across the samples.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The calculation uses a standard complement argument and combines three independent probabilities for sampling without replacement."
+    },
+    {
+      "id": "A-03-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task uses `cut()` to map numeric intervals to labeled factor levels with a specified endpoint convention.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must coordinate breakpoints, labels, and interval boundaries in one call."
+    },
+    {
+      "id": "A-03-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests how to distinguish variances and covariances in matrix output and derive the corresponding standard deviations.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must identify the relevant matrix entries, convert variances to standard deviations, and compare them."
+    },
+    {
+      "id": "A-03-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question compares the sampling variances of stratified and cluster designs under within-tract similarity.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reasoning about between-tract variation, intraclass correlation, and their consequences for each estimator's sampling variance."
+    },
+    {
+      "id": "A-03-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks the reader to calculate R-squared directly from regression and total sums of squares.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The necessary values are given for a single division."
+    },
+    {
+      "id": "A-03-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested value is a prediction from an R linear model containing an interaction.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must connect the interaction formula and fitted model to the prediction at the supplied covariate values."
+    },
+    {
+      "id": "A-03-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested `cut()` call recodes numeric values into labeled intervals.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The function, input, breaks, and labels are all supplied for one direct call."
+    },
+    {
+      "id": "A-03-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question directly asks for the asymptotic variance of a maximum likelihood estimator of a normal scale parameter.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "It requires deriving or recalling the Fisher-information result for the standard deviation parameter before using the supplied values."
+    },
+    {
+      "id": "A-03-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question asks how increasing sample size affects posterior sensitivity to the choice of prior.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The reader must connect sample size to the relative influence of the likelihood and prior in a standard Bayesian analysis."
+    }
+  ]
+}

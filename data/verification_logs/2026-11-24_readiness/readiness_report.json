@@ -1,0 +1,51 @@
+{
+ "positions": 1000,
+ "problems": {
+  "screen": [
+   "position 137 (BM1667): latest screen flags it (invalid_assumption, 2026-11-22_codex_loop-r2-cand-screen/2026-11-22_loop-r2-cand-screen_01)",
+   "position 224 (BM1688): latest screen flags it (invalid_assumption, 2026-11-22_codex_loop-r2-cand-screen/2026-11-22_loop-r2-cand-screen_03)"
+  ]
+ },
+ "overrides": [
+  "BM1401",
+  "BM2042",
+  "BM2049"
+ ],
+ "mix": {
+  "conceptual/graduate": 50,
+  "conceptual/intermediate": 100,
+  "conceptual/intro": 50,
+  "numerical/graduate": 100,
+  "numerical/intermediate": 100,
+  "numerical/intro": 100,
+  "output_interpretation/graduate": 50,
+  "output_interpretation/intermediate": 50,
+  "output_interpretation/intro": 50,
+  "r_generation/graduate": 50,
+  "r_generation/intermediate": 50,
+  "r_generation/intro": 100,
+  "r_interpretation/intermediate": 50,
+  "r_interpretation/intro": 100
+ },
+ "alignment_available": 192,
+ "alignment_subtopic": {
+  "aligned": 191,
+  "not_aligned": 1
+ },
+ "alignment_difficulty": {
+  "matches": 154,
+  "easier": 31,
+  "harder": 7
+ },
+ "screen_sources": {
+  "2026-11-21_codex_screen": 808,
+  "2026-11-22_codex_assembly-edited-screen": 26,
+  "2026-11-22_codex_loop-r2-cand-screen": 26,
+  "2026-11-21_codex_loop-r1-cand-screen": 107,
+  "2026-11-24_codex_assembly2-edited-screen": 12,
+  "2026-11-22_codex_loop-r3-cand-screen": 17,
+  "2026-11-22_codex_loop-r1-cand-screen": 2,
+  "2026-11-24_codex_loop-r1-cand-screen": 2
+ },
+ "result": "FAIL"
+}

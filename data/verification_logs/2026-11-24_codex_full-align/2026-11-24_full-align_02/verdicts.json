@@ -1,0 +1,366 @@
+{
+  "verdicts": [
+    {
+      "id": "A-02-001",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for a fundamental assumption about the conditional mean and variance in Poisson regression.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires recognizing one defining property of the model."
+    },
+    {
+      "id": "A-02-002",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The item asks for the coefficient vector, which contains several estimates but is a single component of the fitted object.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "A single standard R accessor is sufficient."
+    },
+    {
+      "id": "A-02-003",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Counting the schedules requires distinguishing the ordered lead tests from the unordered mercury batch.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver combines two standard counting steps in a realistic setup."
+    },
+    {
+      "id": "A-02-004",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The choice between ordinal and multinomial logistic regression hinges on the ordering of the response and how the models use it.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must connect the outcome structure to a standard regression model and recognize its coefficient interpretation."
+    },
+    {
+      "id": "A-02-005",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested output is the mean of a vector after an elementwise logarithmic transformation.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The code provides the transformation, leaving a direct average of five values."
+    },
+    {
+      "id": "A-02-006",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the estimated asymptotic variance of a maximum likelihood estimator from a specified likelihood.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires connecting likelihood curvature, sample size, and the fitted parameter to the estimator's variance."
+    },
+    {
+      "id": "A-02-007",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks the solver to filter data frame rows by two conditions and extract a field from the retained rows.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines a computed condition, a second condition, and column extraction in one R expression."
+    },
+    {
+      "id": "A-02-008",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks what the ANOVA p-value implies for the omnibus null hypothesis.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reading standard test output and translating the decision into a statement about the group means."
+    },
+    {
+      "id": "A-02-009",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested probability is obtained by combining conditional probabilities across groups using their prior weights.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It is a direct weighted sum with three groups and simple input values."
+    },
+    {
+      "id": "A-02-010",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item tests how `tapply` computes group means and how a named result selects one group.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must trace the grouping, select the requested result, and compute its mean."
+    },
+    {
+      "id": "A-02-011",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression defines a function that takes a numeric vector and returns a confidence interval for its mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Defining an anonymous function and obtaining the interval from its input combines multiple R and inference skills."
+    },
+    {
+      "id": "A-02-012",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The solver must combine two group means using their respective sample sizes.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The calculation uses unequal group sizes to reconstruct and pool the group totals."
+    },
+    {
+      "id": "A-02-013",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks what must hold under the null for shuffling labels to yield an exact permutation test.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks the solver to connect a standard resampling procedure with its validity condition."
+    },
+    {
+      "id": "A-02-014",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Interpreting the coefficient requires recognizing how the exposure offset puts the comparison on a rate scale.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The task is a standard interpretation of a log-link coefficient in a model with an exposure offset."
+    },
+    {
+      "id": "A-02-015",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression uses two `dbinom` evaluations to compare binomial likelihoods.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The ratio follows from the standard binomial maximum likelihood estimate and two direct probability evaluations."
+    },
+    {
+      "id": "A-02-016",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The final expression extracts the family name from the fitted GLM.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The family is explicit in the fitting call, so the task is a direct trace of the accessor."
+    },
+    {
+      "id": "A-02-017",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for a regression slope from the sample correlation, predictor variance, and residual mean square.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must recover the unreported response variance by linking residual degrees of freedom to the regression sums-of-squares decomposition."
+    },
+    {
+      "id": "A-02-018",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for a point probability under a specified Poisson distribution.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires a single probability mass calculation with small inputs."
+    },
+    {
+      "id": "A-02-019",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how samples are drawn in the ordinary nonparametric bootstrap.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It calls for recognition of the basic bootstrap resampling rule."
+    },
+    {
+      "id": "A-02-020",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested R expression computes the mean of a vector while omitting missing values.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one basic function call with its missing-value option."
+    },
+    {
+      "id": "A-02-021",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for sensitivity from a labeled confusion matrix.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires identifying the relevant row and computing one simple proportion."
+    },
+    {
+      "id": "A-02-022",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The solver must reconstruct the fitted line from summary statistics and use it to make a prediction.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines standard calculations for the slope, the fitted line's location, and the prediction."
+    },
+    {
+      "id": "A-02-023",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested element depends on reversing the generated sequence with `rev`.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The short sequence, positional indexing, and small multiplication make this a basic R tracing exercise."
+    },
+    {
+      "id": "A-02-024",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The forecasted iron content is modeled as a weighted sum of independent normal variables.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The weights and independence are given, so the task reduces to standard mean and variance formulas followed by a normal tail calculation."
+    },
+    {
+      "id": "A-02-025",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the spread defined by the difference between the vector's maximum and minimum.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "It requires a direct expression using basic summary functions on one small vector."
+    },
+    {
+      "id": "A-02-026",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The solver must use the Bonferroni adjustment to interpret a reported pairwise p-value.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires reading the comparison table and relating adjusted and raw p-values using the number of tests."
+    },
+    {
+      "id": "A-02-027",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks why averaging conditional expectations over two different conditioning variables recovers the marginal mean.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The two conditioning expressions are supplied, and the question asks for a direct recognition of the law of total expectation."
+    },
+    {
+      "id": "A-02-028",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The calculation compares the expectation of the transformed estimator with the true parameter.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The given unbiasedness makes the expected value a direct substitution into a simple bias calculation."
+    },
+    {
+      "id": "A-02-029",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how to make a numerically coded group variable enter the model as categorical.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The code change is short, but making it requires understanding how R formulas distinguish numeric and categorical predictors."
+    },
+    {
+      "id": "A-02-030",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The hatchling outcomes are independent binary draws simulated in the same way as biased coin tosses.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires one call to the specified simulation function with supplied inputs."
+    },
+    {
+      "id": "A-02-031",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for the posterior mean under a normal prior and a normal sampling model with known variance.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It applies standard conjugate updating to the sample mean and the supplied measures of uncertainty."
+    },
+    {
+      "id": "A-02-032",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks how a Bonferroni decision rule controls the family-wise error rate across multiple tests.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines a standard threshold adjustment with the probability argument that justifies it."
+    },
+    {
+      "id": "A-02-033",
+      "subtopic_verdict": "partly",
+      "subtopic_reason": "The `str` output supplies the class label, while the main demand is predicting how that class behaves in a model formula.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must know the non-obvious interaction between an R class attribute and model formula processing."
+    },
+    {
+      "id": "A-02-034",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The expression must generate bootstrap resamples, compute their means, and summarize the variation among those means.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The vectorization constraint requires organizing a single set of draws into correctly sized resamples and reducing across them."
+    },
+    {
+      "id": "A-02-035",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested output depends on how `cumsum` accumulates successive Poisson probabilities.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "Producing the numeric result requires tracing the index and evaluating a Poisson cumulative probability."
+    },
+    {
+      "id": "A-02-036",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The task is to count unordered group assignments that satisfy a constraint on the difference in means.",
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The statistic can be converted to a target group sum and checked by systematically counting subsets of eight values."
+    },
+    {
+      "id": "A-02-037",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for an endpoint of a confidence interval for a population mean.",
+      "difficulty_verdict": "harder",
+      "difficulty_reason": "The solver must select a small-sample critical value, calculate a standard error, and form the upper endpoint."
+    },
+    {
+      "id": "A-02-038",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question tests whether the solver understands how an interaction changes the effect of one factor across levels of another."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It asks for direct recognition of the meaning of an interaction."
+    },
+    {
+      "id": "A-02-039",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested expression combines uppercase conversion with character counting and a maximum.",
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It composes basic vectorized functions on a short character vector."
+    },
+    {
+      "id": "A-02-040",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The solver must determine the sample size needed to estimate a proportion at the specified precision."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The standard calculation requires a conservative variance choice, a margin-of-error formula, and rounding up."
+    },
+    {
+      "id": "A-02-041",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks which expected-frequency condition applies to the Pearson chi-square test of independence."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires distinguishing observed counts from the expected counts that govern a standard test's approximation."
+    },
+    {
+      "id": "A-02-042",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The requested forecast is obtained by applying simple exponential smoothing on the log scale and back-transforming."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The initialization and update rule are provided, leaving routine substitution and a final back-transformation."
+    },
+    {
+      "id": "A-02-043",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The question explicitly requires using `sapply` to compute a statistic separately for each data frame column."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines columnwise iteration with an anonymous function that calculates a ratio of summaries."
+    },
+    {
+      "id": "A-02-044",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks for an interpretation of the percentile interval reported in a bootstrap distribution summary."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must interpret the interval relative to zero and connect its direction to the order of the comparison."
+    },
+    {
+      "id": "A-02-045",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly compares the asymptotic model-selection behavior and objectives of AIC and BIC."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It requires distinguishing selection consistency from expected predictive performance in a likelihood-based setting."
+    },
+    {
+      "id": "A-02-046",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item directly asks for Cohen's d using a pooled standard deviation."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The formula is supplied and the equal standard deviations simplify the calculation to a direct substitution."
+    },
+    {
+      "id": "A-02-047",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The ratio depends on identifying the extrema of the vector of running products."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The solver must trace successive products, identify their extrema, and calculate a ratio."
+    },
+    {
+      "id": "A-02-048",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "Computing a matrix determinant in R directly tests one of the named matrix operations."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "The matrix is already defined and a single basic function call suffices."
+    },
+    {
+      "id": "A-02-049",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The resistance threshold must be translated into an event for the underlying uniform coating thickness."
+      ,
+      "difficulty_verdict": "matches",
+      "difficulty_reason": "It combines solving a decreasing transformation's inequality with computing a uniform interval probability."
+    },
+    {
+      "id": "A-02-050",
+      "subtopic_verdict": "aligned",
+      "subtopic_reason": "The item asks what the residual degrees of freedom represent when estimating a sample variance."
+      ,
+      "difficulty_verdict": "easier",
+      "difficulty_reason": "The divisor is supplied, leaving recognition of the basic degrees-of-freedom interpretation in a familiar setting."
+    }
+  ]
+}

@@ -29,9 +29,18 @@ import variety  # noqa: E402
 
 
 def latest_results(root, name):
-    """{item_id: result} keeping the latest verdict per item (folders sorted by date, then batch name)."""
+    """{item_id: result} keeping the latest verdict per item. Batches are ordered by the time Codex finished them
+    (run.json `finished_utc`), not by folder name: two batches of one date would otherwise sort alphabetically by label
+    (fixed 2026-11-24, after "assembly-edited" sorted before an older "loop" batch of the same day)."""
+    def finished(f):
+        rj = f.parent / "run.json"
+        return json.loads(rj.read_text(encoding="utf-8")).get("finished_utc", "") if rj.exists() else ""
     out = {}
-    for f in sorted(Path(root).glob(f"*_codex_*/*/{name}")):
+    files = list(Path(root).glob(f"*_codex_*/*/{name}"))
+    missing = [str(f) for f in files if not finished(f)]
+    if missing:
+        sys.exit(f"cannot order Codex results without run.json finished_utc: {missing[:3]}")
+    for f in sorted(files, key=finished):
         for line in f.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 r = json.loads(line)
