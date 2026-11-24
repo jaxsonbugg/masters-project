@@ -1,0 +1,127 @@
+{
+ "batch": "2026-11-24_loop-r1-cand-align_01",
+ "kind": "align",
+ "label": "loop-r1-cand-align",
+ "date": "2026-11-24",
+ "instructions_file": "data/prompts/align_v1.md",
+ "instructions_sha256": "deffdd902622bb2ca04df36e550873beb31c2779e5e4e5a0fd6740b8fd513433",
+ "batch_sha256": "41f40166913ad5c09753a0ff2685ef294eac17a87fe12fe492fba551b5514795",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_replacement_loop_e\\r1_candidates.jsonl",
+ "manifest": "data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "A-01-001": {
+   "item_id": "BM2027",
+   "position": null
+  },
+  "A-01-002": {
+   "item_id": "BM2029",
+   "position": null
+  },
+  "A-01-003": {
+   "item_id": "BM2030",
+   "position": null
+  },
+  "A-01-004": {
+   "item_id": "BM2031",
+   "position": null
+  },
+  "A-01-005": {
+   "item_id": "BM2032",
+   "position": null
+  },
+  "A-01-006": {
+   "item_id": "BM2033",
+   "position": null
+  },
+  "A-01-007": {
+   "item_id": "BM2034",
+   "position": null
+  },
+  "A-01-008": {
+   "item_id": "BM2035",
+   "position": null
+  },
+  "A-01-009": {
+   "item_id": "BM2036",
+   "position": null
+  },
+  "A-01-010": {
+   "item_id": "BM2037",
+   "position": null
+  },
+  "A-01-011": {
+   "item_id": "BM2038",
+   "position": null
+  },
+  "A-01-012": {
+   "item_id": "BM2039",
+   "position": null
+  },
+  "A-01-013": {
+   "item_id": "BM2040",
+   "position": null
+  },
+  "A-01-014": {
+   "item_id": "BM2041",
+   "position": null
+  },
+  "A-01-015": {
+   "item_id": "BM2042",
+   "position": null
+  },
+  "A-01-016": {
+   "item_id": "BM2043",
+   "position": null
+  },
+  "A-01-017": {
+   "item_id": "BM2044",
+   "position": null
+  },
+  "A-01-018": {
+   "item_id": "BM2045",
+   "position": null
+  },
+  "A-01-019": {
+   "item_id": "BM2046",
+   "position": null
+  },
+  "A-01-020": {
+   "item_id": "BM2047",
+   "position": null
+  },
+  "A-01-021": {
+   "item_id": "BM2048",
+   "position": null
+  },
+  "A-01-022": {
+   "item_id": "BM2049",
+   "position": null
+  },
+  "A-01-023": {
+   "item_id": "BM2050",
+   "position": null
+  },
+  "A-01-024": {
+   "item_id": "BM2051",
+   "position": null
+  },
+  "A-01-025": {
+   "item_id": "BM2052",
+   "position": null
+  },
+  "A-01-026": {
+   "item_id": "BM2053",
+   "position": null
+  },
+  "A-01-027": {
+   "item_id": "BM2055",
+   "position": null
+  },
+  "A-01-028": {
+   "item_id": "BM2056",
+   "position": null
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-24T22:57:52+00:00"
+}
