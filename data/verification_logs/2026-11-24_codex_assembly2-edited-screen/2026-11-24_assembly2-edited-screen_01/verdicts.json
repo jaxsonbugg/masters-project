@@ -1,0 +1,88 @@
+{
+  "verdicts": [
+    {
+      "id": "S-01-001",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The p-value and confidence interval support a single interpretation at the stated significance level."
+    },
+    {
+      "id": "S-01-002",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The reported proportions and test output establish both the direction and significance of the difference."
+    },
+    {
+      "id": "S-01-003",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The correlation estimate and p-value support a single interpretation of the linear association."
+    },
+    {
+      "id": "S-01-004",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The options distinguish the assumptions for the exact F test from incorrect claims about its robustness and construction."
+    },
+    {
+      "id": "S-01-005",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The R call specifies the test fully, and exactly one option describes its methodology correctly."
+    },
+    {
+      "id": "S-01-006",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The two-sided alternative and the stated significance level make the conclusion unambiguous."
+    },
+    {
+      "id": "S-01-007",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "Exactly one option correctly describes the confidence interval used by R's Pearson correlation test."
+    },
+    {
+      "id": "S-01-008",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The stated subtraction order and confidence interval establish the direction and significance of the change."
+    },
+    {
+      "id": "S-01-009",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The supplier and catalyst assignments fully explain the rank deficiency."
+    },
+    {
+      "id": "S-01-010",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "Exactly one option gives the correct conditional tail-probability interpretation."
+    },
+    {
+      "id": "S-01-011",
+      "verdict": "flag",
+      "issue_type": "no_correct_option",
+      "reason": "The warning reports fitted probabilities numerically near zero or one, which can occur without complete separation."
+    },
+    {
+      "id": "S-01-012",
+      "verdict": "pass",
+      "issue_type": "none",
+      "reason": "The ANOVA table supports a single defensible interpretation among the choices."
+    },
+    {
+      "id": "S-01-013",
+      "verdict": "flag",
+      "issue_type": "no_correct_option",
+      "reason": "A significant residual-deviance test indicates lack of fit, and the output cannot distinguish overdispersion from a misspecified mean model."
+    },
+    {
+      "id": "S-01-014",
+      "verdict": "flag",
+      "issue_type": "no_correct_option",
+      "reason": "The summaries suggest a long upper tail, but they cannot establish that the sampling distribution of the mean is positively skewed for small samples."
+    }
+  ]
+}

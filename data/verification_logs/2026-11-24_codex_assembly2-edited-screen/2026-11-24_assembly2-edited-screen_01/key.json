@@ -1,0 +1,71 @@
+{
+ "batch": "2026-11-24_assembly2-edited-screen_01",
+ "kind": "screen",
+ "label": "assembly2-edited-screen",
+ "date": "2026-11-24",
+ "instructions_file": "data/prompts/screen_v1.md",
+ "instructions_sha256": "2a714fde1a98e99bca3cd44684d8132d30f49d57d7accec38c1c7b1f02b0e17c",
+ "batch_sha256": "fd480f23c2eceeb44a386b3fd11ec24d02315d2419ed6d0f3bbc2e6beb004fa9",
+ "items_file": "C:/masters_project_large/data/benchmark_work/2026-11-24_assembly2/positions.jsonl",
+ "manifest": "data/slots/benchmark_slots.manifest.json",
+ "ids": {
+  "S-01-001": {
+   "item_id": "BM0124",
+   "position": 124
+  },
+  "S-01-002": {
+   "item_id": "BM0364",
+   "position": 364
+  },
+  "S-01-003": {
+   "item_id": "BM0484",
+   "position": 484
+  },
+  "S-01-004": {
+   "item_id": "BM0537",
+   "position": 537
+  },
+  "S-01-005": {
+   "item_id": "BM0597",
+   "position": 597
+  },
+  "S-01-006": {
+   "item_id": "BM0810",
+   "position": 810
+  },
+  "S-01-007": {
+   "item_id": "BM0897",
+   "position": 897
+  },
+  "S-01-008": {
+   "item_id": "BM0964",
+   "position": 964
+  },
+  "S-01-009": {
+   "item_id": "BM1223",
+   "position": 190
+  },
+  "S-01-010": {
+   "item_id": "BM1265",
+   "position": 257
+  },
+  "S-01-011": {
+   "item_id": "BM1401",
+   "position": 490
+  },
+  "S-01-012": {
+   "item_id": "BM2003",
+   "position": 970
+  },
+  "S-01-013": {
+   "item_id": "BM2042",
+   "position": 617
+  },
+  "S-01-014": {
+   "item_id": "BM2049",
+   "position": 817
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-24T23:05:14+00:00"
+}

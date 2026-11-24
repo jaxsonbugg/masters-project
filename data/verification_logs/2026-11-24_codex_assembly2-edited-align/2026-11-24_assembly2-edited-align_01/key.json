@@ -1,0 +1,71 @@
+{
+ "batch": "2026-11-24_assembly2-edited-align_01",
+ "kind": "align",
+ "label": "assembly2-edited-align",
+ "date": "2026-11-24",
+ "instructions_file": "data/prompts/align_v1.md",
+ "instructions_sha256": "deffdd902622bb2ca04df36e550873beb31c2779e5e4e5a0fd6740b8fd513433",
+ "batch_sha256": "83f10cda5f7e578834bbb78086b3367ac2b59acfaa65eb6b47ffac8dba5016aa",
+ "items_file": "C:/masters_project_large/data/benchmark_work/2026-11-24_assembly2/positions.jsonl",
+ "manifest": "data/slots/benchmark_slots.manifest.json",
+ "ids": {
+  "A-01-001": {
+   "item_id": "BM0124",
+   "position": 124
+  },
+  "A-01-002": {
+   "item_id": "BM0364",
+   "position": 364
+  },
+  "A-01-003": {
+   "item_id": "BM0484",
+   "position": 484
+  },
+  "A-01-004": {
+   "item_id": "BM0537",
+   "position": 537
+  },
+  "A-01-005": {
+   "item_id": "BM0597",
+   "position": 597
+  },
+  "A-01-006": {
+   "item_id": "BM0810",
+   "position": 810
+  },
+  "A-01-007": {
+   "item_id": "BM0897",
+   "position": 897
+  },
+  "A-01-008": {
+   "item_id": "BM0964",
+   "position": 964
+  },
+  "A-01-009": {
+   "item_id": "BM1223",
+   "position": 190
+  },
+  "A-01-010": {
+   "item_id": "BM1265",
+   "position": 257
+  },
+  "A-01-011": {
+   "item_id": "BM1401",
+   "position": 490
+  },
+  "A-01-012": {
+   "item_id": "BM2003",
+   "position": 970
+  },
+  "A-01-013": {
+   "item_id": "BM2042",
+   "position": 617
+  },
+  "A-01-014": {
+   "item_id": "BM2049",
+   "position": 817
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-24T23:07:02+00:00"
+}

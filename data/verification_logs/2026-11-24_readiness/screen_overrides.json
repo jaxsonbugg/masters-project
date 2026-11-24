@@ -1,0 +1,8 @@
+[
+ {"item_id": "BM1401", "position": 490, "decided_utc": "2026-11-24", "decision": "keep",
+  "reason": "Owner override: the key (D, separation) is the intended best answer and the other options are clearly wrong; Codex objects only that 'perfectly separates' is stronger than the output proves. Included in the targeted review."},
+ {"item_id": "BM2042", "position": 617, "decided_utc": "2026-11-24", "decision": "keep",
+  "reason": "Owner override: the key (A, overdispersion) is the intended best answer and the other options are clearly wrong; Codex objects only that lack of fit does not prove overdispersion. Included in the targeted review."},
+ {"item_id": "BM2049", "position": 817, "decided_utc": "2026-11-24", "decision": "keep",
+  "reason": "Owner override: the key (C, right skew) is the intended best answer and the other options are clearly wrong; Codex objects only that the small-sample skew of the mean is not proven by the summary. Included in the targeted review."}
+]
