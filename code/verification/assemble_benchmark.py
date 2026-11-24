@@ -42,9 +42,12 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--positions", required=True, help="current positions (after the loops)")
     ap.add_argument("--candidates", nargs="+", required=True, help="collected candidate files of all loops")
-    ap.add_argument("--open-sheet", required=True, help="open16_fix_sheet.csv (keyed by candidate)")
-    ap.add_argument("--rounding-sheet", required=True, help="rounding_fixes.csv (keyed by item_id)")
-    ap.add_argument("--r2", required=True, help="decisions_r2.json")
+    ap.add_argument("--open-sheet", default=None, help="open16_fix_sheet.csv (keyed by candidate; fills open positions)")
+    ap.add_argument("--rounding-sheet", default=None, help="rounding_fixes.csv (keyed by item_id)")
+    ap.add_argument("--sheets", nargs="*", default=[], help="further owner sheets keyed by item_id (fix sheets 2, 3, ...)")
+    ap.add_argument("--set", nargs="*", default=[], metavar="POS=CANDIDATE",
+                    help="put a named candidate into a position (owner's decision; replaces the question there)")
+    ap.add_argument("--r2", default=None, help="decisions_r2.json")
     ap.add_argument("--out-dir", required=True)
     a = ap.parse_args(argv)
     out = Path(a.out_dir)
@@ -53,13 +56,24 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=True)
     pos = read_jsonl(a.positions)
     cands = {c["item_id"]: c for f in a.candidates for c in read_jsonl(f)}
-    open_rows, round_rows = read_csv(a.open_sheet), read_csv(a.rounding_sheet)
+    open_rows = read_csv(a.open_sheet) if a.open_sheet else []
+    round_rows = read_csv(a.rounding_sheet) if a.rounding_sheet else []
+    for f in a.sheets:
+        round_rows += read_csv(f)
     report = {"filled_from_sheet": [], "skipped_rows": [], "edited": [], "r2_applied": [], "r2_skipped": [], "checks": {}}
 
     # 1. the chosen candidates go into their positions
     for k, cid in sorted({(int(r["position"]), r["candidate"]) for r in open_rows}):
         if pos[k - 1].get("status") != "needs_candidate":
             sys.exit(f"position {k} is not open; nothing written")
+        c = cands[cid]
+        if c["status"] != "usable" or c["slot"].get("replaces") != f"BM{k:04d}":
+            sys.exit(f"{cid} is not a usable candidate for position {k}; nothing written")
+        pos[k - 1] = {"position": k, **c, "replaces": c["slot"]["replaces"], "previous_item": pos[k - 1]["item_id"],
+                      "owner_selected": True}
+        report["filled_from_sheet"].append((k, cid))
+    for spec in a.set:
+        k, cid = int(spec.split("=")[0]), spec.split("=")[1]
         c = cands[cid]
         if c["status"] != "usable" or c["slot"].get("replaces") != f"BM{k:04d}":
             sys.exit(f"{cid} is not a usable candidate for position {k}; nothing written")
@@ -87,7 +101,7 @@ def main(argv=None):
 
     # 3. the approved revised checks (r2) for items still in the benchmark
     rscript = gb.rscript_path()
-    for d in json.loads(Path(a.r2).read_text(encoding="utf-8")):
+    for d in (json.loads(Path(a.r2).read_text(encoding="utf-8")) if a.r2 else []):
         p = by_id.get(d["item_id"])
         if p is None:
             report["r2_skipped"].append(d["item_id"])
