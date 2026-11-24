@@ -325,8 +325,23 @@ def cmd_fix_sheet(args):
     print(f"-> {out / 'rounding_fixes.csv'} and {out / 'fix_classification.json'}; substantive and not_computable go to replacement")
 
 
+DELETE_LINE = "(delete line)"
+
+
+def _target(it, field):
+    """(getter, setter) for a sheet field: question, key, or choice_A .. choice_D (added 2026-11-24 for choices quoting a
+    corrected number)."""
+    if field == "key":
+        return (lambda: it["item"]["canonical_answer"]), (lambda v: it["item"].__setitem__("canonical_answer", v.strip()))
+    if field.startswith("choice_"):
+        k = "ABCD".index(field[-1])
+        return (lambda: it["item"]["choices"][k]), (lambda v: it["item"]["choices"].__setitem__(k, v))
+    return (lambda: it["item"]["question"]), (lambda v: it["item"].__setitem__("question", v))
+
+
 def apply_fixes(items_by_id, sheet_rows):
-    """All or nothing: returns (changed item ids, problems). Items are changed in place only if there are no problems."""
+    """All or nothing: returns (changed item ids, problems). Items are changed in place only if there are no problems.
+    field: question | key | choice_A..choice_D. new_text "(delete line)" removes the whole line holding current_text."""
     problems, plan = [], {}
     for r in sheet_rows:
         if not (r.get("new_text") or "").strip():
@@ -336,23 +351,36 @@ def apply_fixes(items_by_id, sheet_rows):
         if it is None:
             problems.append(f"{r['item_id']}: not in the items file")
             continue
-        field = "canonical_answer" if r["field"] == "key" else "question"
-        cur = it["item"][field]
-        if field == "question" and cur.count(r["current_text"]) != 1:
-            problems.append(f"{r['item_id']}: the current text does not appear exactly once in the question")
-        if field == "canonical_answer" and cur.strip() != r["current_text"].strip():
-            problems.append(f"{r['item_id']}: the current key is not {r['current_text']!r}")
-        plan.setdefault(r["item_id"], []).append((field, r["current_text"], r["new_text"], r["kind"]))
+        field = r.get("field") or "question"
+        if field not in ("question", "key") and not (field.startswith("choice_") and field[-1] in "ABCD"):
+            problems.append(f"{r['item_id']}: unknown field {field!r}")
+            continue
+        try:
+            cur = _target(it, field)[0]()
+        except (IndexError, KeyError, TypeError):
+            problems.append(f"{r['item_id']}: field {field} does not exist")
+            continue
+        if field == "key":
+            if cur.strip() != r["current_text"].strip():
+                problems.append(f"{r['item_id']}: the current key is not {r['current_text']!r}")
+        elif cur.count(r["current_text"]) != 1:
+            problems.append(f"{r['item_id']}: the current text does not appear exactly once in {field}")
+        elif r["new_text"].strip() == DELETE_LINE and r["current_text"] + "\n" not in cur:
+            problems.append(f"{r['item_id']}: (delete line) needs current_text to be a whole line of {field}")
+        plan.setdefault(r["item_id"], []).append((field, r["current_text"], r["new_text"], r.get("kind", "")))
     if problems:
         return [], problems
     for iid, edits in plan.items():
         it = items_by_id[iid]
         hist = it.setdefault("owner_fixes", [])
         for field, old, new, kind in edits:
-            if field == "question":
-                it["item"]["question"] = it["item"]["question"].replace(old, new, 1)
+            get, put = _target(it, field)
+            if field == "key":
+                put(new)
+            elif new.strip() == DELETE_LINE:
+                put(get().replace(old + "\n", "", 1))
             else:
-                it["item"]["canonical_answer"] = new.strip()
+                put(get().replace(old, new, 1))
             hist.append({"field": field, "kind": kind, "old": old, "new": new})
         it["owner_fixed"] = True
     return sorted(plan), []
