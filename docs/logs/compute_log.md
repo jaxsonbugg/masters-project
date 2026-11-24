@@ -387,3 +387,8 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Status: reviewed.** Ended normally (UTC about 03:57): **0.235 GPU-hours** (estimate 0.09: most slots needed 2 or 3 attempts); `INFRA=PASS`, complete: 7 usable, 5 failed all 3 attempts (29 replies). All Talon jobs of the replacement work together: about 4.59 GPU-hours.
 - **Purpose:** the follow-up replacement loop `2026-11-22_replacement_loop_d` (Jaxson's request): 6 same-subtopic candidates for each of positions 218 (R generation, graduate, reshape wide to long) and 499 (R interpretation, intro, misplaced set.seed), BM2015-BM2026 (`GEN_FIRST=865 GEN_COUNT=12 GEN_SHARD=1/1`). Its own ledger and a 1.0 GPU-hour cap; estimate 0.09.
 - **Request and software:** as entries 20-24 (1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
+
+### 26. Talon job 357: follow-up loop E for positions 190, 224, 617, 817, 997 (stage G), 2026-11-24 (UTC 22:41)
+- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Purpose:** loop E (`configs/replacement_loop_e.yaml`, Jaxson's decision 2026-11-24): 6 same-subtopic candidates for each of the five positions whose questions failed the rescreen of the assembled benchmark (content problems or off-topic), BM2027-BM2056 (`GEN_FIRST=877 GEN_COUNT=30 GEN_SHARD=1/1`). Own ledger, 1.0 GPU-hour cap; estimate 0.16.
+- **Request and software:** as entries 20-25 (1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
