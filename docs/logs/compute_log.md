@@ -389,6 +389,6 @@ This is the record of every cluster job, scheduler test and measured local run i
 - **Request and software:** as entries 20-24 (1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
 
 ### 26. Talon job 357: follow-up loop E for positions 190, 224, 617, 817, 997 (stage G), 2026-11-24 (UTC 22:41)
-- **Status: submitted, NOT YET REVIEWED.** Filled in when the job ends.
+- **Status: reviewed.** Ended normally (UTC about 22:55): **0.23 GPU-hours**; `INFRA=PASS`, complete: 28 usable, 2 failed all 3 attempts (47 replies). Replacement work on Talon in total: about 4.82 GPU-hours.
 - **Purpose:** loop E (`configs/replacement_loop_e.yaml`, Jaxson's decision 2026-11-24): 6 same-subtopic candidates for each of the five positions whose questions failed the rescreen of the assembled benchmark (content problems or off-topic), BM2027-BM2056 (`GEN_FIRST=877 GEN_COUNT=30 GEN_SHARD=1/1`). Own ledger, 1.0 GPU-hour cap; estimate 0.16.
 - **Request and software:** as entries 20-25 (1 GPU, `TIME_GENERATE=01:00:00`, `GEN_MARGIN_SECONDS=600`; vLLM 0.32.0, Qwen3.6-27B @ `6a9e13bd` BF16, prompt v8, thinking on).
