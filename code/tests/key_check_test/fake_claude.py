@@ -43,8 +43,13 @@ mode = os.environ.get("FAKE_CLAUDE_MODE", "good")
 if mode == "usage_limit":
     print(json.dumps({"type": "system", "subtype": "init", "model": "fake-claude-1", "tools": [], "mcp_servers": [],
                       "apiKeySource": "none"}))
-    print(json.dumps({"type": "result", "subtype": "success", "is_error": True,
-                      "result": "Claude usage limit reached. Your limit will reset at 5am.", "usage": {}}))
+    # the shape of the real event stream when the five-hour window is full (2026-11-25): a rejected rate_limit_event, a
+    # synthetic reply, and a result whose text does NOT name the limit
+    print(json.dumps({"type": "rate_limit_event", "rate_limit_info": {"status": "rejected", "rateLimitType": "five_hour",
+                      "unifiedWindows": {"five_hour": {"utilization": 1, "status": "rejected"}}}}))
+    print(json.dumps({"type": "assistant", "message": {"model": "<synthetic>", "content": [
+        {"type": "text", "text": "You've hit your 5-hour limit · resets 4:10am (America/New_York)"}]}}))
+    print(json.dumps({"type": "result", "subtype": "success", "is_error": True, "result": "", "usage": {}}))
     sys.exit(1)
 schema = json.loads(argv[argv.index("--json-schema") + 1])
 top = list(schema["properties"])[0]

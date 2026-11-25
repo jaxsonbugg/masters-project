@@ -481,9 +481,15 @@ def cmd_import(args):
     ids = list(key["ids"])
     kind = key.get("kind", "screen")
     text = (folder / "verdicts.json").read_text(encoding="utf-8") if (folder / "verdicts.json").exists() else ""
+    redo = []
     if kind in kcs.KINDS:
         shown = {r["id"]: r for r in map(json.loads, batch.decode("utf-8").splitlines()) if r}
-        verdicts, problems = kcs.validate(kind, text, ids, shown)
+        if getattr(args, "partial", False):
+            # partial import (Jaxson's decision 2026-11-25): valid answers are imported, the rest asked again later
+            verdicts, redo, problems = kcs.validate_partial(kind, text, ids, shown)
+        else:
+            verdicts, problems = kcs.validate(kind, text, ids, shown)
+            redo = []
     else:
         verdicts, problems = (validate_align if kind == "align" else validate_verdicts)(text, ids)
     if problems:
@@ -498,7 +504,12 @@ def cmd_import(args):
         sys.exit(f"{out} exists; an imported batch is never overwritten")
     out.mkdir(parents=True)
     rows = []
+    if redo:
+        (out / "redo_item_ids.txt").write_text("".join(key["ids"][a]["item_id"] + "\n" for a in redo), encoding="utf-8",
+                                               newline="\n")
     for anon, info in key["ids"].items():
+        if anon in redo:
+            continue
         v = verdicts[anon]
         base = {"item_id": info["item_id"], "position": info["position"], "batch": folder.name, "anon_id": anon}
         if kind == "align":
@@ -515,7 +526,8 @@ def cmd_import(args):
         (out / f).write_bytes((folder / f).read_bytes())
     (out / "key.json").write_text(json.dumps(key, indent=1), encoding="utf-8", newline="\n")
     if kind in kcs.KINDS:
-        print(f"{folder.name}: imported {len(rows)} {kind} answers -> {out}")
+        print(f"{folder.name}: imported {len(rows)} {kind} answers -> {out}"
+              + (f"; {len(redo)} set aside to ask again (redo_item_ids.txt)" if redo else ""))
     elif kind == "align":
         n_ok = sum(r["subtopic_verdict"] == "aligned" and r["difficulty_verdict"] == "matches" for r in rows)
         print(f"{folder.name}: imported {len(rows)} alignment verdicts ({n_ok} aligned and matching) -> {out}")
@@ -604,6 +616,8 @@ def main(argv=None):
     p.add_argument("--real", action="store_true", help="actually call Codex (only with the owner's approval)")
     p = sub.add_parser("import")
     p.add_argument("--batch", required=True)
+    p.add_argument("--partial", action="store_true",
+                   help="solve kinds only: import the valid answers and set the malformed or missing ones aside (redo)")
     p.add_argument("--keys", default=None)
     p.add_argument("--out-root", default=None)
     p = sub.add_parser("report")

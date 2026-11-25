@@ -20,7 +20,7 @@ benchmark_work: C:\masters_project_large\data\benchmark_work
 # updates, so every batch records the version it used.
 codex_workspace: C:\masters_project_large\codex_workspace
 codex_keys: C:\masters_project_large\codex_keys
-codex_cli: C:\Users\Buggb\.vscode\extensions\openai.chatgpt-26.1111.21308-win32-x64\bin\windows-x86_64\codex.exe
+codex_cli: C:\Users\Buggb\.vscode\extensions\openai.chatgpt-26.1120.50957-win32-x64\bin\windows-x86_64\codex.exe
 # The Claude solvers of the five-solver key check (code/verification/key_check.py; plan of 2026-11-24). Like Codex, each Claude
 # solver runs as a separate CLI process with NO tools, in a batch folder outside the repository, so it cannot open the keys;
 # the keys linking anonymous batch ids to benchmark items are kept in a separate folder. The CLI is the copy bundled in the VS

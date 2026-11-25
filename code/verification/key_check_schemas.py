@@ -195,6 +195,24 @@ def _type_ok(schema, v):
     return False
 
 
+def validate_partial(kind, text, ids, rows=None):
+    """(good entries by id, ids to redo, batch problems), for the partial import (Jaxson's decision, 2026-11-25, after
+    Codex left the test inputs of one to three r_expression answers empty in 8 batches of 50, twice). Each answer is
+    validated on its own: one with a problem, or a missing one, is set aside to be asked again in a new small batch, and
+    the valid ones are imported. The batch itself must still be sound: valid JSON in the required shape, no duplicate ids
+    and no ids outside the batch; otherwise nothing is imported (batch problems)."""
+    got, problems = validate(kind, text, ids, rows)
+    batch_problems = [p for p in problems
+                      if p.startswith(("reply is not", "reply must", "entries for ids not in the batch")) or
+                      "more than one entry" in p]
+    bad = {p.split(":", 1)[0] for p in problems if p.split(":", 1)[0] in set(ids)}
+    bad |= {i for i in ids if i not in got}
+    good = {i: e for i, e in got.items() if i not in bad and i in set(ids)}
+    if any(p.startswith("entry ") for p in problems):
+        batch_problems.append("an entry does not match the format, so its id cannot be trusted")
+    return good, sorted(bad), batch_problems
+
+
 def validate(kind, text, ids, rows=None):
     """(entries by id, problems) for a batch reply. `rows` maps id -> the batch row (to know each answer type).
     Any problem rejects the whole batch."""

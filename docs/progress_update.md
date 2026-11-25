@@ -1308,3 +1308,18 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 
   Jaxson judged check 6 passed after these were explained.
 - **Full run started (2026-11-25, about 05:50 UTC):** `code/verification/key_check_full_run.py` (new). It builds and runs the batches for the other 975 questions: Claude 4 at a time and Codex 2 at a time, with one retry per batch and the usage-limit stop. Then it compares all 1,000, writes briefs for contested questions, and builds the review sheet. Log: `C:\masters_project_large\data\benchmark_work\2026-11-25_key_check\full_run\run_log.txt`.
+
+### Full run interrupted; fixes and resume (2026-11-25)
+- **What the full run finished (05:47-06:46 UTC):** C1, C2 (Claude) and X1 (Codex) for all 975 non-pilot questions, plus 20 of 40 C3 batches, 1 of 9 variants batches and 12 of 22 X2 batches.
+- **What went wrong:**
+  1. **Usage limit.** The Team plan's five-hour window filled at 06:00 UTC, after about 100 Opus runs, 4 at a time (from about 26% to 100% in 13 minutes). My usage projection from the pilot was wrong: the pilot readings barely moved, and the window is much smaller than I assumed. The CLI's actual wording ("You've hit your 5-hour limit", with a synthetic reply, a `rate_limit_event` with status "rejected", and an empty result text) was not caught by the usage-limit detector. So instead of stopping the Claude side, the orchestrator ran the remaining 20 C3 and 8 variants batches into fast failures (about 1.5 s each, no tokens used) and marked them failed. **Fix:** the detector now also reads the rejected rate-limit status, the synthetic model and the reply text, and it catches the real event stream when replayed. The fake CLI reproduces the real format.
+  2. **Codex format slips.** 7 X2 batches of 50 were rejected twice: Codex marked one to three r_expression answers as computed but gave no test inputs. **Jaxson's decision:** "import valid, redo the rest". `codex_batch.py import --partial` imports each valid answer and lists the malformed or missing ones (`redo_item_ids.txt`), which are asked again in small new batches. The batch itself must still be sound (valid JSON, no duplicate or extra ids, an accepted audited run), or nothing is imported. Implemented in `key_check_schemas.validate_partial`.
+  3. **Sleep and update.** The laptop slept from 06:46 to 21:47 UTC; two X2 runs timed out. Then a VS Code update moved the Codex CLI (`codex_cli` now points to 26.1120.50957, CLI 0.171.0-alpha.13.2).
+- Every rejected attempt was kept in `_rejected_attempts/`, so nothing was lost or overwritten.
+- **Tests:** key check 70 of 70, Codex tool 43 of 43.
+- **Resume (Jaxson's approval, 2026-11-25):** new `code/verification/key_check_resume.py`:
+  1. partial imports of the 7 slip batches, from the attempt with the fewest malformed answers;
+  2. reruns of X2 20, 21 and 22;
+  3. one or two X2 redo rounds;
+  4. the 28 Claude batches, now 2 at a time with the fixed limit stop;
+  5. then the comparison of all 1,000, the briefs and the review sheet.

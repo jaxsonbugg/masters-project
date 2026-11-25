@@ -187,6 +187,18 @@ for name, change, frag in (
     _, p = kcs.validate("solve-compute", json.dumps(g), ids, rows)
     check(f"rejected: {name}", any(frag in x for x in p), p)
 
+g = json.loads(json.dumps(good))
+g["answers"][1]["test_inputs"] = []
+good_e, redo, bp = kcs.validate_partial("solve-compute", json.dumps(g), ids, rows)
+check("partial import: a malformed answer is set aside for a redo, the valid one is kept",
+      list(good_e) == ["M-01-001"] and redo == ["M-01-002"] and not bp, (list(good_e), redo, bp))
+g = json.loads(json.dumps(good))
+g["answers"].append(dict(g["answers"][0]))
+_, _, bp = kcs.validate_partial("solve-compute", json.dumps(g), ids, rows)
+check("partial import: a duplicate id is a batch problem (nothing imported)", any("more than one" in x for x in bp), bp)
+_, redo, bp = kcs.validate_partial("solve-compute", json.dumps({"answers": good["answers"][:1]}), ids, rows)
+check("partial import: a missing answer is set aside for a redo", redo == ["M-01-002"] and not bp, (redo, bp))
+
 # ------------------------------------------------------------------ 4. Codex solve kinds
 print("[4] codex_batch.py: the solve kinds build blind batches with the same formats")
 rc, out = tool("build-solve-compute", "--items", str(POS), "--manifest", str(man_path), "--date", "2026-11-24", "--label",

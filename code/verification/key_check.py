@@ -237,7 +237,7 @@ API_WORDS = re.compile(r"api[_ ]?key|console|apikey", re.I)
 # A usage or rate limit of the subscription (owner's rule, 2026-11-25: no token cap; stop the Claude side when the CLI reports
 # a limit, never wait it out or retry). run-claude then exits with code 3, and the batch stays unrun for a later session.
 USAGE_LIMIT = re.compile(r"usage limit|rate limit|limit reached|limit will reset|resets at|too many requests|\b429\b|"
-                         r"out of (?:extra )?usage|quota", re.I)
+                         r"out of (?:extra )?usage|quota|hit your [\w -]*limit|\blimit\b.*\bresets?\b", re.I)
 
 
 def check_subscription_login(cli, env):
@@ -292,6 +292,8 @@ def audit_claude_events(text):
             msg = ev.get("message") or {}
             info["model"] = msg.get("model") or info["model"]
             for blk in msg.get("content") or []:
+                if blk.get("type") == "text":
+                    info["reply_text"] = (info.get("reply_text") or "") + blk.get("text", "")
                 if blk.get("type") == "tool_use":
                     if blk.get("name") in ALLOWED_CLAUDE_TOOLS:
                         allowed_ids.add(blk.get("id"))
@@ -373,7 +375,11 @@ def cmd_run_claude(a):
     (folder / "events.jsonl").write_text(stdout, encoding="utf-8", newline="\n")
     (folder / "stderr.txt").write_text(stderr, encoding="utf-8", newline="\n")
     problems, info = audit_claude_events(stdout)
-    limit_hit = bool(USAGE_LIMIT.search(stderr or "")) or bool(USAGE_LIMIT.search(info["result_text"] or ""))
+    # A limit shows up as a rate_limit_event with status "rejected" and a synthetic reply such as "You've hit your 5-hour
+    # limit" (seen in the real run of 2026-11-25; the earlier text-only test missed that wording and the run kept going).
+    rl_rejected = ((info.get("rate_limit") or {}).get("status") == "rejected")
+    limit_hit = (rl_rejected or info.get("model") == "<synthetic>" or bool(USAGE_LIMIT.search(stderr or ""))
+                 or bool(USAGE_LIMIT.search(info["result_text"] or "")) or bool(USAGE_LIMIT.search(info.get("reply_text") or "")))
     (folder / "verdicts.json").write_text(reply_text(info), encoding="utf-8", newline="\n")
     run.update({"model_requested": model, "model_reported": info["model"] or "not reported",
                 "model": info["model"] or model, "usage": info["usage"],
