@@ -154,6 +154,12 @@ for mode, what in (("api_source", "key source"), ("no_source", "did not report i
     rc, out = tool("import", "--batch", str(f), "--keys", str(KEYS), "--out-root", str(T / "imp"))
     check(f"{mode}: nothing is imported", rc != 0 and not (T / "imp" / f"mode-{mode.replace('_', '')}").exists(), out)
 
+f = fresh("mode-usagelimit")
+rc, out = tool("run-claude", "--batch", str(f), "--claude", str(FAKE), "--real", env_extra={"FAKE_CLAUDE_MODE": "usage_limit"})
+check("a usage-limit message stops the Claude side (exit 3) and leaves the batch unrun for later, evidence kept",
+      rc == 3 and "USAGE LIMIT" in out and {p.name for p in f.iterdir() if p.is_file()} == {"batch.jsonl", "instructions.md",
+      "schema.json"} and list((WS / "_usage_limit_attempts").glob("*/run.json")), out)
+
 # ------------------------------------------------------------------ 3. import and validation
 print("[3] import: exact format only; results land in the key-check folder")
 rc, out = tool("import", "--batch", str(b), "--keys", str(KEYS), "--out-root", str(LOGS / "2026-11-24_key_check_with_codex"))
@@ -258,6 +264,17 @@ NA_ = {"status": "not_applicable", "r_code": "", "answer_expression": "", "test_
        "note": "conceptual"}
 v = judge(st, A("welch."), A(" Welch"), NA_, NA_)
 check("short text: normalized matches -> consensus-supported", v["verdict"] == "consensus-supported", v["reasons"])
+pr = bm(32, "short_text", "q", "(Intercept) x groupB")
+v = judge(pr, A('"(Intercept)" "x" "groupB"'), A('[1] "(Intercept)" "x"           "groupB"'), NA_, NA_)
+check("short text: R print formatting ([1], quotes, extra spaces) is ignored (owner's decision after the pilot)",
+      v["verdict"] == "consensus-supported", v["reasons"])
+v = judge(bm(33, "short_text", "q", "FALSE TRUE FALSE"), A("[1] FALSE  TRUE FALSE"), A("FALSE TRUE FALSE"), NA_, NA_)
+check("short text: '[1] FALSE  TRUE FALSE' equals 'FALSE TRUE FALSE'", v["verdict"] == "consensus-supported", v["reasons"])
+v = judge(bm(34, "short_text", "q", "a list"), A("a list of length 3"), A("a list"), NA_, NA_)
+check("short text: a description is still not the short key (it goes to the owner)", v["verdict"] == "contested")
+check("blindness guard: instructions that quote a key are detected",
+      kcs.keys_in_text("Give the short answer, e.g. Welch's test or (Intercept) x groupB.", [pr, st]) == ["BM0032"]
+      and kcs.keys_in_text("Give the short answer.", [pr, st]) == [])
 v = judge(st, A("Student"), A("Welch"), *[{"status": "not_applicable", "r_code": "", "answer_expression": "", "test_inputs": [],
                                            "correct_options": [], "note": "c"}] * 2)
 check("short text: a different answer is contested", v["verdict"] == "contested", v["reasons"])

@@ -29,7 +29,8 @@ if argv[:1] == ["--version"]:
     sys.exit(0)
 if argv[:2] == ["auth", "status"]:
     a = os.environ.get("FAKE_CLAUDE_AUTH", "subscription")
-    st = {"subscription": {"loggedIn": True, "authMethod": "claude.ai", "subscriptionType": "max", "email": "x@example.org"},
+    st = {"subscription": {"loggedIn": True, "authMethod": "claude.ai", "apiProvider": "firstParty", "subscriptionType": "team",
+                           "consoleProfileSignInOffered": True, "email": "x@example.org"},
           "api_key": {"loggedIn": True, "authMethod": "api_key", "apiKeySource": "ANTHROPIC_API_KEY"},
           "logged_out": {"loggedIn": False}}[a]
     print(json.dumps(st))
@@ -39,6 +40,12 @@ if "-p" not in argv:
     sys.exit(64)
 
 mode = os.environ.get("FAKE_CLAUDE_MODE", "good")
+if mode == "usage_limit":
+    print(json.dumps({"type": "system", "subtype": "init", "model": "fake-claude-1", "tools": [], "mcp_servers": [],
+                      "apiKeySource": "none"}))
+    print(json.dumps({"type": "result", "subtype": "success", "is_error": True,
+                      "result": "Claude usage limit reached. Your limit will reset at 5am.", "usage": {}}))
+    sys.exit(1)
 schema = json.loads(argv[argv.index("--json-schema") + 1])
 top = list(schema["properties"])[0]
 item_props = schema["properties"][top]["items"]["properties"]

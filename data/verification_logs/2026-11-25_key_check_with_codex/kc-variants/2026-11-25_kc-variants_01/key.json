@@ -1,0 +1,39 @@
+{
+ "batch": "2026-11-25_kc-variants_01",
+ "kind": "variants",
+ "role": "variants",
+ "label": "kc-variants",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_variants_v1.md",
+ "instructions_sha256": "b315ac84863061016b0028b0140fe40a0969759b8a8a4677d91072f51d8ee970",
+ "batch_sha256": "981c029487d70c1867e531229228c04f2677d8f06a864e09b4d12109d3acafe0",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "V-01-001": {
+   "item_id": "BM0009",
+   "position": 9
+  },
+  "V-01-002": {
+   "item_id": "BM0158",
+   "position": 158
+  },
+  "V-01-003": {
+   "item_id": "BM0618",
+   "position": 618
+  },
+  "V-01-004": {
+   "item_id": "BM0829",
+   "position": 829
+  },
+  "V-01-005": {
+   "item_id": "BM0863",
+   "position": 863
+  },
+  "V-01-006": {
+   "item_id": "BM1743",
+   "position": 458
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:22:50+00:00"
+}

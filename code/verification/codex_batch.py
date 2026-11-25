@@ -235,6 +235,11 @@ def cmd_build(args, kind):
     workspace, keys = check_outside_repo(args.workspace or workspace), check_outside_repo(args.keys or keys)
     wanted = [l.strip() for l in Path(args.only).read_text(encoding="utf-8").splitlines() if l.strip()] if args.only else None
     rows = benchmark_rows(args.items, args.manifest, wanted)
+    if kind in kcs.BLIND_KINDS:
+        hits = kcs.keys_in_text(instructions_text(KINDS[kind][0])[0], benchmark_rows(args.items, args.manifest))
+        if hits:
+            sys.exit(f"the {kind} instructions quote the answer key of {hits[:5]}; a blind solver must never see a key. "
+                     f"Nothing was built.")
     if args.first or args.count:
         rows = rows[args.first:args.first + args.count] if args.count else rows[args.first:]
     date = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")

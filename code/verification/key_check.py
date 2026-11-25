@@ -186,6 +186,10 @@ def cmd_build(a):
     ws, keys = cb.check_outside_repo(a.workspace or ws), cb.check_outside_repo(a.keys or keys)
     kind = ROLE_KIND[a.role]
     rows = select_rows(a.positions, a.manifest, a.only, a.exclude)
+    hits = kcs.keys_in_text(cb.instructions_text(kcs.KINDS[kind][0])[0], cb.benchmark_rows(a.positions, a.manifest))
+    if hits:
+        sys.exit(f"the {kind} instructions quote the answer key of {hits[:5]}; a blind solver must never see a key. "
+                 f"Nothing was built.")
     date = a.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     return write_batches(rows, lambda r: shown_row(r, SHOWN[kind]), kind, a.label or f"kc-{a.role.lower()}", date,
                          a.batch_size or CFG["claude_batch_size"], ws, keys, a.positions, role=a.role)
@@ -230,6 +234,10 @@ def claude_env():
 
 
 API_WORDS = re.compile(r"api[_ ]?key|console|apikey", re.I)
+# A usage or rate limit of the subscription (owner's rule, 2026-11-25: no token cap; stop the Claude side when the CLI reports
+# a limit, never wait it out or retry). run-claude then exits with code 3, and the batch stays unrun for a later session.
+USAGE_LIMIT = re.compile(r"usage limit|rate limit|limit reached|limit will reset|resets at|too many requests|\b429\b|"
+                         r"out of (?:extra )?usage|quota", re.I)
 
 
 def check_subscription_login(cli, env):
@@ -243,10 +251,12 @@ def check_subscription_login(cli, env):
         return False, {"error": "auth status is not JSON", "exit": r.returncode}
     keep = {k: v for k, v in st.items() if isinstance(v, (str, bool, int)) and "mail" not in k.lower()
             and "token" not in k.lower() and "org" not in k.lower() and "id" != k.lower()[-2:]}
+    # The login method must be exactly the claude.ai (subscription) login, and no API-key field may be set. (Fixed
+    # 2026-11-25 after the first real check: the field consoleProfileSignInOffered, an offer to sign in to the Console, had
+    # been read as an API-key sign; the rule now looks only at the login method and at API-key fields.)
     logged_in = st.get("loggedIn", st.get("logged_in"))
-    api_hint = [k for k, v in st.items() if (API_WORDS.search(k) and v not in (None, False, "", "none"))
-                or (isinstance(v, str) and API_WORDS.search(v))]
-    ok = logged_in is True and not api_hint and r.returncode == 0
+    api_hint = [k for k, v in st.items() if re.search(r"api[_ ]?key", k, re.I) and v not in (None, False, "", "none")]
+    ok = logged_in is True and st.get("authMethod") == "claude.ai" and not api_hint and r.returncode == 0
     keep["api_key_indicators"] = api_hint
     return ok, keep
 
@@ -292,6 +302,9 @@ def audit_claude_events(text):
             for blk in (ev.get("message") or {}).get("content") or []:
                 if isinstance(blk, dict) and blk.get("type") == "tool_result" and blk.get("tool_use_id") not in allowed_ids:
                     problems.append(f"event line {n}: a tool result for a tool that is not allowed")
+        elif t == "rate_limit_event":
+            # the subscription's usage windows (for example five_hour and seven_day utilization), recorded per run
+            info["rate_limit"] = ev.get("rate_limit_info")
         elif t == "result":
             if ev.get("is_error") or ev.get("subtype") not in (None, "success"):
                 problems.append(f"the run ended with an error ({ev.get('subtype')})")
@@ -360,17 +373,33 @@ def cmd_run_claude(a):
     (folder / "events.jsonl").write_text(stdout, encoding="utf-8", newline="\n")
     (folder / "stderr.txt").write_text(stderr, encoding="utf-8", newline="\n")
     problems, info = audit_claude_events(stdout)
+    limit_hit = bool(USAGE_LIMIT.search(stderr or "")) or bool(USAGE_LIMIT.search(info["result_text"] or ""))
     (folder / "verdicts.json").write_text(reply_text(info), encoding="utf-8", newline="\n")
     run.update({"model_requested": model, "model_reported": info["model"] or "not reported",
                 "model": info["model"] or model, "usage": info["usage"],
                 "cost_usd_equivalent_reported": info["total_cost_usd"], "api_key_source": info["api_key_source"],
-                "num_turns": info["num_turns"], "tools_offered": info["tools_offered"], "audit_problems": problems})
+                "num_turns": info["num_turns"], "tools_offered": info["tools_offered"], "audit_problems": problems,
+                "rate_limit": info.get("rate_limit")})
     if run["exit_status"] != 0:
         problems = problems + [f"exit status {run['exit_status']}"]
     run["accepted_run"] = not problems
+    run["usage_limit_reported"] = limit_hit and not run["accepted_run"]
     (folder / "run.json").write_text(json.dumps(run, indent=1), encoding="utf-8", newline="\n")
-    print(f"{folder.name}: exit {run['exit_status']}, {run['wall_seconds']}s, model {run['model']}, usage {info['usage']}, "
-          f"key source {info['api_key_source']}")
+    windows = ((info.get("rate_limit") or {}).get("unifiedWindows") or {})
+    print(f"{folder.name}: exit {run['exit_status']}, {run['wall_seconds']}s, model {run['model']}, "
+          f"output tokens {info['usage'].get('output_tokens')}, key source {info['api_key_source']}, plan usage "
+          + ", ".join(f"{k} {v.get('utilization')}" for k, v in windows.items()))
+    if run["usage_limit_reported"]:
+        # keep the evidence, but return the folder to its unrun state so it can be run again in a later session
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        keep = folder.parent / "_usage_limit_attempts" / f"{folder.name}_{stamp}"
+        keep.mkdir(parents=True)
+        for f in cb.OUTPUT_FILES:
+            if (folder / f).exists():
+                (folder / f).rename(keep / f)
+        print(f"USAGE LIMIT reported by the CLI: the Claude side stops here (Jaxson's rule). The batch is unrun again; "
+              f"the attempt is kept in {keep}")
+        return 3
     if problems:
         print("RUN REJECTED: " + "; ".join(problems))
         return 2
@@ -597,9 +626,14 @@ def as_number(s):
 
 
 def norm_text(s):
+    """Normalize a short-text answer or key before an exact comparison: case, spaces, a final period, and R's print
+    formatting (the index markers [1], [5] and the quotes R puts around strings) are ignored (Jaxson's decision after the
+    pilot, 2026-11-25). Example: '[1] "(Intercept)" "x"   "groupB"' and '(Intercept) x groupB' compare equal."""
     t = str(s or "").strip().casefold()
-    t = re.sub(r"\s+", " ", t).strip(" .")
-    return t.strip("'\"`").strip()
+    t = re.sub(r"(?m)^\s*\[\d+\]", " ", t)          # index markers at line starts
+    t = re.sub(r"\s\[\d+\]\s", " ", t)              # index markers inside a flattened printout
+    t = re.sub(r"[\"'`]", " ", t)                   # quotes around strings
+    return re.sub(r"\s+", " ", t).strip(" .")
 
 
 HARDCODED = re.compile(r"""^answer\s*(<-|=)\s*["'][A-D]["']\s*;?\s*$""")
@@ -883,7 +917,7 @@ def compare_item(p, roles, screen, overrides, rscript, cfg, harness_dir):
             cx_index[f"v{k}"] = len(inputs)
         res, failures = run_harness(exprs, inputs, rscript, cfg["equivalence_tolerance"]) if inputs else ({}, "no inputs")
         harness = {"exprs": exprs, "inputs": inputs, "results": res, "cx_index": cx_index, "failures": failures}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             fut = {name: pool.submit(r_check_verdict, it, e, rscript) for name, e in exprs.items()}
             rchecks = {name: f.result() for name, f in fut.items()}
         reasons, flags, notes, harness_summary = judge_rexpr(it, ev, harness, rchecks, var, cfg)
@@ -928,11 +962,14 @@ def cmd_compare(a):
     harness_dir = Path(a.harness_dir) if a.harness_dir else kc_paths()[3] / f"{a.date}_key_check" / f"harness_{stamp}"
     harness_dir.mkdir(parents=True, exist_ok=True)
     rscript = gb.rscript_path()
-    rows = []
-    for n, p in enumerate(pos, 1):
-        rows.append(compare_item(p, roles, screen, overrides, rscript, CFG, harness_dir))
-        if n % 25 == 0:
-            print(f"  {n}/{len(pos)} compared")
+    # several questions at once (each one's R runs are independent sandbox processes); results keep benchmark order
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, a.workers)) as pool:
+        futs = [pool.submit(compare_item, p, roles, screen, overrides, rscript, CFG, harness_dir) for p in pos]
+        rows = []
+        for n, f in enumerate(futs, 1):
+            rows.append(f.result())
+            if n % 100 == 0:
+                print(f"  {n}/{len(pos)} compared", flush=True)
     incomplete = [r["item_id"] for r in rows if r["verdict"] == "incomplete"]
     if incomplete and not a.allow_incomplete:
         print(f"WARNING: {len(incomplete)} question(s) lack a solver result (first: {incomplete[:5]}); they are marked "
@@ -1122,6 +1159,7 @@ def main(argv=None):
     p.add_argument("--out", default=None)
     p.add_argument("--harness-dir", default=None)
     p.add_argument("--allow-incomplete", action="store_true")
+    p.add_argument("--workers", type=int, default=1, help="questions compared at once (default 1)")
     p = sub.add_parser("build-briefs")
     p.add_argument("--positions", required=True)
     p.add_argument("--date", required=True)

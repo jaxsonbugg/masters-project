@@ -1,0 +1,179 @@
+{
+  "answers": [
+    {
+      "id": "K-02-001",
+      "answer": "0.909",
+      "correct_options": [],
+      "working": "The standardized value is (10.1 − 8.5)/1.2 = 1.3333. The standard normal cumulative probability there is about 0.9088.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-002",
+      "answer": "20",
+      "correct_options": [],
+      "working": "Reversing order(x) gives indices 2, 1, 3, so the code prints x[2].",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-003",
+      "answer": "-45",
+      "correct_options": [],
+      "working": "The estimator has expectation 0.95(1200) + 15 = 1155. Subtracting the true value gives 1155 − 1200 = −45.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-004",
+      "answer": "12.826",
+      "correct_options": [],
+      "working": "The recursion gives weights 0.2401, 0.1029, 0.147, 0.21, and 0.30 for the five log counts. Exponentiating their weighted sum gives about 12.82584.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-005",
+      "answer": "-0.000235",
+      "correct_options": [],
+      "working": "At n = 20, the factor multiplying sigma in the expectation is about 0.9869343. The bias is 0.018(0.9869343 − 1) ≈ −0.00023518.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-006",
+      "answer": "-2.581",
+      "correct_options": [],
+      "working": "The residual sums of squares are 2.4 for m1 and 6 for m0. With one additional fitted parameter, the AIC difference is 5 log(2.4/6) + 2 ≈ −2.581454.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-007",
+      "answer": "2.580",
+      "correct_options": [],
+      "working": "R's default quantile method uses position 1 + 4(0.6) = 3.4. Interpolating gives 2.50 + 0.4(2.70 − 2.50) = 2.58.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-008",
+      "answer": "13.481",
+      "correct_options": [],
+      "working": "The pivot is 800/μ, so the lower endpoint uses the 97.5th percentile of chi-squared with 40 degrees of freedom. The endpoint is 800/59.3417 ≈ 13.48125.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-009",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The three indicator columns sum to the intercept column. Adding a constant to the intercept and subtracting it from every group coefficient leaves all fitted values unchanged.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-010",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "With the identity link, an extra millimeter adds 0.30 to the expected count. With the log link, it adds 0.30 to the log mean and therefore multiplies the expected count by exp(0.30).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-011",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Of the 50 observations in row B, 35 are High, giving 35/50 = 0.70.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-012",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The p-value 0.00067 is below 0.05, so the joint null is rejected. This gives evidence that at least one coefficient differs from zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-013",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "A one-unit increase in x adds beta_1 to the log mean. Exponentiating gives the ratio of expected counts, exp(beta_1).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-014",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Using all circuits as assigned preserves randomization and estimates the effect of assignment. Restricting to compliant circuits can introduce selection bias, while attenuation relative to the ideal protocol effect depends on how the violations affect outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-015",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Each component variance is its squared standard deviation, and its share is that variance divided by the sum of all component variances. The three orthogonal components together account for the entire variance of the variables used in the PCA.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-016",
+      "answer": "model.matrix(~ type + temp, data = components)",
+      "correct_options": [],
+      "working": "The formula includes an intercept by default and uses type and temp as predictors.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-017",
+      "answer": "sum(table(a == b)[\"TRUE\"], na.rm = TRUE)",
+      "correct_options": [],
+      "working": "Elementwise equality produces a logical vector, and the TRUE entry counts the matches. If TRUE is absent, the indexed value is NA and the sum returns zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-018",
+      "answer": "vapply(split(x, g, drop = TRUE), length, numeric(1))",
+      "correct_options": [],
+      "working": "The split drops unused levels, and vapply returns the length of each named group as a numeric value.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-019",
+      "answer": "gsub(\"^([A-Z]):([0-9]+)$\", \"\\\\2:\\\\1\", v)",
+      "correct_options": [],
+      "working": "The two capture groups match the letter and the number. The replacement writes the second group first.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-020",
+      "answer": "logs %in% critical",
+      "correct_options": [],
+      "working": "The membership operator returns one logical value for each element of logs.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-021",
+      "answer": "setNames(tabulate(match(x, L), nbins = length(L)), L)",
+      "correct_options": [],
+      "working": "The match positions follow the order of L. Using one bin per level keeps absent levels as zero counts, and setNames supplies the labels.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-022",
+      "answer": "\"(Intercept)\" \"x\" \"groupB\"",
+      "correct_options": [],
+      "working": "lm drops the unused level C and uses A as the reference level, so the factor contributes only the groupB coefficient.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-023",
+      "answer": "list(1:2, 1:3, 1:2)",
+      "correct_options": [],
+      "working": "The identity function returns each vector unchanged. Their unequal lengths prevent sapply from simplifying the list.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-024",
+      "answer": "FALSE TRUE FALSE",
+      "correct_options": [],
+      "working": "Only the second element is missing.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-02-025",
+      "answer": "The fitted expected flaw count at pressure 125",
+      "correct_options": [],
+      "working": "The Poisson GLM uses the log link by default, so prediction on the response scale exponentiates the fitted linear predictor.",
+      "confidence": "high"
+    }
+  ]
+}

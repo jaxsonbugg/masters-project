@@ -16,12 +16,13 @@ EXAMPLE. A computational reply for a number question:
 The validator accepts it. With "status": "computed" but an empty r_code it would reject the batch.
 """
 import json
+import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 PROMPTS = REPO / "data" / "prompts"
-ANALYTIC_PROMPT = PROMPTS / "key_check_analytic_v1.md"
-COMPUTE_PROMPT = PROMPTS / "key_check_compute_v1.md"
+ANALYTIC_PROMPT = PROMPTS / "key_check_analytic_v2.md"   # v2 since 2026-11-25 (short-text answers in their shortest form)
+COMPUTE_PROMPT = PROMPTS / "key_check_compute_v2.md"     # v2 since 2026-11-25 (same change)
 AMBIGUITY_PROMPT = PROMPTS / "key_check_ambiguity_v1.md"
 VARIANTS_PROMPT = PROMPTS / "key_check_variants_v1.md"
 BRIEF_PROMPT = PROMPTS / "key_check_brief_v1.md"
@@ -95,6 +96,28 @@ KINDS = {
 }
 RESULTS_FILE = {"solve-analytic": "solve_results.jsonl", "solve-compute": "solve_results.jsonl",
                 "ambiguity": "ambiguity_results.jsonl", "variants": "variants_results.jsonl", "brief": "brief_results.jsonl"}
+
+
+BLIND_KINDS = {"solve-analytic", "solve-compute", "ambiguity"}
+
+
+def keys_in_text(text, rows):
+    """Item ids whose answer key (at least 6 characters, not a bare number) appears in `text`. A blind solver's
+    instructions must never quote a key (added 2026-11-25, after a draft of the v2 instructions used two real keys as
+    examples; caught before any run). Used by key_check.py build and codex_batch.py build-solve-*."""
+    t = text.casefold()
+    hits = []
+    for r in rows:
+        k = r["item"]["canonical_answer"].strip().casefold()
+        try:
+            float(k.replace(",", ""))
+            continue
+        except ValueError:
+            pass
+        # whole words only: the key "numeric" is not quoted by the word "numerical"
+        if len(k) >= 6 and re.search(r"(?<![\w.])" + re.escape(k) + r"(?![\w(])", t):
+            hits.append(r["item_id"])
+    return hits
 
 
 def _entry_problems(kind, e, row):

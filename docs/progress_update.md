@@ -1273,3 +1273,38 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
 
   The Codex tool tests still pass, 43 of 43.
 - **No model was called.** Next: a 25-question pilot (every answer type) through all five solvers and the harness, which needs Jaxson's approval for the Claude and Codex calls; then the full run.
+
+### Key-check pilot, the short-text fix (v2) and the start of the full run (2026-11-25)
+- **Jaxson's decisions (2026-11-25):**
+  - pilot, then the full run overnight if the pilot passes six checks fixed in advance;
+  - Claude Opus 5.5 for every Claude role, on his Team subscription;
+  - no token cap, but the Claude side stops at the first usage-limit message from the CLI (overage is disabled at the org level, so nothing is billed beyond the plan);
+  - plumbing fixes allowed if logged; never the instructions, the comparison rules or a key.
+- **The six pilot checks:**
+  1. every run accepted (format, no tools, subscription login, key source "none"), one retry each;
+  2. no key, r_solution, r_check or explanation in any solver batch;
+  3. solver R code runs on at least 90% of computed questions, and no hardcoded multiple-choice letter;
+  4. test inputs run, and the key works on the question's own data, at least 90%;
+  5. at least 80% of the known-wrong variants are really wrong;
+  6. no contest caused by the comparison rule rather than a real disagreement.
+- **Plumbing fixes (logged under his approval):**
+  - The login check had read the harmless field `consoleProfileSignInOffered` as an API-key sign. It now requires the login method to be exactly `claude.ai` and no API-key field to be set. The real CLI reports `authMethod: claude.ai`, `subscriptionType: team`.
+  - The runner records the plan's usage windows (five-hour, seven-day) for every run.
+  - A usage-limit message ends the Claude side (exit 3) and leaves the batch unrun.
+  - The comparison can work on several questions at once.
+- **Pilot 1 (05:23-05:25 UTC):** 25 questions (seed `key-check-pilot-2026-11-24`: 8 number, 7 multiple choice, 6 r_expression, 4 short text), 4 Claude and 2 Codex runs, all accepted. Claude used 28,882 input and 18,781 output tokens (cost log). The isolation held in the real event stream: the only tool offered was the answer return, there were no MCP servers, key source "none", and a fresh empty memory folder per batch. Results: 17 consensus-supported, 8 contested.
+  - Checks 1 to 5 passed: R code 30 of 30; the key ran on 77 of 77 inputs; variants 29 of 29 really wrong, each confirmed by its own counterexample. The blindness scan's one hit was a false positive: BM0873's key "expected count" appears in another question's choices.
+  - **Check 6 failed** on short text: printed R output (`[1]`, quotes, spaces) and descriptive answers against short keys.
+  - **The four contested r_expression questions are real findings:**
+    - BM0158: the key `sum(diag(table(a, b)))` matches cells by position and is wrong when a and b have different values.
+    - BM0618: the key `tapply(x, g, length)` returns NA for the unused level instead of omitting it, and its r_check repeats the mistake.
+    - BM1743: the key returns a `table`, while the question asks for a named integer vector; the r_check rejects all four solvers' correct vectors.
+    - BM0829: the key's pattern swaps only a single letter and digit.
+- **Jaxson's fix (2026-11-25):** a format rule in the comparison (R's index markers, string quotes and extra spaces are ignored), plus v2 of the analytic and compute instructions (`key_check_analytic_v2.md`, `key_check_compute_v2.md`). The only change: short-text answers in their shortest form, without description. C3 and the variants agent keep v1.
+- **A slip caught before any run:** my first v2 draft used two real pilot keys ("a list", "expected count") as examples, which would have broken blindness for those questions. They were replaced by examples checked against all 1,000 keys. A new guard (`key_check_schemas.keys_in_text`, whole words) now refuses to build any blind batch, Claude or Codex, whose instructions quote a key; all instruction files pass it. Tests 67 of 67.
+- **Pilot 2 (v2, 05:38-05:41 UTC):** C1, C2, X1, X2 again, all accepted. 18 consensus-supported, 7 contested; the format false alarms are gone. The remaining short-text contests are real:
+  - BM0213: one solver wrong; the key is right.
+  - BM0467 and BM0873: questions that ask "what does this code return?" with a category key, so the value itself is also a correct reading. This is an answer-format problem the grader would also meet.
+
+  Jaxson judged check 6 passed after these were explained.
+- **Full run started (2026-11-25, about 05:50 UTC):** `code/verification/key_check_full_run.py` (new). It builds and runs the batches for the other 975 questions: Claude 4 at a time and Codex 2 at a time, with one retry per batch and the usage-limit stop. Then it compares all 1,000, writes briefs for contested questions, and builds the review sheet. Log: `C:\masters_project_large\data\benchmark_work\2026-11-25_key_check\full_run\run_log.txt`.
