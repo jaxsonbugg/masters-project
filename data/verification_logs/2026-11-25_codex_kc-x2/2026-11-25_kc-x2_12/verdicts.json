@@ -1,0 +1,486 @@
+{
+  "answers": [
+    {
+      "id": "M-12-001",
+      "status": "computed",
+      "r_code": "n <- 8 * 25\np <- 0.18\nanswer <- n * p * (1 - p)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the binomial variance for all 200 independent responses."
+    },
+    {
+      "id": "M-12-002",
+      "status": "computed",
+      "r_code": "critical_ratio <- stats::qnorm(0.995) / stats::qnorm(0.975)\nvalue <- c(A = critical_ratio, B = 1 / sqrt(0.5), C = 2, D = 1 / sqrt(2))\nanswer <- names(value)[value < 1]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Doubling sample size multiplies a positive interval width by one over the square root of two when the other factors are fixed."
+    },
+    {
+      "id": "M-12-003",
+      "status": "computed",
+      "r_code": "x <- c(12.5, 14.2, 13.1, 15.8, 13.6)\ncenter <- mean(x)\nsigma_mle <- sqrt(mean((x - center)^2))\nanswer <- (x[2] - center) / sigma_mle",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Standardize the second observation using squared deviations averaged over all five observations."
+    },
+    {
+      "id": "M-12-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "interaction(df$group, df$time, sep = ':')",
+      "test_inputs": [
+        {"kind": "variation", "code": "df <- data.frame(group = factor(c('Control', 'Control', 'Treatment', 'Treatment')), time = factor(c('Before', 'After', 'Before', 'After')))"},
+        {"kind": "variation", "code": "df <- data.frame(group = factor(c('A', 'A', 'B', 'C', 'C')), time = factor(c('Week1', 'Week2', 'Week1', 'Week2', 'Week3')))"},
+        {"kind": "variation", "code": "df <- data.frame(group = factor(c('North', 'South', 'North', 'South', 'South')), time = factor(c('AM', 'PM', 'PM', 'AM', 'PM'), levels = c('PM', 'AM')))"},
+        {"kind": "edge", "code": "df <- data.frame(group = factor(rep('Control', 3)), time = factor(c('Baseline', 'Followup', 'Baseline')))"}
+      ],
+      "correct_options": [],
+      "note": "Pass both factor columns to interaction and set its level separator to a colon."
+    },
+    {
+      "id": "M-12-005",
+      "status": "computed",
+      "r_code": "average <- 8.45\nmiddle <- 6.80\nminimum <- 0.5\nmaximum <- 24.0\nvalue <- c(mean_minus_median = average - middle, upper_minus_lower_distance = (maximum - middle) - (middle - minimum))\nanswer <- if (all(value > 0)) 'A' else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The mean exceeds the median and the larger distance to the maximum suggests right skew."
+    },
+    {
+      "id": "M-12-006",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The pooled test tends to be liberal when the smaller group has the larger population variance."
+    },
+    {
+      "id": "M-12-007",
+      "status": "computed",
+      "r_code": "lengths_cm <- c(15.1, 15.4, 15.2, 15.5, 15.3, 15.6, 15.2, 15.4)\nordered <- sort(lengths_cm)\nanswer <- stats::median(ordered[seq_len(length(ordered) %/% 2)])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Take the median of the four smallest lengths."
+    },
+    {
+      "id": "M-12-008",
+      "status": "computed",
+      "r_code": "reductions <- c(14.2, 12.8, 15.1, 13.5, 16.0)\nanswer <- ceiling(mean(reductions)) + round(stats::sd(reductions), 2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the ceiling and the intermediate rounding exactly as shown."
+    },
+    {
+      "id": "M-12-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "replicate(500, mean(stats::runif(15, min = 0, max = 1)))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The simulation fixes the replication count, sample size, and distribution and requires no input objects."
+    },
+    {
+      "id": "M-12-010",
+      "status": "computed",
+      "r_code": "observed <- matrix(c(12, 18, 8, 10, 20, 12, 15, 15, 10), nrow = 3, byrow = TRUE)\nanswer <- unname(stats::chisq.test(observed)$statistic)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Extract the Pearson statistic from the test of independence on the supplied table."
+    },
+    {
+      "id": "M-12-011",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The defining survival probability identity gives equality in distribution for the remaining lifetime."
+    },
+    {
+      "id": "M-12-012",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "R issues this warning when any expected cell count is below five, since sparse cells can make the reference approximation inaccurate."
+    },
+    {
+      "id": "M-12-013",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::pf(((250 - 150) / (3 - 1)) / (150 / (30 - 3)), df1 = 3 - 1, df2 = 30 - 3, lower.tail = FALSE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression uses the fixed ANOVA summaries directly to evaluate the upper F tail."
+    },
+    {
+      "id": "M-12-014",
+      "status": "computed",
+      "r_code": "batches <- c('B101', 'B102', 'B103', 'B104', 'B105')\nanswer <- match('B103', batches)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use match to get the one-based position of B103."
+    },
+    {
+      "id": "M-12-015",
+      "status": "computed",
+      "r_code": "spoiled <- c(45, 30)\ntotal <- c(200, 250)\npooled <- sum(spoiled) / sum(total)\nstandard_error <- sqrt(pooled * (1 - pooled) * sum(1 / total))\nproportions <- spoiled / total\nanswer <- (proportions[1] - proportions[2]) / standard_error",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract B's spoilage proportion from A's and divide by the pooled null standard error."
+    },
+    {
+      "id": "M-12-016",
+      "status": "computed",
+      "r_code": "frequencies <- c(0.11, 0.16, 0.14, 0.21, 0.19)\nanswer <- mean(frequencies[1:3])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Average the three observations ending at generation 3."
+    },
+    {
+      "id": "M-12-017",
+      "status": "computed",
+      "r_code": "intercept <- 5\ncoefficient <- 2\nfitted <- intercept + coefficient * c(0, 1)\nvalue <- c(A = diff(fitted), B = fitted[2], C = fitted[2] / fitted[1], D = fitted[1])\nanswer <- names(value)[value == coefficient]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Calculate both fitted means and compare the coefficient with each candidate quantity."
+    },
+    {
+      "id": "M-12-018",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "diff(range(c(4, 1, 7, 3, 9)))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression subtracts the minimum from the maximum of the fixed vector and requires no input objects."
+    },
+    {
+      "id": "M-12-019",
+      "status": "computed",
+      "r_code": "correlation <- 0.600\np_value <- 0.00152\nvalue <- c(positive = correlation > 0, significant = p_value < 0.05)\nanswer <- if (all(value)) 'B' else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The estimate is positive and the reported p-value falls below 0.05."
+    },
+    {
+      "id": "M-12-020",
+      "status": "computed",
+      "r_code": "offers <- 0:4\nprobabilities <- c(0.20, 0.35, 0.25, 0.15, 0.05)\ncommission <- 500 + 200 * offers\nexpected <- sum(probabilities * commission)\nanswer <- sum(probabilities * (commission - expected)^2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Take the probability-weighted mean of squared deviations from the expected commission."
+    },
+    {
+      "id": "M-12-021",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Comparing AIC values requires likelihoods evaluated for the same response and observations."
+    },
+    {
+      "id": "M-12-022",
+      "status": "computed",
+      "r_code": "scores <- c(4, 2, 5, 4, 1, 5, 3, 4, 2, 5)\nanswer <- length(unique(scores))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Count the distinct scores in the vector."
+    },
+    {
+      "id": "M-12-023",
+      "status": "computed",
+      "r_code": "n <- 2L\nwhile (stats::qt(0.975, df = n - 1L) * sqrt(64.0 / n) > 4.0) {\n  n <- n + 1L\n}\nanswer <- n",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Check sample sizes in ascending order until the t-based margin of error is at most four."
+    },
+    {
+      "id": "M-12-024",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(x > mean(x))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(12, 15, 8, 20, 11, 19, 5, 14, 16, 9)"},
+        {"kind": "variation", "code": "x <- c(3.5, 4, 4.25, 5.5, 8.25, 9)"},
+        {"kind": "variation", "code": "x <- c(-4, -2, 0, 2, 4)"},
+        {"kind": "edge", "code": "x <- rep(7, 4)"}
+      ],
+      "correct_options": [],
+      "note": "The mean of the indicator vector gives the fraction strictly above the arithmetic mean."
+    },
+    {
+      "id": "M-12-025",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "D is the best choice because the warning is consistent with separation, although establishing perfect separation requires the underlying data."
+    },
+    {
+      "id": "M-12-026",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Apply the law of total variance conditional on the observed data."
+    },
+    {
+      "id": "M-12-027",
+      "status": "computed",
+      "r_code": "bright_red <- 20\ndim_red <- 40\nanswer <- bright_red / (bright_red + dim_red)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use all red stars as the denominator and bright red stars as the numerator."
+    },
+    {
+      "id": "M-12-028",
+      "status": "computed",
+      "r_code": "load_mat <- matrix(c(12.1, 15.4, 13.3, 12.5, 15.2, 13.0, 12.8, 15.5, 13.5, 13.0, 15.8, 13.2), nrow = 4, byrow = TRUE)\ncov_mat <- stats::cov(load_mat)\nanswer <- sum(diag(cov_mat))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Sum the three sample variances on the covariance matrix diagonal."
+    },
+    {
+      "id": "M-12-029",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "replicate(500, mean(stats::rpois(4, lambda = 3)))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The replication count, sample size, and Poisson rate are fixed and require no input objects."
+    },
+    {
+      "id": "M-12-030",
+      "status": "computed",
+      "r_code": "x <- c(1, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15)\nquartiles <- stats::quantile(x, probs = c(0.25, 0.75), type = 7, names = FALSE)\nanswer <- diff(quartiles)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the type-7 first quartile from the type-7 third quartile."
+    },
+    {
+      "id": "M-12-031",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The sample median is non-smooth, which can make delete-one jackknife standard errors unreliable."
+    },
+    {
+      "id": "M-12-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The displayed NA coefficients indicate a rank-deficient design matrix with aliased coefficients."
+    },
+    {
+      "id": "M-12-033",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(abs(replicate(100000, stats::cor(stats::rnorm(20), stats::rnorm(20)))) > 0.4)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "set.seed(101)"}
+      ],
+      "correct_options": [],
+      "note": "The fixed seed and simulation settings define one test of the fraction exceeding the absolute correlation threshold."
+    },
+    {
+      "id": "M-12-034",
+      "status": "computed",
+      "r_code": "candidates <- c('x <- stats::rnorm(5); set.seed(42)', 'set.seed(42); x <- stats::rnorm(5)')\ndraw <- function(line, initial_seed) {\n  set.seed(initial_seed)\n  env <- new.env()\n  eval(parse(text = line), envir = env)\n  env$x\n}\nreproducible <- vapply(candidates, function(line) identical(draw(line, 1L), draw(line, 2L)), logical(1))\nanswer <- candidates[reproducible]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Select the ordering that produces the same draws from two different initial RNG states."
+    },
+    {
+      "id": "M-12-035",
+      "status": "computed",
+      "r_code": "intercept <- 12.40\nintercept_se <- 3.10\nresidual_se <- 2.80\nprediction_se <- sqrt(intercept_se^2 + residual_se^2)\nanswer <- intercept - stats::qt(0.975, df = 48) * prediction_se",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "At zero traffic, combine intercept uncertainty with the residual variance for a new observation."
+    },
+    {
+      "id": "M-12-036",
+      "status": "computed",
+      "r_code": "answer <- stats::pchisq(2, df = 2, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the upper tail of the chi-square distribution at two."
+    },
+    {
+      "id": "M-12-037",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The fraction of simulated samples meeting the condition estimates the event probability."
+    },
+    {
+      "id": "M-12-038",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sort(x, decreasing = FALSE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c('Orange', 'Apple', 'Banana')"},
+        {"kind": "variation", "code": "x <- c('Pear', 'Cherry', 'Peach', 'Plum')"},
+        {"kind": "variation", "code": "x <- c('Rabbit', 'Alpaca', 'Horse', 'Donkey', 'Goat')"},
+        {"kind": "edge", "code": "x <- c('Kiwi', 'Apple', 'Kiwi')"}
+      ],
+      "correct_options": [],
+      "note": "Sort the character vector in ascending order."
+    },
+    {
+      "id": "M-12-039",
+      "status": "computed",
+      "r_code": "thresholds <- c(A = 0.45, B = 0.60, C = 0.75, D = 0.90)\nsensitivity <- c(0.800, 0.650, 0.400, 0.150)\nselected <- thresholds[sensitivity == 0.800]\nvalue <- unname(selected)\nanswer <- names(selected)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Find the threshold in the row with sensitivity 0.800."
+    },
+    {
+      "id": "M-12-040",
+      "status": "computed",
+      "r_code": "n <- 200\nk <- 5\nlog_likelihood <- -312.85\nanswer <- -2 * log_likelihood + k * log(n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the given BIC formula using the natural logarithm."
+    },
+    {
+      "id": "M-12-041",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Symmetry under swapping the treatment and control labels makes the expected covariate mean difference zero."
+    },
+    {
+      "id": "M-12-042",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3, 4)\ny <- c(1, 3, 2, 4)\nanswer <- stats::cov(x, y)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the sample covariance using R's default denominator."
+    },
+    {
+      "id": "M-12-043",
+      "status": "computed",
+      "r_code": "n <- 400\np <- 0.6\nmu <- n * p\nsigma <- sqrt(n * p * (1 - p))\nanswer <- diff(stats::pnorm(c(228 - 0.5, 252 + 0.5), mean = mu, sd = sigma))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use normal CDF values at the continuity-corrected endpoints 227.5 and 252.5."
+    },
+    {
+      "id": "M-12-044",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "apply(M, 1, function(row) max(row) - min(row))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "M <- matrix(c(1, 5, 2, 8, 3, 6, 4, 7, 9, 10, 11, 12), nrow = 3)"},
+        {"kind": "variation", "code": "M <- matrix(c(2.1, 3.4, 3.2, 5.8, 8.0, 7.5, 8.3, 6.9, 10.2, 8.8, 9.5, 9.1), nrow = 3, byrow = TRUE)"},
+        {"kind": "variation", "code": "M <- matrix(c(-8, -2, -3, 1, 2, -1, 5, 0, -4, -6, -2, -3), nrow = 3, byrow = TRUE)"},
+        {"kind": "edge", "code": "M <- matrix(rep(c(0, 2, -3), times = 4), nrow = 3)"}
+      ],
+      "correct_options": [],
+      "note": "Apply the maximum-minus-minimum calculation to each matrix row."
+    },
+    {
+      "id": "M-12-045",
+      "status": "computed",
+      "r_code": "ci <- c(0.2293, 2.7707)\np_value <- 0.02478\nvalue <- c(excludes_zero = all(ci > 0) || all(ci < 0), rejects_at_005 = p_value < 0.05)\nanswer <- if (all(value)) 'C' else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The interval excludes zero and the reported p-value falls below 0.05."
+    },
+    {
+      "id": "M-12-046",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Expanding the variance of the sum gives twice each distinct pairwise covariance in addition to the marginal variances."
+    },
+    {
+      "id": "M-12-047",
+      "status": "computed",
+      "r_code": "p <- 0.3\nanswer <- 1 / (p * (1 - p))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the given Bernoulli information formula at the estimated probability."
+    },
+    {
+      "id": "M-12-048",
+      "status": "computed",
+      "r_code": "df <- data.frame(x = c(0, 0, 1, 1), z = c(0, 1, 0, 1), y = c(1, 2, 3, 6))\nm <- stats::lm(y ~ x * z, data = df)\nanswer <- unname(m$coefficients['x:z'])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Fit the specified model and extract the numeric interaction coefficient."
+    },
+    {
+      "id": "M-12-049",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "solve(matrix(c(1, 1, 6, 10), nrow = 2, byrow = TRUE), c(10, 84))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression uses the fixed item and conversion totals directly with columns ordered as posts and features."
+    },
+    {
+      "id": "M-12-050",
+      "status": "computed",
+      "r_code": "observed <- matrix(c(45, 35, 120, 30, 20, 5), nrow = 3, byrow = TRUE)\nanswer <- rowSums(observed)[2] * colSums(observed)[2] / sum(observed)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Multiply the personal-policy row total by the high-severity column total and divide by the grand total."
+    }
+  ]
+}

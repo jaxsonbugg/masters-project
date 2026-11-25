@@ -1,0 +1,498 @@
+{
+  "answers": [
+    {
+      "id": "M-17-001",
+      "status": "computed",
+      "r_code": "lower <- abs(1.5 - 1.0)\nupper <- 2.0\nanswer <- (upper - lower) / log(upper / lower)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The posterior density is proportional to the reciprocal of delta over the feasible interval."
+    },
+    {
+      "id": "M-17-002",
+      "status": "computed",
+      "r_code": "answer <- 2.5 + stats::qt(0.975, df = 28) * 0.4",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The upper endpoint adds the t critical value times the slope standard error."
+    },
+    {
+      "id": "M-17-003",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Different subgroup weights by teaching method can produce Simpson's paradox."
+    },
+    {
+      "id": "M-17-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::dbinom(5, size = 15, prob = 0.3)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression contains all three fixed inputs, so a single evaluation needs no setup."
+    },
+    {
+      "id": "M-17-005",
+      "status": "computed",
+      "r_code": "p_value <- 0.8337\nvalue <- p_value <= 0.05\nanswer <- if (value) NA_character_ else \"B\"",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The reported p-value exceeds the significance level."
+    },
+    {
+      "id": "M-17-006",
+      "status": "computed",
+      "r_code": "true_mean <- 70\nweight <- 0.8\nbias <- (1 - weight) * (65 - true_mean)\nestimator_variance <- weight^2 * 36 / 20\nanswer <- estimator_variance + bias^2",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The estimator's mean squared error is its variance plus its squared bias."
+    },
+    {
+      "id": "M-17-007",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Power is the probability of rejecting the null under a specified alternative."
+    },
+    {
+      "id": "M-17-008",
+      "status": "computed",
+      "r_code": "x <- c(9, 2, 9, 2, 5)\nanswer <- order(x)[3L]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The third entry is an index in the ordering permutation."
+    },
+    {
+      "id": "M-17-009",
+      "status": "computed",
+      "r_code": "n <- 12\np <- 0.15\ndefects <- 0:n\ndefect_probability <- stats::dbinom(defects, size = n, prob = p)\ninspection_value <- 60 * stats::dhyper(0, defects, n - defects, 2) +\n  15 * stats::dhyper(1, defects, n - defects, 2) -\n  30 * stats::dhyper(2, defects, n - defects, 2)\nparity_value <- ifelse(defects %% 2L == 0L, -12, 8)\nanswer <- sum(defect_probability * (inspection_value + parity_value))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Average the conditional hypergeometric inspection payoff and parity adjustment over the binomial defect count."
+    },
+    {
+      "id": "M-17-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::var(x[4L * seq_len(length(x) %/% 4L)])",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- datasets::mtcars$mpg"},
+        {"kind": "variation", "code": "x <- c(22.4, 26.5, 19.1, 32.6, 24.1, 18.3, 28.0, 35.4, 27.2)"},
+        {"kind": "variation", "code": "set.seed(17010)\nx <- stats::runif(20, min = 15, max = 42)"},
+        {"kind": "edge", "code": "x <- c(23.5, 30.2, 27.1, 21.8, 24.5, 28.7, 26.9, 21.8)"}
+      ],
+      "correct_options": [],
+      "note": "Index positions 4, 8, and so on before applying the sample variance."
+    },
+    {
+      "id": "M-17-011",
+      "status": "computed",
+      "r_code": "cooks_distance <- c(Dog1 = 0.01534, Dog2 = 0.31247, Dog3 = 0.00821, Dog4 = 0.04456, Dog5 = 0.00239)\nthreshold <- 4 / 25\nvalue <- cooks_distance > threshold\nanswer <- if (identical(names(value)[value], \"Dog2\")) \"D\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Dog 2 alone exceeds the stated cutoff among the five displayed observations."
+    },
+    {
+      "id": "M-17-012",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "In the standard three-variable confounding structure, adjusting for the common cause blocks the backdoor path."
+    },
+    {
+      "id": "M-17-013",
+      "status": "computed",
+      "r_code": "x_mean <- 15\ny_mean <- 800\nslope <- 25\nanswer <- y_mean + slope * (20 - x_mean)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The fitted regression line passes through the two sample means."
+    },
+    {
+      "id": "M-17-014",
+      "status": "computed",
+      "r_code": "scores <- c(22, 27, 24, 31, 25, 33)\nsel <- scores[seq(2, length(scores), by = 2)]\nanswer <- stats::sd(sel)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The sample standard deviation uses the scores from games two, four, and six."
+    },
+    {
+      "id": "M-17-015",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "names(Filter(function(element) length(element) > 2L, x))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- list(a = c(1, 2), b = c(3, 4, 5), c = c(6, 7, 8, 9))"},
+        {"kind": "variation", "code": "x <- list(spring = c(4, 7, 9, 5), summer = c(11, 15), fall = c(6, 4, 3))"},
+        {"kind": "variation", "code": "x <- list(north = 5, south = c(8, 13, 21), west = c(4, 7, 9, 10, 12), east = c(7, 9))"},
+        {"kind": "edge", "code": "x <- list(empty = numeric(0), single = 7, boundary = c(2, 3))"}
+      ],
+      "correct_options": [],
+      "note": "Filter retains qualifying list elements and their names."
+    },
+    {
+      "id": "M-17-016",
+      "status": "computed",
+      "r_code": "mu <- 45\nsigma <- 12\nanswer <- stats::pnorm(60, mean = mu, sd = sigma, lower.tail = FALSE) /\n  stats::pnorm(mu, mean = mu, sd = sigma, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The event of exceeding 60 is contained in the event of exceeding the mean."
+    },
+    {
+      "id": "M-17-017",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The likelihood ratio evaluates the same observed sample under the two proposed means."
+    },
+    {
+      "id": "M-17-018",
+      "status": "computed",
+      "r_code": "intercept <- 150\nholiday_coefficient <- 40\ndistance_coefficient <- -2\ninteraction_coefficient <- 1\nholiday <- c(0, 1)\ncenter_distance <- 0\ncenter_rates <- intercept + holiday_coefficient * holiday + distance_coefficient * center_distance + interaction_coefficient * holiday * center_distance\nvalue <- diff(center_rates)\nsupported <- c(A = value == 40 && interaction_coefficient == 0, B = interaction_coefficient == 40, C = value == 40, D = center_rates[2L] == 40)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Subtracting the two fitted rates at distance zero gives the estimated holiday effect at the city center."
+    },
+    {
+      "id": "M-17-019",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "paste0(paste0(test, df, recycle0 = TRUE), collapse = \", \")",
+      "test_inputs": [
+        {"kind": "question_data", "code": "test <- c(\"chi\", \"f\")\ndf <- c(1, 2)"},
+        {"kind": "variation", "code": "test <- c(\"t\", \"f\", \"chi\")\ndf <- c(12, 3, 8)"},
+        {"kind": "variation", "code": "test <- \"chi\"\ndf <- 10"},
+        {"kind": "edge", "code": "test <- character(0)\ndf <- c(1, 2)"}
+      ],
+      "correct_options": [],
+      "note": "The inner call preserves a zero-length result and the outer call collapses it to an empty string."
+    },
+    {
+      "id": "M-17-020",
+      "status": "computed",
+      "r_code": "x <- factor(c(\"A\", \"A\", \"A\"), levels = c(\"A\", \"B\", \"C\"))\nanswer <- nlevels(x)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The level count includes unused declared levels."
+    },
+    {
+      "id": "M-17-021",
+      "status": "computed",
+      "r_code": "variance_sum <- 0.035^2 + 0.045^2\ndifference <- 0.025\ntarget <- 0.90\ncritical <- stats::qnorm(1 - 0.01 / 2)\nupper_n <- ceiling(variance_sum * ((critical + stats::qnorm(target)) / difference)^2)\nn <- seq_len(upper_n)\nse <- sqrt(variance_sum / n)\ncutoff <- critical * se\npower <- stats::pnorm(-cutoff, mean = difference, sd = se) +\n  stats::pnorm(cutoff, mean = difference, sd = se, lower.tail = FALSE)\nanswer <- n[which(power >= target)[1L]]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The upper rejection tail supplies a search bound, and both tails determine the smallest qualifying sample size."
+    },
+    {
+      "id": "M-17-022",
+      "status": "computed",
+      "r_code": "n <- c(5, 7)\nvariance_terms <- c(2, 4)^2 / n\nanswer <- sum(variance_terms)^2 / sum(variance_terms^2 / (n - 1))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the Welch–Satterthwaite formula to the estimated variances of the two sample means."
+    },
+    {
+      "id": "M-17-023",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Under standard regularity conditions, the sampling distribution is approximately normal around the true parameter for large samples."
+    },
+    {
+      "id": "M-17-024",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "scores[3L * seq_len(length(scores) %/% 3L)]",
+      "test_inputs": [
+        {"kind": "question_data", "code": "scores <- c(4.2, 3.8, 4.5, 3.9, 4.1, 4.3, 3.7, 4.6, 4.0)"},
+        {"kind": "variation", "code": "scores <- c(3.4, 4.2, 4.7, 4.0, 4.3, 3.9, 4.8)"},
+        {"kind": "variation", "code": "scores <- c(4.0, 3.6, 4.2, 4.4, 3.8, 4.6, 4.1, 3.9, 4.7, 4.0, 4.3, 3.5)"},
+        {"kind": "edge", "code": "scores <- c(4.0, 3.7)"}
+      ],
+      "correct_options": [],
+      "note": "The index uses positive multiples of three within the vector."
+    },
+    {
+      "id": "M-17-025",
+      "status": "computed",
+      "r_code": "standardized <- c(ad_budget = 0.74, email_open_rate = 0.21)\nvalue <- which.max(abs(standardized))\nanswer <- if (names(value) == \"ad_budget\") \"A\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Advertising budget has the larger standardized coefficient in absolute value."
+    },
+    {
+      "id": "M-17-026",
+      "status": "computed",
+      "r_code": "n <- 200\nsuccesses <- 130\np0 <- 0.60\nanswer <- (successes / n - p0) / sqrt(p0 * (1 - p0) / n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Standardize the observed proportion using the null standard error."
+    },
+    {
+      "id": "M-17-027",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "A reduction in variance can outweigh the squared bias."
+    },
+    {
+      "id": "M-17-028",
+      "status": "computed",
+      "r_code": "times <- c(3.2, 4.5, NA, 5.0, 4.3)\nanswer <- mean(times, na.rm = TRUE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The mean uses the four observed recovery times."
+    },
+    {
+      "id": "M-17-029",
+      "status": "computed",
+      "r_code": "predictors <- 1:6\npair_sums <- colSums(utils::combn(predictors, 2L))\nn_tests <- length(predictors) + sum(pair_sums %% 5L == 0L)\nanswer <- 0.05 / n_tests",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Count qualifying unordered pairs, add the main-effect tests, and divide the family-wise level by the total."
+    },
+    {
+      "id": "M-17-030",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(star_data[star_data[, 1L] < 3.5, 2L])",
+      "test_inputs": [
+        {"kind": "question_data", "code": "star_data <- matrix(c(2.1, 4.2, 3.1, 5.0, 3.8, 2.9, 15.0, 45.0, 22.5, 80.0, 30.0, 18.2), nrow = 6)"},
+        {"kind": "variation", "code": "star_data <- cbind(c(1.9, 2.8, 4.1, 3.2), c(10.4, 19.5, 52.0, 28.3))"},
+        {"kind": "variation", "code": "star_data <- cbind(c(4.5, 2.5, 3.3, 5.2, 3.0), c(56.0, 12.8, 31.4, 88.0, 23.3))"},
+        {"kind": "edge", "code": "star_data <- cbind(c(3.5, 4.2, 3.49), c(35, 50, 20))"}
+      ],
+      "correct_options": [],
+      "note": "Filter rows by column one and average the corresponding entries in column two."
+    },
+    {
+      "id": "M-17-031",
+      "status": "computed",
+      "r_code": "p_value <- 0.0034\nvalue <- p_value < 0.05\nanswer <- if (value) \"C\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The reported p-value lies below the 5 percent significance level."
+    },
+    {
+      "id": "M-17-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The paired t-test applies the one-sample Student t result to the independent normal differences."
+    },
+    {
+      "id": "M-17-033",
+      "status": "computed",
+      "r_code": "alpha <- 0.35\nprevious_forecast <- 20\nactual <- 22.1\nanswer <- previous_forecast + alpha * (actual - previous_forecast)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Update the previous forecast by the smoothing constant times the forecast error."
+    },
+    {
+      "id": "M-17-034",
+      "status": "computed",
+      "r_code": "s <- c(\"a\", \"b\", \"c\", \"d\")\nanswer <- paste(rev(s), collapse = \"_\")",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Reverse the elements and join them with underscores."
+    },
+    {
+      "id": "M-17-035",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "d[which(d$score > 80), , drop = FALSE]",
+      "test_inputs": [
+        {"kind": "variation", "code": "d <- data.frame(student = c(\"Ana\", \"Bo\", \"Cal\", \"Dee\"), score = c(72, 88, 80, 96))"},
+        {"kind": "variation", "code": "d <- data.frame(score = c(90, 79.5, 80.5, 68, 86))"},
+        {"kind": "variation", "code": "d <- data.frame(section = factor(c(\"A\", \"A\", \"B\", \"B\", \"B\")), score = c(84, 77, 98, 82, 74))"},
+        {"kind": "edge", "code": "d <- data.frame(score = c(80, 80, 79.9))"}
+      ],
+      "correct_options": [],
+      "note": "Select rows that meet the strict cutoff and preserve the data frame structure."
+    },
+    {
+      "id": "M-17-036",
+      "status": "computed",
+      "r_code": "answer <- stats::pbinom(0, size = 20, prob = 0.04, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "At least one failure is the binomial upper tail above zero."
+    },
+    {
+      "id": "M-17-037",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The second term measures variation among the conditional means, weighted by group probabilities."
+    },
+    {
+      "id": "M-17-038",
+      "status": "computed",
+      "r_code": "tn <- 45\nfn <- 15\nfp <- 10\ntp <- 30\nvalue <- c(precision = tp / (tp + fp), specificity = tn / (tn + fp), false_positive_rate = fp / (tn + fp), recall = tp / (tp + fn))\nsupported <- c(A = abs(value[[\"false_positive_rate\"]] - 0.25) < 0.005, B = abs(value[[\"precision\"]] - 0.75) < 0.005 && abs(value[[\"specificity\"]] - 0.818) < 0.0005, C = abs(value[[\"specificity\"]] - 0.667) < 0.0005, D = abs(value[[\"precision\"]] - 0.75) < 0.005 && abs(value[[\"recall\"]] - 0.75) < 0.005)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Precision uses the predicted-pass row total, while specificity uses the actual-fail column total."
+    },
+    {
+      "id": "M-17-039",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::quantile(x, probs = 0.75, type = 6)",
+      "test_inputs": [
+        {"kind": "variation", "code": "x <- c(16, 8, 24, 11, 4, 17, 13)"},
+        {"kind": "variation", "code": "set.seed(17039)\nx <- stats::rlnorm(12, meanlog = 2, sdlog = 0.4)"},
+        {"kind": "variation", "code": "x <- c(10.2, 10.7, 10.4, 9.8, 10.1, 10.9)"},
+        {"kind": "edge", "code": "x <- 5.5"}
+      ],
+      "correct_options": [],
+      "note": "Type 6 uses plotting positions of i divided by n plus one."
+    },
+    {
+      "id": "M-17-040",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 4)\ny <- c(3, 6)\nM <- outer(x, y, '/')\nanswer <- M[3L, 1L]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The indexed entry divides the third x value by the first y value."
+    },
+    {
+      "id": "M-17-041",
+      "status": "computed",
+      "r_code": "delays <- c(19.37, 19.56, 19.57, 22.41, 20.12, 20.88, 19.10, 20.16)\ndf <- length(delays) - 1L\nanswer <- df * stats::var(delays) / stats::qchisq(0.025, df = df)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The upper endpoint uses the lower chi-squared quantile with seven degrees of freedom."
+    },
+    {
+      "id": "M-17-042",
+      "status": "computed",
+      "r_code": "p_x <- 0.7\np_y <- 0.4\np_x_given_y <- 0.9\nanswer <- p_x_given_y * p_y / p_x",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Bayes' rule divides the joint probability by the marginal probability of X."
+    },
+    {
+      "id": "M-17-043",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Whether the gain in fit offsets the additional predictor penalty depends on the sample size."
+    },
+    {
+      "id": "M-17-044",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "ordered(c('z', 'a', 'm'), levels = c('a', 'm', 'z'))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The input vector and level order are fixed literals, so a single evaluation needs no setup."
+    },
+    {
+      "id": "M-17-045",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Multiple R-squared describes the proportion of observed response variation explained by the fitted model."
+    },
+    {
+      "id": "M-17-046",
+      "status": "computed",
+      "r_code": "speed <- c(100, 150, 200)\ny <- c(1, 0, 1)\np <- stats::plogis(-2.0 + 0.015 * speed)\nanswer <- prod(stats::dbinom(y, size = 1, prob = p))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Multiply the Bernoulli probabilities of the three observed outcomes."
+    },
+    {
+      "id": "M-17-047",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Squared deviance residuals sum to model deviance, and the normal approximation depends on the binomial setting."
+    },
+    {
+      "id": "M-17-048",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3, 4, 5)\noriginal_y <- c(10, 20, 30)\nanswer <- sprintf(\"y <- rep(c(%s), length.out = %d)\", paste(original_y, collapse = \", \"), length(x))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Generate the corrected assignment from the original values and the target length."
+    },
+    {
+      "id": "M-17-049",
+      "status": "computed",
+      "r_code": "n <- 25\nsxx <- 40\nsyy <- 90\nsxy <- 30\nslope <- sxy / sxx\nsse <- syy - sxy^2 / sxx\nslope_se <- sqrt(sse / ((n - 2) * sxx))\nanswer <- slope / slope_se",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the slope and residual sum of squares from the centered sums, then standardize the slope."
+    },
+    {
+      "id": "M-17-050",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "function(x) c(m = mean(x), v = stats::var(x), med = stats::median(x))",
+      "test_inputs": [
+        {"kind": "variation", "code": "x <- c(3.2, 4.1, 3.8, 5.5, 4.6)"},
+        {"kind": "variation", "code": "x <- c(22, 18, 31, 25, 19, 30)"},
+        {"kind": "variation", "code": "set.seed(17050)\nx <- stats::rnorm(15, mean = 10, sd = 2)"},
+        {"kind": "edge", "code": "x <- 7.5"}
+      ],
+      "correct_options": [],
+      "note": "The function combines the three computed statistics in a named numeric vector."
+    }
+  ]
+}

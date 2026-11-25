@@ -914,6 +914,10 @@ def compare_item(p, roles, screen, overrides, rscript, cfg, harness_dir):
             if ev[s] and ev[s]["status"] == "computed":
                 exprs[s] = ev[s]["answer_expression"]
         inputs, cx_index = [], {}
+        # a question that fixes everything: a computational solver may give no test inputs (with a reason); then every
+        # expression is evaluated once on an empty setup, which counts as the question's own data
+        if any(ev[s] and ev[s]["status"] == "computed" and not ev[s]["test_inputs"] for s in ("c2", "x2")):
+            inputs.append({"kind": "question_data", "code": "", "src": "fixed (no variable data)"})
         for s in ("c2", "x2"):
             for t in (ev[s] or {}).get("test_inputs") or []:
                 inputs.append({"kind": t["kind"], "code": t["code"], "src": s})

@@ -1,0 +1,495 @@
+{
+  "answers": [
+    {
+      "id": "M-20-001",
+      "status": "computed",
+      "r_code": "counts <- c(both_one = 27, x_only = 43, y_only = 51, both_zero = 19)\nanswer <- 1 - counts[['x_only']] / sum(counts)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The complement consists of cases with X equal to 1 and Y equal to 0."
+    },
+    {
+      "id": "M-20-002",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "An AR(2) process has a theoretical PACF that cuts off after lag 2 and an ACF that tails off."
+    },
+    {
+      "id": "M-20-003",
+      "status": "computed",
+      "r_code": "stays <- rep(1:7, c(45, 120, 180, 150, 90, 60, 55))\nvalue <- mean(stays <= 4)\nsupported <- c(B = stats::median(stays) == 3.5, C = stats::IQR(stays) == 6, D = abs(value - 0.7071) < 0.00005)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The ECDF at four is the sample mean of the indicator for a stay of at most four nights, which is unbiased under representative sampling."
+    },
+    {
+      "id": "M-20-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "(sum(x^2) - sum(x)^2 / length(x)) / (length(x) - 1)",
+      "test_inputs": [
+        {"kind": "variation", "code": "x <- c(3, 7, 11, 14, 18)"},
+        {"kind": "variation", "code": "x <- c(-2.1, -0.5, 0.7, 1.8)"},
+        {"kind": "variation", "code": "x <- c(1, 1, 2, 4, 4, 8)"},
+        {"kind": "edge", "code": "x <- c(6, 6)"}
+      ],
+      "correct_options": [],
+      "note": "The expression uses the two specified sums and divides by the sample degrees of freedom."
+    },
+    {
+      "id": "M-20-005",
+      "status": "computed",
+      "r_code": "make_counter <- function() {\n  n <- 0\n  function() {\n    n <<- n + 1\n    n\n  }\n}\nmc <- make_counter()\nfor (i in 1:4) {\n  mc()\n}\nanswer <- mc()",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The final call increments the same counter used by the four calls inside the loop."
+    },
+    {
+      "id": "M-20-006",
+      "status": "computed",
+      "r_code": "N <- 100\nn <- 25\npopulation_variance <- 144\nanswer <- sqrt(population_variance / n * (N - n) / (N - 1))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The variance of the sample mean includes the stated finite population correction."
+    },
+    {
+      "id": "M-20-007",
+      "status": "computed",
+      "r_code": "joint <- matrix(c(0.40, 0.10, 0.05, 0.15, 0.20, 0.10), nrow = 2, byrow = TRUE)\nx <- 0:1\ny <- 0:2\nanswer <- sum(outer(x, y) * joint) - sum(x * rowSums(joint)) * sum(y * colSums(joint))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Covariance is the joint product moment minus the product of the marginal means."
+    },
+    {
+      "id": "M-20-008",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The 95% confidence level describes the long-run coverage of the interval procedure."
+    },
+    {
+      "id": "M-20-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::weighted.mean(c(4, 5, 3, 6), c(10, 20, 15, 5))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression embeds the fixed department scores and employee counts, so one test needs no setup."
+    },
+    {
+      "id": "M-20-010",
+      "status": "computed",
+      "r_code": "deviance <- c(52.4, 41.8)\nvalue <- deviance[1] - deviance[2]\nanswer <- c('A', 'B')[which.min(deviance)]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Model 2 has the smaller residual deviance and therefore the better fit by this criterion."
+    },
+    {
+      "id": "M-20-011",
+      "status": "computed",
+      "r_code": "office_odds <- 145 / 55\nno_office_odds <- 92 / 68\nanswer <- office_odds / no_office_odds",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The odds of a sale within 30 days are divided in the requested group order."
+    },
+    {
+      "id": "M-20-012",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Shrinkage can lower mean squared error when the reduction in variance outweighs the added squared bias."
+    },
+    {
+      "id": "M-20-013",
+      "status": "computed",
+      "r_code": "rates <- c(email = 0.04, social = 0.09, search = 0.06)\nanswer <- class(rates)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The code evaluates the class of the named vector."
+    },
+    {
+      "id": "M-20-014",
+      "status": "computed",
+      "r_code": "cells <- c(120, 80, 45, 105)\nlog_odds_ratio <- log((cells[1] / cells[2]) / (cells[3] / cells[4]))\nlog_se <- sqrt(sum(1 / cells))\nanswer <- exp(log_odds_ratio + stats::qnorm(0.975) * log_se)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The upper Wald limit is computed on the log odds ratio scale and then exponentiated."
+    },
+    {
+      "id": "M-20-015",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "scale(x)",
+      "test_inputs": [
+        {"kind": "variation", "code": "x <- c(10, 14, 17, 21, 28)"},
+        {"kind": "variation", "code": "x <- c(-3.4, -0.5, 1.2, 2.3)"},
+        {"kind": "variation", "code": "x <- c(0, 0, 1, 2, 2, 4)"},
+        {"kind": "edge", "code": "x <- c(2, 8)"}
+      ],
+      "correct_options": [],
+      "note": "The defaults in scale center the vector and divide by its sample standard deviation."
+    },
+    {
+      "id": "M-20-016",
+      "status": "computed",
+      "r_code": "prevalence <- 0.50\nsensitivity <- 0.40\nspecificity <- 0.90\nvalue <- ((1 - prevalence) * (1 - specificity)) / (prevalence * sensitivity)\noptions <- c(A = 0.10, B = 0.40, C = 0.80, D = 0.25)\nanswer <- names(options)[which.min(abs(options - value))]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The calculation divides the fraction of all ponds that are false positives by the fraction that are true positives."
+    },
+    {
+      "id": "M-20-017",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Failure to reject in TOST leaves equivalence unestablished, while failure to reject in the traditional test leaves a difference unestablished."
+    },
+    {
+      "id": "M-20-018",
+      "status": "computed",
+      "r_code": "n <- 400\np_hat <- 120 / n\nanswer <- sqrt(p_hat * (1 - p_hat) / n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The observed activation rate estimates the Bernoulli probability in the standard error formula."
+    },
+    {
+      "id": "M-20-019",
+      "status": "computed",
+      "r_code": "response_time <- c(12.5, 14.2, 11.8, 15.1, 13.7, 16.3, 10.9, 14.8)\nseverity_score <- c(3, 4, 2, 5, 4, 6, 2, 5)\nanswer <- stats::cor(response_time, severity_score)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The default correlation method is Pearson correlation."
+    },
+    {
+      "id": "M-20-020",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sample(c(14, 19, 22, 27, 33), size = 3, replace = FALSE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The five measurements and the sample size are fixed in the expression, so one test needs no setup."
+    },
+    {
+      "id": "M-20-021",
+      "status": "computed",
+      "r_code": "changes <- c(-2, 1, 2, -1, -2, 2)\nanswer <- as.numeric(stats::acf(changes, lag.max = 1, plot = FALSE)$acf[2])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The second ACF entry is the lag-one sample autocorrelation."
+    },
+    {
+      "id": "M-20-022",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The Weak Law of Large Numbers gives convergence in probability of the sample mean to the population mean."
+    },
+    {
+      "id": "M-20-023",
+      "status": "computed",
+      "r_code": "r <- 0.620\nn <- 20\nreported <- c(0.245, 0.834)\nvalue <- tanh(atanh(r) + c(-1, 1) * stats::qnorm(0.975) / sqrt(n - 3))\nsupported <- c(B = abs(mean(reported) - r) < 0.001, C = all(abs(value - reported) < 0.001))\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Back-transforming the Fisher z interval reproduces the asymmetric limits in the printout."
+    },
+    {
+      "id": "M-20-024",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ set.seed(42); stats::rnbinom(500, size = 4^2 / (12 - 4), mu = 4) }",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The seed, draw count and moments are fixed in the expression, so one test needs no setup."
+    },
+    {
+      "id": "M-20-025",
+      "status": "computed",
+      "r_code": "x <- c(12, 24, 36, 48)\nbins <- cut(x, breaks = c(0, 20, 40, 60))\nanswer <- nlevels(bins)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Each interval defined by successive breakpoints contributes one factor level."
+    },
+    {
+      "id": "M-20-026",
+      "status": "computed",
+      "r_code": "groups <- 5\nn <- 45\nanswer <- stats::qf(0.99, df1 = groups - 1, df2 = n - groups)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The upper 1% critical value uses four numerator and forty denominator degrees of freedom."
+    },
+    {
+      "id": "M-20-027",
+      "status": "computed",
+      "r_code": "n <- 100\np_hat <- 20 / n\nanswer <- p_hat * (1 - p_hat) / n",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The estimated variance substitutes the observed default fraction into the Bernoulli sample mean variance."
+    },
+    {
+      "id": "M-20-028",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The BIC penalty per parameter grows as log(n) and eventually exceeds the AIC penalty of two."
+    },
+    {
+      "id": "M-20-029",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "gsub(\"a\", \"0\", str_vec, fixed = TRUE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "str_vec <- c(\"test\", \"case\", \"data\")"},
+        {"kind": "variation", "code": "str_vec <- c(\"banana\", \"pear\", \"kiwi\", \"apricot\")"},
+        {"kind": "variation", "code": "str_vec <- c(\"A cat\", \"an aardvark\", \"map\")"},
+        {"kind": "edge", "code": "str_vec <- character(0)"}
+      ],
+      "correct_options": [],
+      "note": "The substitution replaces every literal lowercase a in each string."
+    },
+    {
+      "id": "M-20-030",
+      "status": "computed",
+      "r_code": "raw_p <- c(0.050, 0.010, 0.020)\nadjusted_p <- c(0.150, 0.030, 0.060)\ncomparisons <- length(raw_p)\nvalue <- adjusted_p / raw_p\nsupported <- c(A = all(abs(adjusted_p - stats::p.adjust(raw_p, method = 'bonferroni')) < 1e-12), B = all(abs(adjusted_p - raw_p / comparisons) < 1e-12))\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Each adjusted p-value is three times its raw value, consistent with Bonferroni control of the family-wise error rate."
+    },
+    {
+      "id": "M-20-031",
+      "status": "computed",
+      "r_code": "n <- 200\np_hat <- 120 / n\nanswer <- p_hat + stats::qnorm(0.975) * sqrt(p_hat * (1 - p_hat) / n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The upper Wald limit adds the normal-based margin of error to the sample proportion."
+    },
+    {
+      "id": "M-20-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "An R-squared of 0.42 means the fitted linear model accounts for 42% of the observed variation in gene expression."
+    },
+    {
+      "id": "M-20-033",
+      "status": "computed",
+      "r_code": "prices <- c(250, 180, 310, 220)\nidx <- order(prices)\nanswer <- idx[2]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The second entry gives the original index of the second-lowest price."
+    },
+    {
+      "id": "M-20-034",
+      "status": "computed",
+      "r_code": "weights <- c(0.30, 0.50, 0.20)\nmeans <- c(0.8, -0.2, 0.5)\nsegment_probabilities <- stats::pnorm(0, mean = means, sd = 0.6, lower.tail = FALSE)\nanswer <- sum(weights * segment_probabilities)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The overall purchase probability is the weighted sum of the three segment-specific upper-tail probabilities."
+    },
+    {
+      "id": "M-20-035",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "tapply(x, g, sum)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(10, 20, 30, 40, 50, 60)\ng <- factor(c(\"A\", \"A\", \"B\", \"B\", \"A\", \"B\"))"},
+        {"kind": "variation", "code": "x <- c(3.5, 8, 2, 4.5, 7)\ng <- factor(c(\"A\", \"B\", \"B\", \"A\", \"B\"))"},
+        {"kind": "variation", "code": "x <- c(20, 14, 9, 4)\ng <- factor(c(\"B\", \"A\", \"B\", \"A\"), levels = c(\"B\", \"A\"))"},
+        {"kind": "edge", "code": "x <- c(0, 0, 0)\ng <- factor(c(\"A\", \"A\", \"A\"))"}
+      ],
+      "correct_options": [],
+      "note": "The expression applies sum to the observations in each group."
+    },
+    {
+      "id": "M-20-036",
+      "status": "computed",
+      "r_code": "coefficients <- c(intercept = 5.123, x1 = 0.847, x2 = -1.205)\nvalue <- sum(coefficients[c('x1', 'x2')] * c(0, 1))\njoint_change <- sum(coefficients[c('x1', 'x2')])\nsupported <- c(A = abs(joint_change - (-1.205)) < 1e-12, B = abs(-1.205) <= 1, C = abs(value - (-1.205)) < 1e-12, D = abs(coefficients[['intercept']] - (-1.205)) < 1e-12)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Increasing x2 by one while holding x1 fixed decreases the fitted response by 1.205 units."
+    },
+    {
+      "id": "M-20-037",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "In high dimensions the training data can be so sparse that nearest neighbors are distant and local predictions average over dissimilar cases."
+    },
+    {
+      "id": "M-20-038",
+      "status": "computed",
+      "r_code": "r_squared <- 0.60\nn <- 20\np <- 2\nanswer <- 1 - (1 - r_squared) * (n - 1) / (n - p - 1)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The adjustment applies the ratio of total to residual degrees of freedom to the unexplained fraction."
+    },
+    {
+      "id": "M-20-039",
+      "status": "computed",
+      "r_code": "f <- factor(rep(c('alpha', 'beta', 'gamma', 'delta', 'epsilon'), 3))\nidx <- which(f %in% c('alpha', 'gamma', 'epsilon'))\nf_sub <- f[idx]\nf_clean <- droplevels(f_sub)\nanswer <- nlevels(f_clean)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Dropping unused levels leaves one level for each retained category."
+    },
+    {
+      "id": "M-20-040",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "t(M) %*% x",
+      "test_inputs": [
+        {"kind": "variation", "code": "M <- matrix(1:6, nrow = 3, ncol = 2)\nx <- c(2, 3, 5)"},
+        {"kind": "variation", "code": "M <- matrix(c(-2, 0.5, 4, 1, 3, -1), nrow = 3, ncol = 2)\nx <- c(-1, 0.5, 2)"},
+        {"kind": "variation", "code": "M <- matrix(c(2, 4, 1, 6, 3, 8), nrow = 3, ncol = 2, byrow = TRUE)\nx <- c(1, -1, 4)"},
+        {"kind": "edge", "code": "M <- matrix(c(6, 2, 7, 3, 4, 8), nrow = 3, ncol = 2)\nx <- c(0, 0, 0)"}
+      ],
+      "correct_options": [],
+      "note": "Multiplying the transposed matrix by the vector gives a two-row, one-column matrix."
+    },
+    {
+      "id": "M-20-041",
+      "status": "computed",
+      "r_code": "answer <- stats::dnbinom(4, size = 3, prob = 0.25)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "R parameterizes the negative binomial count as failures before the specified number of successes."
+    },
+    {
+      "id": "M-20-042",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The sample mean is unbiased for the frame mean, which lies below the target population mean because the omitted units all have above-average values."
+    },
+    {
+      "id": "M-20-043",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Under normal errors the regression and residual mean squares are independent, and the residual mean square estimates the error variance under both hypotheses."
+    },
+    {
+      "id": "M-20-044",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "t(M)[lower.tri(t(M))]",
+      "test_inputs": [
+        {"kind": "variation", "code": "M <- matrix(1:9, nrow = 3, byrow = TRUE)"},
+        {"kind": "variation", "code": "M <- matrix(c(0, -1, 2, 3, 4, 6, 8, 9, -2, 3, 0, 5, 1, 2, 4, 10), nrow = 4)"},
+        {"kind": "variation", "code": "M <- matrix(c(1.5, -3, 0.25, 4.5), nrow = 2)"},
+        {"kind": "edge", "code": "M <- matrix(7, nrow = 1, ncol = 1)"}
+      ],
+      "correct_options": [],
+      "note": "Column-wise extraction from the lower triangle of the transpose visits the original upper triangle row by row."
+    },
+    {
+      "id": "M-20-045",
+      "status": "computed",
+      "r_code": "x <- c(5, 2, 5, 1)\nanswer <- paste(order(x), collapse = ' ')",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The two tied values retain their original index order."
+    },
+    {
+      "id": "M-20-046",
+      "status": "computed",
+      "r_code": "suv_total <- 260\nheavy_total <- 185\ngrand_total <- 710\nanswer <- suv_total * heavy_total / grand_total",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The expected count under independence is the product of the marginal totals divided by the grand total."
+    },
+    {
+      "id": "M-20-047",
+      "status": "computed",
+      "r_code": "n <- c(10, 10)\nmeans <- c(12, 8)\nsd <- c(4, 4)\nanswer <- (means[1] - means[2]) / sqrt(sum(sd^2 / n))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The difference in means is divided by the unpooled standard error."
+    },
+    {
+      "id": "M-20-048",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Using ranks limits the influence of extreme magnitudes and avoids a normality assumption."
+    },
+    {
+      "id": "M-20-049",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::arima(x, order = c(1, 0, 0))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(12, 15, 14, 16, 13, 15, 14, 17, 16, 15)"},
+        {"kind": "variation", "code": "x <- c(18, 20, 21, 19, 17, 18, 22, 23, 20, 18, 19, 21)"},
+        {"kind": "variation", "code": "x <- c(45, 49, 50, 48, 46, 42, 44, 43, 47, 49, 51, 48, 46, 47)"},
+        {"kind": "edge", "code": "x <- c(3, 3, 0, 2, 2, 1, 2, 3, 3, 1)"}
+      ],
+      "correct_options": [],
+      "note": "Every test uses the requested ARIMA order with a different vector of photon counts."
+    },
+    {
+      "id": "M-20-050",
+      "status": "computed",
+      "r_code": "reported <- c(median = 3, maximum = 5, mean = 3)\ngroup_counts <- c(a = 4, b = 3, c = 2)\nvalue <- reported[['mean']]\nsupported <- c(A = reported[['median']] == 2, B = length(group_counts) == 4, C = reported[['maximum']] == 3, D = value == 3)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The printout reports a mean of 3.00 for x."
+    }
+  ]
+}

@@ -1323,3 +1323,19 @@ README changes: Phase 1 checklist items checked; Section 1 "Definition of succes
   3. one or two X2 redo rounds;
   4. the 28 Claude batches, now 2 at a time with the fixed limit stop;
   5. then the comparison of all 1,000, the briefs and the review sheet.
+- **Resume finished (2026-11-25, 21:55-22:27 UTC):**
+  - X2: the 7 slip batches gave 337 of 350 answers by partial import; batches 20, 21 and 22 were rerun cleanly. The 13 set-aside questions turned out to be r_expression questions that fix all their data: Codex gave zero test inputs, or one with empty code, and explained in the note that everything is fixed.
+  - **Jaxson's decision (2026-11-25):** such an answer is accepted when the note gives the reason, and the harness evaluates it once on an empty setup (counted as the question's own data). This matches the approved compute instruction ("provide only meaningful tests and explain why additional datasets are not applicable"), the same rule applies to C2, and without a reason it is still rejected. The 13 were then imported (batch kc-x2_26).
+  - Claude: 20 C3 and 8 variants batches, 2 at a time, all imported with no rejection and no limit.
+  - Tests: key check 75 of 75 with the new cases.
+- **Comparison of all 1,000 (22:16-22:24 UTC; `data/verification_logs/2026-11-25_key_check_with_codex/compare_20261125T221610Z/`):** every question has every solver's result (none incomplete).
+  - **927 consensus-supported and 73 contested**, by answer type:
+    - number: 393 supported, 7 contested;
+    - multiple choice: 345 and 5;
+    - r_expression: 151 and 49;
+    - short text: 38 and 12.
+  - 37 questions with a flagged grading check; 14 marked "likely wrong key" (both R-writing solvers agree with each other, not with the key).
+- **Briefs and review sheet:** 9 brief batches (one retried after a reply that covered 1 of 10 questions). `key_check_review.csv`: 85 questions (the 73 contested plus 12 supported questions with a flagged check), each with a brief.
+  - Brief readings (advice only): key likely correct 42, check flawed 29, key likely wrong 11, question flawed 3.
+  - Claude usage for the whole run is in the cost log; five-hour window at 54% at the end, seven-day 29%.
+- **Next:** Jaxson decides each of the 85 rows; then the corrections go through the fix-sheet path, and the AI-assisted audit follows.

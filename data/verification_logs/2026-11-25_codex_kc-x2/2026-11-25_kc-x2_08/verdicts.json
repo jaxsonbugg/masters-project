@@ -1,0 +1,491 @@
+{
+  "answers": [
+    {
+      "id": "M-08-001",
+      "status": "computed",
+      "r_code": "n <- c(25, 35)\ngroup_means <- c(8.4, 10.2)\nanswer <- sum(n * group_means) / sum(n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Weight each group mean by its sample size."
+    },
+    {
+      "id": "M-08-002",
+      "status": "computed",
+      "r_code": "copies <- c(10, 12, 14, 16, 18)\nanswer <- 100 * stats::sd(copies) / mean(copies)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the sample standard deviation by the mean and convert to a percentage."
+    },
+    {
+      "id": "M-08-003",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "For the usual two-sided mean test, the smaller standard error increases the absolute test statistic and decreases the p-value."
+    },
+    {
+      "id": "M-08-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "do.call(data.frame, L)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "L <- list(a = 1:3, b = 4:6, c = 7:9)"},
+        {"kind": "variation", "code": "L <- list(a = c(2, 5, 8, 11), b = c(1, 3, 7, 9), c = c(4, 6, 10, 12))"},
+        {"kind": "variation", "code": "L <- list(a = c(0.2, 0.6), b = c(3.1, 4.7), c = c(8.2, 9.3))"},
+        {"kind": "edge", "code": "L <- list(a = 7L, b = 0L, c = -2L)"}
+      ],
+      "correct_options": [],
+      "note": "Pass the named list elements as column arguments to data.frame."
+    },
+    {
+      "id": "M-08-005",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The symmetric off-diagonal entries report the covariance between the two variables."
+    },
+    {
+      "id": "M-08-006",
+      "status": "computed",
+      "r_code": "se <- 4 / sqrt(25)\ncritical_mean <- stats::qnorm(0.95, mean = 100, sd = se)\nanswer <- stats::pnorm(critical_mean, mean = 103, sd = se)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Find the null rejection cutoff and evaluate the probability of falling below it under the true mean."
+    },
+    {
+      "id": "M-08-007",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Four days is the mode, and the delayed recoveries raise the mean above four days."
+    },
+    {
+      "id": "M-08-008",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3, 4, 5)\ny <- cumsum(x)\nz <- diff(y, lag = 2)\nanswer <- z[2]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Extract the second lag-two difference of the cumulative sums."
+    },
+    {
+      "id": "M-08-009",
+      "status": "computed",
+      "r_code": "n <- c(25, 35)\nvariance_terms <- c(20, 45) / n\nanswer <- sum(variance_terms)^2 / sum(variance_terms^2 / (n - 1))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the Welch–Satterthwaite formula to the two estimated variances of the sample means."
+    },
+    {
+      "id": "M-08-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "merge(a, b, by = \"id\", all.x = TRUE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "a <- data.frame(id = 1:3, x = c(10, 20, 30))\nb <- data.frame(id = c(2, 3, 4), y = c(100, 200, 300))"},
+        {"kind": "variation", "code": "a <- data.frame(id = c(15, 11, 18, 12), x = c(55, 30, 48, 27))\nb <- data.frame(id = c(11, 12, 15, 18, 20), y = c(1, 4, 7, 9, 12))"},
+        {"kind": "variation", "code": "a <- data.frame(id = c(4, 6, 8, 10, 12), x = c(21, 35, 29, 42, 31))\nb <- data.frame(id = c(4, 8, 13), y = c(8, 12, 5))"},
+        {"kind": "edge", "code": "a <- data.frame(id = c(1, 2), x = c(7, 9))\nb <- data.frame(id = c(3, 4), y = c(11, 13))"}
+      ],
+      "correct_options": [],
+      "note": "Join on id and keep all rows from a."
+    },
+    {
+      "id": "M-08-011",
+      "status": "computed",
+      "r_code": "p_value <- 0.3852\nvalue <- p_value > 0.05\nanswer <- names(which(c(C = value)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The reported p-value exceeds the 5% significance threshold."
+    },
+    {
+      "id": "M-08-012",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "James–Stein shrinkage generally introduces bias and reduces total squared-error risk."
+    },
+    {
+      "id": "M-08-013",
+      "status": "computed",
+      "r_code": "differences <- c(1.1, 3.5, 2.0, 4.8, 0.9, 3.2, 4.5, 1.8, 3.9, 2.7, 4.1, 0.5, 3.0, 2.3, 4.4, 1.5, 3.8, 2.9, 4.6, 1.2)\nanswer <- mean(differences >= 4.3)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Count the permutation differences at least as large as the observed difference and divide by the total."
+    },
+    {
+      "id": "M-08-014",
+      "status": "computed",
+      "r_code": "x <- 1:5\ny <- c(2, 4, 5, 4, 5)\nfit <- stats::lm(y ~ x)\nanswer <- paste0(\"fit <- lm(\", deparse(stats::formula(fit)), \")\")",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Fit the model with y as a variable in the formula and return the corrected assignment."
+    },
+    {
+      "id": "M-08-015",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "function(x) list(m = mean(x), s = stats::sd(x))",
+      "test_inputs": [
+        {"kind": "variation", "code": "x <- c(72, 81, 77, 90, 85)"},
+        {"kind": "variation", "code": "x <- c(2.4, 2.7, 3.1, 1.9, 4.2, 3.3)"},
+        {"kind": "variation", "code": "x <- c(-3.5, 0, 1.5, 7.5)"},
+        {"kind": "edge", "code": "x <- 6"}
+      ],
+      "correct_options": [],
+      "note": "The test vectors can be passed to the function returned by the expression."
+    },
+    {
+      "id": "M-08-016",
+      "status": "computed",
+      "r_code": "answer <- choose(7, 2) / choose(20, 2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the number of pairs of high-rainfall days by the number of pairs of days."
+    },
+    {
+      "id": "M-08-017",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The widening residual spread indicates nonconstant error variance, which can make conventional standard errors and inference unreliable."
+    },
+    {
+      "id": "M-08-018",
+      "status": "computed",
+      "r_code": "correlations <- matrix(c(1, -0.92, -0.88, -0.92, 1, 0.95, -0.88, 0.95, 1), nrow = 3)\nmarginal <- correlations[1, 2]\nr_mag_snr <- correlations[1, 3]\nr_counts_snr <- correlations[2, 3]\nvalue <- (marginal - r_mag_snr * r_counts_snr) / sqrt((1 - r_mag_snr^2) * (1 - r_counts_snr^2))\nanswer <- names(which(c(A = abs(value) > abs(marginal), B = abs(value) < abs(marginal), C = abs(det(correlations)) < 1e-12, D = marginal == 1)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The partial correlation is about −0.57, compared with the marginal correlation of −0.92."
+    },
+    {
+      "id": "M-08-019",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.10 * stats::pnorm(8, mean = 12, sd = 4, lower.tail = FALSE), mean = 12, sd = 4, lower.tail = FALSE)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The expression uses the fixed constants directly and finds the threshold with one tenth of the delayed-call probability above it."
+    },
+    {
+      "id": "M-08-020",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3, 4, 5)\ny <- c(5, 3, 4, 2, 1)\nanswer <- stats::cor(x, y)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the Pearson correlation of the supplied vectors."
+    },
+    {
+      "id": "M-08-021",
+      "status": "computed",
+      "r_code": "n <- 210\np_hat <- 47 / n\nz <- stats::qnorm(0.975)\nanswer <- (2 * n * p_hat + z^2 - z * sqrt(z^2 + 4 * n * p_hat * (1 - p_hat))) / (2 * (n + z^2))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the observed proportion and the two-sided normal critical value in the Wilson lower-bound formula."
+    },
+    {
+      "id": "M-08-022",
+      "status": "computed",
+      "r_code": "high_income <- c(Yes = 30, No = 40)\nanswer <- unname(high_income[\"Yes\"] / sum(high_income))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the Yes count by the total count within the high-income bracket."
+    },
+    {
+      "id": "M-08-023",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The 95% confidence level describes the procedure’s repeated-sampling coverage of the fixed parameter."
+    },
+    {
+      "id": "M-08-024",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(v)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "v <- c(4, 8, 12, 16, 20)"},
+        {"kind": "variation", "code": "v <- c(6, 9, 14, 18)"},
+        {"kind": "variation", "code": "v <- c(1.5, -2.4, 3.8, 5.2, 0.4, 6.6)"},
+        {"kind": "edge", "code": "v <- 0"}
+      ],
+      "correct_options": [],
+      "note": "Compute the arithmetic mean of v."
+    },
+    {
+      "id": "M-08-025",
+      "status": "computed",
+      "r_code": "intercept_a <- 5\nintercept_b <- intercept_a + 1\nslope_a <- 2\nslope_b <- slope_a - 0.50\nvalue <- slope_b - slope_a\nintercept_difference <- intercept_b - intercept_a\nanswer <- names(which(c(A = intercept_difference == -0.50, B = slope_b == 2, C = intercept_difference == -0.50 && value == 0, D = value == -0.50)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The interaction coefficient equals the slope for group B minus the slope for group A."
+    },
+    {
+      "id": "M-08-026",
+      "status": "computed",
+      "r_code": "answer <- abs(1.12) * sqrt(15.6)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Multiply the original standard deviation by the absolute scale factor."
+    },
+    {
+      "id": "M-08-027",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The percentile interval takes its endpoints from the bootstrap quantiles and may be asymmetric around the observed mean."
+    },
+    {
+      "id": "M-08-028",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3)\nz <- 2 * x\ny <- c(10, 20, 30)\nfit <- stats::lm(y ~ x + z)\nanswer <- format(unname(stats::coef(fit)[\"z\"]))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The coefficient for z is NA because z is a scalar multiple of x."
+    },
+    {
+      "id": "M-08-029",
+      "status": "computed",
+      "r_code": "log_mean <- 5.0 + 0.05 * 10 + 0.2 * 3\nresidual_sd <- 0.15\nanswer <- exp(log_mean + residual_sd^2 / 2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the lognormal mean to account for residual variance when returning to the original scale."
+    },
+    {
+      "id": "M-08-030",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(exam_scores, na.rm = TRUE)",
+      "test_inputs": [
+        {"kind": "variation", "code": "exam_scores <- c(83, NA, 72, 94, 68)"},
+        {"kind": "variation", "code": "exam_scores <- c(NA, 15.5, 18, NA, 9.5, 14, 17.5)"},
+        {"kind": "variation", "code": "exam_scores <- c(0, 45, 100, 93, 75, NA, 88, 67)"},
+        {"kind": "edge", "code": "exam_scores <- c(NA_real_, NA_real_, 92, NA_real_)"}
+      ],
+      "correct_options": [],
+      "note": "Use na.rm to compute the mean over observed marks."
+    },
+    {
+      "id": "M-08-031",
+      "status": "computed",
+      "r_code": "observations <- rep(c(10, 20, 30, 40, 50), times = c(5, 12, 8, 15, 10))\nn <- length(observations)\nmiddle <- observations[c(n / 2, n / 2 + 1)]\nvalue <- stats::median(observations)\nanswer <- names(which(c(A = value == 30, B = value == 35 && all(middle == c(30, 40)), C = unname(stats::quantile(observations, 0.75)) == 30, D = mean(observations) == 32)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The two middle observations are 30 and 40, so their average is 35."
+    },
+    {
+      "id": "M-08-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Using ranks limits the influence of extreme magnitudes in small, heavily skewed samples."
+    },
+    {
+      "id": "M-08-033",
+      "status": "computed",
+      "r_code": "answer <- abs(0.25) * (160 - 120) / sqrt(12)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Scale the standard deviation of the uniform distribution by 0.25."
+    },
+    {
+      "id": "M-08-034",
+      "status": "computed",
+      "r_code": "delivery_ids <- sprintf(\"D%04d\", 101:105)\nroutes <- c(\"NORTH\", \"SOUTH\", \"EAST\", \"WEST\", \"NORTH\")\nfuel <- c(12.4, 15.8, 9.1, 14.3, 11.7)\nfuel_str <- sprintf(\"%.1f\", fuel)\nreports <- paste(delivery_ids, routes, fuel_str, sep = \" \")\nanswer <- mean(nchar(reports))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Format the reports and average their character counts, including the separating spaces."
+    },
+    {
+      "id": "M-08-035",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(stats::rnorm(200, mean = 3, sd = 2))",
+      "test_inputs": [
+        {"kind": "variation", "code": "set.seed(541)"}
+      ],
+      "correct_options": [],
+      "note": "One seed provides a reproducible test because the sample size and distribution parameters are fixed."
+    },
+    {
+      "id": "M-08-036",
+      "status": "computed",
+      "r_code": "n <- 50\npredictors <- 3\nr_squared <- 0.65\nanswer <- 1 - (1 - r_squared) * (n - 1) / (n - predictors - 1)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Adjust the unexplained fraction using the total and residual degrees of freedom."
+    },
+    {
+      "id": "M-08-037",
+      "status": "computed",
+      "r_code": "deviance_difference <- 12.5\ndf <- 99 - 98\nreported_p <- 4.122e-04\nvalue <- stats::pchisq(deviance_difference, df = df, lower.tail = FALSE)\np_range <- stats::pchisq(deviance_difference + c(0.05, -0.05), df = df, lower.tail = FALSE)\nanswer <- names(which(c(A = value < 0.05 && reported_p >= p_range[1] && reported_p <= p_range[2])))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The chi-squared tail on one degree of freedom gives strong evidence against the null and agrees with the reported p-value within deviance rounding."
+    },
+    {
+      "id": "M-08-038",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(outer(1:10, 1:10, \"-\")^2)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The ten positions are fixed, so the expression directly averages the squared displacements over all equally likely original and new position pairs."
+    },
+    {
+      "id": "M-08-039",
+      "status": "computed",
+      "r_code": "ids <- c(\"RES-101\", \"RES-205\", \"RES-310\")\nroom_nums <- as.numeric(substr(ids, 5, 7))\nanswer <- mean(room_nums)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Extract positions five through seven, convert them to numbers, and take their mean."
+    },
+    {
+      "id": "M-08-040",
+      "status": "computed",
+      "r_code": "alpha <- 2 + 5\nbeta <- 8 + (20 - 5)\nn_future <- 10\nk <- 2\nanswer <- exp(lchoose(n_future, k) + lbeta(alpha + k, beta + n_future - k) - lbeta(alpha, beta))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Update the beta prior with the observed counts and evaluate the beta-binomial predictive probability."
+    },
+    {
+      "id": "M-08-041",
+      "status": "computed",
+      "r_code": "n <- c(50, 50)\np_hat <- c(30, 20) / n\nse <- sqrt(sum(p_hat * (1 - p_hat) / n))\nanswer <- p_hat[1] - p_hat[2] - 1.96 * se",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract 1.96 times the unpooled standard error from the observed difference."
+    },
+    {
+      "id": "M-08-042",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The variance of the sum includes twice the positive covariance in addition to the two individual variances."
+    },
+    {
+      "id": "M-08-043",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "regmatches(x, regexpr(\"[0-9]+\", x))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- \"ID_99_test\""},
+        {"kind": "variation", "code": "x <- \"REF_314_final\""},
+        {"kind": "variation", "code": "x <- \"batch42\""},
+        {"kind": "edge", "code": "x <- \"ID_0007_test\""}
+      ],
+      "correct_options": [],
+      "note": "Extract the digit run as a character string, preserving leading zeros."
+    },
+    {
+      "id": "M-08-044",
+      "status": "computed",
+      "r_code": "p_value <- 0.0082\nvalue <- p_value < 0.05\nanswer <- names(which(c(C = value)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "At the 5% level, the reported p-value supports rejecting the joint null that both coefficients are zero."
+    },
+    {
+      "id": "M-08-045",
+      "status": "computed",
+      "r_code": "control_rate <- 64 / 200\ntreated_rate <- 32 / 160\nanswer <- 1 / (control_rate - treated_rate)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Take the reciprocal of the control event rate minus the treated event rate."
+    },
+    {
+      "id": "M-08-046",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "A one-sample z-test uses the stated population standard deviation and the approximate normality of the sample mean."
+    },
+    {
+      "id": "M-08-047",
+      "status": "computed",
+      "r_code": "group <- c(7, 3, 7, 3, 3, 9)\nanswer <- as.integer(unname(table(group)[\"3\"]))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Read the count for the value 3 from the frequency table."
+    },
+    {
+      "id": "M-08-048",
+      "status": "computed",
+      "r_code": "p_at_most_50 <- stats::pnorm(50, mean = 45, sd = 2)\nanswer <- 1 - p_at_most_50^6",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the probability that all six independent measurements are at most 50 from one."
+    },
+    {
+      "id": "M-08-049",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "lapply(L, function(x) x - stats::median(x))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "L <- list(c(1, 2, 3), c(4, 5, 6), c(10, 11, 12, 13))"},
+        {"kind": "variation", "code": "L <- list(c(3, 8, 10, 19), c(4, 6, 12), c(7, 11, 14, 16, 19))"},
+        {"kind": "variation", "code": "L <- list(morning = c(-1.2, 0.4, 2.6), evening = c(1.1, 1.4, 2.7, 5.2))"},
+        {"kind": "edge", "code": "L <- list(c(7), c(2, 2, 2, 2))"}
+      ],
+      "correct_options": [],
+      "note": "Subtract each vector’s own median while preserving the list structure."
+    },
+    {
+      "id": "M-08-050",
+      "status": "computed",
+      "r_code": "aic <- c(mod1 = 150.20, mod2 = 146.85)\nvalue <- aic[which.min(aic)]\noption_by_model <- c(mod1 = \"B\", mod2 = \"A\")\nanswer <- unname(option_by_model[names(value)])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Model mod2 has the smaller AIC, which favors its balance of fit and complexity."
+    }
+  ]
+}

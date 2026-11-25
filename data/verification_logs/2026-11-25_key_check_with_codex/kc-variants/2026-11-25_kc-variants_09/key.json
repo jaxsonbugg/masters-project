@@ -1,0 +1,91 @@
+{
+ "batch": "2026-11-25_kc-variants_09",
+ "kind": "variants",
+ "role": "variants",
+ "label": "kc-variants",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_variants_v1.md",
+ "instructions_sha256": "b315ac84863061016b0028b0140fe40a0969759b8a8a4677d91072f51d8ee970",
+ "batch_sha256": "68417451b16ef7ea6c87099288ecf7c1be652ec800b333c0a5c5373c563c3679",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "V-09-001": {
+   "item_id": "BM0909",
+   "position": 909
+  },
+  "V-09-002": {
+   "item_id": "BM0914",
+   "position": 914
+  },
+  "V-09-003": {
+   "item_id": "BM2002",
+   "position": 918
+  },
+  "V-09-004": {
+   "item_id": "BM0923",
+   "position": 923
+  },
+  "V-09-005": {
+   "item_id": "BM0929",
+   "position": 929
+  },
+  "V-09-006": {
+   "item_id": "BM0934",
+   "position": 934
+  },
+  "V-09-007": {
+   "item_id": "BM0938",
+   "position": 938
+  },
+  "V-09-008": {
+   "item_id": "BM0943",
+   "position": 943
+  },
+  "V-09-009": {
+   "item_id": "BM0949",
+   "position": 949
+  },
+  "V-09-010": {
+   "item_id": "BM0954",
+   "position": 954
+  },
+  "V-09-011": {
+   "item_id": "BM0958",
+   "position": 958
+  },
+  "V-09-012": {
+   "item_id": "BM0963",
+   "position": 963
+  },
+  "V-09-013": {
+   "item_id": "BM1619",
+   "position": 969
+  },
+  "V-09-014": {
+   "item_id": "BM1627",
+   "position": 974
+  },
+  "V-09-015": {
+   "item_id": "BM1850",
+   "position": 978
+  },
+  "V-09-016": {
+   "item_id": "BM0983",
+   "position": 983
+  },
+  "V-09-017": {
+   "item_id": "BM0989",
+   "position": 989
+  },
+  "V-09-018": {
+   "item_id": "BM0994",
+   "position": 994
+  },
+  "V-09-019": {
+   "item_id": "BM0998",
+   "position": 998
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:47:06+00:00"
+}

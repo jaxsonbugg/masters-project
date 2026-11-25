@@ -1,0 +1,48 @@
+{
+ "type": "object",
+ "properties": {
+  "briefs": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "brief": {
+      "type": "string"
+     },
+     "reading": {
+      "type": "string",
+      "enum": [
+       "key_likely_correct",
+       "key_likely_wrong",
+       "question_flawed",
+       "check_flawed",
+       "unclear"
+      ]
+     },
+     "confidence": {
+      "type": "string",
+      "enum": [
+       "high",
+       "medium",
+       "low"
+      ]
+     }
+    },
+    "required": [
+     "id",
+     "brief",
+     "reading",
+     "confidence"
+    ],
+    "additionalProperties": false
+   }
+  }
+ },
+ "required": [
+  "briefs"
+ ],
+ "additionalProperties": false
+}

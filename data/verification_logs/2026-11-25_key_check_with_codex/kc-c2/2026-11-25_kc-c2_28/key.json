@@ -1,0 +1,115 @@
+{
+ "batch": "2026-11-25_kc-c2_28",
+ "kind": "solve-compute",
+ "role": "C2",
+ "label": "kc-c2",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_compute_v2.md",
+ "instructions_sha256": "8984ca3f53a14dd22e8d0d38b64f83e372925c50680295c0b3799275477780a5",
+ "batch_sha256": "ef755604c35f7e1f7c6e3521a4c6e36bfa6466dfcc7ced58dfd86c89b0737d3e",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "M-28-001": {
+   "item_id": "BM0645",
+   "position": 645
+  },
+  "M-28-002": {
+   "item_id": "BM0646",
+   "position": 646
+  },
+  "M-28-003": {
+   "item_id": "BM0647",
+   "position": 647
+  },
+  "M-28-004": {
+   "item_id": "BM0648",
+   "position": 648
+  },
+  "M-28-005": {
+   "item_id": "BM0649",
+   "position": 649
+  },
+  "M-28-006": {
+   "item_id": "BM0650",
+   "position": 650
+  },
+  "M-28-007": {
+   "item_id": "BM0651",
+   "position": 651
+  },
+  "M-28-008": {
+   "item_id": "BM0652",
+   "position": 652
+  },
+  "M-28-009": {
+   "item_id": "BM0653",
+   "position": 653
+  },
+  "M-28-010": {
+   "item_id": "BM0654",
+   "position": 654
+  },
+  "M-28-011": {
+   "item_id": "BM0655",
+   "position": 655
+  },
+  "M-28-012": {
+   "item_id": "BM0656",
+   "position": 656
+  },
+  "M-28-013": {
+   "item_id": "BM1960",
+   "position": 657
+  },
+  "M-28-014": {
+   "item_id": "BM0658",
+   "position": 658
+  },
+  "M-28-015": {
+   "item_id": "BM0659",
+   "position": 659
+  },
+  "M-28-016": {
+   "item_id": "BM0660",
+   "position": 660
+  },
+  "M-28-017": {
+   "item_id": "BM0661",
+   "position": 661
+  },
+  "M-28-018": {
+   "item_id": "BM0662",
+   "position": 662
+  },
+  "M-28-019": {
+   "item_id": "BM0663",
+   "position": 663
+  },
+  "M-28-020": {
+   "item_id": "BM0664",
+   "position": 664
+  },
+  "M-28-021": {
+   "item_id": "BM1475",
+   "position": 665
+  },
+  "M-28-022": {
+   "item_id": "BM0666",
+   "position": 666
+  },
+  "M-28-023": {
+   "item_id": "BM0667",
+   "position": 667
+  },
+  "M-28-024": {
+   "item_id": "BM0668",
+   "position": 668
+  },
+  "M-28-025": {
+   "item_id": "BM0669",
+   "position": 669
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:47:05+00:00"
+}

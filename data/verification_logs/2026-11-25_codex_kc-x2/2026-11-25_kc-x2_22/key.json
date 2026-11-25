@@ -1,0 +1,115 @@
+{
+ "batch": "2026-11-25_kc-x2_22",
+ "kind": "solve-compute",
+ "label": "kc-x2",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_compute_v2.md",
+ "instructions_sha256": "8984ca3f53a14dd22e8d0d38b64f83e372925c50680295c0b3799275477780a5",
+ "batch_sha256": "de53600e9038cd3c50e9e33150d49ad3a2d625658ecce0a708e48a0d32c54b6b",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "manifest": "C:\\dev\\masters-project\\data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "M-22-001": {
+   "item_id": "BM0976",
+   "position": 976
+  },
+  "M-22-002": {
+   "item_id": "BM0977",
+   "position": 977
+  },
+  "M-22-003": {
+   "item_id": "BM1850",
+   "position": 978
+  },
+  "M-22-004": {
+   "item_id": "BM0979",
+   "position": 979
+  },
+  "M-22-005": {
+   "item_id": "BM0980",
+   "position": 980
+  },
+  "M-22-006": {
+   "item_id": "BM0981",
+   "position": 981
+  },
+  "M-22-007": {
+   "item_id": "BM0982",
+   "position": 982
+  },
+  "M-22-008": {
+   "item_id": "BM0983",
+   "position": 983
+  },
+  "M-22-009": {
+   "item_id": "BM0984",
+   "position": 984
+  },
+  "M-22-010": {
+   "item_id": "BM0985",
+   "position": 985
+  },
+  "M-22-011": {
+   "item_id": "BM0986",
+   "position": 986
+  },
+  "M-22-012": {
+   "item_id": "BM0987",
+   "position": 987
+  },
+  "M-22-013": {
+   "item_id": "BM1631",
+   "position": 988
+  },
+  "M-22-014": {
+   "item_id": "BM0989",
+   "position": 989
+  },
+  "M-22-015": {
+   "item_id": "BM1634",
+   "position": 990
+  },
+  "M-22-016": {
+   "item_id": "BM0991",
+   "position": 991
+  },
+  "M-22-017": {
+   "item_id": "BM0992",
+   "position": 992
+  },
+  "M-22-018": {
+   "item_id": "BM0993",
+   "position": 993
+  },
+  "M-22-019": {
+   "item_id": "BM0994",
+   "position": 994
+  },
+  "M-22-020": {
+   "item_id": "BM0995",
+   "position": 995
+  },
+  "M-22-021": {
+   "item_id": "BM0996",
+   "position": 996
+  },
+  "M-22-022": {
+   "item_id": "BM0997",
+   "position": 997
+  },
+  "M-22-023": {
+   "item_id": "BM0998",
+   "position": 998
+  },
+  "M-22-024": {
+   "item_id": "BM1639",
+   "position": 999
+  },
+  "M-22-025": {
+   "item_id": "BM1640",
+   "position": 1000
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-25T05:47:06+00:00"
+}

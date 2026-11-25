@@ -1,0 +1,495 @@
+{
+  "answers": [
+    {
+      "id": "M-18-001",
+      "status": "computed",
+      "r_code": "counts <- matrix(c(880, 40, 20, 60), nrow = 2, byrow = TRUE)\nvalue <- c(precision = counts[2, 2] / sum(counts[2, ]), specificity = counts[1, 1] / sum(counts[, 1]))\noptions <- rbind(A = c(0.600, 0.900), B = c(0.750, 0.978), C = c(0.750, 0.022), D = c(0.022, 0.900))\nanswer <- rownames(options)[which.min(rowSums(abs(sweep(options, 2, value, \"-\"))))]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Precision uses the predicted positives as its denominator, and specificity uses the actual negatives."
+    },
+    {
+      "id": "M-18-002",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "A small sample and a large observation variance give the likelihood low precision, increasing the prior's influence."
+    },
+    {
+      "id": "M-18-003",
+      "status": "computed",
+      "r_code": "answer <- stats::dnbinom(5 - 3, size = 3, prob = 0.6)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The third success on attempt five requires two failures before the third success."
+    },
+    {
+      "id": "M-18-004",
+      "status": "computed",
+      "r_code": "v <- c(1, NA, 3, 4, NA)\nz <- ifelse(is.na(v), 99, ifelse(v > 2, v * 2, v + 1))\nanswer <- sum(z)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the nested recoding and sum the resulting vector."
+    },
+    {
+      "id": "M-18-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "ifelse(x > 18, 0, x)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(10, 15, 20, 25, 30)"},
+        {"kind": "variation", "code": "x <- c(14, 21, 17, 24)"},
+        {"kind": "variation", "code": "x <- c(19.5, 22.3, 16.8, 17.9, 20.1, 12.4)"},
+        {"kind": "edge", "code": "x <- c(18, 18, 18)"}
+      ],
+      "correct_options": [],
+      "note": "The strict comparison preserves elements equal to 18."
+    },
+    {
+      "id": "M-18-006",
+      "status": "computed",
+      "r_code": "prior <- c(Alpha = 0.70, Beta = 0.30)\nlikelihood <- c(Alpha = 0.80, Beta = 0.40)\nweights <- prior * likelihood\nanswer <- unname(weights[\"Alpha\"] / sum(weights))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Normalize the prior-weighted probabilities of exceeding 60 bushels per acre."
+    },
+    {
+      "id": "M-18-007",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The median uses the middle ordered observations and is resistant to unusually high yields."
+    },
+    {
+      "id": "M-18-008",
+      "status": "computed",
+      "r_code": "counts <- rbind(c(15, 45), c(8, 52))\nexpected <- outer(rowSums(counts), colSums(counts)) / sum(counts)\nabsolute_errors <- abs(counts - expected)\ncorrection <- min(0.5, absolute_errors)\nstatistic <- c(corrected = sum((absolute_errors - correction)^2 / expected), uncorrected = sum(absolute_errors^2 / expected))\np_value <- stats::pchisq(statistic, df = 1, lower.tail = FALSE)\nvalue <- rbind(statistic = statistic, p_value = p_value)\nanswer <- if (correction == 0.5 && statistic[1] < statistic[2] && p_value[1] > p_value[2]) \"A\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Comparing the two calculations shows that the half-count correction lowers the statistic and raises the p-value."
+    },
+    {
+      "id": "M-18-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::sd(replicate(10000, stats::cor(stats::rnorm(20), stats::rnorm(20))))",
+      "test_inputs": [
+        {"kind": "variation", "code": "set.seed(173)"}
+      ],
+      "correct_options": [],
+      "note": "One seeded test makes the simulation reproducible with the fixed sample and replication sizes."
+    },
+    {
+      "id": "M-18-010",
+      "status": "computed",
+      "r_code": "leaves <- c(14.2, 16.9, 13.5, 17.1, 15.0)\nanswer <- mean(leaves[c(-1, -4)])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Exclude the first and fourth leaf lengths before averaging."
+    },
+    {
+      "id": "M-18-011",
+      "status": "computed",
+      "r_code": "p0 <- 0.6\nn <- 250\nanswer <- sqrt(p0 * (1 - p0) / n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the null proportion to compute the standard error for the z-test."
+    },
+    {
+      "id": "M-18-012",
+      "status": "computed",
+      "r_code": "x <- c(1.2, 3.4, 2.1, 4.3, 1.0)\nanswer <- 1 / mean(x)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The method of moments estimate is the reciprocal of the sample mean."
+    },
+    {
+      "id": "M-18-013",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Permuting group assignments and recomputing the statistic builds its reference distribution."
+    },
+    {
+      "id": "M-18-014",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "scale(x)",
+      "test_inputs": [
+        {"kind": "variation", "code": "x <- c(10.2, 12.1, 11.8, 9.9, 10.5)"},
+        {"kind": "variation", "code": "x <- c(-3, 0, 2, 6)"},
+        {"kind": "variation", "code": "x <- c(4, 4, 5, 7, 7, 9)"},
+        {"kind": "edge", "code": "x <- c(5, 5, 5)"}
+      ],
+      "correct_options": [],
+      "note": "Using scale with its defaults preserves its behavior for constant vectors."
+    },
+    {
+      "id": "M-18-015",
+      "status": "computed",
+      "r_code": "p_value <- 0.038\nalpha <- 0.05\nvalue <- p_value < alpha\nanswer <- if (value) \"C\" else if (p_value > alpha) \"A\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The reported p-value is below the 0.05 significance level."
+    },
+    {
+      "id": "M-18-016",
+      "status": "computed",
+      "r_code": "x <- c(4.1, 3.8, 4.2, 3.9, 4.0, 4.3, 3.7, 4.1, 4.0, 3.9, 4.2, 3.8)\nanswer <- stats::sd(x) / sqrt(length(x))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the sample standard deviation by the square root of the sample size."
+    },
+    {
+      "id": "M-18-017",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The significant interaction indicates that the district difference in mean response time depends on shift."
+    },
+    {
+      "id": "M-18-018",
+      "status": "computed",
+      "r_code": "x <- c(2, 7, 4, 9, 1, 8, 3, 6, 5, 10)\nanswer <- sum(x > 5)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Summing the logical comparison counts values strictly greater than five."
+    },
+    {
+      "id": "M-18-019",
+      "status": "computed",
+      "r_code": "jobs <- 8\nartifacts <- 15\ndistinct_requests <- jobs - 1\nassignments <- prod(seq.int(from = artifacts, length.out = distinct_requests, by = -1))\nanswer <- choose(jobs, 2) * assignments / artifacts^jobs",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Choose the matching jobs, then assign distinct artifacts to the pair and the six remaining jobs."
+    },
+    {
+      "id": "M-18-020",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "-2 * (-312.7) + 3 * log(450)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression uses all three fixed model summary values directly, so a single test needs no setup."
+    },
+    {
+      "id": "M-18-021",
+      "status": "computed",
+      "r_code": "p_value <- 0.0253\nalpha <- 0.05\nrss <- c(reduced = 120.50, full = 108.20)\nvalue <- p_value < alpha && rss[[\"full\"]] < rss[[\"reduced\"]]\nanswer <- if (value) \"A\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The full model lowers residual sum of squares, and the reported p-value makes the improvement significant at 0.05."
+    },
+    {
+      "id": "M-18-022",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The mean has unbounded influence, while the median in the stated setting has bounded influence and a 50 percent breakdown point."
+    },
+    {
+      "id": "M-18-023",
+      "status": "computed",
+      "r_code": "fitted <- 1.2 + 0.75 * 8\nanswer <- 6.5 - fitted",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the fitted crispness score from the observed score."
+    },
+    {
+      "id": "M-18-024",
+      "status": "computed",
+      "r_code": "x <- c(1.1, 2.2, 3.3)\ny <- c(0.9, 1.8, 2.7)\nM <- outer(x, y, function(a, b) sqrt(a^2 + b^2))\nanswer <- M[2, 3]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the supplied function on the second element of x and the third element of y."
+    },
+    {
+      "id": "M-18-025",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "parts[sample(seq_len(nrow(parts))), , drop = FALSE]",
+      "test_inputs": [
+        {"kind": "question_data", "code": "parts <- data.frame(id = 1:5, length_mm = c(10.1, 10.3, 9.9, 10.0, 10.2), defects = c(0, 1, 0, 2, 0))"},
+        {"kind": "variation", "code": "parts <- data.frame(id = 11:13, length_mm = c(12.2, 12.4, 12.1), defects = c(1, 0, 0))"},
+        {"kind": "variation", "code": "parts <- data.frame(id = 21:26, length_mm = c(8.0, 8.2, 8.0, 7.9, 8.1, 7.8), defects = c(0, 2, 0, 1, 0, 3))"},
+        {"kind": "edge", "code": "parts <- data.frame(id = 31L, length_mm = 10.05, defects = 0)"}
+      ],
+      "correct_options": [],
+      "note": "Sample the row indices without replacement and keep the result as a data frame."
+    },
+    {
+      "id": "M-18-026",
+      "status": "computed",
+      "r_code": "answer <- stats::pnorm(60, mean = 45, sd = 12, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the upper tail of the specified normal distribution at 60 days."
+    },
+    {
+      "id": "M-18-027",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Wald uses the unrestricted fit, Score uses the restricted fit, and the likelihood ratio compares both fits."
+    },
+    {
+      "id": "M-18-028",
+      "status": "computed",
+      "r_code": "stress_coef <- 0.450\ninteraction_coef <- 0.008\ntarget_change <- 0.450\nvalue <- (target_change - stress_coef) / interaction_coef\nanswer <- if (value == 0 && interaction_coef != 0) \"D\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Solving for the humidity at which the fitted stress slope equals 0.450 gives zero percent."
+    },
+    {
+      "id": "M-18-029",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mapply(function(x, n) stats::binom.test(x, n, p = 0.5, alternative = \"two.sided\")$p.value, made, attempts)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "made <- c(4, 12, 7, 2, 9)\nattempts <- c(10, 20, 15, 5, 18)"},
+        {"kind": "variation", "code": "made <- c(8, 6, 13)\nattempts <- c(12, 14, 20)"},
+        {"kind": "variation", "code": "made <- c(11, 17, 4, 13, 21, 18)\nattempts <- c(25, 30, 9, 20, 38, 27)"},
+        {"kind": "edge", "code": "made <- c(0, 5, 3)\nattempts <- c(4, 5, 6)"}
+      ],
+      "correct_options": [],
+      "note": "Pair each player's successes and attempts to obtain an exact two-sided binomial p-value."
+    },
+    {
+      "id": "M-18-030",
+      "status": "computed",
+      "r_code": "x <- c(2, 5, 3, 8, 4, 9, 6, 10, 5, 11, 7, 12)\ntransformed <- diff(diff(x, lag = 3), lag = 1)\nanswer <- stats::var(transformed)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the lag-three and lag-one differences, then compute the sample variance."
+    },
+    {
+      "id": "M-18-031",
+      "status": "computed",
+      "r_code": "standard_error <- 10 / sqrt(100)\ncritical_mean <- 50 + stats::qnorm(0.95) * standard_error\nanswer <- stats::pnorm(critical_mean, mean = 52, sd = standard_error, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Find the upper critical sample mean under the null and compute its exceedance probability under the alternative."
+    },
+    {
+      "id": "M-18-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The researcher observes naturally formed groups without assigning subjects or intervening."
+    },
+    {
+      "id": "M-18-033",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sum(lengths(strsplit(v, \",\", fixed = TRUE)))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "v <- c('x,y', 'z', 'a,b,c')"},
+        {"kind": "variation", "code": "v <- c('Oak,Pine,Fir', 'Maple,Birch', 'Willow', 'Cedar')"},
+        {"kind": "variation", "code": "v <- c('north,south,east,west', 'central')"},
+        {"kind": "edge", "code": "v <- character(0)"}
+      ],
+      "correct_options": [],
+      "note": "Sum the fragment counts returned by splitting each string on a literal comma."
+    },
+    {
+      "id": "M-18-034",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The third entry in the reported boxplot statistics is the sample median."
+    },
+    {
+      "id": "M-18-035",
+      "status": "computed",
+      "r_code": "n <- 120\nx <- 41\np0 <- 0.30\nanswer <- (x - n * p0)^2 / (n * p0 * (1 - p0))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the null expectation and binomial variance in the supplied score statistic."
+    },
+    {
+      "id": "M-18-036",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The lagged Pearson correlation lies between minus one and one whenever it is defined."
+    },
+    {
+      "id": "M-18-037",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3)\nv <- rep(x, each = 2)\nanswer <- v[4]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Repeat each element twice before extracting the fourth entry."
+    },
+    {
+      "id": "M-18-038",
+      "status": "computed",
+      "r_code": "theta0 <- 80\nn <- 120\nalpha <- 0.03\nanswer <- theta0 * (1 - alpha)^(1 / n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Invert the null cumulative distribution of the sample maximum at probability 0.97."
+    },
+    {
+      "id": "M-18-039",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::relevel(allele, ref = \"G\")",
+      "test_inputs": [
+        {"kind": "question_data", "code": "allele <- factor(c('A', 'C', 'G', 'T'), levels = c('A', 'C', 'G', 'T'))"},
+        {"kind": "variation", "code": "allele <- factor(c('T', 'G', 'A', 'C', 'A', 'G'), levels = c('A', 'C', 'G', 'T'))"},
+        {"kind": "variation", "code": "allele <- factor(c('C', 'T', 'T', 'G', 'C', 'A', 'G', 'A'), levels = c('A', 'C', 'G', 'T'))"},
+        {"kind": "edge", "code": "allele <- factor(c(rep('A', 20), 'C', 'G', 'T'), levels = c('A', 'C', 'G', 'T'))"}
+      ],
+      "correct_options": [],
+      "note": "The first fixture uses one observation per stated level because the question gives no observation counts."
+    },
+    {
+      "id": "M-18-040",
+      "status": "computed",
+      "r_code": "p_value <- 0.008326\nalpha <- 0.05\nvalue <- p_value < alpha\nanswer <- if (value) \"D\" else \"B\"",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The reported two-sided p-value is below 0.05, supporting a difference from 50 percent."
+    },
+    {
+      "id": "M-18-041",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Under the usual regression regularity conditions, heteroskedasticity preserves OLS consistency but generally invalidates conventional standard errors."
+    },
+    {
+      "id": "M-18-042",
+      "status": "computed",
+      "r_code": "prior <- c(AA = 0.6, Aa = 0.3, aa = 0.1)\npositive <- c(AA = 0.90, Aa = 0.30, aa = 0.10)\nweights <- prior * positive\nanswer <- weights[[\"AA\"]] / sum(weights)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the joint probability of AA and a positive signal by the marginal probability of a positive signal."
+    },
+    {
+      "id": "M-18-043",
+      "status": "computed",
+      "r_code": "set.seed(42)\nclimate <- data.frame(temp = stats::rnorm(50, 20, 5), rh = stats::rnorm(50, 60, 10), pm25 = stats::rnorm(50, 15, 3))\nfit <- stats::lm(pm25 ~ temp + rh, data = climate)\npredictors <- all.vars(stats::delete.response(stats::terms(fit)))\narguments <- stats::setNames(list(22, 55), predictors)\nnewdata_call <- as.call(c(list(quote(data.frame)), arguments))\nanswer <- deparse1(call(\"predict\", quote(fit), newdata = newdata_call))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Construct the corrected line using the predictor names from the fitted model."
+    },
+    {
+      "id": "M-18-044",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "cbind(c(1, 2, 3), c(4, 5, 6))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "Both columns are fixed literals, so a single test needs no setup."
+    },
+    {
+      "id": "M-18-045",
+      "status": "computed",
+      "r_code": "medium <- c(A = 80, B = 70, C = 50)\nanswer <- medium[[\"A\"]] / sum(medium)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use only respondents in the Medium income bracket as the denominator."
+    },
+    {
+      "id": "M-18-046",
+      "status": "computed",
+      "r_code": "sigma <- 0.05\nn <- 100\nvalue <- sigma / sqrt(n)\noptions <- c(A = sigma / 100, B = sigma / 10, C = sigma * sqrt(100), D = sigma)\nanswer <- names(options)[which.min(abs(options - value))]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The standard error is the population standard deviation divided by the square root of the sample size."
+    },
+    {
+      "id": "M-18-047",
+      "status": "computed",
+      "r_code": "summary_values <- c(minimum = 210, q1 = 380, median = 420, mean = 455, q3 = 480, maximum = 950)\nlower_tail <- summary_values[[\"q1\"]] - summary_values[[\"minimum\"]]\nupper_tail <- summary_values[[\"maximum\"]] - summary_values[[\"q3\"]]\nvalue <- c(mean_minus_median = summary_values[[\"mean\"]] - summary_values[[\"median\"]], upper_minus_lower_tail = upper_tail - lower_tail)\nanswer <- if (all(value > 0)) \"C\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Both computed gaps suggest right skew, and the sampling-distribution claim assumes the sample reflects the population's skew."
+    },
+    {
+      "id": "M-18-048",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "df[, cols, drop = FALSE]",
+      "test_inputs": [
+        {"kind": "variation", "code": "df <- data.frame(id = 1:3, weight = c(67, 73, 58), site = c('East', 'West', 'East'))\ncols <- c('site', 'weight')"},
+        {"kind": "variation", "code": "df <- data.frame(group = factor(c('control', 'treated')), score = c(12, 16), passed = c(FALSE, TRUE))\ncols <- c('group', 'passed', 'score')"},
+        {"kind": "variation", "code": "df <- data.frame(date = as.Date(c('2026-01-01', '2026-01-02')), count = c(14L, 18L), station = c('A', 'B'))\ncols <- c('station', 'date')"},
+        {"kind": "edge", "code": "df <- data.frame(id = 1:2, score = c(6, 9))\ncols <- 'score'"}
+      ],
+      "correct_options": [],
+      "note": "The empty row index keeps all rows, and drop = FALSE preserves the data frame for a single selected column."
+    },
+    {
+      "id": "M-18-049",
+      "status": "computed",
+      "r_code": "hours <- c(2, 3, 4, 5, 6, 7, 8, 9)\nscore <- c(55, 60, 62, 65, 68, 70, 72, 75)\ndat <- data.frame(score, hours)\nmodel <- stats::glm(score ~ hours, data = dat, family = stats::poisson())\nanswer <- stats::df.residual(model)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Fit the supplied Poisson model and extract its residual degrees of freedom."
+    },
+    {
+      "id": "M-18-050",
+      "status": "computed",
+      "r_code": "n <- 7\nk <- 3\nanswer <- choose(n, k) * factorial(k)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Count the three-element subsets and multiply by the number of orders within each subset."
+    }
+  ]
+}

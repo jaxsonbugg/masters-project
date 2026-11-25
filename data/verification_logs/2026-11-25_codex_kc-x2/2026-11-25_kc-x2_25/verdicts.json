@@ -1,0 +1,121 @@
+{
+  "answers": [
+    {
+      "id": "M-25-001",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(c(2, 5, 8), length.out = 14)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The cycle and output length are fixed in the expression."
+    },
+    {
+      "id": "M-25-002",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.10 * stats::pnorm(8, mean = 12, sd = 4, lower.tail = FALSE), mean = 12, sd = 4, lower.tail = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The threshold leaves 10% of the probability above 8 minutes in its upper tail under the fixed model."
+    },
+    {
+      "id": "M-25-003",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(outer(1:10, 1:10, \"-\")^2)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "For each of the ten fixed starting positions, all ten destinations are equally likely."
+    },
+    {
+      "id": "M-25-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.80, mean = 180, sd = 15)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression evaluates the fixed model's 80th percentile."
+    },
+    {
+      "id": "M-25-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(seq(from = 30, to = 40, by = 5), each = 7)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "Each of the three fixed weekly fees is repeated for seven consecutive days."
+    },
+    {
+      "id": "M-25-006",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.Date(\"2020-01-31\") + 31 * (0:2)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "Integer day offsets supply the fixed spacing and preserve the Date class."
+    },
+    {
+      "id": "M-25-007",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "utils::tail(c(3, 8, 14, 21), 2L)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The four values and the number of elements to extract are fixed in the expression."
+    },
+    {
+      "id": "M-25-008",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ set.seed(42); stats::rpois(5L, lambda = 6) }",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression sets the specified seed before drawing five counts from the fixed Poisson model."
+    },
+    {
+      "id": "M-25-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::pf(4.1, df1 = 2, df2 = 12, lower.tail = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The p-value is the upper-tail probability at the specified F statistic and degrees of freedom."
+    },
+    {
+      "id": "M-25-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "(2:6)^2",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "Vectorized exponentiation squares every integer in the fixed range."
+    },
+    {
+      "id": "M-25-011",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(c(10, 20, NA, 40), na.rm = TRUE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression removes the missing value before averaging the fixed vector."
+    },
+    {
+      "id": "M-25-012",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sample.int(4L)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "Sampling all four fixed IDs without replacement gives a random treatment order."
+    },
+    {
+      "id": "M-25-013",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.numeric(difftime(as.Date(\"2023-04-08\"), as.Date(\"2023-01-15\"), units = \"days\"))",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression computes the elapsed days between the two fixed dates and returns a number."
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+ "type": "object",
+ "properties": {
+  "answers": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "computed",
+       "not_applicable",
+       "unanswerable",
+       "execution_unsupported"
+      ]
+     },
+     "r_code": {
+      "type": "string"
+     },
+     "answer_expression": {
+      "type": "string"
+     },
+     "test_inputs": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "enum": [
+          "question_data",
+          "variation",
+          "edge"
+         ]
+        },
+        "code": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "kind",
+        "code"
+       ],
+       "additionalProperties": false
+      }
+     },
+     "correct_options": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+       ]
+      }
+     },
+     "note": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "status",
+     "r_code",
+     "answer_expression",
+     "test_inputs",
+     "correct_options",
+     "note"
+    ],
+    "additionalProperties": false
+   }
+  }
+ },
+ "required": [
+  "answers"
+ ],
+ "additionalProperties": false
+}

@@ -1,0 +1,35 @@
+{
+ "batch": "2026-11-25_kc-brief_09",
+ "kind": "brief",
+ "role": "brief",
+ "label": "kc-brief",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_brief_v1.md",
+ "instructions_sha256": "4d3ef915d9ef82ff3a06211e136ea8220d50e46f015751d391c697e3d0bbf78e",
+ "batch_sha256": "f8abddbf6ee502fb2896efa439d55321482f12e83739ee31e7fce78f10dc4bfd",
+ "source": "C:\\dev\\masters-project\\data\\verification_logs\\2026-11-25_key_check_with_codex\\compare_20261125T221610Z",
+ "ids": {
+  "B-09-001": {
+   "item_id": "BM0958",
+   "position": 958
+  },
+  "B-09-002": {
+   "item_id": "BM1627",
+   "position": 974
+  },
+  "B-09-003": {
+   "item_id": "BM1850",
+   "position": 978
+  },
+  "B-09-004": {
+   "item_id": "BM0979",
+   "position": 979
+  },
+  "B-09-005": {
+   "item_id": "BM0994",
+   "position": 994
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T22:24:06+00:00"
+}

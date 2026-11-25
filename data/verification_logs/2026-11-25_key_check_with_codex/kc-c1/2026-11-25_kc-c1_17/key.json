@@ -1,0 +1,115 @@
+{
+ "batch": "2026-11-25_kc-c1_17",
+ "kind": "solve-analytic",
+ "role": "C1",
+ "label": "kc-c1",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_analytic_v2.md",
+ "instructions_sha256": "67175e476d68c977cae1013d12a29f7e16bfd7781ac2bea896d478788c7cfff0",
+ "batch_sha256": "640a614166d54257ddc22eb17aec5349499e171827a04047ed795466d628e977",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "K-17-001": {
+   "item_id": "BM0362",
+   "position": 362
+  },
+  "K-17-002": {
+   "item_id": "BM0363",
+   "position": 363
+  },
+  "K-17-003": {
+   "item_id": "BM0364",
+   "position": 364
+  },
+  "K-17-004": {
+   "item_id": "BM0365",
+   "position": 365
+  },
+  "K-17-005": {
+   "item_id": "BM1322",
+   "position": 366
+  },
+  "K-17-006": {
+   "item_id": "BM0367",
+   "position": 367
+  },
+  "K-17-007": {
+   "item_id": "BM0368",
+   "position": 368
+  },
+  "K-17-008": {
+   "item_id": "BM0369",
+   "position": 369
+  },
+  "K-17-009": {
+   "item_id": "BM0370",
+   "position": 370
+  },
+  "K-17-010": {
+   "item_id": "BM1325",
+   "position": 371
+  },
+  "K-17-011": {
+   "item_id": "BM0372",
+   "position": 372
+  },
+  "K-17-012": {
+   "item_id": "BM0373",
+   "position": 373
+  },
+  "K-17-013": {
+   "item_id": "BM0374",
+   "position": 374
+  },
+  "K-17-014": {
+   "item_id": "BM1329",
+   "position": 375
+  },
+  "K-17-015": {
+   "item_id": "BM1331",
+   "position": 376
+  },
+  "K-17-016": {
+   "item_id": "BM1336",
+   "position": 377
+  },
+  "K-17-017": {
+   "item_id": "BM0378",
+   "position": 378
+  },
+  "K-17-018": {
+   "item_id": "BM0379",
+   "position": 379
+  },
+  "K-17-019": {
+   "item_id": "BM0380",
+   "position": 380
+  },
+  "K-17-020": {
+   "item_id": "BM0381",
+   "position": 381
+  },
+  "K-17-021": {
+   "item_id": "BM0382",
+   "position": 382
+  },
+  "K-17-022": {
+   "item_id": "BM1339",
+   "position": 383
+  },
+  "K-17-023": {
+   "item_id": "BM0384",
+   "position": 384
+  },
+  "K-17-024": {
+   "item_id": "BM0385",
+   "position": 385
+  },
+  "K-17-025": {
+   "item_id": "BM0386",
+   "position": 386
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:47:05+00:00"
+}

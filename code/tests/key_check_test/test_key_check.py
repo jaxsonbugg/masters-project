@@ -363,6 +363,26 @@ v = judge(rx, A("mean(x)"), A("mean(x)"), Cx("mean(x)", INP + [("variation", "y 
 check("r_expression: an input on which the key errors is not counted (outside the question's scope)",
       v["verdict"] == "consensus-supported" and any("not counted" in n and "[5]" in n for n in v["notes"]),
       (v["reasons"], v["notes"]))
+fixed_q = bm(46, "r_expression", "Give the 80th percentile of a normal with mean 180 and sd 15.", "qnorm(0.8, 180, 15)",
+             r_check="isTRUE(all.equal(eval(parse(text = candidate)), qnorm(0.8, 180, 15)))")
+nofix = {"status": "computed", "r_code": "", "answer_expression": "qnorm(0.80, mean = 180, sd = 15)", "test_inputs": [],
+         "correct_options": [], "note": "the percentile, mean and sd are fixed"}
+v = judge(fixed_q, A("qnorm(0.8, 180, 15)"), A("180 + 15 * qnorm(0.8)"), nofix, dict(nofix), variants={"key_concern": "",
+          "variants": [{"expression": "qnorm(0.2, 180, 15)", "what_is_wrong": "lower tail", "counterexample": ""}] * 3})
+check("fixed question: no test inputs (with a reason) -> evaluated once on an empty setup, consensus-supported",
+      v["verdict"] == "consensus-supported" and v["harness"]["inputs"][0]["src"].startswith("fixed"), (v["reasons"], v["harness"]))
+_, p = kcs.validate("solve-compute", json.dumps({"answers": [{**nofix, "id": "M-01-002"}, good["answers"][0]]}),
+                    ["M-01-002", "M-01-001"], rows)
+check("fixed question: zero test inputs with a reason validates", not p, p)
+_, p = kcs.validate("solve-compute", json.dumps({"answers": [{**nofix, "id": "M-01-002", "note": ""}, good["answers"][0]]}),
+                    ["M-01-002", "M-01-001"], rows)
+check("fixed question: zero test inputs WITHOUT a reason is still rejected", any("without a reason" in x for x in p), p)
+emp = {**nofix, "id": "M-01-002", "test_inputs": [{"kind": "question_data", "code": ""}]}
+_, p = kcs.validate("solve-compute", json.dumps({"answers": [emp, good["answers"][0]]}), ["M-01-002", "M-01-001"], rows)
+check("fixed question: one empty-code input with a reason validates (same empty setup)", not p, p)
+_, p = kcs.validate("solve-compute", json.dumps({"answers": [{**emp, "note": ""}, good["answers"][0]]}),
+                    ["M-01-002", "M-01-001"], rows)
+check("fixed question: an empty-code input without a reason is rejected", any("empty code" in x for x in p), p)
 miss = kc.compare_item(num_ok, {"c1": {}, "x1": {}, "c2": {}, "x2": {}, "c3": {}, "variants": {}}, {}, set(), RS, CFG, None)
 check("a question without solver results is 'incomplete', never consensus-supported", miss["verdict"] == "incomplete",
       miss["verdict"])

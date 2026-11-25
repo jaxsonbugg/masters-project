@@ -1,0 +1,215 @@
+{
+ "batch": "2026-11-25_kc-x2_18",
+ "kind": "solve-compute",
+ "label": "kc-x2",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_compute_v2.md",
+ "instructions_sha256": "8984ca3f53a14dd22e8d0d38b64f83e372925c50680295c0b3799275477780a5",
+ "batch_sha256": "d48c5e19d6f76d9489711b5c83b7669df981bf97fa6937919025b0e97e94349c",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "manifest": "C:\\dev\\masters-project\\data\\slots\\benchmark_slots.manifest.json",
+ "ids": {
+  "M-18-001": {
+   "item_id": "BM1535",
+   "position": 770
+  },
+  "M-18-002": {
+   "item_id": "BM0771",
+   "position": 771
+  },
+  "M-18-003": {
+   "item_id": "BM0772",
+   "position": 772
+  },
+  "M-18-004": {
+   "item_id": "BM0773",
+   "position": 773
+  },
+  "M-18-005": {
+   "item_id": "BM0774",
+   "position": 774
+  },
+  "M-18-006": {
+   "item_id": "BM0775",
+   "position": 775
+  },
+  "M-18-007": {
+   "item_id": "BM0776",
+   "position": 776
+  },
+  "M-18-008": {
+   "item_id": "BM1538",
+   "position": 777
+  },
+  "M-18-009": {
+   "item_id": "BM0778",
+   "position": 778
+  },
+  "M-18-010": {
+   "item_id": "BM0779",
+   "position": 779
+  },
+  "M-18-011": {
+   "item_id": "BM0780",
+   "position": 780
+  },
+  "M-18-012": {
+   "item_id": "BM0781",
+   "position": 781
+  },
+  "M-18-013": {
+   "item_id": "BM0782",
+   "position": 782
+  },
+  "M-18-014": {
+   "item_id": "BM0783",
+   "position": 783
+  },
+  "M-18-015": {
+   "item_id": "BM1541",
+   "position": 784
+  },
+  "M-18-016": {
+   "item_id": "BM0785",
+   "position": 785
+  },
+  "M-18-017": {
+   "item_id": "BM0786",
+   "position": 786
+  },
+  "M-18-018": {
+   "item_id": "BM0787",
+   "position": 787
+  },
+  "M-18-019": {
+   "item_id": "BM0788",
+   "position": 788
+  },
+  "M-18-020": {
+   "item_id": "BM0789",
+   "position": 789
+  },
+  "M-18-021": {
+   "item_id": "BM0790",
+   "position": 790
+  },
+  "M-18-022": {
+   "item_id": "BM0791",
+   "position": 791
+  },
+  "M-18-023": {
+   "item_id": "BM0792",
+   "position": 792
+  },
+  "M-18-024": {
+   "item_id": "BM0793",
+   "position": 793
+  },
+  "M-18-025": {
+   "item_id": "BM0794",
+   "position": 794
+  },
+  "M-18-026": {
+   "item_id": "BM0795",
+   "position": 795
+  },
+  "M-18-027": {
+   "item_id": "BM1979",
+   "position": 796
+  },
+  "M-18-028": {
+   "item_id": "BM1547",
+   "position": 797
+  },
+  "M-18-029": {
+   "item_id": "BM0798",
+   "position": 798
+  },
+  "M-18-030": {
+   "item_id": "BM0800",
+   "position": 800
+  },
+  "M-18-031": {
+   "item_id": "BM1984",
+   "position": 801
+  },
+  "M-18-032": {
+   "item_id": "BM0802",
+   "position": 802
+  },
+  "M-18-033": {
+   "item_id": "BM0803",
+   "position": 803
+  },
+  "M-18-034": {
+   "item_id": "BM0804",
+   "position": 804
+  },
+  "M-18-035": {
+   "item_id": "BM0805",
+   "position": 805
+  },
+  "M-18-036": {
+   "item_id": "BM0806",
+   "position": 806
+  },
+  "M-18-037": {
+   "item_id": "BM0807",
+   "position": 807
+  },
+  "M-18-038": {
+   "item_id": "BM0808",
+   "position": 808
+  },
+  "M-18-039": {
+   "item_id": "BM0809",
+   "position": 809
+  },
+  "M-18-040": {
+   "item_id": "BM0810",
+   "position": 810
+  },
+  "M-18-041": {
+   "item_id": "BM1553",
+   "position": 811
+  },
+  "M-18-042": {
+   "item_id": "BM0812",
+   "position": 812
+  },
+  "M-18-043": {
+   "item_id": "BM0813",
+   "position": 813
+  },
+  "M-18-044": {
+   "item_id": "BM0814",
+   "position": 814
+  },
+  "M-18-045": {
+   "item_id": "BM0815",
+   "position": 815
+  },
+  "M-18-046": {
+   "item_id": "BM0816",
+   "position": 816
+  },
+  "M-18-047": {
+   "item_id": "BM2049",
+   "position": 817
+  },
+  "M-18-048": {
+   "item_id": "BM0818",
+   "position": 818
+  },
+  "M-18-049": {
+   "item_id": "BM0819",
+   "position": 819
+  },
+  "M-18-050": {
+   "item_id": "BM0821",
+   "position": 821
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-25T05:47:06+00:00"
+}

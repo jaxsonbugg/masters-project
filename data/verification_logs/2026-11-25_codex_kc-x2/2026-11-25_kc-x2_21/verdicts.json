@@ -1,0 +1,588 @@
+{
+  "answers": [
+    {
+      "id": "M-21-001",
+      "status": "computed",
+      "r_code": "n_patients <- c(14, 19, 12)\nanswer <- sum(n_patients) - length(n_patients)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract one fitted group mean per technique from the total number of observations."
+    },
+    {
+      "id": "M-21-002",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The question asks for the interpretation of a stated decision, which leaves open the possibility that the preservative is effective."
+    },
+    {
+      "id": "M-21-003",
+      "status": "computed",
+      "r_code": "x <- c(10, 20, NA, 30, 40)\ny <- ifelse(is.na(x), 25, x)\nanswer <- stats::sd(y)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Replace the missing value with 25 before computing the sample standard deviation."
+    },
+    {
+      "id": "M-21-004",
+      "status": "computed",
+      "r_code": "observed <- c(14, 26, 30, 30)\ntotal <- sum(observed)\np_hat <- sum(observed[1:3]) / (3 * total)\nexpected <- total * c(rep(p_hat, 3), 1 - 3 * p_hat)\nanswer <- sum((observed - expected)^2 / expected)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Fit the shared probability by pooling the first three counts and use the resulting expected counts in Pearson's statistic."
+    },
+    {
+      "id": "M-21-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mtcars[!duplicated(mtcars[c(\"cyl\", \"am\")]), , drop = FALSE]",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "mtcars <- datasets::mtcars"
+        }
+      ],
+      "correct_options": [],
+      "note": "The question explicitly fixes the input to the built-in mtcars data set."
+    },
+    {
+      "id": "M-21-006",
+      "status": "computed",
+      "r_code": "p_value <- 0.0318\nalpha <- 0.05\nvalue <- p_value < alpha\nanswer <- if (value) \"B\" else character(0)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The reported p-value is below 0.05, so the test rejects the specified normal distribution."
+    },
+    {
+      "id": "M-21-007",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The question asks for a conceptual explanation of the reversal, and confounding by residence is the best explanation offered."
+    },
+    {
+      "id": "M-21-008",
+      "status": "computed",
+      "r_code": "observed <- rbind(Midfielders = c(18, 12), Defenders = c(14, 26))\nanswer <- sum(observed[\"Midfielders\", ]) * sum(observed[, 1]) / sum(observed)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Under independence, the expected count is the product of the two marginal totals divided by the grand total."
+    },
+    {
+      "id": "M-21-009",
+      "status": "computed",
+      "r_code": "set.seed(1)\nd <- data.frame(y = stats::rnorm(20), x = stats::rnorm(20))\nfit <- stats::lm(y ~ x, data = d)\nanswer <- class(stats::anova(fit))[1]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Extract the first class string from the ANOVA table."
+    },
+    {
+      "id": "M-21-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rowMeans(M)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "M <- matrix(c(2, 4, 3, 5, 1, 5, 2, 4, 3, 3, 5, 2), nrow = 4, byrow = TRUE)"
+        },
+        {
+          "kind": "variation",
+          "code": "M <- rbind(c(1, 2, 2), c(4, 2, 3), c(5, 4, 3), c(4, 4, 5))"
+        },
+        {
+          "kind": "variation",
+          "code": "M <- rbind(c(5, 3, 1), c(2, 1, 3), c(3, 5, 2), c(4, 5, 5))"
+        },
+        {
+          "kind": "edge",
+          "code": "M <- matrix(3, nrow = 4, ncol = 3)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Each row represents one participant."
+    },
+    {
+      "id": "M-21-011",
+      "status": "computed",
+      "r_code": "district_share <- c(0.40, 0.35, 0.25)\nfast_response <- c(0.60, 0.45, 0.70)\nanswer <- sum(district_share * fast_response)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Weight each district's response probability by its share of calls."
+    },
+    {
+      "id": "M-21-012",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The described slopes have opposite signs, so the direction of the temperature effect depends on draw rate."
+    },
+    {
+      "id": "M-21-013",
+      "status": "computed",
+      "r_code": "true_negative <- 85\nfalse_positive <- 15\nfalse_negative <- 25\ntrue_positive <- 75\nvalue <- true_positive / (true_positive + false_negative)\nspecificity <- true_negative / (true_negative + false_positive)\naccuracy <- (true_positive + true_negative) / sum(true_negative, false_positive, false_negative, true_positive)\nppv <- true_positive / (true_positive + false_positive)\nfalse_discovery_rate <- 1 - ppv\nprevalence <- c(0.2, 0.5)\nnew_ppv <- value * prevalence / (value * prevalence + (1 - specificity) * (1 - prevalence))\nsupported <- c(A = round(value, 2) == 0.75, B = round(accuracy, 2) == 0.80 && all(round(new_ppv, 2) == 0.80), C = round(specificity, 2) == 0.85 && round(ppv, 2) == 0.85, D = round(false_discovery_rate, 2) == 0.25 && round(1 - value, 2) == 0.25)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Sensitivity is the fraction of actual positives that the classifier predicts as positive."
+    },
+    {
+      "id": "M-21-014",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "x[order(nchar(x), x)]",
+      "test_inputs": [
+        {
+          "kind": "variation",
+          "code": "x <- c(\"pear\", \"fig\", \"apple\", \"plum\", \"kiwi\")"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(\"tram\", \"bus\", \"rail\", \"cab\", \"bike\", \"car\")"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(\"delta\", \"a\", \"sun\", \"be\", \"cat\", \"at\", \"z\")"
+        },
+        {
+          "kind": "edge",
+          "code": "x <- c(\"b\", \"\", \"a\", \"a\", \"\")"
+        }
+      ],
+      "correct_options": [],
+      "note": "Sort by character count first and use R's character ordering to break ties."
+    },
+    {
+      "id": "M-21-015",
+      "status": "computed",
+      "r_code": "x <- c(10, 20, 30, 40, 50)\ng <- factor(c(\"A\", \"A\", \"B\", \"B\", \"B\"))\nanswer <- unname(tapply(x, g, mean)[\"B\"])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the group means and extract the result labeled B."
+    },
+    {
+      "id": "M-21-016",
+      "status": "computed",
+      "r_code": "p_null <- 0.45\np_alternative <- 0.60\nalpha <- 0.05\npower <- 0.90\nz_alpha <- stats::qnorm(1 - alpha)\nz_power <- stats::qnorm(power)\nrequired_n <- (z_alpha * sqrt(p_null * (1 - p_null)) + z_power * sqrt(p_alternative * (1 - p_alternative)))^2 / (p_alternative - p_null)^2\nanswer <- ceiling(required_n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the supplied normal approximation and take the smallest integer that meets the sample size requirement."
+    },
+    {
+      "id": "M-21-017",
+      "status": "computed",
+      "r_code": "population_sd <- 14\nn <- 20\nanswer <- population_sd / sqrt(n)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the population standard deviation by the square root of the sample size."
+    },
+    {
+      "id": "M-21-018",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Intention-to-treat analysis keeps participants in their assigned group, preserving the original randomization."
+    },
+    {
+      "id": "M-21-019",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "diff(x)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "x <- c(10, 4, 9, 2)"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(1.5, 2.25, 1.75, 3, 4.5)"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(-4, -1, 0, -2, 5, 5)"
+        },
+        {
+          "kind": "edge",
+          "code": "x <- c(7)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Subtract each element from the element immediately after it."
+    },
+    {
+      "id": "M-21-020",
+      "status": "computed",
+      "r_code": "coefficient <- 0.22314\nvalue <- exp(coefficient)\noptions <- c(A = 0.2231, B = 0.798, C = 1.25, D = 1.223)\nanswer <- names(options)[which.min(abs(options - value))]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Exponentiate the device coefficient and match the result to the numerical options."
+    },
+    {
+      "id": "M-21-021",
+      "status": "computed",
+      "r_code": "coefficient <- 0.45\nstandard_error <- 0.12\nupper_log_odds_ratio <- coefficient + stats::qnorm(0.975) * standard_error\nanswer <- exp(upper_log_odds_ratio)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Exponentiate the upper Wald bound from the log-odds scale."
+    },
+    {
+      "id": "M-21-022",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The theorem gives a normal limit for the centered estimator scaled by the square root of the sample size."
+    },
+    {
+      "id": "M-21-023",
+      "status": "computed",
+      "r_code": "fragment <- \"mean(c(2, 4, 6\"\ncharacters <- strsplit(fragment, \"\", fixed = TRUE)[[1L]]\nunclosed <- sum(characters == \"(\") - sum(characters == \")\")\nanswer <- paste0(fragment, strrep(\")\", unclosed))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Close both unmatched opening parentheses to complete the line."
+    },
+    {
+      "id": "M-21-024",
+      "status": "computed",
+      "r_code": "vehicle_age <- 5\nexposure <- 3\nlinear_predictor <- -4.10 + 0.08 * vehicle_age - 0.30 - 0.01 * vehicle_age + log(exposure)\nanswer <- exp(linear_predictor)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Include the Rural main effect, its interaction with age, and the log exposure offset before applying the inverse link."
+    },
+    {
+      "id": "M-21-025",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "solve(matrix(c(32, 18, 24, 28), nrow = 2, byrow = TRUE))",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "invisible(matrix(c(32, 18, 24, 28), nrow = 2, byrow = TRUE))"
+        }
+      ],
+      "correct_options": [],
+      "note": "The matrix entries are fixed and the expression constructs the matrix directly."
+    },
+    {
+      "id": "M-21-026",
+      "status": "computed",
+      "r_code": "counts <- rbind(A = c(10, 20), B = c(30, 10), C = c(25, 25))\nyes_by_group <- counts[, 1] / rowSums(counts)\nvalue <- unname(yes_by_group[\"B\"])\noverall_yes <- sum(counts[, 1]) / sum(counts)\nsupported <- c(A = value == 0.75, B = overall_yes == 0.50, C = unname(yes_by_group[\"A\"] == yes_by_group[\"C\"]), D = sum(counts) == 100)\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Use the group B row total as the denominator for its conditional Yes proportion."
+    },
+    {
+      "id": "M-21-027",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "For a single added predictor, adjusted R-squared increases exactly when the partial F statistic, which equals the squared t statistic, exceeds one."
+    },
+    {
+      "id": "M-21-028",
+      "status": "computed",
+      "r_code": "counts <- c(2, 4, 3, 5, 2, 6, 3, 5)\nanswer <- mean(counts)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The Poisson maximum likelihood estimate is the sample mean."
+    },
+    {
+      "id": "M-21-029",
+      "status": "computed",
+      "r_code": "delays <- c(14, 52, 9, 28, 17, 61, 35, 22, 30, 7)\npositions <- order(delays, decreasing = TRUE)\nanswer <- delays[positions[3]]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the third index in descending order to retrieve the third-largest delay."
+    },
+    {
+      "id": "M-21-030",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "unique(df)",
+      "test_inputs": [
+        {
+          "kind": "variation",
+          "code": "df <- data.frame(site = c(\"North\", \"South\", \"North\", \"North\"), count = c(12, 8, 12, 9))"
+        },
+        {
+          "kind": "variation",
+          "code": "df <- data.frame(batch = factor(c(\"A\", \"A\", \"B\", \"A\", \"B\")), passed = c(TRUE, FALSE, TRUE, TRUE, TRUE))"
+        },
+        {
+          "kind": "variation",
+          "code": "df <- data.frame(day = c(1L, 2L, 3L, 3L), shift = c(\"am\", \"am\", \"pm\", \"pm\"), hours = c(4, 4, 6, 6))"
+        },
+        {
+          "kind": "edge",
+          "code": "df <- data.frame(id = integer(0), label = character(0))"
+        }
+      ],
+      "correct_options": [],
+      "note": "The data frame method retains the first occurrence of every distinct full row."
+    },
+    {
+      "id": "M-21-031",
+      "status": "computed",
+      "r_code": "estimate <- 0.85\nstandard_error <- 0.12\nanswer <- estimate + 1.96 * standard_error",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Add the stated Wald margin of error to the slope estimate."
+    },
+    {
+      "id": "M-21-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Between-group covariance can outweigh the within-group covariance and reverse the pooled correlation."
+    },
+    {
+      "id": "M-21-033",
+      "status": "computed",
+      "r_code": "t_statistic <- 2.132\ndf <- 6\nreported_p <- 0.07700\nvalue <- 2 * stats::pt(abs(t_statistic), df = df, lower.tail = FALSE)\nanswer <- if (abs(value - reported_p) < 0.0005) \"D\" else character(0)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Double the upper-tail probability at the absolute t statistic, allowing for the precision of the displayed output."
+    },
+    {
+      "id": "M-21-034",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(occ > mean(occ, trim = 0.10, na.rm = TRUE), na.rm = TRUE)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "occ <- c(0.82, 0.91, NA, 0.76, 0.88, 0.94, 0.79, 0.85, NA, 0.90, 0.83, 0.85)"
+        },
+        {
+          "kind": "variation",
+          "code": "occ <- c(0.96, 0.71, 0.80, NA, 0.92, 0.68, 0.82, 0.85, 0.77, 0.90, 0.75, 0.83, 0.89, 0.94, 0.81)"
+        },
+        {
+          "kind": "variation",
+          "code": "occ <- c(0.55, 0.64, NA, 0.82, 0.86, 0.97, 0.92, NA, 0.62, 0.58)"
+        },
+        {
+          "kind": "edge",
+          "code": "occ <- c(rep(0.80, 10), NA_real_)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Exclude missing rates when computing the trimmed mean and when averaging the strict comparison."
+    },
+    {
+      "id": "M-21-035",
+      "status": "computed",
+      "r_code": "life <- c(12.5, 8.2, 15.1, 9.7)\nidx <- which(life > 14)\nanswer <- life[idx]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the index returned by which to retrieve the battery life above 14 hours."
+    },
+    {
+      "id": "M-21-036",
+      "status": "computed",
+      "r_code": "rate_x <- 1\nrate_y <- 4\ncutoff <- log(3)\ncombined_rate <- rate_x + rate_y\nanswer <- (rate_x / combined_rate) * stats::pexp(cutoff, rate = combined_rate)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Independence gives an integrand equal to the density of X times the survival probability of Y, integrated up to log(3)."
+    },
+    {
+      "id": "M-21-037",
+      "status": "computed",
+      "r_code": "coefficient <- 0.40\nstandard_error <- 0.10\nanswer <- exp(coefficient - 1.96 * standard_error)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Exponentiate the lower log-odds bound using the specified critical value."
+    },
+    {
+      "id": "M-21-038",
+      "status": "computed",
+      "r_code": "interval <- c(0.8, 2.1)\nnull_mean <- 0\nvalue <- null_mean < interval[1] || null_mean > interval[2]\nanswer <- if (value) \"A\" else character(0)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The 95% confidence interval excludes zero, so the corresponding two-sided test rejects at the 5% level."
+    },
+    {
+      "id": "M-21-039",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sum(m %in% \"flashcards\")",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "m <- factor(c('flashcards', 'reading', 'flashcards', 'group'))"
+        },
+        {
+          "kind": "variation",
+          "code": "m <- factor(c('reading', 'flashcards', 'group', 'reading'))"
+        },
+        {
+          "kind": "variation",
+          "code": "m <- factor(c('flashcards', 'flashcards', 'group', 'flashcards'))"
+        },
+        {
+          "kind": "edge",
+          "code": "m <- factor(c('group', 'reading', 'group', 'reading'))"
+        }
+      ],
+      "correct_options": [],
+      "note": "Count exact matches to the flashcards label, including the case where no student chooses it."
+    },
+    {
+      "id": "M-21-040",
+      "status": "computed",
+      "r_code": "difference_interval <- c(0.15, 3.85)\nvalue <- all(difference_interval > 0)\nanswer <- if (value) \"B\" else character(0)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The confidence interval for old-route time minus new-route time lies entirely above zero."
+    },
+    {
+      "id": "M-21-041",
+      "status": "computed",
+      "r_code": "n <- 21\nconfidence <- 0.98\nanswer <- stats::qt((1 + confidence) / 2, df = n - 1)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the 99th percentile of the t distribution with 20 degrees of freedom."
+    },
+    {
+      "id": "M-21-042",
+      "status": "computed",
+      "r_code": "x <- c(7, 14, 21, 28, 35, 42)\nanswer <- rev(x)[4]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Reverse the vector before selecting its fourth element."
+    },
+    {
+      "id": "M-21-043",
+      "status": "computed",
+      "r_code": "n <- 15\npossible_counts <- 0:n\nnull_p_values <- 2 * stats::pbinom(pmin(possible_counts, n - possible_counts), size = n, prob = 0.5)\nrejection_counts <- possible_counts[null_p_values <= 0.05]\nanswer <- sum(stats::dbinom(rejection_counts, size = n, prob = 0.65))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Find the counts that reject under the symmetric null and sum their probabilities under the alternative."
+    },
+    {
+      "id": "M-21-044",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "tryCatch(solve(M), error = function(e) 0)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "M <- matrix(c(1, 2, 2, 4), nrow = 2)"
+        },
+        {
+          "kind": "variation",
+          "code": "M <- matrix(c(4, 1, 2, 3), nrow = 2, byrow = TRUE)"
+        },
+        {
+          "kind": "variation",
+          "code": "M <- matrix(c(0, 2, -3, 1), nrow = 2, byrow = TRUE)"
+        },
+        {
+          "kind": "edge",
+          "code": "M <- matrix(0, nrow = 2, ncol = 2)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Return the inverse when solve succeeds and the numeric value zero when it raises an error."
+    },
+    {
+      "id": "M-21-045",
+      "status": "computed",
+      "r_code": "value <- 0.468803\nalpha <- 0.05\nanswer <- if (value >= alpha) \"D\" else character(0)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The interaction p-value exceeds 0.05, supporting the intended interpretation of the main effects."
+    },
+    {
+      "id": "M-21-046",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "At fixed confidence, the asymptotic width is proportional to the inverse square root of sample size times per-observation Fisher information, with both factors under the square root."
+    },
+    {
+      "id": "M-21-047",
+      "status": "computed",
+      "r_code": "expected <- c(30, 40, 30)\nobserved <- c(35, 40, 25)\nanswer <- sum((observed - expected)^2 / expected)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Sum the squared observed-minus-expected differences divided by the expected counts."
+    },
+    {
+      "id": "M-21-048",
+      "status": "computed",
+      "r_code": "vals <- c(1.2, 3.4, -0.5, 2.1, 0.8, 4.5, -1.2, 1.9, 3.0, 0.2, 2.7, -0.8, 1.5, 3.3, 0.6)\nmake_counter <- function(data) {\n  threshold <- mean(data)\n  count <- 0\n  function(x) {\n    if (x > threshold) count <<- count + 1\n    count\n  }\n}\ncounter <- make_counter(vals)\ncounts <- sapply(vals, counter)\nanswer <- counts[length(counts)] / length(vals)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the closure's final cumulative count by the number of values."
+    },
+    {
+      "id": "M-21-049",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ n <- 1L; while (n <= 20L) n <- n * 2L; n }",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "invisible(NULL)"
+        }
+      ],
+      "correct_options": [],
+      "note": "The expression initializes its own state and uses only fixed constants, so a single evaluation needs no setup."
+    },
+    {
+      "id": "M-21-050",
+      "status": "computed",
+      "r_code": "n <- 12\nsample_mean <- 458.5\nsample_sd <- 15.2\nnull_mean <- 450\nt_statistic <- (sample_mean - null_mean) / (sample_sd / sqrt(n))\nanswer <- stats::pt(t_statistic, df = n - 1, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the upper tail of the t distribution because the alternative specifies a mean above 450 MPa."
+    }
+  ]
+}

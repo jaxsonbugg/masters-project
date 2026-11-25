@@ -1,0 +1,503 @@
+{
+  "answers": [
+    {
+      "id": "M-07-001",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sum(table(x) == 3L)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- factor(c(\"A\", \"B\", \"A\", \"C\", \"B\", \"A\", \"C\", \"C\"))"},
+        {"kind": "variation", "code": "x <- factor(c(\"low\", \"high\", \"low\", \"medium\", \"low\", \"high\"))"},
+        {"kind": "variation", "code": "x <- factor(rep(c(\"north\", \"south\", \"east\", \"west\"), c(4, 3, 2, 3)))"},
+        {"kind": "edge", "code": "x <- factor(rep(\"A\", 3), levels = c(\"A\", \"B\", \"C\"))"}
+      ],
+      "correct_options": [],
+      "note": "Tabulate the factor levels and count those with frequency three."
+    },
+    {
+      "id": "M-07-002",
+      "status": "computed",
+      "r_code": "p <- 0.001592\nvalue <- p < 0.05\nanswer <- if (value) \"B\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The reported p-value is below the 5 percent significance level."
+    },
+    {
+      "id": "M-07-003",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "This asks for the theoretical effect of differencing a unit-root process with stationary noise."
+    },
+    {
+      "id": "M-07-004",
+      "status": "computed",
+      "r_code": "answer <- 70 + 55 - 15",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the overlap once to count each day once."
+    },
+    {
+      "id": "M-07-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "M[upper.tri(M)]",
+      "test_inputs": [
+        {"kind": "question_data", "code": "M <- matrix(c(10, 20, 30, 40, 50, 60, 70, 80, 90), nrow = 3)"},
+        {"kind": "variation", "code": "M <- matrix(c(1, -2, 3, 4, 0, -6, 7, 8, 9), nrow = 3)"},
+        {"kind": "variation", "code": "set.seed(32)\nM <- matrix(stats::rnorm(9), nrow = 3)"},
+        {"kind": "edge", "code": "M <- diag(c(2, 4, 6))"}
+      ],
+      "correct_options": [],
+      "note": "Logical matrix indexing selects entries strictly above the diagonal in column order."
+    },
+    {
+      "id": "M-07-006",
+      "status": "computed",
+      "r_code": "x <- c(2, 5, 8, 10, 13)\nf <- c(1, 3, 6, 4, 2)\nanswer <- sum(x * f) / sum(f)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the frequency-weighted sum by the total frequency."
+    },
+    {
+      "id": "M-07-007",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The question asks how linear and monotonic association differ."
+    },
+    {
+      "id": "M-07-008",
+      "status": "computed",
+      "r_code": "threshold <- seq(10, 70, by = 10) / 100\nsensitivity <- c(0.96, 0.89, 0.82, 0.74, 0.62, 0.52, 0.41)\nspecificity <- c(0.18, 0.41, 0.57, 0.72, 0.81, 0.88, 0.93)\ndistance <- abs(sensitivity - (1 - specificity)) / sqrt(2)\nvalue <- threshold[which.max(distance)]\nanswer <- LETTERS[match(value, c(0.40, 0.50, 0.30, 0.60))]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Maximize the perpendicular distance from each ROC point to the diagonal."
+    },
+    {
+      "id": "M-07-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::reshape(w, direction = \"long\", idvar = \"id\", timevar = \"time\", varying = 2:4, sep = \"\")",
+      "test_inputs": [
+        {"kind": "question_data", "code": "w <- data.frame(id = 1:2, y1 = c(10, 20), y2 = c(15, 25), y3 = c(12, 22))"},
+        {"kind": "variation", "code": "w <- data.frame(id = c(21, 33, 54), y1 = c(4, 6, 8), y2 = c(5, 8, 9), y3 = c(7, 7, 10))"},
+        {"kind": "variation", "code": "w <- data.frame(id = 6:9, y1 = c(2.4, 3.5, 1.8, 5.0), y2 = c(2.1, 3.8, 2.0, 4.4), y3 = c(2.3, 3.7, 1.9, 4.1))"},
+        {"kind": "edge", "code": "w <- data.frame(id = 9L, y1 = 0, y2 = 0, y3 = 0)"}
+      ],
+      "correct_options": [],
+      "note": "The empty separator lets reshape infer the outcome name and time values from the column names."
+    },
+    {
+      "id": "M-07-010",
+      "status": "computed",
+      "r_code": "m <- matrix(c(6, 12, 3, 9, 8, 16), nrow = 2)\ncol_sds <- apply(m, 2, stats::sd)\nanswer <- mean(col_sds)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Average the three column sample standard deviations."
+    },
+    {
+      "id": "M-07-011",
+      "status": "computed",
+      "r_code": "model_ss <- 12750\nresidual_ss <- 4350\nanswer <- model_ss / (model_ss + residual_ss)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the model sum of squares by the total sum of squares."
+    },
+    {
+      "id": "M-07-012",
+      "status": "computed",
+      "r_code": "answer <- stats::dgeom(3, prob = 0.20)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The geometric probability counts three customers without a coupon before the first coupon user."
+    },
+    {
+      "id": "M-07-013",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Exchangeability is invariance of the joint distribution under the specified label permutations."
+    },
+    {
+      "id": "M-07-014",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::predict(fit, newdata = data.frame(x = 3), type = \"response\")",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- 1:5\ny <- c(0, 0, 1, 1, 1)\nd <- data.frame(x, y)\nfit <- stats::glm(y ~ x, data = d, family = stats::binomial)"},
+        {"kind": "variation", "code": "x <- 1:7\ny <- c(0, 1, 0, 1, 0, 1, 1)\nd <- data.frame(x, y)\nfit <- stats::glm(y ~ x, data = d, family = stats::binomial)"},
+        {"kind": "variation", "code": "x <- c(1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)\ny <- c(1, 0, 1, 0, 0, 1, 0, 1)\nd <- data.frame(x, y)\nfit <- stats::glm(y ~ x, data = d, family = stats::binomial)"},
+        {"kind": "edge", "code": "x <- c(0, 0, 6, 6)\ny <- c(0, 1, 0, 1)\nd <- data.frame(x, y)\nfit <- stats::glm(y ~ x, data = d, family = stats::binomial)"}
+      ],
+      "correct_options": [],
+      "note": "Predict at x equal to three on the probability scale."
+    },
+    {
+      "id": "M-07-015",
+      "status": "computed",
+      "r_code": "p <- 1.22e-5\nvalue <- p < 0.05\nanswer <- if (value) \"C\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The reported p-value supports adding the quadratic term."
+    },
+    {
+      "id": "M-07-016",
+      "status": "computed",
+      "r_code": "auxiliary_r_squared <- 0.72\nanswer <- 1 / (1 - auxiliary_r_squared)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Take the reciprocal of the unexplained proportion in the auxiliary regression."
+    },
+    {
+      "id": "M-07-017",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Randomization within strips allows fertilizer comparisons while accounting for the soil gradient."
+    },
+    {
+      "id": "M-07-018",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The question asks for a source-code edit, which is to replace the final line with `return(v)`."
+    },
+    {
+      "id": "M-07-019",
+      "status": "computed",
+      "r_code": "lambda <- 5000 * c(0.0015, 0.0020)\nlog_likelihood <- stats::dpois(7, lambda = lambda, log = TRUE)\nanswer <- exp(log_likelihood[1] - log_likelihood[2])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Exponentiate the difference between the two Poisson log-likelihoods."
+    },
+    {
+      "id": "M-07-020",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "paste0(camp, \": \", 100 * ctr, \"%\", recycle0 = TRUE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "camp <- c(\"spring_email\", \"summer_web\")\nctr <- c(0.045, 0.072)"},
+        {"kind": "variation", "code": "camp <- c(\"newsletter\", \"search\", \"referral\")\nctr <- c(0.018, 0.064, 0.12)"},
+        {"kind": "variation", "code": "camp <- c(\"display\", \"social\")\nctr <- c(0.0055, 0.03125)"},
+        {"kind": "edge", "code": "camp <- \"no_clicks\"\nctr <- 0"}
+      ],
+      "correct_options": [],
+      "note": "Convert rates to percentages and attach each percentage to its campaign label."
+    },
+    {
+      "id": "M-07-021",
+      "status": "computed",
+      "r_code": "standardized <- c(Distance = 1.066667, Weight = 0.333333)\nvalue <- names(standardized)[which.max(abs(standardized))]\nanswer <- c(Distance = \"A\", Weight = \"B\")[[value]]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Compare the magnitudes of the standardized slope estimates."
+    },
+    {
+      "id": "M-07-022",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Mutual exclusivity makes the joint success probability zero, so the indicator covariance is the negative product of the marginal probabilities."
+    },
+    {
+      "id": "M-07-023",
+      "status": "computed",
+      "r_code": "standard_error <- sqrt(2^2 / 16 + 3^2 / 25)\nanswer <- (12.5 - 10.0) - 1.96 * standard_error",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the normal-theory margin of error from the difference in sample means."
+    },
+    {
+      "id": "M-07-024",
+      "status": "computed",
+      "r_code": "x <- c(3, 3, 7, 10, 10, 10, 15, 20)\nanswer <- stats::sd(rank(x))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Rank the values with average ranks for ties and compute their sample standard deviation."
+    },
+    {
+      "id": "M-07-025",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "lapply(L, sum)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "L <- list(a = c(2, 4, 6), b = c(10, 20), c = c(5, 5))"},
+        {"kind": "variation", "code": "L <- list(monday = c(3.5, 2.5, 1), tuesday = c(7, 4))"},
+        {"kind": "variation", "code": "L <- list(gain = c(4, 8), loss = c(-1, -3, -2), net = c(4, -4), extra = 6)"},
+        {"kind": "edge", "code": "L <- list(empty = numeric(0), single = 0)"}
+      ],
+      "correct_options": [],
+      "note": "Apply sum to every list component while preserving the list structure."
+    },
+    {
+      "id": "M-07-026",
+      "status": "computed",
+      "r_code": "estimates <- c(2.1, 1.8, 2.3, 1.9, 2.0, 2.2, 1.7, 2.1)\nanswer <- stats::sd(estimates)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the sample standard deviation of the bootstrap estimates."
+    },
+    {
+      "id": "M-07-027",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The observed increase points away from the lower-tail rejection region at conventional significance levels."
+    },
+    {
+      "id": "M-07-028",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The score test uses the likelihood gradient evaluated at the restricted estimate."
+    },
+    {
+      "id": "M-07-029",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(seq(0.2, 0.8, length.out = 7), times = c(1, 3, 6, 10, 6, 3, 1))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "One test suffices because the grid and counts are fixed literals in the expression."
+    },
+    {
+      "id": "M-07-030",
+      "status": "computed",
+      "r_code": "times <- c(first = 1.2, second = 1.5, third = 1.3, fourth = 1.4)\nanswer <- mean(times[c(\"first\", \"third\")])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Select the first and third measurements by name and average them."
+    },
+    {
+      "id": "M-07-031",
+      "status": "computed",
+      "r_code": "n <- 30\nalpha <- 2.4\nbeta <- 7.2\nconcentration <- alpha + beta\nmean_p <- alpha / concentration\nanswer <- n * mean_p * (1 - mean_p) * (concentration + n) / (concentration + 1)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the beta-binomial variance to account for variation in clinic probabilities."
+    },
+    {
+      "id": "M-07-032",
+      "status": "computed",
+      "r_code": "pH <- 5.2\nAw <- 0.65\nanswer <- 20 - 3.5 * pH + 12.0 * Aw",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Substitute the two predictor values into the fitted equation."
+    },
+    {
+      "id": "M-07-033",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Restricting sampling to lakes with paved access can bias the estimate if oxygen levels vary with access."
+    },
+    {
+      "id": "M-07-034",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "which.max(x)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(12, 7, 19, 4, 19, 2)"},
+        {"kind": "variation", "code": "x <- c(-4.2, -0.8, -1.5, -2)"},
+        {"kind": "variation", "code": "x <- c(1.2, 3.4, 3.1, 6.5, 9.2)"},
+        {"kind": "edge", "code": "x <- 0"}
+      ],
+      "correct_options": [],
+      "note": "The maximum-index function returns the first position when values tie."
+    },
+    {
+      "id": "M-07-035",
+      "status": "computed",
+      "r_code": "p <- 0.52\nvalue <- p < 0.05\nanswer <- if (!value) \"B\" else \"A\"",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Using the conventional 5 percent level, the test provides insufficient evidence against normality."
+    },
+    {
+      "id": "M-07-036",
+      "status": "computed",
+      "r_code": "critical_value <- stats::qnorm(0.975)\nanswer <- ceiling((critical_value * 2.8 / 0.9)^2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Solve the normal margin-of-error formula for sample size and round up."
+    },
+    {
+      "id": "M-07-037",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Subtracting the previous level from the random walk leaves the white-noise innovation."
+    },
+    {
+      "id": "M-07-038",
+      "status": "computed",
+      "r_code": "answer <- cumprod(c(2, 3, 4))[3]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Extract the third cumulative product."
+    },
+    {
+      "id": "M-07-039",
+      "status": "computed",
+      "r_code": "x <- c(3.2, 2.8, 3.5, 3.1, 2.4)\nprior_precision <- 1 / 10\nsample_precision <- length(x) / 2.5\nanswer <- (prior_precision * 10 + sample_precision * mean(x)) / (prior_precision + sample_precision)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Average the prior mean and sample mean using their precisions as weights."
+    },
+    {
+      "id": "M-07-040",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ set.seed(99); sample(c(50, 20, 60, 10)) }",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "One test suffices because the expression fixes both the seed and the vector to shuffle."
+    },
+    {
+      "id": "M-07-041",
+      "status": "computed",
+      "r_code": "residual_summary <- c(Min = -3.2150, Q1 = -0.8420, Median = 0.1050, Q3 = 1.0240, Max = 4.1030)\nvalue <- residual_summary[c(\"Median\", \"Min\", \"Max\")]\nanswer <- if (all(value == c(0.1050, -3.2150, 4.1030))) \"D\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The labeled summary gives the residual median and range directly."
+    },
+    {
+      "id": "M-07-042",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "At the population level, a zero coefficient for Z makes the conditional outcome probability depend on X alone."
+    },
+    {
+      "id": "M-07-043",
+      "status": "computed",
+      "r_code": "restricted <- -124.50\nfull <- -118.30\nanswer <- 2 * (full - restricted)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Double the increase in log-likelihood from the restricted model to the full model."
+    },
+    {
+      "id": "M-07-044",
+      "status": "computed",
+      "r_code": "set.seed(10)\nm <- replicate(500, mean(stats::rpois(1000, lambda = 4.2)))\nanswer <- mean(m)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Reproduce the seeded Poisson simulation and average the replicate means."
+    },
+    {
+      "id": "M-07-045",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "merge(p, q, by = \"id\", all.x = TRUE)",
+      "test_inputs": [
+        {"kind": "variation", "code": "p <- data.frame(id = 1:3, order_total = c(10, 40, 20))\nq <- data.frame(id = c(2L, 3L, 4L), region = c(\"East\", \"West\", \"South\"))"},
+        {"kind": "variation", "code": "p <- data.frame(id = c(\"b\", \"a\", \"c\"), score = c(8, 4, 5), batch = c(1L, 1L, 2L))\nq <- data.frame(id = c(\"b\", \"c\"), batch = c(3L, 2L), passed = c(TRUE, FALSE))"},
+        {"kind": "variation", "code": "p <- data.frame(id = c(50, 100, 150), height = c(1.6, 1.8, 1.7))\nq <- data.frame(id = c(50, 100, 150), weight = c(55, 78, 66))"},
+        {"kind": "edge", "code": "p <- data.frame(id = c(1L, 2L), qty = c(3L, 5L))\nq <- data.frame(id = c(1L, 1L), flag = c(TRUE, FALSE))"}
+      ],
+      "correct_options": [],
+      "note": "The join retains all rows from p using id as the key."
+    },
+    {
+      "id": "M-07-046",
+      "status": "computed",
+      "r_code": "numerator <- stats::dbinom(3, size = 10, prob = 0.3)\ndenominator <- stats::pbinom(1, size = 10, prob = 0.3, lower.tail = FALSE)\nanswer <- numerator / denominator",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the probability of exactly three recalls by the probability of at least two."
+    },
+    {
+      "id": "M-07-047",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The confidence level describes the procedure's long-run coverage across repeated samples."
+    },
+    {
+      "id": "M-07-048",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The question asks for the interpretation of the reported upper-tail probability under the null hypothesis."
+    },
+    {
+      "id": "M-07-049",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.data.frame(do.call(rbind, lapply(L, function(run) run[c(\"mu\", \"sigma\", \"tau\")])))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "L <- list(s1 = c(mu = 1.0, sigma = 0.5, tau = 2.0), s2 = c(mu = 1.1, sigma = 0.6, tau = 2.1), s3 = c(mu = 1.2, sigma = 0.7, tau = 2.2), s4 = c(mu = 1.3, sigma = 0.8, tau = 2.3))"},
+        {"kind": "variation", "code": "L <- list(run1 = c(mu = -0.5, sigma = 1.2, tau = 0.7), run2 = c(mu = 0.2, sigma = 0.9, tau = 0.5))"},
+        {"kind": "variation", "code": "L <- list(s1 = c(mu = 2, sigma = 1, tau = 1.5), s2 = c(tau = 2.6, mu = 3, sigma = 1.4), s3 = c(sigma = 0.8, tau = 2.4, mu = 3.2))"},
+        {"kind": "edge", "code": "L <- list(single = c(mu = 0, sigma = 0.25, tau = 3))"}
+      ],
+      "correct_options": [],
+      "note": "Align each run by parameter name, bind the runs as rows, and convert the result to a data frame."
+    },
+    {
+      "id": "M-07-050",
+      "status": "computed",
+      "r_code": "methods <- factor(c('lecture', 'tutorial', 'lab'), levels = c('lecture', 'tutorial', 'lab'))\nanswer <- paste(utils::capture.output(print(levels(stats::relevel(methods, 'tutorial')))), collapse = \"\\n\")",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Relevel the factor and capture the printed ordering of its levels."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+ "type": "object",
+ "properties": {
+  "answers": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "answer": {
+      "type": "string"
+     },
+     "correct_options": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+       ]
+      }
+     },
+     "working": {
+      "type": "string"
+     },
+     "confidence": {
+      "type": "string",
+      "enum": [
+       "high",
+       "medium",
+       "low"
+      ]
+     }
+    },
+    "required": [
+     "id",
+     "answer",
+     "correct_options",
+     "working",
+     "confidence"
+    ],
+    "additionalProperties": false
+   }
+  }
+ },
+ "required": [
+  "answers"
+ ],
+ "additionalProperties": false
+}

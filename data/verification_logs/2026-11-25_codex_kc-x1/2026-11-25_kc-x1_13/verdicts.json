@@ -1,0 +1,354 @@
+{
+  "answers": [
+    {
+      "id": "K-13-001",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Each interim test gives another opportunity to reject a true null. Using the same 0.05 cutoff at every look inflates the overall Type I error rate.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-002",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The hinge spread is 24.25 − 14.25 = 10.00, so the upper fence is 24.25 + 1.5 × 10.00 = 39.25.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-003",
+      "answer": "outer(rowSums(m), colSums(m)) / sum(m)",
+      "correct_options": [],
+      "working": "The outer product gives one entry per row and column combination. Dividing by the grand total preserves the matrix dimensions.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-004",
+      "answer": "0.325",
+      "correct_options": [],
+      "working": "Starting at 1.2, the update produces 0.7, then 0.45, then 0.325.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-005",
+      "answer": "0.707",
+      "correct_options": [],
+      "working": "The event W > 11 implies W > 8, so divide their survival probabilities. These are the probabilities of at most three successes in 11 and 8 trials, respectively, giving 0.5695623 / 0.8058957 ≈ 0.706745.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-006",
+      "answer": "1.018",
+      "correct_options": [],
+      "working": "The observed and fitted totals are both 17, so the linear terms cancel. The deviance is 2[10 ln(10/8) + 5 ln(5/6) + 2 ln(2/3)] ≈ 1.017795.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-007",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Stratified sampling draws units from every stratum. Cluster sampling selects a subset of clusters and observes some or all units in those clusters.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-008",
+      "answer": "lm(commute_time ~ traffic_volume * road_type, data = routes)",
+      "correct_options": [],
+      "working": "The formula operator `*` includes both main effects and their interaction.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-009",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "At a fixed temperature, increasing Length by 1 cm increases the fitted mean resistance by 0.200 ohms.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-010",
+      "answer": "19.591",
+      "correct_options": [],
+      "working": "For a two-sided 90% t interval, the upper endpoint is 18.5 + t(0.95, 41) × 4.2/√42. The critical value is about 1.68288.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-011",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The majority class accounts for 98% of observations, so predicting it every time gives 98% accuracy and zero sensitivity for the minority class.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-012",
+      "answer": "\"East\" \"West\"",
+      "correct_options": [],
+      "working": "Only the third and fourth entries exceed 0.75, so the expression returns their names in that order.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-013",
+      "answer": "-0.088",
+      "correct_options": [],
+      "working": "The adjacent products sum to −2 − 3 − 6 + 8 = −3, and the squared values sum to 34. The resulting ratio is −3/34.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-014",
+      "answer": "rep(seq(30, 40, by = 5), each = 7)",
+      "correct_options": [],
+      "working": "`seq()` generates the three weekly fees, and `each = 7` repeats each fee for seven consecutive days.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-015",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Of the 50 blades that actually failed, 42 were predicted to fail. Sensitivity is 42/50 = 0.84.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-016",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Quasi-Poisson specifies variance proportional to the mean without a full likelihood. Standard negative binomial regression provides a full likelihood with variance μ + μ²/θ.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-017",
+      "answer": "17",
+      "correct_options": [],
+      "working": "The pooled-variance test has (8 − 1) + (11 − 1) = 17 degrees of freedom.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-018",
+      "answer": "14.433",
+      "correct_options": [],
+      "working": "The median is 13.9, so the retained values are 14.2, 15.1, and 14.0. Their mean is 43.3/3.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-019",
+      "answer": "vapply(calls, function(x) x * 60, FUN.VALUE = numeric(1))",
+      "correct_options": [],
+      "working": "Each duration is multiplied by 60, and `numeric(1)` declares a single numeric result per call.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-020",
+      "answer": "0.091",
+      "correct_options": [],
+      "working": "The sample mean has standard error 18/√36 = 3. The upper-tail probability at z = (254 − 250)/3 is about 0.09121.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-021",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Consistency means convergence in probability to μ. Here the variance of the sample mean is σ²/n, so the probability of deviating by any fixed positive amount goes to zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-022",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The exact F reference distribution comes from the ratio of two independent scaled chi-squared variables, as obtained from sample variances under normality.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-023",
+      "answer": "as.Date(\"2020-01-31\") + c(0, 31, 62)",
+      "correct_options": [],
+      "working": "Adding numeric offsets to a Date advances it by the specified number of days.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-024",
+      "answer": "11.1",
+      "correct_options": [],
+      "working": "The four converted values sum to 44.4, so their mean is 44.4/4.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-025",
+      "answer": "80.04",
+      "correct_options": [],
+      "working": "For the third order statistic of five observations, F(M) follows a Beta(3, 3) distribution. Its 75th percentile is about 0.6405638, so applying the inverse CDF gives 100√0.6405638 ≈ 80.03523.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-026",
+      "answer": "0.655",
+      "correct_options": [],
+      "working": "The standardized value is (43.2 − 40)/8 = 0.4, whose standard normal cumulative probability is about 0.655422.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-027",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Under the null mean of 50, the p-value is the probability of observing a test statistic at least as extreme in the direction of the one-sided alternative.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-028",
+      "answer": "c(3, 8, 14, 21)[3:4]",
+      "correct_options": [],
+      "working": "The last two elements of the four-element vector are at indices 3 and 4.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-029",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The p-value of 0.1094 exceeds 0.05, and the reported 95% confidence interval contains the null value of 0.5.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-030",
+      "answer": "22.99",
+      "correct_options": [],
+      "working": "The variance terms are 16/10 = 1.6 and 36/15 = 2.4. The Welch formula gives (1.6 + 2.4)²/(1.6²/9 + 2.4²/14) ≈ 22.9927.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-031",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The variance of the sum includes twice the covariance. Positive correlation makes this term positive.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-032",
+      "answer": "5.5",
+      "correct_options": [],
+      "working": "The two scores of 8 occupy ranks 5 and 6. R assigns each their average rank of 5.5.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-033",
+      "answer": "3.451",
+      "correct_options": [],
+      "working": "The sample variance with divisor n − 1 is 144 × 36/35. The resulting standard error is 12/√35, giving t = 7√35/12 ≈ 3.45105.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-034",
+      "answer": "rbind(cbind(approval, spending), c(sum(approval), sum(spending)))",
+      "correct_options": [],
+      "working": "`cbind()` places the vectors in the requested column order, and `rbind()` appends their sums in the same order.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-035",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The residual deviance drops by 22.20 for two additional predictors. The reported p-value of 1.51 × 10⁻⁵ indicates a statistically significant improvement under the Poisson model.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-036",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Once the interval is fixed, it either contains the fixed parameter or it does not. The 0.95 is the coverage probability of the procedure across repeated samples.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-037",
+      "answer": "0.209",
+      "correct_options": [],
+      "working": "The 20 defects and 80 nondefects update the prior to Beta(23, 87). Its mean is 23/110.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-038",
+      "answer": "4",
+      "correct_options": [],
+      "working": "Five breakpoints define four intervals, so the factor has four levels.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-039",
+      "answer": "sort(x, decreasing = TRUE)",
+      "correct_options": [],
+      "working": "The `decreasing` argument puts the largest element first.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-040",
+      "answer": "0.284",
+      "correct_options": [],
+      "working": "The true-positive probability is 0.04 × 0.95 = 0.038, and the false-positive probability is 0.96 × 0.10 = 0.096. The conditional probability is 0.038/(0.038 + 0.096).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-041",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "A predictor that is highly correlated with another has a high R² when regressed on the other predictors. Its variance inflation factor, 1/(1 − R²), therefore increases.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-042",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The fitted partial derivative with respect to x is 3.200 + 0.500z. At z = 0 it equals 3.200.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-043",
+      "answer": "as.numeric(scale(x))",
+      "correct_options": [],
+      "working": "`scale()` computes the z-scores, and `as.numeric()` drops the dimensions and scaling attributes.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-044",
+      "answer": "11 22 13 24",
+      "correct_options": [],
+      "working": "R recycles the shorter vector to 10, 20, 10, 20 and then adds elementwise.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-045",
+      "answer": "2.672",
+      "correct_options": [],
+      "working": "The estimated odds ratio is (45 × 60)/(20 × 25) = 5.4, and its log-scale standard error is √(1/45 + 1/20 + 1/25 + 1/60) ≈ 0.359011. The lower bound is exp[ln(5.4) − 1.96 × 0.359011] ≈ 2.6718.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-046",
+      "answer": "0.321",
+      "correct_options": [],
+      "working": "There are 28 equally likely unordered pairs. The smaller elements 3, 4, 5, 6, and 7 contribute 1, 2, 3, 2, and 1 qualifying pairs, giving 9/28.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-047",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Always predicting repayment gives 95% accuracy and identifies zero defaults.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-048",
+      "answer": "model.matrix(mpg ~ wt, data = mtcars)",
+      "correct_options": [],
+      "working": "The formula generates a design matrix with an intercept column and a column for `wt`.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-049",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The Proportion of Variance row gives 0.5000 for PC1.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-13-050",
+      "answer": "8.024",
+      "correct_options": [],
+      "working": "Weighting each tier mean by its subscriber count gives (3.5 × 1200 + 7.2 × 3100 + 18.0 × 800)/5100 = 40920/5100 ≈ 8.023529.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,354 @@
+{
+  "answers": [
+    {
+      "id": "K-06-001",
+      "answer": "3.333",
+      "correct_options": [],
+      "working": "The error handler returns 10/3, which `cat()` prints.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-002",
+      "answer": "0.587",
+      "correct_options": [],
+      "working": "Let X and Y be the independent binomial defect counts from the first 100 and last 50 seals. Summing P(X = k)P(Y ≤ 5 − k) for k = 0 through 3 gives about 0.58743.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-003",
+      "answer": "246",
+      "correct_options": [],
+      "working": "The margin of error is 1.96 × 400/√n. Solving for n gives a lower bound of 245.8624, which rounds up to 246.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-004",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Independence implies zero correlation when correlation is defined. A nonlinear dependence can still yield zero correlation.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-005",
+      "answer": "c(alpha = 10, beta = 20, gamma = 30)",
+      "correct_options": [],
+      "working": "The argument names become the names of the numeric vector elements.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-006",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The label `3Q` denotes the 75th percentile of the residuals.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-007",
+      "answer": "104.076",
+      "correct_options": [],
+      "working": "Starting at 102, each update gives weight 0.3 to the new observation and 0.7 to the previous smoothed value. The fifth smoothed value is 104.07615, which forecasts run six.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-008",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The department wants evidence that the population mean is below 8, so the alternative is μ < 8 and the null is μ ≥ 8.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-009",
+      "answer": "Neutral",
+      "correct_options": [],
+      "working": "`factor()` sorts the distinct labels by default, placing Neutral first.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-010",
+      "answer": "0.953",
+      "correct_options": [],
+      "working": "The probability of selecting zero qualifying households is the product of choose(16, 2)/choose(20, 2), choose(21, 3)/choose(30, 3), and choose(35, 4)/choose(50, 4). Subtracting that product from 1 gives about 0.95296.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-011",
+      "answer": "cut(x, breaks = c(0, 7, 14, 20), labels = c(\"Low\", \"Med\", \"High\"), right = FALSE)",
+      "correct_options": [],
+      "working": "`right = FALSE` makes the first interval [0, 7), so 2 is assigned to Low.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-012",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The diagonal entries are variances, giving standard deviations of √9 = 3 for Machine B and √4 = 2 for Machine A.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-013",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Proportional stratification fixes each tract's representation and removes the between-tract contribution to sampling variance. Cluster sampling selects whole tracts, so positive within-tract correlation increases the variance relative to simple random sampling.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-014",
+      "answer": "0.850",
+      "correct_options": [],
+      "working": "R² = SSR/SST = 442/520 = 0.85.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-015",
+      "answer": "8.000",
+      "correct_options": [],
+      "working": "The interaction model fits a separate line through the two observations at each value of z. The observed point at x = 2 and z = 2 has y = 8, so the fitted value there is 8.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-016",
+      "answer": "cut(1:6, breaks = c(-Inf, 4.5, Inf), labels = c('low', 'high'))",
+      "correct_options": [],
+      "working": "The break at 4.5 places 1 through 4 in `low` and 5 through 6 in `high`.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-017",
+      "answer": "0.036",
+      "correct_options": [],
+      "working": "A normal observation with known mean supplies Fisher information 2/σ² for σ. The inverse of the total information is 1.75²/(2 × 42) ≈ 0.036458.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-018",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "As the sample grows, the likelihood typically concentrates around the true mean, reducing the influence of the fixed priors on the posterior.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-019",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The p-value of 0.00036 supports rejecting the joint null that both coefficients are zero at conventional significance levels.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-020",
+      "answer": "tryCatch(loglik_nb(-0.5, 2.3, c(1, 2, 0, 3)), error = function(e) -Inf)",
+      "correct_options": [],
+      "working": "The negative value of `theta` triggers the error handler, which returns `-Inf`.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-021",
+      "answer": "0.750",
+      "correct_options": [],
+      "working": "`as.numeric()` converts TRUE to 1 and FALSE to 0, so the mean is 3/4.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-022",
+      "answer": "0.808",
+      "correct_options": [],
+      "working": "The three counts sum to 6, giving a Beta-to-Alpha likelihood ratio of 2⁶ exp(−6). Applying the prior odds gives a posterior probability for Alpha of 1/[1 + (0.6/0.4) × 2⁶ exp(−6)] ≈ 0.8078.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-023",
+      "answer": "0.741",
+      "correct_options": [],
+      "working": "At μ = 1, a Type II error occurs when X ≤ 1.645. Standardizing gives Φ(0.645) ≈ 0.74054.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-024",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Maximum likelihood chooses the value of μ that maximizes the joint density evaluated at the observed recovery times.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-025",
+      "answer": "mean(time < 9)",
+      "correct_options": [],
+      "working": "The mean of the logical comparisons is the fraction that are TRUE.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-026",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "At the 5% significance level, p = 0.041 supports rejecting equality of the two sodium distributions.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-027",
+      "answer": "0.157",
+      "correct_options": [],
+      "working": "After the first draw, 10 large and 39 small claims remain. The probability of drawing exactly two of each is choose(10, 2) × choose(39, 2)/choose(49, 4) ≈ 0.15738.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-028",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The basic interval reflects the percentile interval about the observed T. When the bootstrap distribution is symmetric about T, reflection gives the same interval.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-029",
+      "answer": "3",
+      "correct_options": [],
+      "working": "The two values of 100 occupy positions 3 and 4 in ascending order. The minimum tie rule assigns both rank 3.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-030",
+      "answer": "0.419",
+      "correct_options": [],
+      "working": "The standard normal density at its 85th percentile is about 0.233159. Substituting gives 3√(0.85 × 0.15)/(√120 × 0.233159) ≈ 0.41941.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-031",
+      "answer": "sum((hours - mean(hours))^2) / (length(hours) - 1)",
+      "correct_options": [],
+      "working": "The sample variance divides the sum of squared deviations from the sample mean by n − 1.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-032",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The indicators for SupplierBeta and CatalystTypeY are identical, so their coefficients cannot be estimated separately.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-033",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The difference of sample means retains the same expectation while its standard error shrinks. For a fixed nonzero effect, the power of the usual test approaches one as sample size grows.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-034",
+      "answer": "68.32",
+      "correct_options": [],
+      "working": "Weighting by section size gives (10 × 65.2 + 15 × 70.4)/25 = 68.32.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-035",
+      "answer": "2.549",
+      "correct_options": [],
+      "working": "The words become missing values and are removed by `sd()`. The four remaining numbers have a squared deviation sum of 19.4875, giving a sample standard deviation of √(19.4875/3).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-036",
+      "answer": "mean(rbinom(10000, size = 5, prob = 0.4) >= 3)",
+      "correct_options": [],
+      "working": "Each binomial draw simulates the number of offspring inheriting the allele in one family. The logical mean estimates the fraction of families with at least three.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-037",
+      "answer": "1.25",
+      "correct_options": [],
+      "working": "The sample variances are 45/9 = 5 and 20/5 = 4. Their ratio is 5/4.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-038",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The variance of a linear combination with coefficient vector a is aᵀΣa, which is nonnegative by positive semidefiniteness.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-039",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The significant interaction indicates that the effect of teaching method varies with study hours. The main effects describe averages across levels of the other factor.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-040",
+      "answer": "apply(P, 1, function(pars) dbeta(0.6, shape1 = pars[1], shape2 = pars[2], log = TRUE))",
+      "correct_options": [],
+      "working": "`apply()` with margin 1 passes each row to `dbeta()`, which returns one log density at 0.6 per row.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-041",
+      "answer": "integer(0)",
+      "correct_options": [],
+      "working": "A requested sequence length of zero returns an empty integer vector.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-042",
+      "answer": "0.052",
+      "correct_options": [],
+      "working": "The two-sided p-value is `2 * pt(-1.960, df = 148)`, approximately 0.05188.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-043",
+      "answer": "-0.80",
+      "correct_options": [],
+      "working": "The mean is 14, so the four adjacent centered products sum to −96. The five squared deviations sum to 120, giving −96/120 = −0.80.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-044",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The Poisson variance assumption understates variability when the data are overdispersed. The resulting standard errors are too small, so tests reject true null hypotheses too often.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-045",
+      "answer": "grepl(\"data\", x, fixed = TRUE)",
+      "correct_options": [],
+      "working": "`grepl()` returns one logical value per element indicating whether it contains the literal substring `data`.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-046",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The Youden indices in table order are 0.25, 0.40, 0.50, and 0.35. The maximum occurs at 0.60.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-047",
+      "answer": "0.060",
+      "correct_options": [],
+      "working": "The first nine serves must contain exactly two aces, and the tenth must be an ace. The probability is choose(9, 2) × 0.2³ × 0.8⁷ ≈ 0.060398.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-048",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The observed correlation shows a negative association. Potential confounding prevents this correlation alone from establishing a causal effect.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-049",
+      "answer": "2",
+      "correct_options": [],
+      "working": "Only rows 2 and 5 have values present in all three columns.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-06-050",
+      "answer": "0.188",
+      "correct_options": [],
+      "working": "The log-likelihood has second derivative α/β² − 2t/β³. Using E[t] = αβ, its negative expectation is α/β² = 3/16 = 0.1875.",
+      "confidence": "high"
+    }
+  ]
+}

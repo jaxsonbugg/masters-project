@@ -1,0 +1,121 @@
+{
+  "answers": [
+    {
+      "id": "M-24-001",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(c(2, 5, 8), length.out = 14L)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The cycle and output length are fixed in the expression."
+    },
+    {
+      "id": "M-24-002",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.10 * stats::pnorm(8, mean = 12, sd = 4, lower.tail = FALSE), mean = 12, sd = 4, lower.tail = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The threshold leaves 10% of the delayed calls above it under the fixed normal model."
+    },
+    {
+      "id": "M-24-003",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(outer(1:10, 1:10, FUN = \"-\")^2)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression averages squared distances over all equally likely position pairs for the fixed panel size."
+    },
+    {
+      "id": "M-24-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.80, mean = 180, sd = 15)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The percentile and both normal distribution parameters are fixed."
+    },
+    {
+      "id": "M-24-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(seq(from = 30, to = 40, by = 5), each = 7L)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression repeats each of the three fixed weekly fees for seven days."
+    },
+    {
+      "id": "M-24-006",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.Date(\"2020-01-31\") + 31L * (0:2)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression adds three fixed offsets in days to the specified start date."
+    },
+    {
+      "id": "M-24-007",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "utils::tail(c(3, 8, 14, 21), 2L)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The input vector and the requested number of elements are fixed."
+    },
+    {
+      "id": "M-24-008",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ set.seed(42); stats::rpois(n = 5L, lambda = 6) }",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression uses the specified seed, draw count, and Poisson mean."
+    },
+    {
+      "id": "M-24-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::pf(4.1, df1 = 2, df2 = 12, lower.tail = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The ANOVA p-value is the upper-tail probability for the fixed statistic and degrees of freedom."
+    },
+    {
+      "id": "M-24-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "(2:6)^2",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression squares each integer in the fixed range."
+    },
+    {
+      "id": "M-24-011",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(c(10, 20, NA, 40), na.rm = TRUE)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression averages the observed entries of the specified vector."
+    },
+    {
+      "id": "M-24-012",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sample(1:4, size = 4L, replace = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The four IDs are fixed, and each evaluation samples them without replacement."
+    },
+    {
+      "id": "M-24-013",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.integer(difftime(as.Date(\"2023-04-08\"), as.Date(\"2023-01-15\"), units = \"days\"))",
+      "test_inputs": [{"kind": "question_data", "code": "invisible(NULL)"}],
+      "correct_options": [],
+      "note": "The expression returns the elapsed whole days between the two fixed dates."
+    }
+  ]
+}

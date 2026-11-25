@@ -1,0 +1,354 @@
+{
+  "answers": [
+    {
+      "id": "K-19-001",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The pooled test estimates a common variance from the two samples and assumes the population variances are equal.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-002",
+      "answer": "coef(glm(am ~ wt, data = mtcars, family = binomial()))[[\"wt\"]]",
+      "correct_options": [],
+      "working": "The binomial family uses the logit link by default. Indexing the coefficient vector by name extracts the slope for wt.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-003",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The overall F-test compares the fitted model with an intercept-only model. With one predictor, its null hypothesis is that the slope for allele_freq equals zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-004",
+      "answer": "0.939",
+      "correct_options": [],
+      "working": "The four terms inside the sum are approximately 0.283605, 0.054570, 0.092432, and 0.038958. Twice their sum is approximately 0.939130.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-005",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Mutual exclusivity gives a joint probability of zero. Independence would give the strictly positive product P(A)P(B).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-006",
+      "answer": "0",
+      "correct_options": [],
+      "working": "R defines the sum of an empty numeric vector as zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-007",
+      "answer": "0.370",
+      "correct_options": [],
+      "working": "The regression and residual sums of squares are 4 × 126 = 504 and 30 × 21 = 630. Adjusted R-squared is 1 − 21/(1134/34) ≈ 0.370370.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-008",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The header reports 120 observations and five variables. The Treatment entry identifies a factor with three levels.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-009",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Consistency means convergence in probability to the parameter. For every fixed positive tolerance, the probability of falling within that tolerance tends to one.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-010",
+      "answer": "180",
+      "correct_options": [],
+      "working": "The independent claims have additive variances. The total standard deviation is √(100² + 150²) ≈ 180.278.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-011",
+      "answer": "1.800",
+      "correct_options": [],
+      "working": "The retained values are 15.5, 14.2, and 16.0. Their maximum minus their minimum is 1.8.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-012",
+      "answer": "Reduce(`+`, c(10, 20, 30, 40))",
+      "correct_options": [],
+      "working": "Reduce repeatedly applies the addition operator, giving 100.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-013",
+      "answer": "-0.040",
+      "correct_options": [],
+      "working": "The first differences at times 14 and 10 are 6.890 − 6.540 = 0.350 and 6.710 − 6.320 = 0.390. The lag-four difference is 0.350 − 0.390.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-014",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Adding a predictor to a nested least-squares model can only maintain or reduce the residual sum of squares. The degrees-of-freedom penalty can reduce adjusted R-squared if the improvement is small.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-015",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Bonferroni uses the union bound to keep the probability of one or more false rejections at or below the nominal alpha level.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-016",
+      "answer": "which(cumsum(x) > 2.5)[1L]",
+      "correct_options": [],
+      "working": "The cumulative sums for the first four quarters are 0.8, 2.3, 2.0, and 4.1. The first exceedance is at index 4.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-017",
+      "answer": "4",
+      "correct_options": [],
+      "working": "Splitting at spaces yields four strings in the first list element.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-018",
+      "answer": "2.049",
+      "correct_options": [],
+      "working": "Using a = 15.4²/12 and b = 22.1²/18 gives (a + b)²/(a²/11 + b²/17) ≈ 27.905 degrees of freedom. The 0.975 quantile is approximately 2.0487.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-019",
+      "answer": "0.837",
+      "correct_options": [],
+      "working": "The sample proportion is 156/200 = 0.78. The upper bound is 0.78 + 1.96√(0.78 × 0.22/200) ≈ 0.837412.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-020",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Positive lag-one autocorrelation indicates that successive values tend to be on the same side of the series mean.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-021",
+      "answer": "rev(sort(x))",
+      "correct_options": [],
+      "working": "sort arranges the values in ascending order by default, and rev reverses that order.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-022",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The reported X-squared is the squared standardized deviation under the null, (14 − 10)²/5 = 3.2.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-023",
+      "answer": "0.464",
+      "correct_options": [],
+      "working": "The adjusted sample size is 120 + 1.96² = 123.8416 and the adjusted proportion is (45 + 1.96²/2)/123.8416 ≈ 0.378877. Adding 1.96 times the adjusted standard error gives approximately 0.464317.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-024",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The simulated extinction fraction is the mean of independent extinction indicators. By the law of large numbers, it converges to the model's extinction probability.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-025",
+      "answer": "9",
+      "correct_options": [],
+      "working": "Indexing by order(x) gives 4, 7, 9, 12, and 25. The third value is 9.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-026",
+      "answer": "0.267",
+      "correct_options": [],
+      "working": "The probability of two rapid responses with at least one low-severity incident is 0.60² − 0.40² = 0.20. The probability of at least one low-severity incident is 1 − 0.50² = 0.75, so the conditional probability is 0.20/0.75.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-027",
+      "answer": "{ set.seed(42); mean(rnorm(10000) > 1) }",
+      "correct_options": [],
+      "working": "The block sets the seed before drawing 10,000 standard normal values. The mean of the logical comparisons is the fraction exceeding 1.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-028",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The interaction p-value is 0.0061, below 0.05. Both reported main-effect p-values exceed 0.05.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-029",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Under standard regularity conditions, smoothness lets leave-one-out changes approximate the statistic's sampling behavior through a Taylor expansion.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-030",
+      "answer": "0.577",
+      "correct_options": [],
+      "working": "The centered cross-product is 5000 − 160 × 240/8 = 200. The centered sums of squares are 200 and 600, giving 200/√(200 × 600) ≈ 0.577350.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-031",
+      "answer": "6",
+      "correct_options": [],
+      "working": "With the intercept removed, the matrix has three indicator columns for g, one column for x, and two interaction columns.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-032",
+      "answer": "table(logs$plan)",
+      "correct_options": [],
+      "working": "table counts the occurrences of each plan, giving three Basic rows and three Plus rows.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-033",
+      "answer": "2.603",
+      "correct_options": [],
+      "working": "The test uses the variance ratio for A over B, with 14 numerator and 20 denominator degrees of freedom. The 0.975 quantile of this F distribution is approximately 2.603.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-034",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Classical measurement error adds to the predictor variance while preserving its covariance with the response. The resulting population regression slope is attenuated toward zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-035",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The residual mean square is RSS/97. Its square root estimates the standard deviation of the model errors in response units.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-036",
+      "answer": "setdiff(intersect(enrolled, screened), withdrawn)",
+      "correct_options": [],
+      "working": "The intersection keeps unique screened IDs in enrolled order. The set difference removes withdrawn IDs, leaving P101 and P102.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-037",
+      "answer": "B <- matrix(1:6, nrow = 3)",
+      "correct_options": [],
+      "working": "A has three columns, so B needs three rows for matrix multiplication.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-038",
+      "answer": "6.51",
+      "correct_options": [],
+      "working": "The relative risk is 0.40/0.82 = 20/41, giving a relative risk reduction of 21/41. The requested NNT is 1/(0.30 × 21/41) ≈ 6.50794.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-039",
+      "answer": "0.010",
+      "correct_options": [],
+      "working": "The Bonferroni threshold divides the familywise significance level by five, giving 0.05/5 = 0.01.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-040",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The false-positive share of the population is 0.99 × 0.05 = 0.0495. This exceeds the true-positive share of 0.01 × 0.95 = 0.0095.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-041",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The cumulative count below 40 is 25 out of 40 cartons, or 62.5 percent.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-042",
+      "answer": "0.016",
+      "correct_options": [],
+      "working": "The standard error is 40/√64 = 5, giving z = (512 − 500)/5 = 2.4. Doubling the upper-tail probability gives approximately 0.016395.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-043",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Inverting the two-sided test gives the interval of parameter values the test would fail to reject at level alpha.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-044",
+      "answer": "32",
+      "correct_options": [],
+      "working": "The second row is South, with values 15, 10, and 7. Their sum is 32.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-045",
+      "answer": "11.500",
+      "correct_options": [],
+      "working": "The between-group sum of squares is 1642 − 242²/37 = 2190/37. The within-group sum of squares is 9 × 2 + 14 × 3 + 11 × 2.5 = 87.5, so F = (2190/74)/(87.5/34) ≈ 11.499614.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-046",
+      "answer": "transform(df, flag = ifelse(value > 20, \"high\", \"low\"))",
+      "correct_options": [],
+      "working": "ifelse applies the threshold to each row, and transform adds the resulting flag column to the returned data frame.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-047",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The p-value of 0.0190 is below 0.05, and the 95% confidence interval lies entirely above zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-048",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Independence gives Cov(Z, Y) = beta_1 × Var(X). Dividing by Var(Z) gives the population slope rho × beta_1.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-049",
+      "answer": "0.34",
+      "correct_options": [],
+      "working": "The mean of the five values is 12.2, and their squared deviations sum to 0.46. The sample standard deviation is √(0.46/4) ≈ 0.33912.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-19-050",
+      "answer": "tryCatch(rnorm(-1), error = function(e) 42)",
+      "correct_options": [],
+      "working": "The error handler returns numeric 42 when rnorm signals an error. A successful call would return its result directly.",
+      "confidence": "high"
+    }
+  ]
+}

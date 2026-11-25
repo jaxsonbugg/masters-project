@@ -147,12 +147,15 @@ def _entry_problems(kind, e, row):
                 p.append("r_expression question computed without an answer_expression")
             if e["r_code"].strip():
                 p.append("r_expression question: r_code must be empty (the expression and the test inputs are used)")
-            if not e["test_inputs"]:
-                p.append("r_expression question computed without test inputs")
+            # Zero test inputs are allowed when the question fixes everything and the note says why (Jaxson's decision,
+            # 2026-11-25; it matches the approved compute instruction): the harness then evaluates once on an empty setup.
+            if not e["test_inputs"] and not e["note"].strip():
+                p.append("r_expression question computed without test inputs and without a reason in note")
             elif len(e["test_inputs"]) < 4 and not e["note"].strip():
                 p.append("fewer than four test inputs without a reason in note")
-            if any(not t["code"].strip() for t in e["test_inputs"]):
-                p.append("a test input has empty code")
+            # an empty-code input is the same "empty setup" as zero inputs: allowed with a reason in note (2026-11-25)
+            if any(not t["code"].strip() for t in e["test_inputs"]) and not e["note"].strip():
+                p.append("a test input has empty code and the note gives no reason")
         else:
             if not e["r_code"].strip():
                 p.append("computed without r_code")

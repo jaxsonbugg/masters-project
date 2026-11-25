@@ -1,0 +1,354 @@
+{
+  "answers": [
+    {
+      "id": "K-17-001",
+      "answer": "1.082",
+      "correct_options": [],
+      "working": "The posterior density is proportional to 1/δ on [0.5, 2]. Its mean is (2 − 0.5)/log(2/0.5).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-002",
+      "answer": "3.319",
+      "correct_options": [],
+      "working": "The upper endpoint is 2.5 + 0.4 × t(0.975, 28), with a critical value of about 2.0484.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-003",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Each method's pooled average weights the year-specific averages by its own student mix. Different weights can reverse the within-year comparisons.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-004",
+      "answer": "dbinom(5, size = 15, prob = 0.3)",
+      "correct_options": [],
+      "working": "The binomial probability mass at 5 gives the probability of exactly five successes.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-005",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The p-value of 0.8337 exceeds 0.05, and the confidence interval includes a variance ratio of 1.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-006",
+      "answer": "2.152",
+      "correct_options": [],
+      "working": "The estimator has bias 0.2(65 − 70) = −1 and variance 0.8² × 36/20 = 1.152. The MSE is the variance plus the squared bias.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-007",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Power is the probability of rejecting the null hypothesis under a specified alternative mean difference.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-008",
+      "answer": "5",
+      "correct_options": [],
+      "working": "The ascending order of the indices is 2, 4, 5, 1, 3, with ties preserving their original order.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-009",
+      "answer": "44.362",
+      "correct_options": [],
+      "working": "If K is the number of selected defectives, the inspection payoff is 60 − 45K and E[K] = 0.30. The binomial parity probabilities give an expected fee and rebate contribution of −2 − 10(0.7)^12. The total is 44.5 − 10(0.7)^12.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-010",
+      "answer": "var(x[seq(4, length(x), by = 4)])",
+      "correct_options": [],
+      "working": "The index sequence starts at 4 and advances by four. R's var computes the sample variance.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-011",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Dog 2's Cook's distance of 0.31247 exceeds the diagnostic cutoff of 4/25 = 0.16.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-012",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "In the standard three-variable causal model, the common cause z creates the backdoor path x ← z → y. Conditioning on z blocks that path.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-013",
+      "answer": "925",
+      "correct_options": [],
+      "working": "The fitted line passes through (15, 800), so the prediction is 800 + 25(20 − 15).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-014",
+      "answer": "3.055",
+      "correct_options": [],
+      "working": "The selected values are 27, 31, and 33. Their sample variance is 28/3, so their sample standard deviation is √(28/3).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-015",
+      "answer": "names(Filter(function(v) length(v) > 2, x))",
+      "correct_options": [],
+      "working": "Filter retains the elements of length greater than two, and names extracts their labels.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-016",
+      "answer": "0.211",
+      "correct_options": [],
+      "working": "Exceeding 60 implies exceeding 45, so the conditional probability is P(Z > 1.25)/0.5 ≈ 0.21130.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-017",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The data are held fixed while their probability or density is evaluated under each candidate mean.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-018",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The fitted holiday premium at distance d is 40 + d dollars. At distance zero, it is $40.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-019",
+      "answer": "paste0(test, df, collapse = \", \", recycle0 = TRUE)",
+      "correct_options": [],
+      "working": "With recycle0 enabled, an empty test vector produces zero element-wise strings, which collapse reduces to the empty string.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-020",
+      "answer": "3",
+      "correct_options": [],
+      "working": "nlevels counts all declared levels, including the unused levels B and C.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-021",
+      "answer": "78",
+      "correct_options": [],
+      "working": "The standardized difference under the alternative has mean √(n/5.2) and variance 1. The two-tail rejection probability increases with n and is about 0.8984 at n = 77 and 0.9027 at n = 78.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-022",
+      "answer": "9.24",
+      "correct_options": [],
+      "working": "The Welch degrees of freedom are (4/5 + 16/7)² divided by (4/5)²/4 + (16/7)²/6.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-023",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Under the usual regularity conditions, the estimator's sampling distribution is approximately normal around the true mean for large samples.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-024",
+      "answer": "scores[seq(3, length(scores), by = 3)]",
+      "correct_options": [],
+      "working": "The index sequence selects positions 3, 6, and 9.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-025",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The absolute standardized coefficient for ad_budget is 0.74, compared with 0.21 for email_open_rate.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-026",
+      "answer": "1.443",
+      "correct_options": [],
+      "working": "The sample proportion is 0.65. The test statistic is (0.65 − 0.60)/√(0.60 × 0.40/200).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-027",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "MSE is variance plus squared bias. T2 has lower MSE if its variance reduction outweighs its squared bias.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-028",
+      "answer": "4.25",
+      "correct_options": [],
+      "working": "Removing NA leaves four observations that sum to 17.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-029",
+      "answer": "0.006",
+      "correct_options": [],
+      "working": "The qualifying pairs are (1, 4), (2, 3), and (4, 6). The Bonferroni threshold is 0.05/9 across the six main-effect tests and three interaction tests.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-030",
+      "answer": "mean(star_data[star_data[, 1] < 3.5, 2])",
+      "correct_options": [],
+      "working": "The condition selects rows using apparent magnitude, and column 2 supplies the distances to average.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-031",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The Shapiro–Wilk p-value of 0.0034 is below 0.05, so the test rejects the null hypothesis of normality.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-032",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The classical exact paired t-test is a one-sample t-test on independent, identically distributed normal differences. If requirement means strict mathematical necessity, some nonnormal joint distributions can also yield an exact t statistic.",
+      "confidence": "low"
+    },
+    {
+      "id": "K-17-033",
+      "answer": "20.735",
+      "correct_options": [],
+      "working": "The week 2 forecast is 0.35 × 22.1 + 0.65 × 20.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-034",
+      "answer": "d_c_b_a",
+      "correct_options": [],
+      "working": "rev reverses the vector, and paste joins the reversed elements with underscores.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-035",
+      "answer": "subset(d, score > 80)",
+      "correct_options": [],
+      "working": "subset retains the rows where the comparison evaluates to TRUE.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-036",
+      "answer": "0.558",
+      "correct_options": [],
+      "working": "The probability all 20 sensors pass is 0.96^20. Its complement is about 0.5580.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-037",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "E[Y|G] takes the mean of the group indicated by G. Its variance measures how those means vary, weighted by group probabilities.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-038",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "With predictions in the rows, precision is 30/(30 + 10) = 0.75 and specificity is 45/(45 + 10) ≈ 0.818.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-039",
+      "answer": "quantile(x, probs = 0.75, type = 6)",
+      "correct_options": [],
+      "working": "R's type 6 quantile algorithm uses plotting positions i/(n + 1).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-040",
+      "answer": "1.333",
+      "correct_options": [],
+      "working": "The entry in row 3 and column 1 is x[3]/y[1] = 4/3.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-041",
+      "answer": "4.76",
+      "correct_options": [],
+      "working": "The sum of squared deviations from the sample mean is 8.0367875. The upper endpoint divides this by the 0.025 quantile of chi-squared with 7 degrees of freedom, approximately 1.68987.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-042",
+      "answer": "0.514",
+      "correct_options": [],
+      "working": "Bayes' rule gives 0.9 × 0.4/0.7 ≈ 0.514286.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-043",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Adjusted R-squared penalizes the additional predictor. With the stated R-squared values, the direction of change depends on the sample size.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-044",
+      "answer": "ordered(c('z', 'a', 'm'), levels = c('a', 'm', 'z'))",
+      "correct_options": [],
+      "working": "ordered creates an ordered factor whose level order is given explicitly by levels.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-045",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The fitted regression on soil moisture accounts for 72% of the observed variation in plant height around its sample mean.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-046",
+      "answer": "0.121",
+      "correct_options": [],
+      "working": "The logits are −0.5, 0.25, and 1. The observed outcomes give likelihood contributions of approximately 0.37754, 0.43782, and 0.73106, whose product is about 0.12084.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-047",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Each squared deviance residual equals its observation's contribution to model deviance. Deviance residuals can be closer to normal for skewed binomial data, though the approximation can be poor for individual binary outcomes.",
+      "confidence": "medium"
+    },
+    {
+      "id": "K-17-048",
+      "answer": "y <- rep(c(10, 20, 30), length.out = 5)",
+      "correct_options": [],
+      "working": "rep cycles through the original values until the output reaches length five.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-049",
+      "answer": "2.769",
+      "correct_options": [],
+      "working": "The slope is 30/40 = 0.75, and the residual sum of squares is 90 − 30²/40 = 67.5. The t-statistic is 0.75/√(67.5/(23 × 40)).",
+      "confidence": "high"
+    },
+    {
+      "id": "K-17-050",
+      "answer": "function(x) c(m = mean(x), v = var(x), med = median(x))",
+      "correct_options": [],
+      "working": "The function combines the three scalar summaries into a numeric vector with the requested names.",
+      "confidence": "high"
+    }
+  ]
+}

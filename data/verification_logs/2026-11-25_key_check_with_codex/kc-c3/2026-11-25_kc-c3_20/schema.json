@@ -1,0 +1,50 @@
+{
+ "type": "object",
+ "properties": {
+  "verdicts": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "verdict": {
+      "type": "string",
+      "enum": [
+       "pass",
+       "flag"
+      ]
+     },
+     "issue_type": {
+      "type": "string",
+      "enum": [
+       "none",
+       "ambiguous",
+       "missing_information",
+       "invalid_assumption",
+       "multiple_correct",
+       "no_correct_option",
+       "answer_format_unclear",
+       "other"
+      ]
+     },
+     "reason": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "verdict",
+     "issue_type",
+     "reason"
+    ],
+    "additionalProperties": false
+   }
+  }
+ },
+ "required": [
+  "verdicts"
+ ],
+ "additionalProperties": false
+}

@@ -1,0 +1,354 @@
+{
+  "answers": [
+    {
+      "id": "K-15-001",
+      "answer": "FALSE TRUE TRUE",
+      "correct_options": [],
+      "working": "The factor levels are ordered low < med < high, so both high and med compare greater than low.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-002",
+      "answer": "0.912",
+      "correct_options": [],
+      "working": "The standard error is 8/sqrt(36), so the z-statistic has mean 3 under the alternative. The power is 1 − Φ(1.64485 − 3) ≈ 0.9123.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-003",
+      "answer": "0.385",
+      "correct_options": [],
+      "working": "The differences are 0.4, −0.2, 0.6, −0.3, and 0.2, with mean 0.14. Their sample standard deviation is sqrt(0.592/4) ≈ 0.3847.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-004",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Poor product quality could increase both counts and explain the observed correlation.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-005",
+      "answer": "pf(4.1, df1 = 2, df2 = 12, lower.tail = FALSE)",
+      "correct_options": [],
+      "working": "The ANOVA p-value is the upper-tail probability of the F distribution with 2 and 12 degrees of freedom.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-006",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The structure output identifies machine_type as a factor with two levels, Lathe and Milling.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-007",
+      "answer": "51082.5",
+      "correct_options": [],
+      "working": "The fee leaves 49000 in capital. The expected return is 0.40(0.12) + 0.35(0.02) − 0.25(0.05) = 0.0425, so the expected final value is 49000 × 1.0425.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-008",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The prediction at x = 15 assumes that the fitted linear relationship extends beyond the observed range of 4 to 10.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-009",
+      "answer": "13.214",
+      "correct_options": [],
+      "working": "The weighted sum is 2(5) + 3(10) + 4(15) + 5(20) = 185 across 14 values.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-010",
+      "answer": "0.356",
+      "correct_options": [],
+      "working": "With p = 71/240, n = 240, and z = 1.959964, the Wilson upper bound is [p + z²/(2n) + z sqrt(p(1 − p)/n + z²/(4n²))]/[1 + z²/n] ≈ 0.35643.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-011",
+      "answer": "as.numeric(substr(s, nchar(s) - 2L, nchar(s)))",
+      "correct_options": [],
+      "working": "The substring starts two positions before the final character and includes the final character. Numeric conversion turns the three strings into 1, 2, and 3.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-012",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The likelihood ratio test gives p = 0.00674, below 0.05, so the two added predictors jointly improve model fit.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-013",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Sampling multiplies the conditional odds by 1/0.2 = 5 at every x. Taking logs adds log(5) to the intercept and preserves the population slope.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-014",
+      "answer": "0.103",
+      "correct_options": [],
+      "working": "The first three attempts must fail and the fourth must succeed, giving 0.7³ × 0.3 = 0.1029.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-015",
+      "answer": "family = poisson(link = \"log\")",
+      "correct_options": [],
+      "working": "The counts are generated from a Poisson distribution, and the log link matches the exponential conditional mean.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-016",
+      "answer": "mapply(`*`, area, dens)",
+      "correct_options": [],
+      "working": "Each plot's total is its area multiplied by its corresponding animal density.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-017",
+      "answer": "2.4",
+      "correct_options": [],
+      "working": "The sample mean is 10.35 and the sample standard deviation is sqrt(0.42/7) ≈ 0.24495. The CV is 100 × 0.24495/10.35 ≈ 2.367%.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-018",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Each group is resampled separately with replacement at its original sample size.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-019",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "As the forecast horizon increases, the forecast error variance approaches the stationary series variance, so the interval width approaches a finite limit.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-020",
+      "answer": "x[order(-x)]",
+      "correct_options": [],
+      "working": "Ascending order of the negated values gives indices for descending order of the original values.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-021",
+      "answer": "0.029",
+      "correct_options": [],
+      "working": "The centered sum of squares is 580000 − 25(150²) = 17500. The slope standard error is sqrt((350/23)/17500) ≈ 0.029488.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-022",
+      "answer": "0.368",
+      "correct_options": [],
+      "working": "The Poisson mean is 50 × 0.02 = 1, giving P(X = 1) ≈ exp(−1) = 0.367879.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-023",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Calculate the median of each sample drawn with replacement and use those medians to approximate its sampling distribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-024",
+      "answer": "(2:6)^2",
+      "correct_options": [],
+      "working": "R applies the exponent to each integer in the sequence.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-025",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The Tukey intervals for West − North and West − South both lie entirely above zero.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-026",
+      "answer": "0.060",
+      "correct_options": [],
+      "working": "The fitted line is 0.05 + 1.99x, giving SSE = 0.107 and a centered x sum of squares of 10. The slope standard error is sqrt(0.107/(3 × 10)) ≈ 0.05972.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-027",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Rainfall from the unseeded ranges provides a baseline under the same season's large-scale weather, accounting for year-to-year variation.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-028",
+      "answer": "NULL",
+      "correct_options": [],
+      "working": "The list has no element whose name matches phosphorus, so `$` returns NULL.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-029",
+      "answer": "0.691",
+      "correct_options": [],
+      "working": "Given X = 60, the conditional mean is 10 + 0.8(2/10)(60 − 50) = 11.6 and the conditional standard deviation is 2 sqrt(1 − 0.8²) = 1.2. The requested probability is 1 − Φ(−0.5) ≈ 0.69146.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-030",
+      "answer": "sum(rpois(1000, lambda = 3) == 5)",
+      "correct_options": [],
+      "working": "The comparison produces one TRUE per simulated observation equal to 5, and sum counts the TRUE values.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-031",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "`tapply` computes the arithmetic mean separately for each group and presents the results in factor-level order.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-032",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The Bayes factor is the ratio of the two marginal likelihoods. It multiplies prior hypothesis odds by 8 to give posterior odds.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-033",
+      "answer": "0.42",
+      "correct_options": [],
+      "working": "The odds ratio is (10 × 15)/(20 × 5) = 1.5, and the log-scale standard error is sqrt(0.4166667). The lower bound is exp(log(1.5) − 1.96 sqrt(0.4166667)) ≈ 0.4233.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-034",
+      "answer": "12",
+      "correct_options": [],
+      "working": "Splitting the four strings yields 3, 3, 4, and 2 attributes, which `unlist` combines.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-035",
+      "answer": "aggregate(x, by = list(group = g), FUN = function(v) c(mean = mean(v), sum = sum(v)))",
+      "correct_options": [],
+      "working": "The aggregation function returns both the mean and the sum for each group.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-036",
+      "answer": "14.83",
+      "correct_options": [],
+      "working": "The centered April average uses March, April, and May, giving (13.8 + 16.2 + 14.5)/3 = 14.8333…",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-037",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Independent observations support the two-sample test, and approximate within-group normality supports the t approximation at these sample sizes.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-038",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The BH adjusted p-value is the smallest target FDR level at which the BH procedure rejects the hypothesis for GENE_C.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-039",
+      "answer": "c(coef(fit)[[\"load\"]], sqrt(vcov(fit)[\"load\", \"load\"]))",
+      "correct_options": [],
+      "working": "`coef` returns the estimate and the corresponding diagonal entry of `vcov` is its estimated variance. Taking the square root gives the standard error.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-040",
+      "answer": "9",
+      "correct_options": [],
+      "working": "The string `mean/sd/n` contains seven letters and two slashes.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-041",
+      "answer": "0.154",
+      "correct_options": [],
+      "working": "The conditioning event has probability 0.35 + 0.45 − 0.15 = 0.65. Its intersection with Moderate is the Moderate–High cell, so the conditional probability is 0.10/0.65.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-042",
+      "answer": "423.026",
+      "correct_options": [],
+      "working": "Substituting gives 5 log(100) − 2(−200) = 423.0258509.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-043",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Accounting for systematic differences between subgroups can reduce unexplained variation and improve precision.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-044",
+      "answer": "intersect(recent_listings, high_demand)",
+      "correct_options": [],
+      "working": "The intersection returns the two IDs shared by the vectors, 102 and 104.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-045",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The p-value 0.02815 is below 0.05, so the null hypothesis of an odds ratio of 1 is rejected.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-046",
+      "answer": "1.914",
+      "correct_options": [],
+      "working": "The odds ratio is (30 × 25)/(10 × 15) = 5, and the log-scale standard error is sqrt(1/30 + 1/10 + 1/15 + 1/25) = sqrt(0.24). The lower bound is exp(log(5) − 1.96 sqrt(0.24)) ≈ 1.91408.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-047",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The lagged ad spend improves prediction after accounting for past sales. A causal claim requires evidence that an intervention on ad spend would change sales.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-048",
+      "answer": "2",
+      "correct_options": [],
+      "working": "Only the rows with scores 25 and 30 satisfy the strict inequality.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-049",
+      "answer": "2.663",
+      "correct_options": [],
+      "working": "The two-step forecast error is e_2025 + 0.78 e_2024. The innovations are uncorrelated, giving a standard deviation of 2.1 sqrt(1 + 0.78²) ≈ 2.66328.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-15-050",
+      "answer": "df[order(df$load_time, -df$crashes), ]",
+      "correct_options": [],
+      "working": "`order` sorts by increasing load time and breaks ties by placing the largest crash counts first.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "answers": [
+    {
+      "id": "M-26-001",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(c(2, 5, 8), length.out = 14)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The pattern and output length are fixed in the expression, so one test suffices."
+    },
+    {
+      "id": "M-26-002",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.10 * stats::pnorm(8, mean = 12, sd = 4, lower.tail = FALSE), mean = 12, sd = 4, lower.tail = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The threshold leaves 10% of the delayed calls above it, and the fixed distribution and cutoff require only one test."
+    },
+    {
+      "id": "M-26-003",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(outer(seq_len(10L), seq_len(10L), FUN = \"-\")^2)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "Every destination is equally likely for each of the ten fixed starting positions, so one test of the exact average suffices."
+    },
+    {
+      "id": "M-26-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.80, mean = 180, sd = 15)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The percentile and normal distribution parameters are fixed, so one test suffices."
+    },
+    {
+      "id": "M-26-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(seq(from = 30, to = 40, by = 5), each = 7)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression repeats each of the three fixed weekly fees seven times, so one test suffices."
+    },
+    {
+      "id": "M-26-006",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.Date(\"2020-01-31\") + 31 * (0:2)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "Adding day offsets preserves the Date class, and the fixed start, step, and length require only one test."
+    },
+    {
+      "id": "M-26-007",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "c(3, 8, 14, 21)[3:4]",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The four-element vector is fixed, so one test of positions three and four suffices."
+    },
+    {
+      "id": "M-26-008",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ set.seed(42); stats::rpois(5, lambda = 6) }",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The seed, draw count, and Poisson mean are fixed, so one test suffices."
+    },
+    {
+      "id": "M-26-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::pf(4.1, df1 = 2, df2 = 12, lower.tail = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The ANOVA p-value is the upper-tail probability for the fixed F-statistic and degrees of freedom, so one test suffices."
+    },
+    {
+      "id": "M-26-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "(2:6)^2",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The integer range and exponent are fixed, so one test suffices."
+    },
+    {
+      "id": "M-26-011",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(c(10, 20, NA, 40), na.rm = TRUE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression averages the observed entries of the fixed vector, so one test suffices."
+    },
+    {
+      "id": "M-26-012",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sample(1:4, size = 4, replace = FALSE)",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The four IDs are fixed, so one setup suffices for sampling without replacement."
+    },
+    {
+      "id": "M-26-013",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.numeric(difftime(as.Date(\"2023-04-08\"), as.Date(\"2023-01-15\"), units = \"days\"))",
+      "test_inputs": [{"kind": "question_data", "code": ""}],
+      "correct_options": [],
+      "note": "The expression returns elapsed days between two fixed dates, so one test suffices."
+    }
+  ]
+}

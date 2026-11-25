@@ -1,0 +1,121 @@
+{
+  "answers": [
+    {
+      "id": "M-23-001",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(c(2, 5, 8), length.out = 14)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The pattern and output length are fixed."
+    },
+    {
+      "id": "M-23-002",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.10 * stats::pnorm(8, mean = 12, sd = 4, lower.tail = FALSE), mean = 12, sd = 4, lower.tail = FALSE)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The fixed threshold and model parameters determine the upper-tail probability to invert."
+    },
+    {
+      "id": "M-23-003",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(outer(1:10, 1:10, \"-\")^2)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Each new position is equally likely for each original position in the fixed set of ten positions."
+    },
+    {
+      "id": "M-23-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::qnorm(0.80, mean = 180, sd = 15)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The percentile, mean, and standard deviation are fixed."
+    },
+    {
+      "id": "M-23-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "rep(seq(from = 30, to = 40, by = 5), each = 7)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The three prices and the seven-day duration of each price are fixed."
+    },
+    {
+      "id": "M-23-006",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.Date(\"2020-01-31\") + 31 * (0:2)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Adding numeric day offsets implements the fixed 31-day step."
+    },
+    {
+      "id": "M-23-007",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "utils::tail(c(3, 8, 14, 21), 2)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The literal vector and the number of elements to extract are fixed."
+    },
+    {
+      "id": "M-23-008",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "{ set.seed(42); stats::rpois(5, lambda = 6) }",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The expression sets the prescribed seed and uses the fixed draw count and Poisson mean."
+    },
+    {
+      "id": "M-23-009",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::pf(4.1, df1 = 2, df2 = 12, lower.tail = FALSE)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The ANOVA p-value is the upper-tail probability for the fixed statistic and degrees of freedom."
+    },
+    {
+      "id": "M-23-010",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "(2:6)^2",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The integer range and exponent are fixed."
+    },
+    {
+      "id": "M-23-011",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(c(10, 20, NA, 40), na.rm = TRUE)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The expression removes missing values when averaging the fixed vector."
+    },
+    {
+      "id": "M-23-012",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sample.int(4L)",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Sampling all four fixed IDs without replacement produces a random permutation."
+    },
+    {
+      "id": "M-23-013",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "as.numeric(difftime(as.Date(\"2023-04-08\"), as.Date(\"2023-01-15\"), units = \"days\"))",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The two dates are fixed, and the result is the elapsed time in days."
+    }
+  ]
+}

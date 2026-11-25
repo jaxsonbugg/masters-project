@@ -1,0 +1,115 @@
+{
+ "batch": "2026-11-25_kc-c3_19",
+ "kind": "ambiguity",
+ "role": "C3",
+ "label": "kc-c3",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_ambiguity_v1.md",
+ "instructions_sha256": "22072002412af1aeb5006503405c9b408de7840f1891e5cb214221845ac56f0f",
+ "batch_sha256": "1cd1adddb46337609a7e7739f91accbcf26abc2cdeb0c69d85858b4a3229136a",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "G-19-001": {
+   "item_id": "BM0438",
+   "position": 438
+  },
+  "G-19-002": {
+   "item_id": "BM0439",
+   "position": 439
+  },
+  "G-19-003": {
+   "item_id": "BM0440",
+   "position": 440
+  },
+  "G-19-004": {
+   "item_id": "BM0441",
+   "position": 441
+  },
+  "G-19-005": {
+   "item_id": "BM0442",
+   "position": 442
+  },
+  "G-19-006": {
+   "item_id": "BM0443",
+   "position": 443
+  },
+  "G-19-007": {
+   "item_id": "BM0444",
+   "position": 444
+  },
+  "G-19-008": {
+   "item_id": "BM1370",
+   "position": 445
+  },
+  "G-19-009": {
+   "item_id": "BM0446",
+   "position": 446
+  },
+  "G-19-010": {
+   "item_id": "BM0447",
+   "position": 447
+  },
+  "G-19-011": {
+   "item_id": "BM0448",
+   "position": 448
+  },
+  "G-19-012": {
+   "item_id": "BM1373",
+   "position": 449
+  },
+  "G-19-013": {
+   "item_id": "BM0450",
+   "position": 450
+  },
+  "G-19-014": {
+   "item_id": "BM1377",
+   "position": 451
+  },
+  "G-19-015": {
+   "item_id": "BM0452",
+   "position": 452
+  },
+  "G-19-016": {
+   "item_id": "BM0453",
+   "position": 453
+  },
+  "G-19-017": {
+   "item_id": "BM0454",
+   "position": 454
+  },
+  "G-19-018": {
+   "item_id": "BM0455",
+   "position": 455
+  },
+  "G-19-019": {
+   "item_id": "BM1739",
+   "position": 456
+  },
+  "G-19-020": {
+   "item_id": "BM0457",
+   "position": 457
+  },
+  "G-19-021": {
+   "item_id": "BM1385",
+   "position": 460
+  },
+  "G-19-022": {
+   "item_id": "BM0461",
+   "position": 461
+  },
+  "G-19-023": {
+   "item_id": "BM1388",
+   "position": 462
+  },
+  "G-19-024": {
+   "item_id": "BM0463",
+   "position": 463
+  },
+  "G-19-025": {
+   "item_id": "BM0464",
+   "position": 464
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:47:05+00:00"
+}

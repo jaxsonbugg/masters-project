@@ -1,0 +1,115 @@
+{
+ "batch": "2026-11-25_kc-c3_32",
+ "kind": "ambiguity",
+ "role": "C3",
+ "label": "kc-c3",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_ambiguity_v1.md",
+ "instructions_sha256": "22072002412af1aeb5006503405c9b408de7840f1891e5cb214221845ac56f0f",
+ "batch_sha256": "b2779990e1414062ba3e230676f7fe8f73c247ab69c809e3b630eec222b028a0",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "G-32-001": {
+   "item_id": "BM1535",
+   "position": 770
+  },
+  "G-32-002": {
+   "item_id": "BM0771",
+   "position": 771
+  },
+  "G-32-003": {
+   "item_id": "BM0772",
+   "position": 772
+  },
+  "G-32-004": {
+   "item_id": "BM0773",
+   "position": 773
+  },
+  "G-32-005": {
+   "item_id": "BM0774",
+   "position": 774
+  },
+  "G-32-006": {
+   "item_id": "BM0775",
+   "position": 775
+  },
+  "G-32-007": {
+   "item_id": "BM0776",
+   "position": 776
+  },
+  "G-32-008": {
+   "item_id": "BM1538",
+   "position": 777
+  },
+  "G-32-009": {
+   "item_id": "BM0778",
+   "position": 778
+  },
+  "G-32-010": {
+   "item_id": "BM0779",
+   "position": 779
+  },
+  "G-32-011": {
+   "item_id": "BM0780",
+   "position": 780
+  },
+  "G-32-012": {
+   "item_id": "BM0781",
+   "position": 781
+  },
+  "G-32-013": {
+   "item_id": "BM0782",
+   "position": 782
+  },
+  "G-32-014": {
+   "item_id": "BM0783",
+   "position": 783
+  },
+  "G-32-015": {
+   "item_id": "BM1541",
+   "position": 784
+  },
+  "G-32-016": {
+   "item_id": "BM0785",
+   "position": 785
+  },
+  "G-32-017": {
+   "item_id": "BM0786",
+   "position": 786
+  },
+  "G-32-018": {
+   "item_id": "BM0787",
+   "position": 787
+  },
+  "G-32-019": {
+   "item_id": "BM0788",
+   "position": 788
+  },
+  "G-32-020": {
+   "item_id": "BM0789",
+   "position": 789
+  },
+  "G-32-021": {
+   "item_id": "BM0790",
+   "position": 790
+  },
+  "G-32-022": {
+   "item_id": "BM0791",
+   "position": 791
+  },
+  "G-32-023": {
+   "item_id": "BM0792",
+   "position": 792
+  },
+  "G-32-024": {
+   "item_id": "BM0793",
+   "position": 793
+  },
+  "G-32-025": {
+   "item_id": "BM0794",
+   "position": 794
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:47:05+00:00"
+}

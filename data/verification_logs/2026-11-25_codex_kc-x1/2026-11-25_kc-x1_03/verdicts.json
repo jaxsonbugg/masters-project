@@ -1,0 +1,354 @@
+{
+  "answers": [
+    {
+      "id": "K-03-001",
+      "answer": "0.623",
+      "correct_options": [],
+      "working": "The probability of no bookings is 0.85^6. Its complement is approximately 0.622850.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-002",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "Moving from low to high increases the mean by 8 in group A and by 1 in group B. These unequal changes indicate an interaction in the plotted means.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-003",
+      "answer": "weekdays(x)",
+      "correct_options": [],
+      "working": "The weekdays() function returns the weekday name as a character string.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-004",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The p-value of 0.005159 is below 0.01, so adding study method significantly improves the fit at the 1% level.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-005",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The nonparametric bootstrap substitutes the empirical distribution for the population. The estimated bias is the mean of the bootstrap replicates minus the observed statistic.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-006",
+      "answer": "1.8",
+      "correct_options": [],
+      "working": "The deleted residual equals the raw residual divided by 1 minus the leverage. The raw residual is 2.4 × 0.75 = 1.8.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-007",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The differences put nitrogen above phosphorus and phosphorus above potassium. All three adjusted p-values are below 0.05.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-008",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The usual label-permutation test relies on exchangeability for exact validity. Unequal group variances violate exchangeability even when the means are equal.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-009",
+      "answer": "0.309",
+      "correct_options": [],
+      "working": "The binomial probability is choose(5, 2) × 0.30^2 × 0.70^3 = 0.3087.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-010",
+      "answer": "135.275",
+      "correct_options": [],
+      "working": "The four values below 40 sum to 77.3 and have mean 19.325. The three replacements give a total of 77.3 + 3 × 19.325 = 135.275.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-011",
+      "answer": "sum(rec_times[1, ])",
+      "correct_options": [],
+      "working": "The first row contains the recovery times for the first clinic.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-012",
+      "answer": "0.500",
+      "correct_options": [],
+      "working": "The centered cross-product is 50 − 10 × 20 / 5 = 10. Both centered sums of squares equal 20, giving r = 10 / 20.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-013",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Sampling from every group is stratified sampling. Smaller within-stratum variances reduce the sampling variance of the stratified mean.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-014",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Adding the router indicator gives a deviance drop of 4.812, compared with an asymptotic chi-squared reference distribution with one degree of freedom. The p-value of 0.02826 supports the full model at the 5% level.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-015",
+      "answer": "droplevels(D[!duplicated(D[c(\"y\", \"z\")]), , drop = FALSE])",
+      "correct_options": [],
+      "working": "The duplicated() function flags occurrences after the first of each pair. The droplevels() function removes unused factor levels from the retained rows.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-016",
+      "answer": "4",
+      "correct_options": [],
+      "working": "With the default missing-value handling, lm() omits the row with the missing predictor and fits the model using four observations.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-017",
+      "answer": "0.767",
+      "correct_options": [],
+      "working": "The student needs at least two successes in the next six independent trials. The probability is 1 − 0.6^6 − 6 × 0.4 × 0.6^5 = 0.76672.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-018",
+      "answer": "0.519",
+      "correct_options": [],
+      "working": "With p̂ = 0.70 and z = 1.96, the Wilson lower endpoint is (0.70 + z²/80 − z√(0.70 × 0.30/40 + z²/6400)) / (1 + z²/40), approximately 0.5194.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-019",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Convergence in probability implies convergence in distribution to the same limit, here the constant c.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-020",
+      "answer": "anova(model_reduced, model_full, test = \"Chisq\")",
+      "correct_options": [],
+      "working": "For nested Poisson GLMs, this compares the deviance drop against a chi-squared reference distribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-021",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The 50% quantile is the sample median.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-022",
+      "answer": "47.283",
+      "correct_options": [],
+      "working": "The formula gives 4.5 × (1.959964 + 1.281552)^2 ≈ 47.2834 per group. An implemented design would round up to 48 per group.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-023",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "Under the null hypothesis, the two-sided p-value is the probability that the absolute t-statistic is at least 2.14.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-024",
+      "answer": "4",
+      "correct_options": [],
+      "working": "The missing entries are at positions 3, 5, 6, and 10.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-025",
+      "answer": "0.629",
+      "correct_options": [],
+      "working": "The prior and likelihood give a posterior density proportional to θ⁴ exp(−4θ), a Gamma distribution with shape 5 and rate 4. Its upper tail at 1 is exp(−4) × (1 + 4 + 8 + 4³/6 + 4⁴/24) ≈ 0.62884.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-026",
+      "answer": "sum(format(as.Date(d), \"%m-%u\") == \"01-1\")",
+      "correct_options": [],
+      "working": "The format codes give the month as 01 for January and the ISO weekday as 1 for Monday. Only January 2 matches both.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-027",
+      "answer": "C",
+      "correct_options": [],
+      "working": "C gives the correct 5% decision because the reported p-value exceeds 0.05 and the interval contains zero. C quotes 0.0978 while the output reports 0.0981, so every option contains an error.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-028",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "Independence of assignment and potential outcomes gives E[Y(0) | T = 1] = E[Y(0) | T = 0]. Observed control outcomes estimate this counterfactual mean for the treated group.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-029",
+      "answer": "0.141",
+      "correct_options": [],
+      "working": "The residual sum of squares is 0.20 and the centered sum of squares for x is 5. The slope standard error is √[(0.20/2)/5] ≈ 0.141421.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-030",
+      "answer": "FALSE",
+      "correct_options": [],
+      "working": "The consecutive floating-point additions produce a value slightly above the stored representation of 0.6. The identical() function requires exact equality here.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-031",
+      "answer": "tapply(defects, batch, mean)",
+      "correct_options": [],
+      "working": "The tapply() function applies mean() separately within each batch.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-032",
+      "answer": "0.179",
+      "correct_options": [],
+      "working": "The sample mean is 2.2 and the sum of squared deviations is 0.16. The normal maximum likelihood estimate of sigma is √(0.16/5) ≈ 0.178885.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-033",
+      "answer": "A",
+      "correct_options": ["A"],
+      "working": "The silhouette criterion selects the candidate K with the largest mean silhouette width across observations.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-034",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "A one-standard-deviation increase in a predictor changes the fitted response by its raw coefficient times the predictor's standard deviation. Dividing by the response standard deviation expresses that change in standardized units.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-035",
+      "answer": "which(2 * (loglik[which.max(loglik)] - loglik) <= qchisq(0.95, df = 1))",
+      "correct_options": [],
+      "working": "The which.max() function locates the maximum, and which() returns the indices whose likelihood-ratio statistic is at or below the cutoff.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-036",
+      "answer": "5",
+      "correct_options": [],
+      "working": "The values exceeding 3 are 3.4, 4.2, 4.5, 3.9, and 4.1.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-037",
+      "answer": "0.193",
+      "correct_options": [],
+      "working": "Independence gives the variance as 1.5 × 0.25² × (1 + 0.75² + 0.75⁴ + 0.75⁶) ≈ 0.192833.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-038",
+      "answer": "2.372",
+      "correct_options": [],
+      "working": "Substituting n = 12 and r = 0.60 gives 0.60 × √(10/0.64) ≈ 2.371708.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-039",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "The likelihood holds the observed battery lives fixed and compares how much support they give to different values of mu.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-040",
+      "answer": "rep(seq(3, 9, by = 3), each = 3)",
+      "correct_options": [],
+      "working": "The sequence supplies 3, 6, and 9, and each value is repeated three times consecutively.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-041",
+      "answer": "D",
+      "correct_options": ["D"],
+      "working": "The Diet:Size interaction is statistically significant, indicating that the effect of diet varies by size category.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-042",
+      "answer": "6922.33",
+      "correct_options": [],
+      "working": "The limit is the 90th percentile, 5000 + 1500 × 1.2815516 ≈ 6922.3274.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-043",
+      "answer": "newdata <- data.frame(allele_freq = c(0.2, 0.4))",
+      "correct_options": [],
+      "working": "The fitted formula uses allele_freq, so predict() looks for a column with that name.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-044",
+      "answer": "1.468",
+      "correct_options": [],
+      "working": "The sample standard deviation is √(9.753333/5), and c4 for n = 6 is approximately 0.951533. Dividing the sample standard deviation by c4 gives approximately 1.4678.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-045",
+      "answer": "quantile(replicate(10000, mean(rnorm(25))), probs = c(0.025, 0.975))",
+      "correct_options": [],
+      "working": "Each replicate draws 25 standard normal values and returns their mean. The quantile() function extracts the two requested empirical percentiles.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-046",
+      "answer": "B",
+      "correct_options": ["B"],
+      "working": "The Q3 row gives 68.70% and 78.90% in the lower and upper 80% columns.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-047",
+      "answer": "C",
+      "correct_options": ["C"],
+      "working": "Under normal sampling and the null hypothesis, standardizing with the sample standard error gives a Student t-statistic with n − 1 degrees of freedom. Its heavier tails account for estimating the variance.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-048",
+      "answer": "70",
+      "correct_options": [],
+      "working": "R's default quantile method gives Q1 = 20 and Q3 = 40. The upper fence is 40 + 1.5 × 20 = 70.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-049",
+      "answer": "0.500",
+      "correct_options": [],
+      "working": "Three of the six nonmissing values exceed 3.5. The mean of the nonmissing logical comparisons is 3/6.",
+      "confidence": "high"
+    },
+    {
+      "id": "K-03-050",
+      "answer": "df[complete.cases(df), , drop = FALSE]",
+      "correct_options": [],
+      "working": "The complete.cases() function selects rows with a nonmissing value in every column.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+ "batch": "2026-11-25_kc-brief_02",
+ "kind": "brief",
+ "role": "brief",
+ "label": "kc-brief",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_brief_v1.md",
+ "instructions_sha256": "4d3ef915d9ef82ff3a06211e136ea8220d50e46f015751d391c697e3d0bbf78e",
+ "batch_sha256": "94b4159ced219a05dcc56aca1b8eb3d0636b20b2e755da6661c1999b369de4c4",
+ "source": "C:\\dev\\masters-project\\data\\verification_logs\\2026-11-25_key_check_with_codex\\compare_20261125T221610Z",
+ "ids": {
+  "B-02-001": {
+   "item_id": "BM0138",
+   "position": 138
+  },
+  "B-02-002": {
+   "item_id": "BM0143",
+   "position": 143
+  },
+  "B-02-003": {
+   "item_id": "BM0149",
+   "position": 149
+  },
+  "B-02-004": {
+   "item_id": "BM0153",
+   "position": 153
+  },
+  "B-02-005": {
+   "item_id": "BM0158",
+   "position": 158
+  },
+  "B-02-006": {
+   "item_id": "BM0169",
+   "position": 169
+  },
+  "B-02-007": {
+   "item_id": "BM0178",
+   "position": 178
+  },
+  "B-02-008": {
+   "item_id": "BM0198",
+   "position": 198
+  },
+  "B-02-009": {
+   "item_id": "BM0209",
+   "position": 209
+  },
+  "B-02-010": {
+   "item_id": "BM0213",
+   "position": 213
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T22:24:06+00:00"
+}

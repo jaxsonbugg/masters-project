@@ -1,0 +1,67 @@
+{
+ "batch": "2026-11-25_kc-x2_26",
+ "kind": "solve-compute",
+ "label": "kc-x2",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_compute_v2.md",
+ "instructions_sha256": "8984ca3f53a14dd22e8d0d38b64f83e372925c50680295c0b3799275477780a5",
+ "batch_sha256": "737821edd790b5c9f8c883149fa966aff9899d7c987038feaf0a38a56df97648",
+ "items_file": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "manifest": "data/slots/benchmark_slots.manifest.json",
+ "ids": {
+  "M-26-001": {
+   "item_id": "BM0129",
+   "position": 129
+  },
+  "M-26-002": {
+   "item_id": "BM1699",
+   "position": 278
+  },
+  "M-26-003": {
+   "item_id": "BM1898",
+   "position": 298
+  },
+  "M-26-004": {
+   "item_id": "BM0389",
+   "position": 389
+  },
+  "M-26-005": {
+   "item_id": "BM0529",
+   "position": 529
+  },
+  "M-26-006": {
+   "item_id": "BM0538",
+   "position": 538
+  },
+  "M-26-007": {
+   "item_id": "BM0543",
+   "position": 543
+  },
+  "M-26-008": {
+   "item_id": "BM0594",
+   "position": 594
+  },
+  "M-26-009": {
+   "item_id": "BM0623",
+   "position": 623
+  },
+  "M-26-010": {
+   "item_id": "BM0643",
+   "position": 643
+  },
+  "M-26-011": {
+   "item_id": "BM0674",
+   "position": 674
+  },
+  "M-26-012": {
+   "item_id": "BM0694",
+   "position": 694
+  },
+  "M-26-013": {
+   "item_id": "BM0703",
+   "position": 703
+  }
+ },
+ "tool_version": "codex_batch-1",
+ "built_utc": "2026-11-25T22:07:18+00:00"
+}

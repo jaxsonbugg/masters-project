@@ -1,0 +1,114 @@
+{
+ "tool_version": "key_check-1",
+ "batch": "2026-11-25_kc-c1_37",
+ "claude_cli": "C:\\Users\\Buggb\\.vscode\\extensions\\anthropic.claude-code-2.1.330-win32-x64\\resources\\native-binary\\claude.exe",
+ "claude_version": "2.1.330 (Claude Code)",
+ "command": [
+  "C:\\Users\\Buggb\\.vscode\\extensions\\anthropic.claude-code-2.1.330-win32-x64\\resources\\native-binary\\claude.exe",
+  "-p",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--tools",
+  "\"\"",
+  "--strict-mcp-config",
+  "--setting-sources",
+  "\"\"",
+  "--no-session-persistence",
+  "--system-prompt",
+  "You are a careful expert in statistics and in the R programming language. Follow the user's instructions exactly and reply only in the required JSON format.",
+  "--json-schema",
+  "<schema.json>",
+  "--model",
+  "claude-opus-5-5"
+ ],
+ "login": {
+  "loggedIn": true,
+  "authMethod": "claude.ai",
+  "apiProvider": "firstParty",
+  "analyticsDisabled": false,
+  "projectsDirectory": "C:\\Users\\Buggb\\.claude\\projects",
+  "configDirectory": "C:\\Users\\Buggb\\.claude",
+  "loginExpiresAt": "2026-12-03T01:01:09.479Z",
+  "consoleProfileSignInOffered": true,
+  "subscriptionType": "team",
+  "storedClaudeAiLogin": true,
+  "planTier": "other",
+  "api_key_indicators": []
+ },
+ "prompt_sha256": "d90e24f52c191df960b1b7935a8a4f3cfacae1a93110c51a37e4a390c6a6a905",
+ "batch_sha256": "9c61b2846b599edfae69f191da6d2463517474c19e1f44d781eb28f2e0bfe0a0",
+ "instructions_sha256_in_folder": "d10cda826c98617501c4e4f889ddfda9d68ad85a66c86021d57419322d278986",
+ "n_ids": 25,
+ "started_utc": "2026-11-25T05:50:56+00:00",
+ "timeout_seconds": 1800,
+ "exit_status": 0,
+ "finished_utc": "2026-11-25T05:51:29+00:00",
+ "wall_seconds": 32.9,
+ "model_requested": "claude-opus-5-5",
+ "model_reported": "claude-opus-5-5",
+ "model": "claude-opus-5-5",
+ "usage": {
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 8182,
+  "cache_read_input_tokens": 669,
+  "output_tokens": 4040,
+  "output_tokens_details": {
+   "thinking_tokens": 1844
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 8182,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 4040,
+    "cache_read_input_tokens": 669,
+    "cache_creation_input_tokens": 8182,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 8182
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "cost_usd_equivalent_reported": 0.14639780000000002,
+ "api_key_source": "none",
+ "num_turns": 2,
+ "tools_offered": [
+  "StructuredOutput"
+ ],
+ "audit_problems": [],
+ "rate_limit": {
+  "status": "allowed",
+  "resetsAt": 1795597800,
+  "rateLimitType": "five_hour",
+  "overageStatus": "rejected",
+  "overageDisabledReason": "org_level_disabled",
+  "isUsingOverage": false,
+  "unifiedWindows": {
+   "five_hour": {
+    "utilization": 0.51,
+    "resetsAt": 1795597800,
+    "status": "allowed"
+   },
+   "seven_day": {
+    "utilization": 0.17,
+    "resetsAt": 1796004000,
+    "status": "allowed"
+   }
+  }
+ },
+ "accepted_run": true,
+ "usage_limit_reported": false
+}

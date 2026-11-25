@@ -1,0 +1,498 @@
+{
+  "answers": [
+    {
+      "id": "M-09-001",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "Measurements from the same horse are clustered, so treating them as independent inflates the degrees of freedom and can increase Type I error."
+    },
+    {
+      "id": "M-09-002",
+      "status": "computed",
+      "r_code": "temperature <- 10\nacidity_index <- 7.5\nanswer <- 1.2 + 0.3 * temperature - 0.1 * acidity_index + 0.02 * temperature * acidity_index",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Substitute both predictor values into the model, including their product."
+    },
+    {
+      "id": "M-09-003",
+      "status": "computed",
+      "r_code": "set.seed(7)\nx <- stats::rnorm(4)\nidx <- seq_along(x)\ny <- x * idx\nanswer <- mean(y)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Reproduce the seeded draws and average their elementwise products with the indices."
+    },
+    {
+      "id": "M-09-004",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "matrix(50:61, nrow = 3L, ncol = 4L, byrow = TRUE)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "invisible(NULL)"}
+      ],
+      "correct_options": [],
+      "note": "The expression uses fixed dimensions and entries, so the sole test needs no setup."
+    },
+    {
+      "id": "M-09-005",
+      "status": "computed",
+      "r_code": "n <- c(16, 16)\nmeans <- c(100, 90)\nsds <- c(10, 10)\ndf <- sum(n - 1)\npooled_variance <- sum((n - 1) * sds^2) / df\nse <- sqrt(pooled_variance * sum(1 / n))\nanswer <- (means[1] - means[2]) - stats::qt(0.975, df) * se",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the pooled two-sample t margin of error from the observed mean difference."
+    },
+    {
+      "id": "M-09-006",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The false discovery rate is the expectation of the false discovery proportion across repeated screening cycles."
+    },
+    {
+      "id": "M-09-007",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "A linear-model prediction interval uses a residual-degrees-of-freedom t critical value and includes residual variance in the prediction standard error."
+    },
+    {
+      "id": "M-09-008",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sum(diag(V %*% V))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "V <- matrix(c(2, 1, 0, 1, 3, 1, 0, 1, 2), nrow = 3, byrow = TRUE)"}
+      ],
+      "correct_options": [],
+      "note": "The specified matrix is symmetric, so its transpose equals itself and the one test uses that fixed matrix."
+    },
+    {
+      "id": "M-09-009",
+      "status": "computed",
+      "r_code": "model_terms <- stats::terms(y ~ x * g)\nmain_effects <- attr(model_terms, 'term.labels')[attr(model_terms, 'order') == 1L]\nanswer <- deparse1(stats::reformulate(main_effects, response = 'y'))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Rebuild the formula from its first-order terms and retain the original response."
+    },
+    {
+      "id": "M-09-010",
+      "status": "computed",
+      "r_code": "replicates <- c(22.1, 21.5, 23.0, 21.8, 22.6, 21.2, 22.9, 21.9, 22.4, 22.5)\nanswer <- stats::sd(replicates)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the sample standard deviation of the bootstrap replicates."
+    },
+    {
+      "id": "M-09-011",
+      "status": "computed",
+      "r_code": "cracks <- c(10, 15)\nn <- c(50, 60)\nproportions <- cracks / n\npooled <- sum(cracks) / sum(n)\nanswer <- (proportions[1] - proportions[2]) / sqrt(pooled * (1 - pooled) * sum(1 / n))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Standardize the Batch A minus Batch B crack-rate difference using the pooled rate."
+    },
+    {
+      "id": "M-09-012",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The systematic underprediction illustrates bias, and the flexible model's unstable predictions illustrate high variance."
+    },
+    {
+      "id": "M-09-013",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "stats::fitted(fit)",
+      "test_inputs": [
+        {"kind": "variation", "code": "size <- c(450, 600, 775, 900)\nrent <- c(1200, 1380, 1695, 1810)\nfit <- stats::lm(rent ~ size)"},
+        {"kind": "variation", "code": "size <- c(510, 635, 780, 850, 1050, 1200)\nrent <- c(1350, 1500, 1620, 1765, 2025, 2350)\nfit <- stats::lm(rent ~ size)"},
+        {"kind": "variation", "code": "size <- c(700, 550, 950, 700, 1100)\nrent <- c(1550, 1300, 1900, 1600, 2150)\nfit <- stats::lm(rent ~ size)"},
+        {"kind": "edge", "code": "size <- c(700, 700, 700)\nrent <- c(1400, 1450, 1550)\nfit <- stats::lm(rent ~ size)"}
+      ],
+      "correct_options": [],
+      "note": "Extract the fitted values directly from the model object."
+    },
+    {
+      "id": "M-09-014",
+      "status": "computed",
+      "r_code": "acf_values <- c(0.650, 0.420, 0.275, 0.180)\npacf_values <- c(0.650, 0.080, -0.045, 0.060)\nbound <- 0.30\nacf_significant <- abs(acf_values) > bound\npacf_significant <- abs(pacf_values) > bound\nlag_one_only <- c(TRUE, FALSE, FALSE, FALSE)\nvalue <- c(A = !any(acf_significant | pacf_significant), B = identical(pacf_significant, lag_one_only) && all(diff(abs(acf_values)) < 0), C = identical(acf_significant, lag_one_only), D = acf_significant[4])\nanswer <- names(value)[value]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The PACF exceeds the bound only at lag one and the ACF decreases across the four lags, supporting an AR(1) interpretation."
+    },
+    {
+      "id": "M-09-015",
+      "status": "computed",
+      "r_code": "lambda <- 80 * 0.025\nanswer <- stats::dpois(3, lambda = lambda)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the Poisson point probability at three offers with rate equal to the expected count."
+    },
+    {
+      "id": "M-09-016",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Sufficiency means the conditional distribution of the sample given the statistic is parameter-free."
+    },
+    {
+      "id": "M-09-017",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3)\ny <- c(1/3, 2/3, 1)\nanswer <- sum(crossprod(x, y))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the cross-product of the two vectors and extract its scalar value with sum."
+    },
+    {
+      "id": "M-09-018",
+      "status": "computed",
+      "r_code": "x <- 0:100\nw <- stats::dpois(x, lambda = 30) * (x - 20)^2\nanswer <- sum(w * x) / sum(w)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Normalize the weighted sum by the total weight over the specified indices."
+    },
+    {
+      "id": "M-09-019",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "25 * trunc(0.15 * salaries / 25)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "salaries <- c(45230, 67875, 52399, 88941)"},
+        {"kind": "variation", "code": "salaries <- c(38750, 51420, 73210, 100250, 125925)"},
+        {"kind": "variation", "code": "salaries <- c(26350.50, 58999.99, 94201.25)"},
+        {"kind": "edge", "code": "salaries <- c(50000, 50500, 51000)"}
+      ],
+      "correct_options": [],
+      "note": "Express each bonus in units of 25 dollars, truncate, and convert back to dollars."
+    },
+    {
+      "id": "M-09-020",
+      "status": "computed",
+      "r_code": "raw <- c(0.012, 0.045, 0.003, 0.089)\nvalue <- stats::p.adjust(raw, method = 'bonferroni')[1]\nanswer <- if (isTRUE(all.equal(value, raw[1] * length(raw)))) 'D' else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The Bonferroni adjustment for Blend 1 equals its raw p-value multiplied by the number of tests."
+    },
+    {
+      "id": "M-09-021",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The Benjamini–Hochberg guarantee applies under independence or positive regression dependence on the subset of true nulls."
+    },
+    {
+      "id": "M-09-022",
+      "status": "computed",
+      "r_code": "usage <- c(2, 5, 8, 12, 15)\nfrequency <- c(3, 5, 8, 4, 2)\nanswer <- stats::weighted.mean(usage, frequency)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the frequencies as weights for the five usage values."
+    },
+    {
+      "id": "M-09-023",
+      "status": "computed",
+      "r_code": "strengths <- list(batch1 = c(450, 455, 460), batch2 = c(250, 255))\ncandidates <- list(quote(sample <- strengths[1]), quote(sample <- strengths[[1]]))\nreturns_batch <- vapply(candidates, function(expr) is.numeric(eval(expr[[3L]])), logical(1))\nanswer <- deparse1(candidates[[which(returns_batch)]])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Select the assignment whose right-hand side extracts the numeric batch vector."
+    },
+    {
+      "id": "M-09-024",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sapply(df, sum)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "df <- data.frame(a = 1:4, b = 10:13)"},
+        {"kind": "variation", "code": "df <- data.frame(a = c(2.5, -1, 3.5), b = c(7, 0, 12))"},
+        {"kind": "variation", "code": "df <- data.frame(a = c(12L, 15L, 10L, 18L, 13L), b = c(8L, 9L, 11L, 6L, 10L))"},
+        {"kind": "edge", "code": "df <- data.frame(a = 0, b = 9)"}
+      ],
+      "correct_options": [],
+      "note": "Apply sum to each data-frame column with sapply."
+    },
+    {
+      "id": "M-09-025",
+      "status": "computed",
+      "r_code": "n <- c(15, 20, 25)\nmeans <- c(85, 70, 65)\nsds <- c(10, 12, 8)\ngrand_mean <- stats::weighted.mean(means, n)\nms_between <- sum(n * (means - grand_mean)^2) / (length(n) - 1)\nms_within <- sum((n - 1) * sds^2) / (sum(n) - length(n))\nanswer <- ms_between / ms_within",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Reconstruct the between-group and within-group mean squares from the summaries and take their ratio."
+    },
+    {
+      "id": "M-09-026",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The central limit theorem gives an increasingly accurate normal approximation centered at the population mean of 5."
+    },
+    {
+      "id": "M-09-027",
+      "status": "computed",
+      "r_code": "counts <- rbind(Low = c(45, 35, 15, 5), High = c(62, 22, 11, 5))\nvalue <- counts[, 1L] / rowSums(counts)\nanswer <- if (value[['High']] > value[['Low']]) 'C' else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The observed zero-defect proportions rise from 0.45 to 0.62 across the two calibration settings."
+    },
+    {
+      "id": "M-09-028",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sum(vapply(strsplit(x, '|', fixed = TRUE), function(parts) sum(parts != '', na.rm = TRUE), numeric(1)))",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c('1.2|3.4|5.6', '7.8||9.0', '10.1|')"},
+        {"kind": "variation", "code": "x <- c('3.0|4.5', '5.0', '6.2|7.3|8.4', '9.2||10.3')"},
+        {"kind": "variation", "code": "x <- c('|1.5|2.75', '6.0|||8.25|', '11.25')"},
+        {"kind": "edge", "code": "x <- c('', '|', '|||')"}
+      ],
+      "correct_options": [],
+      "note": "Count nonempty fields in each split element and sum the counts."
+    },
+    {
+      "id": "M-09-029",
+      "status": "computed",
+      "r_code": "f <- function(v) {\n  if (length(v) == 3) return(9.5)\n  sum(v) / length(v)\n}\nanswer <- f(c(2, 4, 6))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The three-element input triggers the early return."
+    },
+    {
+      "id": "M-09-030",
+      "status": "computed",
+      "r_code": "r <- 0.62\nrho_0 <- 0.40\nn <- 50\nse <- 1 / sqrt(n - 3)\nanswer <- (atanh(r) - atanh(rho_0)) / se",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Transform both correlations with Fisher's z transformation and standardize their difference."
+    },
+    {
+      "id": "M-09-031",
+      "status": "computed",
+      "r_code": "red_risk <- 24 / (24 + 36)\nblue_risk <- 15 / (15 + 45)\nanswer <- red_risk / blue_risk",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the red giant flicker rate by the blue dwarf flicker rate."
+    },
+    {
+      "id": "M-09-032",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Aperture can influence both the distances represented in the sample and the measured brightness."
+    },
+    {
+      "id": "M-09-033",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "cumsum(x)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(4, 1, 6, 3)"},
+        {"kind": "variation", "code": "x <- c(2, 7, 1, 5, 9)"},
+        {"kind": "variation", "code": "x <- c(2.5, -1.25, 4.75, -3.5)"},
+        {"kind": "edge", "code": "x <- numeric(0)"}
+      ],
+      "correct_options": [],
+      "note": "Use cumsum to return the running total at each position."
+    },
+    {
+      "id": "M-09-034",
+      "status": "computed",
+      "r_code": "intercept <- 2.3026\nslope <- 0.20\nrates <- c(0, 1)\nmean_before <- exp(intercept + slope * rates)\nmean_after <- exp(intercept + slope * (rates + 1))\nvalue <- mean_after / mean_before\nmatches <- c(A = all(abs(value - exp(slope)) < 1e-10), B = all(abs(mean_after - mean_before - 0.20) < 1e-10), C = all(abs(value - 1.20) < 1e-10), D = all(abs(value - 0.50) < 1e-10))\nanswer <- names(matches)[matches]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Exponentiating the linear predictors gives an expected-value ratio of exp(0.20) for a one-unit increase."
+    },
+    {
+      "id": "M-09-035",
+      "status": "computed",
+      "r_code": "prob <- matrix(c(0.05, 0.10, 0.05, 0.05, 0.30, 0.10, 0.10, 0.10, 0.15), nrow = 3, byrow = TRUE)\nx <- 1:3\ny <- 1:3\nex <- sum(x * rowSums(prob))\ney <- sum(y * colSums(prob))\nexy <- sum(outer(x, y) * prob)\nanswer <- exy - ex * ey",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the joint product moment and subtract the product of the marginal means."
+    },
+    {
+      "id": "M-09-036",
+      "status": "computed",
+      "r_code": "x <- c(6, 2, 6, 9, 2)\nanswer <- utils::capture.output(print(unique(x)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Capture R's printed representation of the distinct values in first-occurrence order."
+    },
+    {
+      "id": "M-09-037",
+      "status": "computed",
+      "r_code": "x <- 12\nn <- 60\nz <- stats::qnorm(0.975)\nn_tilde <- n + z^2\np_tilde <- (x + z^2 / 2) / n_tilde\nanswer <- p_tilde - z * sqrt(p_tilde * (1 - p_tilde) / n_tilde)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Subtract the normal margin of error computed from the adjusted proportion and sample size."
+    },
+    {
+      "id": "M-09-038",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "t(anxiety) %*% depression",
+      "test_inputs": [
+        {"kind": "question_data", "code": "anxiety <- c(0.5, -1.2, 0.8, -0.3, 1.1)\ndepression <- c(0.6, -0.9, 0.7, -0.4, 1.0)"},
+        {"kind": "variation", "code": "anxiety <- c(-1.1, 0.3, 0.8, 1.2, -0.6)\ndepression <- c(-0.9, -0.2, 0.4, 1.4, -0.3)"},
+        {"kind": "variation", "code": "anxiety <- c(0.7, -0.4, 0.1, 1.3, -1.2, 0.5)\ndepression <- c(-0.1, 0.5, -0.7, 1.1, -0.8, 0.2)"},
+        {"kind": "edge", "code": "anxiety <- c(0, -1, 1, -0.5, 0.5)\ndepression <- c(1, 0.5, 0.5, -1, -1)"}
+      ],
+      "correct_options": [],
+      "note": "The row-by-column product returns the dot product as a one-by-one matrix."
+    },
+    {
+      "id": "M-09-039",
+      "status": "computed",
+      "r_code": "threshold <- c(A = 0.2, B = 0.4, C = 0.6, D = 0.8)\nsensitivity <- c(0.95, 0.85, 0.75, 0.40)\nspecificity <- c(0.40, 0.70, 0.85, 0.95)\nyouden <- sensitivity + specificity - 1\nbest <- youden == max(youden)\nvalue <- unname(threshold[best])\nanswer <- names(threshold)[best]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Maximize sensitivity plus specificity minus one across the listed thresholds."
+    },
+    {
+      "id": "M-09-040",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "The usual ANOVA F-test tends to be liberal when the smaller group has the larger variance."
+    },
+    {
+      "id": "M-09-041",
+      "status": "computed",
+      "r_code": "p_allele <- 0.65\np_marker <- 0.35\nanswer <- p_allele * (1 - p_marker)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Independence lets us multiply the allele probability by the probability of lacking the marker."
+    },
+    {
+      "id": "M-09-042",
+      "status": "computed",
+      "r_code": "x <- c(12.5, 14.2, 15.8, 11.3, 16.9, 13.4, 17.1, 12.8, 15.5, 14.3)\nmask <- x > 14\nanswer <- mean(x[mask])",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Average the entries strictly greater than 14."
+    },
+    {
+      "id": "M-09-043",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "readings[readings > 19.5 & readings < 21.0]",
+      "test_inputs": [
+        {"kind": "question_data", "code": "readings <- c(22.1, 19.8, 20.5, 21.3, 18.9, 20.2, 23.1, 19.5)"},
+        {"kind": "variation", "code": "readings <- c(19.7, 20.3, 21.4, 20.9, 18.7)"},
+        {"kind": "variation", "code": "readings <- c(22.4, 20.6, 20.6, 20.1, 19.55, 21.01)"},
+        {"kind": "edge", "code": "readings <- c(18.9, 19.5, 21.0, 21.4)"}
+      ],
+      "correct_options": [],
+      "note": "Keep readings that satisfy both strict inequalities."
+    },
+    {
+      "id": "M-09-044",
+      "status": "computed",
+      "r_code": "vitamin_c <- c(48.5, 52.1, 50.8, 49.2, 51.5, 47.9)\nanswer <- stats::sd(vitamin_c)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the sample standard deviation with denominator n minus one for the variance."
+    },
+    {
+      "id": "M-09-045",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The spread of the bootstrap means estimates the sampling standard error of the sample mean."
+    },
+    {
+      "id": "M-09-046",
+      "status": "computed",
+      "r_code": "p_value <- 0.0127\nalpha <- 0.05\nci <- c(0.623, 4.397)\ncontains_zero <- ci[1] <= 0 && ci[2] >= 0\nvalue <- c(p_below_alpha = p_value < alpha, interval_excludes_zero = !contains_zero)\nanswer <- if (all(value)) 'B' else if (!any(value)) 'A' else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The reported p-value is below 0.05 and both confidence limits are positive."
+    },
+    {
+      "id": "M-09-047",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "findInterval(x, sort(x)) / length(x)",
+      "test_inputs": [
+        {"kind": "question_data", "code": "x <- c(1, 3, 2, 3, 1)"},
+        {"kind": "variation", "code": "x <- c(2.4, -1.1, 0.2, 5.6, 3.3, -0.4)"},
+        {"kind": "variation", "code": "x <- c(10, 7, 7, 5, 12, 10, 8, 7)"},
+        {"kind": "edge", "code": "x <- rep(-2, 4)"}
+      ],
+      "correct_options": [],
+      "note": "The interval index counts sorted observations at or below each original value, including ties."
+    },
+    {
+      "id": "M-09-048",
+      "status": "computed",
+      "r_code": "x <- ordered(c('A', 'B', 'C'), levels = c('C', 'B', 'A'))\nanswer <- as.numeric(x)[2]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Read the second element's integer code under the specified factor level order."
+    },
+    {
+      "id": "M-09-049",
+      "status": "computed",
+      "r_code": "rho_xy <- 0.600\nrho_xz <- 0.800\nrho_yz <- 0.700\nanswer <- (rho_xy - rho_xz * rho_yz) / sqrt((1 - rho_xz^2) * (1 - rho_yz^2))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Apply the first-order partial correlation formula to the three supplied correlations."
+    },
+    {
+      "id": "M-09-050",
+      "status": "computed",
+      "r_code": "answer <- stats::punif(1.8, min = 0.5, max = 2.5, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the upper-tail probability of the specified uniform distribution."
+    }
+  ]
+}

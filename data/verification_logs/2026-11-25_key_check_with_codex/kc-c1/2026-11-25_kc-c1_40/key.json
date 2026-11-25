@@ -1,0 +1,115 @@
+{
+ "batch": "2026-11-25_kc-c1_40",
+ "kind": "solve-analytic",
+ "role": "C1",
+ "label": "kc-c1",
+ "date": "2026-11-25",
+ "instructions_file": "data/prompts/key_check_analytic_v2.md",
+ "instructions_sha256": "67175e476d68c977cae1013d12a29f7e16bfd7781ac2bea896d478788c7cfff0",
+ "batch_sha256": "d16c418d53f370f81596cf3ab99cdee1718e7f56a5b6683228676eb884601570",
+ "source": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "ids": {
+  "K-40-001": {
+   "item_id": "BM0950",
+   "position": 950
+  },
+  "K-40-002": {
+   "item_id": "BM0951",
+   "position": 951
+  },
+  "K-40-003": {
+   "item_id": "BM0952",
+   "position": 952
+  },
+  "K-40-004": {
+   "item_id": "BM0953",
+   "position": 953
+  },
+  "K-40-005": {
+   "item_id": "BM0954",
+   "position": 954
+  },
+  "K-40-006": {
+   "item_id": "BM0955",
+   "position": 955
+  },
+  "K-40-007": {
+   "item_id": "BM0956",
+   "position": 956
+  },
+  "K-40-008": {
+   "item_id": "BM0957",
+   "position": 957
+  },
+  "K-40-009": {
+   "item_id": "BM0958",
+   "position": 958
+  },
+  "K-40-010": {
+   "item_id": "BM0959",
+   "position": 959
+  },
+  "K-40-011": {
+   "item_id": "BM0960",
+   "position": 960
+  },
+  "K-40-012": {
+   "item_id": "BM0961",
+   "position": 961
+  },
+  "K-40-013": {
+   "item_id": "BM0962",
+   "position": 962
+  },
+  "K-40-014": {
+   "item_id": "BM0963",
+   "position": 963
+  },
+  "K-40-015": {
+   "item_id": "BM0964",
+   "position": 964
+  },
+  "K-40-016": {
+   "item_id": "BM0965",
+   "position": 965
+  },
+  "K-40-017": {
+   "item_id": "BM0967",
+   "position": 967
+  },
+  "K-40-018": {
+   "item_id": "BM1616",
+   "position": 968
+  },
+  "K-40-019": {
+   "item_id": "BM1619",
+   "position": 969
+  },
+  "K-40-020": {
+   "item_id": "BM2003",
+   "position": 970
+  },
+  "K-40-021": {
+   "item_id": "BM0971",
+   "position": 971
+  },
+  "K-40-022": {
+   "item_id": "BM0972",
+   "position": 972
+  },
+  "K-40-023": {
+   "item_id": "BM0973",
+   "position": 973
+  },
+  "K-40-024": {
+   "item_id": "BM1627",
+   "position": 974
+  },
+  "K-40-025": {
+   "item_id": "BM0975",
+   "position": 975
+  }
+ },
+ "tool_version": "key_check-1",
+ "built_utc": "2026-11-25T05:47:05+00:00"
+}

@@ -1,0 +1,554 @@
+{
+  "answers": [
+    {
+      "id": "M-06-001",
+      "status": "computed",
+      "r_code": "daily_rain <- c(0.2, 0.5, 1.1, 0.0)\nanswer <- tryCatch({\n  stop(\"Sensor malfunction\")\n  mean(daily_rain)\n}, error = function(e) 10 / 3)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The error handler supplies the return value."
+    },
+    {
+      "id": "M-06-002",
+      "status": "computed",
+      "r_code": "first_defects <- 0:3\nprob <- 0.03\nanswer <- sum(stats::dbinom(first_defects, size = 100, prob = prob) * stats::pbinom(5 - first_defects, size = 50, prob = prob))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Sum the acceptance probabilities over first-stage defect counts that allow inspection to continue."
+    },
+    {
+      "id": "M-06-003",
+      "status": "computed",
+      "r_code": "critical_value <- stats::qnorm(0.975)\nanswer <- ceiling((critical_value * 400 / 50)^2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Solve the known-standard-deviation margin-of-error inequality and take the smallest feasible integer."
+    },
+    {
+      "id": "M-06-004",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "The question asks for the general implication of independence when correlation is defined."
+    },
+    {
+      "id": "M-06-005",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "c(alpha = 10, beta = 20, gamma = 30)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "invisible(NULL)"
+        }
+      ],
+      "correct_options": [],
+      "note": "The names and values are fixed, so one evaluation with no setup suffices."
+    },
+    {
+      "id": "M-06-006",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The label 3Q denotes the 75th percentile of the model residuals."
+    },
+    {
+      "id": "M-06-007",
+      "status": "computed",
+      "r_code": "strength <- c(102.0, 105.5, 104.0, 106.2, 103.8)\nalpha <- 0.3\nanswer <- Reduce(function(level, observation) alpha * observation + (1 - alpha) * level, strength)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Starting with the first observation, update the smoothed level through the fifth run."
+    },
+    {
+      "id": "M-06-008",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The alternative places the population mean below eight minutes."
+    },
+    {
+      "id": "M-06-009",
+      "status": "computed",
+      "r_code": "feedback <- factor(c(\"Very Satisfied\", \"Satisfied\", \"Neutral\"))\nanswer <- levels(feedback)[1L]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Extract the first level from the factor's default level ordering."
+    },
+    {
+      "id": "M-06-010",
+      "status": "computed",
+      "r_code": "households <- c(20, 30, 50)\nhigh_income <- c(4, 9, 15)\nsample_sizes <- c(2, 3, 4)\nnone <- stats::dhyper(0, m = high_income, n = households - high_income, k = sample_sizes)\nanswer <- 1 - prod(none)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Take the complement of drawing zero high-income households across all three independent samples."
+    },
+    {
+      "id": "M-06-011",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "cut(x, breaks = c(0, 7, 14, 20), labels = c(\"Low\", \"Med\", \"High\"), include.lowest = TRUE)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "x <- c(2, 8, 12, 19)"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(1.4, 5.5, 9.2, 15.7, 18.3)"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(6, 11, 11, 13, 16, 17)"
+        },
+        {
+          "kind": "edge",
+          "code": "x <- c(0, 7, 14, 20)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Use right-closed intervals and include zero in the first interval."
+    },
+    {
+      "id": "M-06-012",
+      "status": "computed",
+      "r_code": "covariance <- matrix(c(4, 1.2, 1.2, 9), nrow = 2)\nvalue <- sqrt(diag(covariance))\nsupported <- c(B = value[2L] < value[1L], D = isTRUE(all.equal(value, c(2, 3))) && value[2L] > value[1L])\nanswer <- names(supported)[supported]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Compare the standard deviations obtained from the covariance matrix diagonal."
+    },
+    {
+      "id": "M-06-013",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Proportional stratification controls between-tract variation, while positive within-tract correlation inflates cluster-sampling variance under the stated design."
+    },
+    {
+      "id": "M-06-014",
+      "status": "computed",
+      "r_code": "sst <- 520.0\nssr <- 442.0\nanswer <- ssr / sst",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the regression sum of squares by the total sum of squares."
+    },
+    {
+      "id": "M-06-015",
+      "status": "computed",
+      "r_code": "x <- c(1, 2, 3, 4)\nz <- c(1, 2, 1, 2)\ny <- c(5, 8, 7, 12)\nfit <- stats::lm(y ~ x * z)\nanswer <- unname(stats::predict(fit, newdata = data.frame(x = 2, z = 2)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Fit the interaction model and predict at the specified values of both predictors."
+    },
+    {
+      "id": "M-06-016",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "cut(1:6, breaks = c(-Inf, 4.5, Inf), labels = c('low', 'high'))",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "invisible(NULL)"
+        }
+      ],
+      "correct_options": [],
+      "note": "The vector, breaks, and labels are fixed, so one evaluation with no setup suffices."
+    },
+    {
+      "id": "M-06-017",
+      "status": "computed",
+      "r_code": "sigma <- 1.75\nn <- 42\ninformation <- n * 2 / sigma^2\nanswer <- 1 / information",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Invert the total Fisher information for the normal standard deviation."
+    },
+    {
+      "id": "M-06-018",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "As the likelihood concentrates with more data, the prior typically has less influence on the posterior."
+    },
+    {
+      "id": "M-06-019",
+      "status": "computed",
+      "r_code": "value <- stats::pchisq(15.88, df = 2, lower.tail = FALSE)\nanswer <- if (value < 0.05) \"C\" else \"B\"",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Compare the joint Wald test p-value with the conventional 0.05 significance level."
+    },
+    {
+      "id": "M-06-020",
+      "status": "unanswerable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "The expression depends on the custom function loglik_nb, whose implementation is missing from the question."
+    },
+    {
+      "id": "M-06-021",
+      "status": "computed",
+      "r_code": "fast <- c(TRUE, TRUE, FALSE, TRUE)\nanswer <- mean(as.numeric(fast))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Average the zeroes and ones produced by the logical-to-numeric conversion."
+    },
+    {
+      "id": "M-06-022",
+      "status": "computed",
+      "r_code": "counts <- c(1, 2, 3)\nrates <- c(Alpha = 2, Beta = 4)\nprior <- c(Alpha = 0.4, Beta = 0.6)\nlikelihood <- vapply(rates, function(rate) prod(stats::dpois(counts, lambda = rate)), numeric(1))\nweights <- prior * likelihood\nanswer <- weights[[\"Alpha\"]] / sum(weights)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Normalize the prior-weighted joint Poisson likelihoods to obtain Alpha's posterior probability."
+    },
+    {
+      "id": "M-06-023",
+      "status": "computed",
+      "r_code": "answer <- stats::pnorm(1.645, mean = 1, sd = 1)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute the probability of falling in the nonrejection region when the true mean is one."
+    },
+    {
+      "id": "M-06-024",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Maximum likelihood chooses the parameter value that maximizes the likelihood of the observed data."
+    },
+    {
+      "id": "M-06-025",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(time < 9)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "time <- c(7, 10, 8, 12, 9)"
+        },
+        {
+          "kind": "variation",
+          "code": "time <- c(4, 6, 10, 11, 8)"
+        },
+        {
+          "kind": "variation",
+          "code": "time <- c(8, 12, 14, 16, 10)"
+        },
+        {
+          "kind": "edge",
+          "code": "time <- rep(9, 5)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Average the logical indicators for recovery in strictly fewer than nine days."
+    },
+    {
+      "id": "M-06-026",
+      "status": "computed",
+      "r_code": "value <- 0.041\nanswer <- if (value < 0.05) \"A\" else \"C\"",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "At the 0.05 significance level, the reported p-value supports a difference between the distributions."
+    },
+    {
+      "id": "M-06-027",
+      "status": "computed",
+      "r_code": "large <- 10\nremaining_small <- 50 - large - 1\nanswer <- stats::dhyper(2, m = large, n = remaining_small, k = 4)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Condition on the first small claim by removing it from the population before evaluating the hypergeometric probability."
+    },
+    {
+      "id": "M-06-028",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "When the bootstrap distribution is symmetric about the observed estimate, reflecting the percentile endpoints reproduces the same interval."
+    },
+    {
+      "id": "M-06-029",
+      "status": "computed",
+      "r_code": "x <- c(100, 80, 100, 60)\nanswer <- rank(x, ties.method = \"min\")[3L]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Use the minimum rank for tied observations and extract the third element."
+    },
+    {
+      "id": "M-06-030",
+      "status": "computed",
+      "r_code": "n <- 120\nsigma <- 3\np <- 0.85\nanswer <- sigma * sqrt(p * (1 - p)) / (sqrt(n) * stats::dnorm(stats::qnorm(p)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the supplied asymptotic standard-error formula at the 85th percentile."
+    },
+    {
+      "id": "M-06-031",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "sum((hours - mean(hours))^2) / (length(hours) - 1L)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "hours <- c(48.2, 47.5, 49.1, 48.0, 47.8)"
+        },
+        {
+          "kind": "variation",
+          "code": "hours <- c(41.3, 42.0, 40.7, 41.9, 42.5)"
+        },
+        {
+          "kind": "variation",
+          "code": "hours <- c(54.4, 53.8, 57.1, 55.0, 54.6)"
+        },
+        {
+          "kind": "edge",
+          "code": "hours <- rep(48.0, 5)"
+        }
+      ],
+      "correct_options": [],
+      "note": "Divide the centered sum of squares by the sample size minus one."
+    },
+    {
+      "id": "M-06-032",
+      "status": "computed",
+      "r_code": "allowed_pairs <- data.frame(Supplier = factor(c(\"Alpha\", \"Beta\", \"Gamma\")), Catalyst = factor(c(\"TypeX\", \"TypeY\", \"TypeX\")))\ndesign <- stats::model.matrix(~ Supplier + Catalyst, data = allowed_pairs)\nvalue <- all(design[, \"SupplierBeta\"] == design[, \"CatalystTypeY\"])\nanswer <- if (value) \"C\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "The two indicator columns coincide for every allowed batch type."
+    },
+    {
+      "id": "M-06-033",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "For a fixed positive effect, increasing sample size raises power while leaving the expected estimate unchanged."
+    },
+    {
+      "id": "M-06-034",
+      "status": "computed",
+      "r_code": "sizes <- c(10, 15)\nmeans <- c(65.2, 70.4)\nanswer <- sum(sizes * means) / sum(sizes)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Weight each section mean by its number of students."
+    },
+    {
+      "id": "M-06-035",
+      "status": "computed",
+      "r_code": "x <- c('2.1', '3.3', 'five', '4.7', '8', 'nine')\ny <- suppressWarnings(as.numeric(x))\nanswer <- stats::sd(y, na.rm = TRUE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Convert the strings to numeric values and omit the resulting missing values when computing the standard deviation."
+    },
+    {
+      "id": "M-06-036",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "mean(stats::rbinom(10000, size = 5, prob = 0.4) >= 3)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "set.seed(42)"
+        }
+      ],
+      "correct_options": [],
+      "note": "The seed and all simulation parameters are fixed, so only the specified setup applies."
+    },
+    {
+      "id": "M-06-037",
+      "status": "computed",
+      "r_code": "variance_a <- 45 / (10 - 1)\nvariance_b <- 20 / (6 - 1)\nanswer <- variance_a / variance_b",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Compute each sample variance using its own degrees of freedom, then take the specified ratio."
+    },
+    {
+      "id": "M-06-038",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "Positive semidefiniteness makes every quadratic form representing a linear combination's variance nonnegative."
+    },
+    {
+      "id": "M-06-039",
+      "status": "computed",
+      "r_code": "interaction_ms <- 1600 / 2\nresidual_ms <- 2160 / 54\nvalue <- stats::pf(interaction_ms / residual_ms, df1 = 2, df2 = 54, lower.tail = FALSE)\nanswer <- if (value < 0.05) \"B\" else NA_character_",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["B"],
+      "note": "The interaction F-test supports interpreting each factor's effect in the context of the other factor's level."
+    },
+    {
+      "id": "M-06-040",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "apply(P, 1L, function(parameters) stats::dbeta(x, shape1 = parameters[1L], shape2 = parameters[2L], log = TRUE))",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "P <- matrix(c(0.2, 0.8, 0.5, 0.5, 0.7, 0.3), nrow = 3, byrow = TRUE)\nx <- 0.6"
+        },
+        {
+          "kind": "variation",
+          "code": "P <- matrix(c(2, 3, 4, 2, 5, 5), nrow = 3, byrow = TRUE)\nx <- 0.6"
+        },
+        {
+          "kind": "variation",
+          "code": "P <- matrix(c(0.4, 2.5, 1.5, 0.8, 3.2, 4.4), nrow = 3, byrow = TRUE)\nx <- 0.6"
+        },
+        {
+          "kind": "edge",
+          "code": "P <- matrix(1, nrow = 3, ncol = 2)\nx <- 0.6"
+        }
+      ],
+      "correct_options": [],
+      "note": "Evaluate the log Beta density at the same observation for each row of shape parameters."
+    },
+    {
+      "id": "M-06-041",
+      "status": "computed",
+      "r_code": "answer <- utils::capture.output(print(seq_len(0)))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Capture the printed representation of the empty integer vector."
+    },
+    {
+      "id": "M-06-042",
+      "status": "computed",
+      "r_code": "t_statistic <- 1.960\nanswer <- 2 * stats::pt(abs(t_statistic), df = 148, lower.tail = FALSE)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Double the upper-tail probability at the absolute t-statistic."
+    },
+    {
+      "id": "M-06-043",
+      "status": "computed",
+      "r_code": "counts <- c(10, 20, 10, 20, 10)\ncentered <- counts - mean(counts)\nn <- length(centered)\nanswer <- sum(centered[-n] * centered[-1L]) / sum(centered^2)",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Divide the sum of adjacent centered products by the sum of all centered squares."
+    },
+    {
+      "id": "M-06-044",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["C"],
+      "note": "Ignoring extra variation can make the usual Poisson standard errors too small and inflate the Type I error rate."
+    },
+    {
+      "id": "M-06-045",
+      "status": "computed",
+      "r_code": "",
+      "answer_expression": "grepl(\"data\", x, fixed = TRUE)",
+      "test_inputs": [
+        {
+          "kind": "question_data",
+          "code": "x <- c(\"data_a\", \"data_b\", \"control_a\", \"data_c\")"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(\"metadata\", \"controls\", \"data_raw\", \"results\")"
+        },
+        {
+          "kind": "variation",
+          "code": "x <- c(\"survey_data.csv\", \"DATA_backup\", \"readme.txt\", \"controls_data\", \"summary\")"
+        },
+        {
+          "kind": "edge",
+          "code": "x <- c(\"\", \"data\", \"datadata\", \"dat\")"
+        }
+      ],
+      "correct_options": [],
+      "note": "Search each string for the literal case-sensitive substring."
+    },
+    {
+      "id": "M-06-046",
+      "status": "computed",
+      "r_code": "thresholds <- c(A = 0.20, B = 0.40, D = 0.60, C = 0.80)\nsensitivity <- c(0.95, 0.85, 0.70, 0.40)\nspecificity <- c(0.30, 0.55, 0.80, 0.95)\nyouden <- sensitivity + specificity - 1\nbest <- which(youden == max(youden))\nvalue <- unname(thresholds[best])\nanswer <- names(thresholds)[best]",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["D"],
+      "note": "Compute the Youden index for each row and select the threshold with the largest value."
+    },
+    {
+      "id": "M-06-047",
+      "status": "computed",
+      "r_code": "ace_probability <- 0.20\nanswer <- stats::dbinom(2, size = 9, prob = ace_probability) * ace_probability",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Require exactly two aces in the first nine serves and an ace on the tenth."
+    },
+    {
+      "id": "M-06-048",
+      "status": "not_applicable",
+      "r_code": "",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": ["A"],
+      "note": "An observational correlation alone cannot establish the causal effect of vehicle weight on fuel economy."
+    },
+    {
+      "id": "M-06-049",
+      "status": "computed",
+      "r_code": "df <- data.frame(x = c(1, 2, 3, NA, 5), y = c(NA, 2, 3, 4, 5), z = c(1, 2, NA, 4, 5))\nanswer <- sum(stats::complete.cases(df))",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Count the rows with observed values in all three columns."
+    },
+    {
+      "id": "M-06-050",
+      "status": "computed",
+      "r_code": "alpha <- 3\nbeta <- 4\nexpected_time <- alpha * beta\nanswer <- 2 * expected_time / beta^3 - alpha / beta^2",
+      "answer_expression": "",
+      "test_inputs": [],
+      "correct_options": [],
+      "note": "Evaluate the negative expected second derivative of the log density with respect to the scale."
+    }
+  ]
+}

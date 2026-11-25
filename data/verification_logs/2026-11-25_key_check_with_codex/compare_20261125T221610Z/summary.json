@@ -1,0 +1,68 @@
+{
+ "compared_utc": "2026-11-25T22:24:06+00:00",
+ "positions": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-24_assembly2\\positions.jsonl",
+ "n": 1000,
+ "harness_dir": "C:\\masters_project_large\\data\\benchmark_work\\2026-11-25_key_check\\harness_20261125T221610Z",
+ "verdict": {
+  "consensus-supported": 927,
+  "contested": 73
+ },
+ "by_type": {
+  "multiple_choice": {
+   "consensus-supported": 345,
+   "contested": 5
+  },
+  "number": {
+   "consensus-supported": 393,
+   "contested": 7
+  },
+  "r_expression": {
+   "consensus-supported": 151,
+   "contested": 49
+  },
+  "short_text": {
+   "consensus-supported": 38,
+   "contested": 12
+  }
+ },
+ "check_flagged": 37,
+ "check_flag_kinds": {
+  "check too loose": 64,
+  "generalization limit": 8,
+  "the r_check does not accept the key (False)": 1,
+  "check too strict": 1
+ },
+ "likely_wrong_key": 14,
+ "sources": {
+  "c1": [
+   "kc-c1"
+  ],
+  "c2": [
+   "kc-c2"
+  ],
+  "c3": [
+   "kc-c3"
+  ],
+  "x1": [
+   "2026-11-25_codex_kc-x1"
+  ],
+  "x2": [
+   "2026-11-25_codex_kc-x2"
+  ],
+  "variants": [
+   "kc-variants"
+  ]
+ },
+ "config": {
+  "claude_model": "claude-opus-5-5",
+  "codex_model": "gpt-6.2-sol",
+  "codex_effort": "medium",
+  "claude_batch_size": 25,
+  "codex_batch_size": 50,
+  "claude_timeout_seconds": 1800,
+  "analytic_relative_allowance": 0.001,
+  "equivalence_tolerance": 1e-08,
+  "min_test_inputs": 3
+ },
+ "tool_version": "key_check-1"
+}
