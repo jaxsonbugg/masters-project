@@ -1,0 +1,14 @@
+# Settings of the five-solver key check (code/verification/key_check.py; plan of 2026-11-24). Every batch records the model
+# and settings it actually ran with, so a change here never rewrites the record of an earlier batch.
+claude_model: claude-opus-5-5     # C1, C2, C3, the known-wrong variants and the adjudicator briefs
+codex_model: gpt-6.2-sol           # X1 and X2 (passed to codex_batch.py run --model)
+codex_effort: medium
+claude_batch_size: 25
+codex_batch_size: 50
+claude_timeout_seconds: 1800
+# The comparison (key_check.py compare). Explained in docs/methodology/workflow.md Section 4, safeguard 6d.
+analytic_relative_allowance: 0.001   # an analytic (hand) number may differ from the key by 0.1% of the key on top of the
+                                     # key's own tolerance, because a hand calculation rounds in between
+equivalence_tolerance: 1.0e-8        # all.equal tolerance when two R results are compared
+min_test_inputs: 3                   # usable test inputs needed before an r_expression key can be consensus-supported
+                                     # (unless both computational solvers say the question fixes its data)

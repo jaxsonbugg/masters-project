@@ -25,6 +25,11 @@ THE STEPS (screening; grading follows the same pattern later)
   import        Accept the verdicts only if they match the schema exactly: one verdict per id, no missing, extra or duplicate
                 ids, allowed values only, and a clean audited run. Then map the anonymous ids back to benchmark items and copy
                 the batch, verdicts and provenance to data/verification_logs/<date>_codex_screen/.
+  build-solve-analytic, build-solve-compute
+                The blind solves X1 and X2 of the five-solver key check (plan of 2026-11-24): the same three-file folders,
+                showing the answer type, category, subtopic, difficulty, question and choices and never the key. Formats and
+                validators are shared with the Claude solvers (key_check_schemas.py); the imported answers go to
+                data/verification_logs/<date>_codex_<label>/, and key_check.py compares them with the keys.
   report        Collect all imported batches into screen_flags.csv for the owner, who decides every flag (fix, replace with
                 a spare, or keep with a note).
 
@@ -54,6 +59,8 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "code" / "generation"))
+sys.path.insert(0, str(REPO / "code" / "verification"))
+import key_check_schemas as kcs  # noqa: E402
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -144,6 +151,12 @@ KINDS = {
     # kind: (instruction file, schema, letter for anonymous ids, fields shown per item)
     "screen": (SCREEN_PROMPT, screen_schema, "S", ("question", "choices")),
     "align": (ALIGN_PROMPT, align_schema, "A", ("category", "subtopic", "difficulty", "question", "choices")),
+    # The blind solves of the five-solver key check (plan of 2026-11-24; Codex is X1 and X2). Codex never runs R: X2 writes R
+    # as text, and key_check.py runs it in the project's R sandbox. Still no key, working, r_solution or r_check is shown.
+    "solve-analytic": (kcs.ANALYTIC_PROMPT, kcs.analytic_schema, "K", ("answer_type", "category", "subtopic", "difficulty",
+                                                                     "question", "choices")),
+    "solve-compute": (kcs.COMPUTE_PROMPT, kcs.compute_schema, "M", ("answer_type", "category", "subtopic", "difficulty",
+                                                                   "question", "choices")),
 }
 
 
@@ -196,6 +209,7 @@ def build_batches(rows, kind, label, date, batch_size, workspace, keys, items_fi
             anon = f"{letter}-{nn:02d}-{k:03d}"
             it, sl = r["item"], r.get("slot") or {}
             shown = {"question": it["question"], "choices": {L: c for L, c in zip("ABCD", it.get("choices") or [])},
+                     "answer_type": it.get("answer_type"),
                      "category": sl.get("category"), "subtopic": sl.get("subtopic"), "difficulty": sl.get("difficulty")}
             lines.append(json.dumps({"id": anon, **{f: shown[f] for f in fields}}, ensure_ascii=False))
             key[anon] = {"item_id": r["item_id"], "position": r.get("position")}
@@ -233,6 +247,14 @@ def cmd_build_screen(args):
 
 def cmd_build_align(args):
     return cmd_build(args, "align")
+
+
+def cmd_build_solve_analytic(args):
+    return cmd_build(args, "solve-analytic")
+
+
+def cmd_build_solve_compute(args):
+    return cmd_build(args, "solve-compute")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -454,7 +476,11 @@ def cmd_import(args):
     ids = list(key["ids"])
     kind = key.get("kind", "screen")
     text = (folder / "verdicts.json").read_text(encoding="utf-8") if (folder / "verdicts.json").exists() else ""
-    verdicts, problems = (validate_align if kind == "align" else validate_verdicts)(text, ids)
+    if kind in kcs.KINDS:
+        shown = {r["id"]: r for r in map(json.loads, batch.decode("utf-8").splitlines()) if r}
+        verdicts, problems = kcs.validate(kind, text, ids, shown)
+    else:
+        verdicts, problems = (validate_align if kind == "align" else validate_verdicts)(text, ids)
     if problems:
         print(f"{folder.name}: NOT IMPORTED ({len(problems)} problem(s)); re-run the batch:")
         for p in problems:
@@ -473,15 +499,19 @@ def cmd_import(args):
         if kind == "align":
             rows.append({**base, **{f: v[f] for f in ("subtopic_verdict", "subtopic_reason", "difficulty_verdict",
                                                       "difficulty_reason")}})
+        elif kind in kcs.KINDS:
+            rows.append({**base, "kind": kind, "model": run.get("model"), **{f: x for f, x in v.items() if f != "id"}})
         else:
             rows.append({**base, "verdict": v["verdict"], "issue_type": v["issue_type"], "reason": v["reason"]})
-    results_name = "align_results.jsonl" if kind == "align" else "screen_results.jsonl"
+    results_name = kcs.RESULTS_FILE.get(kind) or ("align_results.jsonl" if kind == "align" else "screen_results.jsonl")
     (out / results_name).write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows),
                                     encoding="utf-8", newline="\n")
     for f in ("batch.jsonl", "verdicts.json", "run.json", "instructions.md", "schema.json"):
         (out / f).write_bytes((folder / f).read_bytes())
     (out / "key.json").write_text(json.dumps(key, indent=1), encoding="utf-8", newline="\n")
-    if kind == "align":
+    if kind in kcs.KINDS:
+        print(f"{folder.name}: imported {len(rows)} {kind} answers -> {out}")
+    elif kind == "align":
         n_ok = sum(r["subtopic_verdict"] == "aligned" and r["difficulty_verdict"] == "matches" for r in rows)
         print(f"{folder.name}: imported {len(rows)} alignment verdicts ({n_ok} aligned and matching) -> {out}")
     else:
@@ -548,7 +578,7 @@ def cmd_report(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    for name in ("build-screen", "build-align"):
+    for name in ("build-screen", "build-align", "build-solve-analytic", "build-solve-compute"):
         p = sub.add_parser(name)
         p.add_argument("--items", required=True, help="benchmark positions (fill-bench output) or collected candidates")
         p.add_argument("--manifest", required=True, help="data/slots/benchmark_slots.manifest.json")
@@ -576,7 +606,8 @@ def main(argv=None):
     p.add_argument("--items", default=None, help="the benchmark positions, to show question and key on the owner sheet")
     p.add_argument("--out-root", default=None)
     args = ap.parse_args(argv)
-    fn = {"build-screen": cmd_build_screen, "build-align": cmd_build_align, "run": cmd_run, "import": cmd_import, "report": cmd_report}[args.cmd]
+    fn = {"build-screen": cmd_build_screen, "build-align": cmd_build_align, "build-solve-analytic": cmd_build_solve_analytic,
+          "build-solve-compute": cmd_build_solve_compute, "run": cmd_run, "import": cmd_import, "report": cmd_report}[args.cmd]
     rc = fn(args)
     sys.exit(rc if isinstance(rc, int) else 0)
 
